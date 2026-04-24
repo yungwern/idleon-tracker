@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import './App.css'
 import { characters, sections, premiumGearNames } from './data.js'
-import { useSaveImport } from './useSaveImport.js'
+import { useSaveImport } from './hooks/useSaveImport.js'
 
 // ============================================================
 // UTILITIES
