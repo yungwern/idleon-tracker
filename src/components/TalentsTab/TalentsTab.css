@@ -43,10 +43,10 @@
 }
 
 .preset-btn.active {
-  border-color: #c94040;
-  background: rgba(201, 64, 64, 0.2);
+  border-color: var(--class-color, #c94040);
+  background: color-mix(in srgb, var(--class-color, #c94040) 20%, transparent);
   color: #fff;
-  box-shadow: 0 0 10px rgba(201, 64, 64, 0.25);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--class-color, #c94040) 25%, transparent);
 }
 
 /* ── Total count ── */
