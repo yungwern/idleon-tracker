@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import './styles/global.css'
-import { characters, sections, premiumGearNames } from './data/data.js'
+import { characters, sections} from './data/data.js'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import TodoList from './components/TodoList/TodoList.jsx'
+import PremiumGearTab, { getPremiumGear } from './components/PremiumGear/PremiumGear.jsx'
 
 // ============================================================
 // UTILITIES
@@ -14,32 +15,6 @@ import TodoList from './components/TodoList/TodoList.jsx'
 const toClassSlug = (className) => className.toLowerCase().replace(/\s+/g, '-')
 
 // Add future utility imports below this line
-
-// ── Premium Gear ──
-// Reads EquipOrder_X slots 8 (hat), 12 (cape), 15 (armor), 10 (trophy), 14 (nametag) for a given character index
-function getPremiumGear(snapshot, charIndex) {
-  const equipOrder = snapshot?.characters?.[charIndex]?.equipOrder ?? {}
-  const slots = {
-    hat:   { slot: '8',  folder: 'hats',  label: 'Hat', base: 'premium gear'  },
-    cape:  { slot: '12', folder: 'capes', label: 'Cape', base: 'premium gear'  },
-    armor: { slot: '15', folder: 'armor', label: 'Armor', base: 'premium gear' },
-    ring:  { slot: '13', folder: 'rings', label: 'Ring', base: 'premium gear'},
-    trophy: {slot: '10', folder: 'trophies', label: 'Trophy', base: 'cosmetics'},
-    nametag: {slot: '14', folder: 'nametags', label: 'Nametag', base: 'cosmetics'},
-  }
-  return Object.fromEntries(
-    Object.entries(slots).map(([key, { slot, folder, label, base }]) => {
-      const id = equipOrder[slot] ?? 'Blank'
-      const equipped = id !== 'Blank'
-      return [key, {
-        id,
-        src: equipped ? `/images/${base}/${folder}/${id}.png` : null,
-        label,
-        equipped,
-      }]
-    })
-  )
-}
 
 // ── Class Colors ──
 // Maps class names to their theme accent colors, used for active sidebar buttons
@@ -156,83 +131,6 @@ function CharacterCard({ character, charIndex, snapshot }) {
           </div>
         )}
 
-      </div>
-    </div>
-  )
-}
-
-// ============================================================
-// PREMIUM GEAR SLOT
-// ============================================================
-function PremiumGearSlot({ slot }) {
-  const { src, label, equipped, id } = slot
-
-  // For unequipped slots we still want to show a dimmed placeholder.
-  // We use a generic placeholder image per slot type derived from the label.
-  const folderMap = { Hat: 'hats', Cape: 'capes', Armor: 'armor', Ring: 'rings'}
-  const folder = folderMap[label] ?? 'hats'
-
-  return (
-    <div className="premium-gear-item">
-      <div className={`premium-gear-slot ${equipped ? 'equipped' : 'unequipped'}`}>
-
-        {/* ── Equipped: show item image ── */}
-        {equipped ? (
-          <img
-            src={src}
-            alt={id}
-            className="premium-gear-image"
-            title={id}
-            onError={e => {
-              // Fallback if image file is missing
-              e.currentTarget.alt = `Missing: ${id}`
-            }}
-          />
-        ) : (
-          // ── Unequipped: show emoji placeholder ──
-          <div className="premium-gear-empty" title={`No ${label} equipped`}>
-            <span className="premium-gear-empty-icon">
-              {label === 'Hat'   && '🎩'}
-              {label === 'Cape'  && '🧣'}
-              {label === 'Armor' && '🛡️'}
-              {label === 'Ring' && '💍'}
-            </span>
-          </div>
-        )}
-
-      </div>
-
-      {/* ── Slot label: strip internal prefix for equipped items ── */}
-      <span className={`premium-gear-label ${equipped ? '' : 'unequipped-label'}`}>
-        {equipped ? (premiumGearNames[id] ?? id) : `No ${label}`}
-      </span>
-    </div>
-  )
-}
-
-// ============================================================
-// PREMIUM GEAR TAB CONTENT
-// ============================================================
-function PremiumGearTab({ charIndex, snapshot }) {
-  const gear = getPremiumGear(snapshot, charIndex)
-
-  // ── No save imported yet ──
-  if (!snapshot) {
-    return (
-      <div className="premium-gear-no-save">
-        <span className="premium-gear-no-save-icon">📂</span>
-        <p>Import your save to see equipped premium gear.</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="premium-gear-tab">
-      <div className="premium-gear-slots">
-        <PremiumGearSlot slot={gear.hat}   />
-        <PremiumGearSlot slot={gear.cape}  />
-        <PremiumGearSlot slot={gear.armor} />
-        <PremiumGearSlot slot={gear.ring} />
       </div>
     </div>
   )

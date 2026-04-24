@@ -1,0 +1,103 @@
+/* ============================================================
+   PREMIUM GEAR
+   ============================================================ */
+.premium-gear-tab {
+  padding: 8px 0;
+}
+
+.premium-gear-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 16px;
+}
+
+/* Individual slot wrapper */
+.premium-gear-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The image box */
+.premium-gear-slot {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.premium-gear-slot.equipped {
+  border-color: #4b5563;
+}
+
+.premium-gear-slot.equipped:hover {
+  border-color: #6b7280;
+}
+
+.premium-gear-slot.unequipped {
+  border: 1px dashed #4b5563;
+}
+
+/* Equipped image */
+.premium-gear-image {
+  width: 75%;
+  height: 75%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Empty slot placeholder */
+.premium-gear-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.2;
+}
+
+.premium-gear-empty-icon {
+  font-size: 28px;
+}
+
+/* Slot labels */
+.premium-gear-label {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  text-align: center;
+  max-width: 100%;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.premium-gear-label.unequipped-label {
+  color: #374151;
+  font-style: italic;
+}
+
+/* No save imported state */
+.premium-gear-no-save {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 0;
+  color: #4b5563;
+}
+
+.premium-gear-no-save-icon {
+  font-size: 28px;
+  opacity: 0.5;
+}
+
+.premium-gear-no-save p {
+  font-size: 13px;
+  color: #4b5563;
+}
