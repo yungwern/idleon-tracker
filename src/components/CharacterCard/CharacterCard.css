@@ -1,0 +1,348 @@
+/* ============================================================
+   CHARACTER CARD
+   ============================================================ */
+
+.character-card {
+  max-width: 700px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #1f2937;
+}
+
+/* ── Card Header ── */
+.card-header {
+  padding: 14px 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.card-header-left .class-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.card-header-left h2 {
+  margin: 4px 0 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+/* ── Class Badge ── */
+.class-badge {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  image-rendering: pixelated;
+}
+
+/* Class-specific badge icons */
+.character-card[data-class="blood-berserker"] .class-badge::before {
+  content: url("/images/class icons/bloodberserker.png");
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+.character-card[data-class="divine-knight"] .class-badge::before {
+  content: url("/images/class icons/divineknight.png");
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+.character-card[data-class="siege-breaker"] .class-badge::before {
+  content: url("/images/class icons/siegebreaker.png");
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+.character-card[data-class="beast-master"] .class-badge::before {
+  content: url("/images/class icons/beastmaster.png");
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+.character-card[data-class="elemental-sorcerer"] .class-badge::before {
+  content: url("/images/class icons/elementalsorcerer.png");
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+.character-card[data-class="bubonic-conjuror"] .class-badge::before {
+  content: url("/images/class icons/bubonicconjuror.png");
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+.character-card[data-class="voidwalker"] .class-badge::before {
+  content: url("/images/class icons/voidwalker.png");
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+/* ── Nametag ── */
+.nametag-image {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* ── Trophy ── */
+.trophy-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.trophy-icon {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+  margin-top: 4px;
+  image-rendering: pixelated;
+}
+
+/* ── Best For Bar ── */
+.best-for-bar {
+  background: #1f2937;
+  padding: 8px 24px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-top: 1px solid #374151;
+  border-bottom: 1px solid #374151;
+}
+
+.best-for-pill {
+  background: #374151;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #d1d5db;
+}
+
+/* ============================================================
+   CHARACTER CARD NAV
+   ============================================================ */
+
+.card-tabs {
+  display: flex;
+  border-bottom: 1px solid #1f2937;
+  background: #111827;
+}
+
+.card-tabs button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s;
+}
+
+.card-tabs button:hover {
+  color: #d1d5db;
+  background: none;
+}
+
+.card-tabs button.active {
+  background: none;
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+}
+
+/* ============================================================
+   CHARACTER CARD BODY
+   ============================================================ */
+
+.card-body {
+  background: #111827;
+  padding: 24px;
+  min-height: 240px;
+}
+
+/* ============================================================
+   CLASS THEMES
+   ============================================================ */
+
+/* ── Blood Berserker ── */
+.character-card[data-class="blood-berserker"] .card-header {
+  background: linear-gradient(135deg, #0f172a 0%, #f87171 100%);
+}
+.character-card[data-class="blood-berserker"] .card-tabs button.active {
+  color: #f87171;
+  border-bottom-color: #f87171;
+}
+.character-card[data-class="blood-berserker"] .talent-item {
+  border-left-color: #f87171;
+}
+.character-card[data-class="blood-berserker"] .talent-level {
+  color: #f87171;
+}
+.character-card[data-class="blood-berserker"] .best-for-pill {
+  border: 1px solid;
+  border-color: #f87171;
+}
+.character-card[data-class="blood-berserker"] .todo-list {
+  border-color: #f87171;
+}
+
+/* ── Divine Knight ── */
+.character-card[data-class="divine-knight"] .card-header {
+  background: linear-gradient(135deg, #0f172a 0%, #f59e0b 100%);
+}
+.character-card[data-class="divine-knight"] .card-tabs button.active {
+  color: #fbbf24;
+  border-bottom-color: #fbbf24;
+}
+.character-card[data-class="divine-knight"] .talent-item {
+  border-left-color: #fbbf24;
+}
+.character-card[data-class="divine-knight"] .talent-level {
+  color: #fbbf24;
+}
+.character-card[data-class="divine-knight"] .best-for-pill {
+  border: 1px solid;
+  border-color: #fbbf24;
+}
+.character-card[data-class="divine-knight"] .todo-list {
+  border-color: #fbbf24;
+}
+
+/* ── Siege Breaker ── */
+.character-card[data-class="siege-breaker"] .card-header {
+  background: linear-gradient(135deg, #0f172a 0%, #16a34a 100%);
+}
+.character-card[data-class="siege-breaker"] .card-tabs button.active {
+  color: #16a34a;
+  border-bottom-color: #16a34a;
+}
+.character-card[data-class="siege-breaker"] .talent-item {
+  border-left-color: #16a34a;
+}
+.character-card[data-class="siege-breaker"] .talent-level {
+  color: #16a34a;
+}
+.character-card[data-class="siege-breaker"] .best-for-pill {
+  border: 1px solid;
+  border-color: #16a34a;
+}
+.character-card[data-class="siege-breaker"] .todo-list {
+  border-color: #16a34a;
+}
+
+/* ── Beast Master ── */
+.character-card[data-class="beast-master"] .card-header {
+  background: linear-gradient(135deg, #0f172a 0%, #059669 100%);
+}
+.character-card[data-class="beast-master"] .card-tabs button.active {
+  color: #059669;
+  border-bottom-color: #059669;
+}
+.character-card[data-class="beast-master"] .talent-item {
+  border-left-color: #059669;
+}
+.character-card[data-class="beast-master"] .talent-level {
+  color: #059669;
+}
+.character-card[data-class="beast-master"] .best-for-pill {
+  border: 1px solid;
+  border-color: #059669;
+}
+.character-card[data-class="beast-master"] .todo-list {
+  border-color: #059669;
+}
+
+/* ── Elemental Sorcerer ── */
+.character-card[data-class="elemental-sorcerer"] .card-header {
+  background: linear-gradient(135deg, #0f172a 0%, #7c3aed 100%);
+}
+.character-card[data-class="elemental-sorcerer"] .card-tabs button.active {
+  color: #7c3aed;
+  border-bottom-color: #7c3aed;
+}
+.character-card[data-class="elemental-sorcerer"] .talent-item {
+  border-left-color: #7c3aed;
+}
+.character-card[data-class="elemental-sorcerer"] .talent-level {
+  color: #7c3aed;
+}
+.character-card[data-class="elemental-sorcerer"] .best-for-pill {
+  border: 1px solid;
+  border-color: #7c3aed;
+}
+.character-card[data-class="elemental-sorcerer"] .todo-list {
+  border-color: #7c3aed;
+}
+
+/* ── Bubonic Conjuror ── */
+.character-card[data-class="bubonic-conjuror"] .card-header {
+  background: linear-gradient(135deg, #0f172a 0%, #65a30d 100%);
+}
+.character-card[data-class="bubonic-conjuror"] .card-tabs button.active {
+  color: #65a30d;
+  border-bottom-color: #65a30d;
+}
+.character-card[data-class="bubonic-conjuror"] .talent-item {
+  border-left-color: #65a30d;
+}
+.character-card[data-class="bubonic-conjuror"] .talent-level {
+  color: #65a30d;
+}
+.character-card[data-class="bubonic-conjuror"] .best-for-pill {
+  border: 1px solid;
+  border-color: #65a30d;
+}
+.character-card[data-class="bubonic-conjuror"] .todo-list {
+  border-color: #65a30d;
+}
+
+/* ── Voidwalker ── */
+.character-card[data-class="voidwalker"] .card-header {
+  background: linear-gradient(135deg, #0f172a 0%, #af9dce 100%);
+}
+.character-card[data-class="voidwalker"] .card-tabs button.active {
+  color: #af9dce;
+  border-bottom-color: #af9dce;
+}
+.character-card[data-class="voidwalker"] .talent-item {
+  border-left-color: #af9dce;
+}
+.character-card[data-class="voidwalker"] .talent-level {
+  color: #af9dce;
+}
+.character-card[data-class="voidwalker"] .best-for-pill {
+  border: 1px solid;
+  border-color: #af9dce;
+}
+.character-card[data-class="voidwalker"] .todo-list {
+  border-color: #af9dce;
+}
