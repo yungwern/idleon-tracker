@@ -1,4 +1,16 @@
 /* ============================================================
+   CLASS THEMES / ICONS
+   ============================================================ */
+
+.character-card[data-class="blood-berserker"]    { --class-color: #f87171; --class-icon: url("/images/class icons/bloodberserker.png"); }
+.character-card[data-class="divine-knight"]      { --class-color: #fbbf24; --class-icon: url("/images/class icons/divineknight.png"); }
+.character-card[data-class="siege-breaker"]      { --class-color: #16a34a; --class-icon: url("/images/class icons/siegebreaker.png"); }
+.character-card[data-class="beast-master"]       { --class-color: #059669; --class-icon: url("/images/class icons/beastmaster.png"); }
+.character-card[data-class="elemental-sorcerer"] { --class-color: #7c3aed; --class-icon: url("/images/class icons/elementalsorcerer.png"); }
+.character-card[data-class="bubonic-conjuror"]   { --class-color: #65a30d; --class-icon: url("/images/class icons/bubonicconjuror.png"); }
+.character-card[data-class="voidwalker"]         { --class-color: #af9dce; --class-icon: url("/images/class icons/voidwalker.png"); }
+
+/* ============================================================
    CHARACTER CARD
    ============================================================ */
 
@@ -55,50 +67,8 @@
 }
 
 /* Class-specific badge icons */
-.character-card[data-class="blood-berserker"] .class-badge::before {
-  content: url("/images/class icons/bloodberserker.png");
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  vertical-align: middle;
-}
-.character-card[data-class="divine-knight"] .class-badge::before {
-  content: url("/images/class icons/divineknight.png");
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  vertical-align: middle;
-}
-.character-card[data-class="siege-breaker"] .class-badge::before {
-  content: url("/images/class icons/siegebreaker.png");
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  vertical-align: middle;
-}
-.character-card[data-class="beast-master"] .class-badge::before {
-  content: url("/images/class icons/beastmaster.png");
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  vertical-align: middle;
-}
-.character-card[data-class="elemental-sorcerer"] .class-badge::before {
-  content: url("/images/class icons/elementalsorcerer.png");
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  vertical-align: middle;
-}
-.character-card[data-class="bubonic-conjuror"] .class-badge::before {
-  content: url("/images/class icons/bubonicconjuror.png");
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  vertical-align: middle;
-}
-.character-card[data-class="voidwalker"] .class-badge::before {
-  content: url("/images/class icons/voidwalker.png");
+.character-card .class-badge::before {
+  content: var(--class-icon);
   display: inline-block;
   width: 24px;
   height: 24px;
@@ -195,15 +165,3 @@
   padding: 24px;
   min-height: 240px;
 }
-
-/* ============================================================
-   CLASS THEMES
-   ============================================================ */
-
-.character-card[data-class="blood-berserker"]     { --class-color: #f87171; }
-.character-card[data-class="divine-knight"]       { --class-color: #fbbf24; }
-.character-card[data-class="siege-breaker"]       { --class-color: #16a34a; }
-.character-card[data-class="beast-master"]        { --class-color: #059669; }
-.character-card[data-class="elemental-sorcerer"]  { --class-color: #7c3aed; }
-.character-card[data-class="bubonic-conjuror"]    { --class-color: #65a30d; }
-.character-card[data-class="voidwalker"]          { --class-color: #af9dce; }
