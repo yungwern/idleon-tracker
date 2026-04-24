@@ -3,6 +3,7 @@ import TodoList from '../TodoList/TodoList.jsx'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import TalentsTab from '../TalentsTab/TalentsTab.jsx'
 import './CharacterCard.css'
+import '../ActionBars/actionbars.css'
 
 const toClassSlug = (className) => className.toLowerCase().replace(/\s+/g, '-')
 
