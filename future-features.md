@@ -16,6 +16,8 @@ Create account page
 
 Import prayers
 
+Super Talents - Calculate formula for total number and notify if less than max
+
 Dropdown nav handler for each section to collapse
 
 

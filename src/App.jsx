@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import './styles/global.css'
 import { characters, sections, premiumGearNames } from './data/data.js'
 import { useSaveImport } from './hooks/useSaveImport.js'
+import ImportModal from './components/ImportModal/ImportModal.jsx'
 
 // ============================================================
 // UTILITIES
@@ -52,66 +53,6 @@ function classColor(cls) {
     'Voidwalker':         '#af9dce',
   }
   return colors[cls] ?? '#fff'
-}
-
-// ============================================================
-// IMPORT MODAL
-// ============================================================
-function ImportModal({ onImport, onClose }) {
-  const [text, setText] = useState('')
-  const [error, setError] = useState(null)
-  const textareaRef = useRef(null)
-
-  // ── Handlers ──
-  function handleImport() {
-    setError(null)
-    if (!text.trim()) {
-      setError('Please paste your save data before importing.')
-      return
-    }
-    try {
-      onImport(text)
-      onClose()
-    } catch {
-      setError('Invalid JSON — make sure you copied the full save data from the decoder.')
-    }
-  }
-
-  // Close modal when clicking outside the modal box
-  function handleOverlayClick(e) {
-    if (e.target === e.currentTarget) onClose()
-  }
-
-  return (
-    <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal">
-        {/* ── Header ── */}
-        <div className="modal-header">
-          <h3>Import Save Data</h3>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        {/* ── Body ── */}
-        <p className="modal-description">
-          Paste your decoded save JSON below. Your data will be saved locally and persist between sessions.
-        </p>
-        <textarea
-          ref={textareaRef}
-          className="modal-textarea"
-          placeholder='Paste your decoded save JSON here...'
-          value={text}
-          onChange={e => { setText(e.target.value); setError(null) }}
-          spellCheck={false}
-        />
-        {error && <div className="modal-error">{error}</div>}
-        {/* ── Footer ── */}
-        <div className="modal-actions">
-          <button className="modal-cancel" onClick={onClose}>Cancel</button>
-          <button className="modal-import" onClick={handleImport}>Import</button>
-        </div>
-
-      </div>
-    </div>
-  )
 }
 
 // ============================================================
