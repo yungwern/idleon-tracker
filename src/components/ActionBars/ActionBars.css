@@ -1,33 +1,108 @@
 /* ============================================================
    ACTION BAR
    ============================================================ */
-.action-bar-placeholder {
-  background: #1f2937;
-  border: 2px dashed #374151;
-  border-radius: 10px;
-  padding: 32px;
-  text-align: center;
+.action-bar-wrap {
+  margin-bottom: 12px;
+}
+
+.action-bar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.action-bar-toggle {
+  display: flex;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.action-bar-toggle button {
+  font-size: 12px;
+  padding: 4px 12px;
+  background: transparent;
+  border: none;
   color: #6b7280;
-  font-size: 13px;
-  margin-bottom: 12px;
+  cursor: pointer;
 }
 
-.action-bar-image {
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 12px;
-}
-
-.action-bar-notes {
-  font-size: 13px;
-  color: #9ca3af;
-}
-
-.action-bar-label {
-  font-size: 14px;
+.action-bar-toggle button.active {
+  background: #374151;
+  color: var(--class-color);
   font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 6px;
+}
+
+.action-bar-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.action-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #1f2937;
+}
+
+.action-bar-row:last-child {
+  border-bottom: none;
+}
+
+.action-bar-row-label {
+  font-size: 11px;
+  color: var(--class-color);
+  width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.action-bar-slots {
+  display: flex;
+  gap: 2px;
+}
+
+.action-bar-slot {
+  width: 56px;
+  height: 56px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.action-bar-slot.empty {
+  opacity: 0.15;
+  border-color: #1f2937;
+}
+
+.action-bar-slot.filled {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.action-bar-slot.filled:hover {
+  background: #263345;
+  border-color: var(--class-color);
+  cursor: default;
+}
+
+.action-bar-slot-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.action-bar-slot-name {
+  display: none;
 }

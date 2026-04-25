@@ -1,11 +1,5 @@
 import { talentMap } from '../data/talentMap'
 
-// ============================================================
-// FIELD EXTRACTORS
-// To add a new field in the future, add an entry here:
-//   fieldName: (json, charIndex) => json['some_key']?.[charIndex]
-// Then use `snapshot.characters[i].fieldName` in your components.
-// ============================================================
 const extractors = {
   level: (json, i) => json[`Lv0_${i}`]?.[0] ?? null,
   equipOrder: (json, i) => json[`EquipOrder_${i}`]?.[0] ?? {},
@@ -42,6 +36,18 @@ const extractors = {
     const raw = json[`Prayers_${i}`]
     const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
     return arr.filter(id => id !== -1)
+  },
+  actionBar: (json, i) => {
+    const parseRows = (raw) => {
+      const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+      return arr.slice(0, 3).map(row =>
+        (Array.isArray(row) ? row : []).slice(0, 6).map(v => v === 'Null' ? null : v)
+      )
+    }
+    return {
+      active: parseRows(json[`AttackLoadout_${i}`]),
+      alternate: parseRows(json[`AttackLoadoutpre_${i}`]),
+    }
   },
 }
 

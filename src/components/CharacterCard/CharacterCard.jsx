@@ -2,6 +2,7 @@ import { useState } from 'react'
 import TodoList from '../TodoList/TodoList.jsx'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import TalentsTab from '../TalentsTab/TalentsTab.jsx'
+import ActionBar from '../ActionBars/ActionBars.jsx'
 import { prayerMap } from '../../data/prayerMap'
 import './CharacterCard.css'
 import '../ActionBars/actionbars.css'
@@ -11,6 +12,8 @@ const toClassSlug = (className) => className.toLowerCase().replace(/\s+/g, '-')
 export default function CharacterCard({ character, charIndex, snapshot }) {
   const [activeTab, setActiveTab] = useState('to-do list:')
   const slug = toClassSlug(character.class)
+
+  const actionBar = snapshot?.characters?.[charIndex]?.actionBar ?? null
 
   return (
     <div className="character-card" data-class={slug}>
@@ -101,20 +104,7 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
         )}
 
         {activeTab === 'action bar' && (
-          <div>
-            {character.actionBarImages && character.actionBarImages.length > 0
-              ? character.actionBarImages.map((img, i) => (
-                  <div key={i}>
-                    {img.label && <p className="action-bar-label">{img.label}</p>}
-                    <img src={img.src} alt={img.label || `Action bar ${i + 1}`} className="action-bar-image" />
-                  </div>
-                ))
-              : <div className="action-bar-placeholder">📷 Add action bar screenshot paths to data.js</div>
-            }
-            {character.actionBarNotes && (
-              <p className="action-bar-notes">{character.actionBarNotes}</p>
-            )}
-          </div>
+          <ActionBar actionBar={actionBar} />
         )}
 
       </div>
