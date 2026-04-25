@@ -13,10 +13,13 @@ New Feature List:
 Create account page
     Import statue levels
     Import shrine levels
+    Random big numbers (biggest nugget, ???)
 
 Import prayers
 
 Super Talents - Calculate formula for total number and notify if less than max
+Finish talent ID's
+Upload pictures for talents
 
 Dropdown nav handler for each section to collapse
 

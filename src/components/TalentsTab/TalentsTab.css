@@ -37,16 +37,16 @@
 }
 
 .preset-btn:hover {
-  border-color: rgba(220, 80, 80, 0.5);
+  border-color: color-mix(in srgb, var(--class-color) 50%, transparent);
   color: rgba(255, 255, 255, 0.85);
-  background: rgba(220, 80, 80, 0.1);
+  background: color-mix(in srgb, var(--class-color) 10%, transparent);
 }
 
 .preset-btn.active {
-  border-color: var(--class-color, #c94040);
-  background: color-mix(in srgb, var(--class-color, #c94040) 20%, transparent);
+  border-color: var(--class-color);
+  background: color-mix(in srgb, var(--class-color) 20%, transparent);
   color: #fff;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--class-color, #c94040) 25%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--class-color) 25%, transparent);
 }
 
 /* ── Total count ── */
