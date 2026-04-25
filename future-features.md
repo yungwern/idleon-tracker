@@ -1,5 +1,5 @@
 AI Prompt:
-"I'm working on my IdleOn Hub React app — it has App.jsx, App.css, useSaveImport.js and a data.js file for character data."
+I'm working on my IdleOn Hub React app.
 
 Figure out markdown file
 
@@ -14,12 +14,6 @@ Create account page
     Import statue levels
     Import shrine levels
     Random big numbers (biggest nugget, ???)
-
-Import prayers
-
-Super Talents - Calculate formula for total number and notify if less than max
-Finish talent ID's
-Upload pictures for talents
 
 Dropdown nav handler for each section to collapse
 

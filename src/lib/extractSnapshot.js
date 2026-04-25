@@ -38,6 +38,11 @@ const extractors = {
       return { label, superedTalents }
     })
   },
+  prayers: (json, i) => {
+    const raw = json[`Prayers_${i}`]
+    const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+    return arr.filter(id => id !== -1)
+  },
 }
 
 export function extractSnapshot(json) {

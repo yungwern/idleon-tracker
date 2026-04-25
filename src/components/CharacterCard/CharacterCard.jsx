@@ -2,6 +2,7 @@ import { useState } from 'react'
 import TodoList from '../TodoList/TodoList.jsx'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import TalentsTab from '../TalentsTab/TalentsTab.jsx'
+import { prayerMap } from '../../data/prayerMap'
 import './CharacterCard.css'
 import '../ActionBars/actionbars.css'
 
@@ -48,6 +49,22 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
         <div className="best-for-bar">
           {character.bestFor.map(b => (
             <span key={b} className="best-for-pill">{b}</span>
+          ))}
+        </div>
+      )}
+
+      {/* ── Prayers ── */}
+      {snapshot?.characters?.[charIndex]?.prayers?.length > 0 && (
+        <div className="prayers-bar">
+          <span className="prayers-label">Prayers:</span>
+          {snapshot.characters[charIndex].prayers.map(id => (
+            <img
+              key={id}
+              src={`/images/prayers/Prayer${id}.png`}
+              alt={prayerMap[id] ?? `Prayer ${id}`}
+              className="prayer-icon"
+              title={prayerMap[id] ?? `Prayer ${id}`}
+            />
           ))}
         </div>
       )}

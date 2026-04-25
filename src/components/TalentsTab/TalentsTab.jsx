@@ -4,7 +4,13 @@ import './TalentsTab.css'
 function TalentCard({ talent }) {
   return (
     <div className="talent-card">
-      <div className="talent-icon" />
+      <div className="talent-icon" >
+        <img
+          src={`/images/talents/UISkillIcon${talent.id}.png`}
+          alt={talent.name}
+          onError={(e) => { e.currentTarget.style.display = 'none' }}
+        />
+      </div>
       <span className="talent-name">{talent.name}</span>
     </div>
   )
@@ -27,7 +33,8 @@ export default function TalentsTab({ character }) {
   ]
 
   const preset = presets[activePreset]
-  const totalSupered = presets.reduce((sum, p) => sum + p.superedTalents.length, 0)
+  const totalPoints = Math.max(0, Math.floor(((character.level ?? 0) - 400) / 100) + 1)
+  const unspent = totalPoints - preset.superedTalents.length
 
   return (
     <div className="talents-tab">
@@ -43,9 +50,11 @@ export default function TalentsTab({ character }) {
             </button>
           ))}
         </div>
-        <span className="talents-total">
-          {totalSupered} Total Super'd
-        </span>
+        {unspent > 0 && (
+          <span className="talents-total talents-total--unspent">
+            {unspent} Point Unspent
+          </span>
+        )}
       </div>
 
       {preset.superedTalents.length === 0 ? (
