@@ -1,4 +1,4 @@
-import { premiumGearNames } from '../../data/data.js'
+import { premiumGearNames } from '../../data'
 import './PremiumGear.css'
 
 function PremiumGearSlot({ slot }) {

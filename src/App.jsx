@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import './styles/global.css'
-import { characters, sections} from './data/data.js'
+import { characters, sections} from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import TodoList from './components/TodoList/TodoList.jsx'
