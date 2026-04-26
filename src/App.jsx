@@ -8,7 +8,8 @@ import TodoList from './components/TodoList/TodoList.jsx'
 import PremiumGearTab, { getPremiumGear } from './components/PremiumGear/PremiumGear.jsx'
 import TalentsTab from './components/TalentsTab/TalentsTab.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
-import AccountOverview from './components/AccountOverview/AccountOverview.jsx'
+import Statues from './components/Statues/Statues.jsx'
+import Shrines from './components/Shrines/Shrines.jsx'
 
 // ============================================================
 // UTILITIES
@@ -56,6 +57,18 @@ const mergedCharacters = characters.map((c, i) => {
 
   const charIndex = mergedCharacters.findIndex(c => c.name === selected)
   const character = charIndex >= 0 ? mergedCharacters[charIndex] : null
+
+  function renderContent() {
+    if (character) return <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
+    if (selected === 'Statues')          return <Statues snapshot={snapshot} />
+    if (selected === 'Shrines')          return <Shrines snapshot={snapshot} />
+    return (
+      <div className="page">
+        <h2 className="page-title">{selected}</h2>
+        <p className="page-empty">Content for this section coming soon!</p>
+      </div>
+    )
+  }
 
   return (
     <div className="app">
@@ -124,17 +137,7 @@ const mergedCharacters = characters.map((c, i) => {
 
       {/* ── Main Content ── */}
       <div className="content">
-        {character
-          ? <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
-          : selected === 'Account Overview'
-            ? <AccountOverview snapshot={snapshot} />
-            : (
-              <div>
-                <h1 style={{ color: '#a0c4ff', marginBottom: 10 }}>{selected}</h1>
-                <p style={{ color: '#6b7280' }}>Content for this section coming soon!</p>
-              </div>
-            )
-        }
+        {renderContent()}
       </div>
     </div>
   )
