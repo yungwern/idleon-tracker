@@ -57,6 +57,22 @@ function parseStatues(json) {
   return arr.map(([level, xp], id) => ({ id, level, xp }))
 }
 
+function parseShrines(json) {
+  const raw = json['Shrine']
+  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  return arr.map((entry, i) => {
+    const level = entry[3]
+    const xp = entry[4]
+    const xpRequired = Math.floor(20 * (level - 1) + 6 * level * Math.pow(1.63, level - 1))
+    return {
+      id: i + 18,
+      level,
+      xp,
+      xpRequired,
+    }
+  })
+}
+
 export function extractSnapshot(json) {
   const characterCount = 10
   const characters = Array.from({ length: characterCount }, (_, i) => {
@@ -66,10 +82,11 @@ export function extractSnapshot(json) {
     }
     return extracted
   })
-
+  
   return {
     characters,
     statues: parseStatues(json),
+    shrines: parseShrines(json),
     importedAt: new Date().toISOString(),
   }
 }
