@@ -51,6 +51,12 @@ const extractors = {
   },
 }
 
+function parseStatues(json) {
+  const raw = json['StatueLevels_0']
+  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  return arr.map(([level, xp], id) => ({ id, level, xp }))
+}
+
 export function extractSnapshot(json) {
   const characterCount = 10
   const characters = Array.from({ length: characterCount }, (_, i) => {
@@ -63,6 +69,7 @@ export function extractSnapshot(json) {
 
   return {
     characters,
+    statues: parseStatues(json),
     importedAt: new Date().toISOString(),
   }
 }

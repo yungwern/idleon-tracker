@@ -8,6 +8,7 @@ import TodoList from './components/TodoList/TodoList.jsx'
 import PremiumGearTab, { getPremiumGear } from './components/PremiumGear/PremiumGear.jsx'
 import TalentsTab from './components/TalentsTab/TalentsTab.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
+import AccountOverview from './components/AccountOverview/AccountOverview.jsx'
 
 // ============================================================
 // UTILITIES
@@ -125,16 +126,16 @@ const mergedCharacters = characters.map((c, i) => {
       <div className="content">
         {character
           ? <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
-          : (
-            // Placeholder for non-character sections
-            <div>
-              <h1 style={{ color: '#a0c4ff', marginBottom: 10 }}>{selected}</h1>
-              <p style={{ color: '#6b7280' }}>Content for this section coming soon!</p>
-            </div>
-          )
+          : selected === 'Account Overview'
+            ? <AccountOverview snapshot={snapshot} />
+            : (
+              <div>
+                <h1 style={{ color: '#a0c4ff', marginBottom: 10 }}>{selected}</h1>
+                <p style={{ color: '#6b7280' }}>Content for this section coming soon!</p>
+              </div>
+            )
         }
       </div>
-
     </div>
   )
 }
