@@ -1,8 +1,68 @@
+.statue-worlds {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.statue-world-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.statue-world-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.statue-world-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  min-width: 70px;
+}
+
+.statue-mob-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.statue-mob-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 0px 10px 0px 4px;
+}
+
+.statue-mob-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.statue-mob-name {
+  font-size: 0.75rem;
+  color: #d1d5db;
+}
+
 .statue-preview-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: center;
+}
+
+.statue-individual-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .statue-preview-item {

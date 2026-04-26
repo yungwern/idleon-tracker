@@ -10,6 +10,7 @@ import TalentsTab from './components/TalentsTab/TalentsTab.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
 import Statues from './components/Statues/Statues.jsx'
 import Shrines from './components/Shrines/Shrines.jsx'
+import Minibosses from './components/Minibosses/Minibosses.jsx'
 
 // ============================================================
 // UTILITIES
@@ -62,6 +63,7 @@ const mergedCharacters = characters.map((c, i) => {
     if (character) return <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
     if (selected === 'Statues')          return <Statues snapshot={snapshot} />
     if (selected === 'Shrines')          return <Shrines snapshot={snapshot} />
+    if (selected === 'Minibosses')       return <Minibosses snapshot={snapshot} />
     return (
       <div className="page">
         <h2 className="page-title">{selected}</h2>

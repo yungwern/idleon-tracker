@@ -1,0 +1,248 @@
+.mb-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mb-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mb-summary-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+}
+
+.mb-summary-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* List */
+.mb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Row */
+.mb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.mb-row:hover {
+  border-color: rgba(160, 196, 255, 0.2);
+  background: rgba(160, 196, 255, 0.04);
+}
+
+/* Icon */
+.mb-icon-wrap {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mb-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Info (middle) */
+.mb-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mb-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mb-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  white-space: nowrap;
+}
+
+.mb-world-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.8;
+}
+
+/* Kill bar */
+.mb-killbar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mb-killbar-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.mb-killbar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.mb-killbar-next {
+  font-size: 0.6rem;
+  color: #6b7280;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Right side */
+.mb-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mb-kills {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #d1d5db;
+}
+
+.mb-rank-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 1px 5px;
+  opacity: 0.85;
+}
+
+/* Skull icon */
+.mb-skull-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.mb-skull-empty {
+  width: 28px;
+  height: 28px;
+}
+
+/* Expandable row wrapper */
+.mb-row-wrap {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.mb-row-wrap--open {
+  border-color: rgba(160, 196, 255, 0.2);
+}
+
+.mb-row-wrap .mb-row {
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Chevron */
+.mb-chevron {
+  font-size: 0.6rem;
+  color: #6b7280;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+/* Details panel */
+.mb-details {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mb-detail-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.mb-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mb-detail-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.mb-detail-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #d1d5db;
+}
+
+.mb-detail-mob-icon {
+  width: 27px;
+  height: 27px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  padding-bottom: 2px;
+}
+
+.mb-detail-none {
+  font-size: 0.75rem;
+  color: #4b5563;
+  font-style: italic;
+}

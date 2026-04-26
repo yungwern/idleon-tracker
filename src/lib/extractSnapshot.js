@@ -73,6 +73,13 @@ function parseShrines(json) {
   })
 }
 
+function parseMiniBosses(json) {
+  const rawSneaking = json['Ninja']
+  const arr = typeof rawSneaking === 'string' ? JSON.parse(rawSneaking) : (rawSneaking ?? [])
+  const kills = arr?.[105] ?? []
+  return kills.slice(0, 9)
+}
+
 export function extractSnapshot(json) {
   const characterCount = 10
   const characters = Array.from({ length: characterCount }, (_, i) => {
@@ -82,11 +89,12 @@ export function extractSnapshot(json) {
     }
     return extracted
   })
-  
+
   return {
     characters,
     statues: parseStatues(json),
     shrines: parseShrines(json),
+    miniBossesKills: parseMiniBosses(json),
     importedAt: new Date().toISOString(),
   }
 }
