@@ -10,9 +10,18 @@ export default defineConfig({
     },
     watch: {
       usePolling: true,
-      interval: 100,        // much faster polling
+      interval: 100,
       binaryInterval: 300,
       ignored: ['**/node_modules/**', '**/.git/**'],
     },
+  },
+  customLogger: {
+    info(msg) { console.log(msg) },
+    warn(msg) { console.warn(msg) },
+    error(msg) { console.error(msg) },
+    warnOnce(msg) { console.warn(msg) },
+    clearScreen() {},
+    hasErrorLogged() { return false },
+    hasWarned: false,
   }
 })

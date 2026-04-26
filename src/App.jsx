@@ -1,40 +1,18 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import './styles/global.css'
-import { characters, sections} from './data'
+import { characters, sections } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import TodoList from './components/TodoList/TodoList.jsx'
-import PremiumGearTab, { getPremiumGear } from './components/PremiumGear/PremiumGear.jsx'
+import PremiumGearTab from './components/PremiumGear/PremiumGear.jsx'
+import { getPremiumGear } from './utils/premiumGearUtils.js'
 import TalentsTab from './components/TalentsTab/TalentsTab.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
-import Statues from './components/Statues/Statues.jsx'
-import Shrines from './components/Shrines/Shrines.jsx'
-import Minibosses from './components/Minibosses/Minibosses.jsx'
-
-// ============================================================
-// UTILITIES
-// ============================================================
-
-// Converts a class name to a kebab-case slug for data-class attributes
-const toClassSlug = (className) => className.toLowerCase().replace(/\s+/g, '-')
-
-// Add future utility imports below this line
-
-// ── Class Colors ──
-// Maps class names to their theme accent colors, used for active sidebar buttons
-function classColor(cls) {
-  const colors = {
-    'Blood Berserker':    '#f87171',
-    'Divine Knight':      '#fbbf24',
-    'Siege Breaker':      '#16a34a',
-    'Beast Master':       '#059669',
-    'Elemental Sorcerer': '#7c3aed',
-    'Bubonic Conjuror':   '#65a30d',
-    'Voidwalker':         '#af9dce',
-  }
-  return colors[cls] ?? '#fff'
-}
+import Statues from './components/Statues/statues.jsx'
+import Shrines from './components/Shrines/shrines.jsx'
+import Minibosses from './components/Minibosses/minibosses.jsx'
+import { toClassSlug, classColor } from './utils/appUtils.js'
 
 // ============================================================
 // APP

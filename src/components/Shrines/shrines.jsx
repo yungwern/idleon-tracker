@@ -1,14 +1,6 @@
 import { shrineMap } from '../../data/shrineMap'
 import './shrines.css'
-
-function levelColor(level) {
-  if (level >= 500) return '#e879f9'
-  if (level >= 400) return '#67e8f9'
-  if (level >= 300) return '#f43f5e'
-  if (level >= 200) return '#fbbf24'
-  if (level >= 100) return '#94a3b8'
-  return '#cd7f32'
-}
+import { statueLevelColor } from '../../utils/appUtils'
 
 export default function Shrines({ snapshot }) {
   const shrines = snapshot?.shrines
@@ -43,7 +35,7 @@ export default function Shrines({ snapshot }) {
                   className="shrine-preview-icon"
                 />
               </div>
-              <span className="shrine-preview-level" style={{ color: levelColor(level) }}>
+              <span className="shrine-preview-level" style={{ color: statueLevelColor(level) }}>
                 Lv {level}
               </span>
               <div className="shrine-xp-bar-track">
