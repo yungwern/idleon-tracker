@@ -13,6 +13,7 @@ import Statues from './components/Statues/Statues.jsx'
 import Shrines from './components/Shrines/Shrines.jsx'
 import Minibosses from './components/MiniBosses/MiniBosses.jsx'
 import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
+import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
 import { toClassSlug, classColor } from './utils/appUtils.js'
 
 // ============================================================
@@ -40,10 +41,11 @@ export default function App() {
 
   function renderContent() {
     if (character) return <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
-    if (selected === 'Statues')       return <Statues snapshot={snapshot} />
-    if (selected === 'Shrines')       return <Shrines snapshot={snapshot} />
-    if (selected === 'Minibosses')    return <Minibosses snapshot={snapshot} />
-    if (selected === 'MasterClasses') return <MasterClasses snapshot={snapshot} />
+    if (selected === 'Statues')        return <Statues snapshot={snapshot} />
+    if (selected === 'Shrines')        return <Shrines snapshot={snapshot} />
+    if (selected === 'Minibosses')     return <Minibosses snapshot={snapshot} />
+    if (selected === 'MasterClasses')  return <MasterClasses snapshot={snapshot} />
+    if (selected === 'Gear Optimizer') return <GearOptimizer />
     return (
       <div className="page">
         <h2 className="page-title">{selected}</h2>
