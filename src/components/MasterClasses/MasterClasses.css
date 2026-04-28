@@ -46,6 +46,22 @@
   background: #1f2937;
 }
 
+.mc-header-item-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.mc-header-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--class-color);
+}
+
 .mc-class-icon {
   font-size: 20px;
   line-height: 1;

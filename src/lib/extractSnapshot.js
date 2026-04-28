@@ -3,6 +3,17 @@ import { talentMap } from '../data/talentMap'
 const extractors = {
   level: (json, i) => json[`Lv0_${i}`]?.[0] ?? null,
   equipOrder: (json, i) => json[`EquipOrder_${i}`]?.[0] ?? {},
+  inventory: (json, i) => {
+    const order = json[`InventoryOrder_${i}`] ?? []
+    const qty   = json[`ItemQTY_${i}`] ?? []
+    const map = {}
+    order.forEach((key, idx) => {
+      if (key !== 'Blank' && key !== 'LockedInvSpace') {
+        map[key] = (map[key] ?? 0) + (qty[idx] ?? 0)
+      }
+    })
+    return map
+  },
   superTalentPresets: (json, i) => {
     const spelunk = typeof json.Spelunk === 'string'
       ? JSON.parse(json.Spelunk)

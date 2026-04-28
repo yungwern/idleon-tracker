@@ -1,15 +1,50 @@
 import { useState } from 'react'
-import { MASTERCLASSES } from '../../data'
+import { MASTERCLASSES, itemMap } from '../../data'
 import './MasterClasses.css'
 
 // ============================================================
 // SUB-COMPONENTS
 // ============================================================
 
-function SectionContent({ section }) {
+function HeaderItem({ itemKey, snapshot, charIndex }) {
+  const name = itemMap[itemKey]
+  if (!name) return null
+  const qty = snapshot?.characters?.[charIndex]?.inventory?.[itemKey] ?? 0
+  console.log('HeaderItem debug:', { itemKey, charIndex, inventory: snapshot?.characters?.[charIndex]?.inventory, qty })
+  return (
+    <div className="mc-header-item">
+      <img src={`/images/items/${itemKey}.png`} alt={name} className="mc-header-item-img" />
+      <span className="mc-header-item-qty">{qty.toLocaleString()}</span>
+    </div>
+  )
+}
+
+function InventorySection({ inventoryKey, snapshot, charIndex }) {
+  const name = itemMap[inventoryKey]
+  if (!name) return null
+  const qty = snapshot?.characters?.[charIndex]?.inventory?.[inventoryKey] ?? 0
+  return (
+    <div className="mc-items-grid">
+      <div className="mc-item-card">
+        <img src={`/images/items/${inventoryKey}.png`} alt={name} className="mc-item-img" />
+        <span className="mc-item-name">{name}</span>
+        <span className="mc-item-note">Owned: {qty.toLocaleString()}</span>
+      </div>
+    </div>
+  )
+}
+
+function SectionContent({ section, snapshot, charIndex }) {
   return (
     <div className="mc-section-body">
       {section.text && <p>{section.text}</p>}
+      {section.inventoryKey && (
+        <InventorySection
+          inventoryKey={section.inventoryKey}
+          snapshot={snapshot}
+          charIndex={charIndex}
+        />
+      )}
       {section.items && (
         <div className="mc-items-grid">
           {section.items.map((item, i) => (
@@ -28,7 +63,7 @@ function SectionContent({ section }) {
   )
 }
 
-function ClassDropdown({ mc, isOpen, onToggle }) {
+function ClassDropdown({ mc, isOpen, onToggle, snapshot }) {
   return (
     <div className={`mc-class-dropdown ${isOpen ? 'open' : ''}`} style={{ '--class-color': mc.color }}>
       {/* ── Class Header (main toggle) ── */}
@@ -38,6 +73,13 @@ function ClassDropdown({ mc, isOpen, onToggle }) {
           : <span className="mc-class-icon">{mc.icon}</span>
         }
         <span className="mc-class-name">{mc.name}</span>
+        {mc.headerItem && (
+          <HeaderItem
+            itemKey={mc.headerItem}
+            snapshot={snapshot}
+            charIndex={mc.charIndex}
+          />
+        )}
         <span className="mc-class-chevron">{isOpen ? '▲' : '▼'}</span>
       </button>
 
@@ -47,7 +89,11 @@ function ClassDropdown({ mc, isOpen, onToggle }) {
           {mc.sections.map(section => (
             <div key={section.id} className="mc-section">
               <h3 className="mc-section-title">{section.title}</h3>
-              <SectionContent section={section} />
+              <SectionContent
+                section={section}
+                snapshot={snapshot}
+                charIndex={mc.charIndex}
+              />
             </div>
           ))}
         </div>
@@ -60,7 +106,8 @@ function ClassDropdown({ mc, isOpen, onToggle }) {
 // MAIN COMPONENT
 // ============================================================
 
-export default function MasterClasses() {
+export default function MasterClasses({ snapshot }) {
+  console.log('MasterClasses snapshot:', snapshot?.characters?.[0]?.inventory)
   const [openClass, setOpenClass] = useState('blood-berserker')
 
   function toggleClass(id) {
@@ -78,6 +125,7 @@ export default function MasterClasses() {
             mc={mc}
             isOpen={openClass === mc.id}
             onToggle={() => toggleClass(mc.id)}
+            snapshot={snapshot}
           />
         ))}
       </div>

@@ -8,3 +8,4 @@ export { MINIBOSSES, RANK_THRESHOLDS, getSkullIndex, rankColor, formatKills } fr
 export { shrineMap } from './shrineMap'
 export { statueMap } from './statueMap'
 export { statueWorlds } from './statueWorlds'
+export { itemMap } from './itemMap'

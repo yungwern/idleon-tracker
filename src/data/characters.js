@@ -25,7 +25,7 @@ export const characters = [
   {
     id: 'char3',
     name: 'YungBern',
-    class: 'Bubonic Conjuror',
+    class: 'Arcane Cultist',
     level: 0,
     bestFor: ['Cranium Cooking', 'Lab', 'Money Farming'],
     todos: [

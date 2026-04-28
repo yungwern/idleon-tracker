@@ -43,7 +43,7 @@ export default function App() {
     if (selected === 'Statues')       return <Statues snapshot={snapshot} />
     if (selected === 'Shrines')       return <Shrines snapshot={snapshot} />
     if (selected === 'Minibosses')    return <Minibosses snapshot={snapshot} />
-    if (selected === 'MasterClasses') return <MasterClasses />
+    if (selected === 'MasterClasses') return <MasterClasses snapshot={snapshot} />
     return (
       <div className="page">
         <h2 className="page-title">{selected}</h2>

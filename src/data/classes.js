@@ -4,6 +4,6 @@ export const classes = [
   'Siege Breaker',
   'Beast Master',
   'Elemental Sorcerer',
-  'Bubonic Conjuror',
+  'Arcane Cultist',
   'Voidwalker',
 ]

@@ -1,5 +1,8 @@
 // ============================================================
 // MASTER CLASSES
+// charIndex     — which character's inventory to check
+// inventoryKey  — the item key to look up in that character's inventory
+// headerItem    — item key to display on the dropdown bar (uses itemMap)
 // ============================================================
 
 export const MASTERCLASSES = [
@@ -8,6 +11,8 @@ export const MASTERCLASSES = [
     name: 'Blood Berserker',
     color: '#f87171',
     icon: '/images/class icons/bloodberserker.png',
+    charIndex: 0,
+    headerItem: 'Quest97',
     sections: [
       {
         id: 'overview',
@@ -26,6 +31,8 @@ export const MASTERCLASSES = [
     name: 'Beast Master',
     color: '#059669',
     icon: '/images/class icons/beastmaster.png',
+    charIndex: 3,
+    headerItem: 'Quest96',
     sections: [
       {
         id: 'overview',
@@ -35,9 +42,7 @@ export const MASTERCLASSES = [
       {
         id: 'weapons',
         title: 'Weapons & Gear',
-        items: [
-          { name: 'Example Weapon', note: 'Drop from: ???', icon: '🏹' },
-        ],
+        inventoryKey: 'Quest96',
       },
       {
         id: 'notes',
@@ -47,27 +52,27 @@ export const MASTERCLASSES = [
     ],
   },
   {
-    id: 'bubonic-conjuror',
-    name: 'Bubonic Conjuror',
+    id: 'arcane-cultist',
+    name: 'Arcane Cultist',
     color: '#65a30d',
-    icon: '/images/class icons/bubonicconjuror.png',
+    icon: '/images/class icons/arcanecultist.png',
+    charIndex: 2,
+    headerItem: 'Quest101',
     sections: [
       {
         id: 'overview',
         title: 'Overview',
-        text: 'General info about Bubonic Conjuror goes here.',
+        text: 'General info about Arcane Cultist goes here.',
       },
       {
         id: 'weapons',
         title: 'Weapons & Gear',
-        items: [
-          { name: 'Example Weapon', note: 'Drop from: ???', icon: '⚗️' },
-        ],
+        inventoryKey: 'Quest101',
       },
       {
         id: 'notes',
         title: 'Tips & Notes',
-        text: 'Tips specific to Bubonic Conjuror go here.',
+        text: 'Tips specific to Arcane Cultist go here.',
       },
     ],
   },
