@@ -1,5 +1,5 @@
-import { shrineMap } from '../../data/shrineMap'
-import './shrines.css'
+import { shrineMap } from '../../data'
+import './Shrines.css'
 import { statueLevelColor } from '../../utils/appUtils'
 
 export default function Shrines({ snapshot }) {

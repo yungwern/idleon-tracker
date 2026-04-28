@@ -5,7 +5,7 @@ import TalentsTab from '../TalentsTab/TalentsTab.jsx'
 import ActionBar from '../ActionBars/ActionBars.jsx'
 import { prayerMap } from '../../data/prayerMap'
 import './CharacterCard.css'
-import '../ActionBars/actionbars.css'
+import '../ActionBars/ActionBars.css'
 
 const toClassSlug = (className) => className.toLowerCase().replace(/\s+/g, '-')
 

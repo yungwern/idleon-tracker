@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { MINIBOSSES, RANK_THRESHOLDS, getSkullIndex, rankColor, formatKills } from '../../data/miniBosses.js'
-import './minibosses.css'
+import { MINIBOSSES, RANK_THRESHOLDS, getSkullIndex, rankColor, formatKills } from '../../data'
+import './MiniBosses.css'
 
 function KillBar({ kills }) {
   const skullIndex = getSkullIndex(kills)

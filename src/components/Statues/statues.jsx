@@ -1,6 +1,6 @@
-import { statueMap } from '../../data/statueMap'
+import { statueMap } from '../../data'
 import { statueWorlds } from '../../data/statueWorlds'
-import './statues.css'
+import './Statues.css'
 import { statueLevelColor } from '../../utils/appUtils.js'
 
 function MobChip({ mob }) {

@@ -9,9 +9,10 @@ import PremiumGearTab from './components/PremiumGear/PremiumGear.jsx'
 import { getPremiumGear } from './utils/premiumGearUtils.js'
 import TalentsTab from './components/TalentsTab/TalentsTab.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
-import Statues from './components/Statues/statues.jsx'
-import Shrines from './components/Shrines/shrines.jsx'
-import Minibosses from './components/Minibosses/minibosses.jsx'
+import Statues from './components/Statues/Statues.jsx'
+import Shrines from './components/Shrines/Shrines.jsx'
+import Minibosses from './components/MiniBosses/MiniBosses.jsx'
+import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
 import { toClassSlug, classColor } from './utils/appUtils.js'
 
 // ============================================================
@@ -23,25 +24,26 @@ export default function App() {
   const { snapshot, importFromText, clearSnapshot, importedAt } = useSaveImport()
 
   // ── Merge imported levels into characters, falling back to data.js values ──
-const mergedCharacters = characters.map((c, i) => {
-  const gear = snapshot ? getPremiumGear(snapshot, i) : {}
-  return {
-    ...c,
-    level:   snapshot?.characters?.[i]?.level ?? c.level,
-    nametag: gear.nametag?.equipped ? gear.nametag : c.nametag,
-    trophy:  gear.trophy?.equipped  ? gear.trophy  : c.trophy,
-    superTalentPresets: snapshot?.characters?.[i]?.superTalentPresets ?? null,
-  }
-})
+  const mergedCharacters = characters.map((c, i) => {
+    const gear = snapshot ? getPremiumGear(snapshot, i) : {}
+    return {
+      ...c,
+      level:   snapshot?.characters?.[i]?.level ?? c.level,
+      nametag: gear.nametag?.equipped ? gear.nametag : c.nametag,
+      trophy:  gear.trophy?.equipped  ? gear.trophy  : c.trophy,
+      superTalentPresets: snapshot?.characters?.[i]?.superTalentPresets ?? null,
+    }
+  })
 
   const charIndex = mergedCharacters.findIndex(c => c.name === selected)
   const character = charIndex >= 0 ? mergedCharacters[charIndex] : null
 
   function renderContent() {
     if (character) return <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
-    if (selected === 'Statues')          return <Statues snapshot={snapshot} />
-    if (selected === 'Shrines')          return <Shrines snapshot={snapshot} />
-    if (selected === 'Minibosses')       return <Minibosses snapshot={snapshot} />
+    if (selected === 'Statues')       return <Statues snapshot={snapshot} />
+    if (selected === 'Shrines')       return <Shrines snapshot={snapshot} />
+    if (selected === 'Minibosses')    return <Minibosses snapshot={snapshot} />
+    if (selected === 'MasterClasses') return <MasterClasses />
     return (
       <div className="page">
         <h2 className="page-title">{selected}</h2>
