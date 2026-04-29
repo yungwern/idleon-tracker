@@ -35,19 +35,19 @@ export const MASTERCLASSES = [
     headerItem: 'Quest96',
     sections: [
       {
-        id: 'overview',
-        title: 'Overview',
-        text: 'General info about Beast Master goes here.',
-      },
-      {
         id: 'weapons',
         title: 'Weapons & Gear',
         inventoryKey: 'Quest96',
       },
       {
-        id: 'notes',
-        title: 'Tips & Notes',
-        text: 'Tips specific to Beast Master go here.',
+        id: 'best farms',
+        title: 'Best Farms',
+        text: 'Information about the best farming locations for Beast Master goes here.',
+      },
+      {
+        id: 'exalted-stamps',
+        title: 'Exalted Stamps',
+        sectionType: 'exalted-stamps',
       },
     ],
   },

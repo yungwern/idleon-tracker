@@ -1,16 +1,4 @@
 /* ============================================================
-   CLASS THEMES / ICONS
-   ============================================================ */
-
-.character-card[data-class="blood-berserker"]    { --class-color: #f87171; --class-icon: url("/images/class icons/bloodberserker.png"); }
-.character-card[data-class="divine-knight"]      { --class-color: #fbbf24; --class-icon: url("/images/class icons/divineknight.png"); }
-.character-card[data-class="siege-breaker"]      { --class-color: #16a34a; --class-icon: url("/images/class icons/siegebreaker.png"); }
-.character-card[data-class="beast-master"]       { --class-color: #059669; --class-icon: url("/images/class icons/beastmaster.png"); }
-.character-card[data-class="elemental-sorcerer"] { --class-color: #7c3aed; --class-icon: url("/images/class icons/elementalsorcerer.png"); }
-.character-card[data-class="arcane-cultist"]   { --class-color: #65a30d; --class-icon: url("/images/class icons/arcanecultist.png"); }
-.character-card[data-class="voidwalker"]         { --class-color: #af9dce; --class-icon: url("/images/class icons/voidwalker.png"); }
-
-/* ============================================================
    CHARACTER CARD
    ============================================================ */
 
@@ -168,7 +156,7 @@
 }
 
 .card-tabs button:hover {
-  color: #d1d5db;
+  color: var(--class-color);
   background: none;
 }
 

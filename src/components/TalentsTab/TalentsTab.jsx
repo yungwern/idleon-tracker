@@ -21,8 +21,9 @@ export default function TalentsTab({ character }) {
 
   if (!character.superTalentPresets) {
     return (
-      <div className="talents-empty">
-        <p>Import your save to see your super talents.</p>
+      <div className="no-save">
+        <span className="no-save-icon">📂</span>
+        <p>Import your save to see equipped premium gear.</p>
       </div>
     )
   }

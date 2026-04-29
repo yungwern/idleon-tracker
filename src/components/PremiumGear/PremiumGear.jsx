@@ -41,8 +41,8 @@ export default function PremiumGearTab({ charIndex, snapshot }) {
 
   if (!snapshot) {
     return (
-      <div className="premium-gear-no-save">
-        <span className="premium-gear-no-save-icon">📂</span>
+      <div className="no-save">
+        <span className="no-save-icon">📂</span>
         <p>Import your save to see equipped premium gear.</p>
       </div>
     )

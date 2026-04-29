@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { MASTERCLASSES, itemMap } from '../../data'
+import { stampMap, STAMP_TIERS } from '../../data/stampsMap'
+import TierList from '../TierList/TierList'
 import './MasterClasses.css'
 
 // ============================================================
@@ -10,7 +12,6 @@ function HeaderItem({ itemKey, snapshot, charIndex }) {
   const name = itemMap[itemKey]
   if (!name) return null
   const qty = snapshot?.characters?.[charIndex]?.inventory?.[itemKey] ?? 0
-  console.log('HeaderItem debug:', { itemKey, charIndex, inventory: snapshot?.characters?.[charIndex]?.inventory, qty })
   return (
     <div className="mc-header-item">
       <img src={`/images/items/${itemKey}.png`} alt={name} className="mc-header-item-img" />
@@ -34,7 +35,45 @@ function InventorySection({ inventoryKey, snapshot, charIndex }) {
   )
 }
 
+// ── Exalted Stamp Tier List ───────────────────────────────────
+// Builds the upgradedIds Set by cross-referencing snapshot.exaltedStamps
+// (a Set of compassIndex strings) against stampMap entries.
+// Passes rawName-keyed Set to TierList so it can check upgrades generically.
+function ExaltedStampTierList({ snapshot }) {
+  const upgradedIds = useMemo(() => {
+    const exalted = snapshot?.exaltedStamps ?? new Set()
+    const ids = new Set()
+    Object.entries(stampMap).forEach(([rawName, entry]) => {
+      if (exalted.has(entry.compassIndex)) {
+        ids.add(rawName)
+      }
+    })
+    return ids
+  }, [snapshot?.exaltedStamps])
+
+  return (
+    <TierList
+      tiers={STAMP_TIERS}
+      itemsKey="stamps"
+      itemMap={stampMap}
+      upgradedIds={upgradedIds}
+      getOverlay={() => '/images/stamps/Exalted_Stamp_Frame.png'}
+      imagePath="/images/stamps"
+    />
+  )
+}
+
 function SectionContent({ section, snapshot, charIndex }) {
+  // ── Exalted Stamps tier list ──
+  if (section.sectionType === 'exalted-stamps') {
+    return (
+      <div className="mc-section-body">
+        <ExaltedStampTierList snapshot={snapshot} />
+      </div>
+    )
+  }
+
+  // ── Default section renderer ──
   return (
     <div className="mc-section-body">
       {section.text && <p>{section.text}</p>}
@@ -107,7 +146,6 @@ function ClassDropdown({ mc, isOpen, onToggle, snapshot }) {
 // ============================================================
 
 export default function MasterClasses({ snapshot }) {
-  console.log('MasterClasses snapshot:', snapshot?.characters?.[0]?.inventory)
   const [openClass, setOpenClass] = useState('blood-berserker')
 
   function toggleClass(id) {

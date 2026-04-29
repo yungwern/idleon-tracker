@@ -115,13 +115,3 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
 }
-
-/* ── Empty state ── */
-.talents-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 13px;
-}

@@ -15,6 +15,7 @@ import Minibosses from './components/MiniBosses/MiniBosses.jsx'
 import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
 import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
 import { toClassSlug, classColor } from './utils/appUtils.js'
+import TierList from './components/TierList/TierList.jsx'
 
 // ============================================================
 // APP

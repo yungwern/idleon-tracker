@@ -26,9 +26,10 @@ export default function ActionBar({ actionBar }) {
   const [preset, setPreset] = useState('active')
 
   if (!actionBar) return (
-    <div className="action-bar-placeholder">
-      Import a save to view action bars
-    </div>
+    <div className="no-save">
+        <span className="no-save-icon">📂</span>
+        <p>Import your save to see equipped premium gear.</p>
+      </div>
   )
 
   const rows = actionBar[preset] ?? []

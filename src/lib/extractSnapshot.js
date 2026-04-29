@@ -91,6 +91,40 @@ function parseMiniBosses(json) {
   return kills.slice(0, 9)
 }
 
+// ── Exalted Stamps ────────────────────────────────────────────
+// Returns a Set of compassIndex strings for stamps the player has exalted.
+// Stored in Compass[4] as an array e.g. ['b2', 'a7', '_3', ...]
+// Match against stampMap[rawName].compassIndex to check if a stamp is exalted.
+function parseExaltedStamps(json) {
+  try {
+    const compass = typeof json['Compass'] === 'string'
+      ? JSON.parse(json['Compass'])
+      : (json['Compass'] ?? [])
+    const exaltedRaw = compass[4] ?? []
+    return new Set(exaltedRaw)
+  } catch {
+    console.warn('Failed to parse exalted stamps from Compass.')
+    return new Set()
+  }
+}
+
+// ── Prisma Bubbles ────────────────────────────────────────────
+// Returns a Set of bubbleIndex strings for bubbles the player has prisma'd.
+// Stored in OptLacc[384] as a comma-separated string e.g. "_1,a1,b1,c9,"
+// Match against bubbleMap[rawName].bubbleIndex to check if a bubble is prisma'd.
+function parsePrismaBubbles(json) {
+  try {
+    const optLacc = json['OptLacc'] ?? []
+    const raw = optLacc[384] ?? ''
+    if (!raw) return new Set()
+    // Split on commas, filter empty strings from trailing comma
+    return new Set(raw.split(',').filter(Boolean))
+  } catch {
+    console.warn('Failed to parse prisma bubbles from OptLacc.')
+    return new Set()
+  }
+}
+
 export function extractSnapshot(json) {
   const characterCount = 10
   const characters = Array.from({ length: characterCount }, (_, i) => {
@@ -106,6 +140,8 @@ export function extractSnapshot(json) {
     statues: parseStatues(json),
     shrines: parseShrines(json),
     miniBossesKills: parseMiniBosses(json),
+    exaltedStamps: parseExaltedStamps(json),
+    prismaBubbles: parsePrismaBubbles(json),
     importedAt: new Date().toISOString(),
   }
 }
