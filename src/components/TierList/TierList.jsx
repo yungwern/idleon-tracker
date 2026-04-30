@@ -31,9 +31,7 @@ export default function TierList({
           <div key={tier.id} className="tl-tier-row" data-tier={tier.id}>
 
             {/* Label column */}
-            <div
-              className="tl-tier-label-col"
-            >
+            <div className="tl-tier-label-col">
               <span className="tl-tier-letter">{tier.label}</span>
               {tier.sublabel && (
                 <span className="tl-tier-sublabel">{tier.sublabel}</span>
@@ -50,8 +48,7 @@ export default function TierList({
                 return (
                   <div
                     key={rawName}
-                    className={`tl-item${isUpgraded ? ' tl-item--upgraded' : ''}`}
-                    title={entry.name}
+                    className={`tl-item tooltip-anchor${isUpgraded ? ' tl-item--upgraded' : ''}`}
                   >
                     <div className="tl-item-img-wrap">
                       <img
@@ -67,6 +64,7 @@ export default function TierList({
                         />
                       )}
                     </div>
+                    <span className="tooltip">{entry.name}</span>
                   </div>
                 )
               })}

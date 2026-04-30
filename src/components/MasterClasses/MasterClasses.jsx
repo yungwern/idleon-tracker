@@ -36,13 +36,13 @@ function MobProgressionTable({ rows }) {
           </div>
           <div className="mob-prog-mobs">
             {row.mobs.map((mob) => (
-              <div key={mob.key} className="mob-prog-chip">
+              <div key={mob.key} className="mob-prog-chip tooltip-anchor">
                 <img
                   src={`/images/mobs/${mob.key}.png`}
                   alt={mobsMap[mob.key] ?? mob.key}
                   className="mob-prog-mob-img"
                 />
-                <span className="mob-prog-tooltip">
+                <span className="tooltip">
                   {mobsMap[mob.key] ?? mob.key} — {mob.drop.toLocaleString()}
                 </span>
               </div>

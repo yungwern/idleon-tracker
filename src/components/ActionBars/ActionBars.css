@@ -74,6 +74,7 @@
 .action-bar-slot {
   width: 56px;
   height: 56px;
+  position: relative;
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -81,7 +82,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px;
   flex-shrink: 0;
   transition: border-color 0.15s, background 0.15s;
 }

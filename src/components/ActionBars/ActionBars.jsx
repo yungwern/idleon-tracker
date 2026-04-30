@@ -11,13 +11,14 @@ function SkillSlot({ id }) {
   const name = talentMap[id] ?? `Unknown (${id})`
 
   return (
-    <div className="action-bar-slot filled" title={name}>
+    <div className="action-bar-slot filled tooltip-anchor">
       <img
         src={`/images/talents/UISkillIcon${id}.png`}
         alt={name}
         className="action-bar-slot-icon"
         onError={(e) => { e.currentTarget.style.display = 'none' }}
       />
+      <span className="tooltip">{name}</span>
     </div>
   )
 }
