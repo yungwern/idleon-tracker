@@ -18,12 +18,34 @@ export const itemMap = {
   EquipmentWandsArc0: 'Arcanist Staff',
   EquipmentRingsArc0: 'Cultist Ring',
 
-// ── AFK Items ──
+// ── Misc Items ──
+  // ── AFK Items ──
   Quest96:  'Aethermoon',
   Quest97:  'Charred Bone',
   Quest101: 'Arcane Rock',
 
-// ── Misc Items ──
+  // ── Currencies  ──
+  // Blood Berserker
+  Bone0_x1: 'Femur',  
+  Bone1_x1: 'Ribcage',
+  Bone2_x1: 'Cranium',
+  Bone3_x1: 'Bolvinae',
+
+  // Beast Master
+  Dust0_x1: 'Stardust',
+  Dust1_x1: 'Moondust',
+  Dust2_x1: 'Solardust',
+  Dust3_x1: 'Cooldust',
+  Dust4_x1: 'Novadust',
+
+  // Arcane Cultist
+  Tach0_x1: 'Purple',
+  Tach1_x1: 'Brown',
+  Tach2_x1: 'Green',
+  Tach3_x1: 'Red',
+  Tach4_x1: 'Silver',
+  Tach5_x1: 'Gold',
+  
   // Beast Master Upgrade Stones
   StoneTempestB0: 'Tempest Bow Stone - 60%',
   StoneTempestB1: 'Tempest Bow Stone - 30%',

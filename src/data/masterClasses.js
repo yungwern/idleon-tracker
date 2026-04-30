@@ -1,3 +1,5 @@
+import { BB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION } from './mobsMap'
+
 // ============================================================
 // MASTER CLASSES
 // charIndex     — which character's inventory to check
@@ -15,9 +17,10 @@ export const MASTERCLASSES = [
     headerItem: 'Quest97',
     sections: [
       {
-        id: 'overview',
-        title: 'Overview',
-        text: 'General info about Blood Berserker goes here.',
+        id: 'mob-progression',
+        title: 'Mob Progression',
+        sectionType: 'mob-progression',
+        rows: BB_MOB_PROGRESSION,
       },
       {
         id: 'notes',
@@ -27,28 +30,29 @@ export const MASTERCLASSES = [
     ],
   },
   {
-    id: 'beast-master',
-    name: 'Beast Master',
+    id: 'wind-walker',
+    name: 'Wind Walker',
     color: '#059669',
-    icon: '/images/class icons/beastmaster.png',
+    icon: '/images/class icons/windwalker.png',
     charIndex: 3,
     headerItem: 'Quest96',
     sections: [
       {
-        id: 'weapons',
-        title: 'Weapons & Gear',
-        inventoryKey: ['EquipmentBowsTempest0', 'EquipmentBowsTempest1', 'EquipmentBowsTempest2', 'EquipmentBowsTempest3', 'EquipmentBowsTempest4', 'EquipmentRingsTempest4', 'EquipmentRingsTempest6', 'EquipmentRingsTempest7'],
-        variant: 'weapon',
-      },
-      {
-        id: 'best farms',
-        title: 'Best Farms',
-        text: 'Information about the best farming locations for Beast Master goes here.',
+        id: 'mob-progression',
+        title: 'Mob Progression',
+        sectionType: 'mob-progression',
+        rows: WW_MOB_PROGRESSION,
       },
       {
         id: 'exalted-stamps',
         title: 'Exalted Stamps',
         sectionType: 'exalted-stamps',
+      },
+      {
+        id: 'weapons',
+        title: 'Weapons & Gear',
+        inventoryKey: ['EquipmentBowsTempest0', 'EquipmentBowsTempest1', 'EquipmentBowsTempest2', 'EquipmentBowsTempest3', 'EquipmentBowsTempest4', 'EquipmentRingsTempest4', 'EquipmentRingsTempest6', 'EquipmentRingsTempest7'],
+        variant: 'weapon',
       },
     ],
   },
@@ -61,21 +65,22 @@ export const MASTERCLASSES = [
     headerItem: 'Quest101',
     sections: [
       {
-        id: 'weapons',
-        title: 'Weapons & Gear',
-        inventoryKey: ['EquipmentWandsArc0', 'EquipmentRingsArc0'],
-        variant: 'weapon',
-      },
-      {
-        id: 'best farms',
-        title: 'Best Farms',
-        text: 'Information about the best farming locations for Arcane Cultist goes here.',
+        id: 'mob-progression',
+        title: 'Mob Progression',
+        sectionType: 'mob-progression',
+        rows: AC_MOB_PROGRESSION,
       },
       {
         id: 'prisma-bubbles',
         title: 'Prisma Bubbles',
         sectionType: 'prisma-bubbles',
-      }
+      },
+      {
+        id: 'weapons',
+        title: 'Weapons & Gear',
+        inventoryKey: ['EquipmentWandsArc0', 'EquipmentRingsArc0'],
+        variant: 'weapon',
+      },
     ],
   },
 ]

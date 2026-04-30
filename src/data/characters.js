@@ -36,7 +36,7 @@ export const characters = [
   {
     id: 'char4',
     name: 'YungFern',
-    class: 'Beast Master',
+    class: 'Wind Walker',
     level: 0,
     bestFor: ['Shinies', 'Pet Breeding'],
     todos: [

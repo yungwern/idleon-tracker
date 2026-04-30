@@ -4,6 +4,7 @@ import { stampMap, STAMP_TIERS } from '../../data/stampsMap'
 import { bubbleMap, BUBBLE_TIERS } from '../../data/bubblesMap'
 import TierList from '../TierList/TierList'
 import './MasterClasses.css'
+import { mobsMap } from '../../data'
 
 // ============================================================
 // SUB-COMPONENTS
@@ -17,6 +18,38 @@ function HeaderItem({ itemKey, snapshot, charIndex }) {
     <div className="mc-header-item">
       <img src={`/images/items/${itemKey}.png`} alt={name} className="mc-header-item-img" />
       <span className="mc-header-item-qty">{qty.toLocaleString()}</span>
+    </div>
+  )
+}
+
+function MobProgressionTable({ rows }) {
+  return (
+    <div className="mob-prog-table">
+      {rows.map((row) => (
+        <div key={row.currencyKey} className="mob-prog-row">
+          <div className="mob-prog-currency">
+            <img
+              src={`/images/items/${row.currencyKey}.png`}
+              alt={row.currencyKey}
+              className="mob-prog-currency-img"
+            />
+          </div>
+          <div className="mob-prog-mobs">
+            {row.mobs.map((mob) => (
+              <div key={mob.key} className="mob-prog-chip">
+                <img
+                  src={`/images/mobs/${mob.key}.png`}
+                  alt={mobsMap[mob.key] ?? mob.key}
+                  className="mob-prog-mob-img"
+                />
+                <span className="mob-prog-tooltip">
+                  {mobsMap[mob.key] ?? mob.key} — {mob.drop.toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -127,6 +160,16 @@ function PrismaBubbleTierList({ snapshot }) {
 }
 
 function SectionContent({ section, snapshot, charIndex }) {
+  
+  // ── Best Farms ──
+  if (section.sectionType === 'mob-progression') {
+  return (
+    <div className="mc-section-body">
+      <MobProgressionTable rows={section.rows} />
+    </div>
+  )
+}
+
   // ── Exalted Stamps tier list ──
   if (section.sectionType === 'exalted-stamps') {
     return (
@@ -219,7 +262,7 @@ function ClassDropdown({ mc, isOpen, onToggle, snapshot }) {
 // ============================================================
 
 export default function MasterClasses({ snapshot }) {
-  const [openClass, setOpenClass] = useState('blood-berserker')
+  const [openClass, setOpenClass] = useState()
 
   function toggleClass(id) {
     setOpenClass(prev => (prev === id ? null : id))

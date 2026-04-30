@@ -1,42 +1,48 @@
 /* ============================================================
    ACTION BAR
    ============================================================ */
-.action-bar-wrap {
-  margin-bottom: 12px;
-}
-
+   
 .action-bar-controls {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 10px;
 }
 
 .action-bar-toggle {
   display: flex;
-  border: 1px solid #374151;
-  border-radius: 6px;
-  overflow: hidden;
+  gap: 8px;
 }
 
 .action-bar-toggle button {
-  font-size: 12px;
-  padding: 4px 12px;
-  background: transparent;
-  border: none;
-  color: #6b7280;
+  padding: 5px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.18s ease;
+  letter-spacing: 0.02em;
+}
+
+.action-bar-toggle button:hover {
+  border-color: color-mix(in srgb, var(--class-color) 50%, transparent);
+  color: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--class-color) 10%, transparent);
 }
 
 .action-bar-toggle button.active {
-  background: #374151;
-  color: var(--class-color);
-  font-weight: 600;
+  border-color: var(--class-color);
+  background: color-mix(in srgb, var(--class-color) 20%, transparent);
+  color: #fff;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--class-color) 25%, transparent);
 }
 
 .action-bar-rows {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0;
 }
 
@@ -86,8 +92,8 @@
 }
 
 .action-bar-slot.filled {
-  background: #1f2937;
-  border-color: #374151;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .action-bar-slot.filled:hover {
@@ -101,8 +107,4 @@
   height: 48px;
   object-fit: contain;
   flex-shrink: 0;
-}
-
-.action-bar-slot-name {
-  display: none;
 }

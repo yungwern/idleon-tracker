@@ -37,7 +37,6 @@ export default function ActionBar({ actionBar }) {
   return (
     <div className="action-bar-wrap">
       <div className="action-bar-controls">
-        <span className="action-bar-label">Action bars</span>
         <div className="action-bar-toggle">
           <button
             className={preset === 'active' ? 'active' : ''}

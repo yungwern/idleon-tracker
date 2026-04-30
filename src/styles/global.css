@@ -9,7 +9,7 @@
 }
 
 body {
-  background-color: #0a0a0f;
+  background: #0a0a0f;
   color: #eee;
   font-family: 'Segoe UI', sans-serif;
 }
@@ -30,9 +30,9 @@ body {
   --class-color: #16a34a; 
   --class-icon: url("/images/class icons/siegebreaker.png"); 
 }
-.character-card[data-class="beast-master"] { 
+.character-card[data-class="wind-walker"] { 
   --class-color: #059669; 
-  --class-icon: url("/images/class icons/beastmaster.png"); 
+  --class-icon: url("/images/class icons/windwalker.png"); 
 }
 .character-card[data-class="elemental-sorcerer"] { 
   --class-color: #7c3aed; 

@@ -16,8 +16,8 @@
   align-items: center;
   border-radius: 8px;
   overflow: hidden;
-  background: #111827;
-  border: 1px solid #1f2937;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   min-height: 68px;
 }
 
@@ -31,7 +31,7 @@
   justify-content: center;
   width: 64px;
   flex-shrink: 0;
-  background: #0f1724;
+  background: rgba(255, 255, 255, 0.02);
   border-right: 3px solid var(--tier-color, #374151);
   padding: 8px 4px;
   gap: 4px;
