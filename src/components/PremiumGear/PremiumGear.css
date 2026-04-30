@@ -2,7 +2,7 @@
    PREMIUM GEAR
    ============================================================ */
 .premium-gear-tab {
-  padding: 8px 0;
+  padding: 16px 0;
 }
 
 .premium-gear-slots {
@@ -77,4 +77,11 @@
 .premium-gear-label.unequipped-label {
   color: #374151;
   font-style: italic;
+}
+
+.premium-gear-stat {
+  font-size: 11px;
+  font-style: italic;
+  color: #9ca3af;
+  text-align: center;
 }

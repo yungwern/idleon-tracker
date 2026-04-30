@@ -2,7 +2,7 @@ export const statueWorlds = [
   {
     world: 'World 1',
     color: '#4ade80',
-    statueIds: [0, 1, 2, 3, 4, 5, 6],
+    statueIds: [0, 1, 2, 3, 4, 6, 13, 14],
     mobs: [
       { name: 'Bored Bean', image: '/images/mobs/Bored_Bean.png' },
       { name: 'Crystal Carrot', image: '/images/mobs/Crystal_Carrot.png' },
@@ -23,10 +23,11 @@ export const statueWorlds = [
   {
     world: 'World 3',
     color: '#38bdf8',
-    statueIds: [],
-    mobs: [],
+    statueIds: [1, 2, 3, 6, 13, 14, 17],
+    mobs: [
+      { name: 'Dedotated Ram', image: '/images/mobs/Dedotated_Ram.png' }
+    ],
     individual: [
-      { statueId: 17, mobs: [{ name: 'Dedotated Ram', image: '/images/mobs/Dedotated_Ram.png' }, { name: 'Crystal Cattle', image: '/images/mobs/Crystal_Cattle.png' }] },
       { statueId: 15, mobs: [{ name: 'Penguin', image: '/images/mobs/Penguin.png' }] },
       { statueId: 18, mobs: [{ name: 'Cryosnake', image: '/images/mobs/Cryosnake.png' }] },
       { statueId: 16, mobs: [{ name: 'Quenchie', image: '/images/mobs/Quenchie.png' }] },
@@ -60,7 +61,6 @@ export const statueWorlds = [
     statueIds: [25, 26, 27],
     mobs: [
       { name: 'Minichief Spirit', image: '/images/mobs/Minichief_Spirit.png' },
-      { name: 'Crystal Candalight', image: '/images/mobs/Crystal_Candalight.png' },
     ],
   },
   {
@@ -68,7 +68,7 @@ export const statueWorlds = [
     color: '#22d3ee',
     statueIds: [30, 31],
     mobs: [
-      { name: 'Crystal Cuttlefish', image: '/images/mobs/Crystal_Cuttlefish.png' },
+      { name: 'Eamsy Earl', image: '/images/mobs/Eamsy_Earl.png' },
     ],
   },
 ]

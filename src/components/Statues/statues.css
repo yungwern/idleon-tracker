@@ -1,104 +1,139 @@
+/* ─── Statues Page ─────────────────────────────────────────────── */
+
 .statue-worlds {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 6px;
 }
 
+/* ─── World Card ───────────────────────────────────────────────── */
+
 .statue-world-card {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .statue-world-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  padding: 4px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(0, 0, 0, 0.2);
+  text-align: center;
 }
 
 .statue-world-label {
-  font-size: 0.85rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  min-width: 70px;
+  letter-spacing: 0.12em;
 }
 
-.statue-mob-list {
+/* ─── Mob Rows ─────────────────────────────────────────────────── */
+
+.statue-mob-rows {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
 }
 
-.statue-mob-chip {
+.statue-mob-row {
   display: flex;
+  align-items: stretch;
+  height: 80px;
+}
+
+.statue-mob-row + .statue-mob-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Left: mob image + name */
+.statue-mob-col {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 20px;
-  padding: 0px 10px 0px 4px;
+  justify-content: center;
+  width: 80px;
+  min-width: 80px;
+  padding: 13px 4px;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(0, 0, 0, 0.15);
 }
 
-.statue-mob-icon {
-  width: 32px;
-  height: 32px;
+.statue-mob-img {
+  width: 56px;
+  height: 56px;
+  max-width: 52px;
+  max-height: 52px;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
-.statue-mob-name {
-  font-size: 0.75rem;
-  color: #d1d5db;
+.statue-mob-img--special {
+  width: 28px;
+  height: 28px;
 }
 
-.statue-preview-grid {
+.statue-mob-name {
+  font-size: 0.58rem;
+  color: #8a92a0;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 72px;
+}
+
+/* Right: statues */
+.statue-items-col {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  align-content: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 0 10px;
+  flex: 1;
 }
 
-.statue-individual-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+/* ─── Statue Item ──────────────────────────────────────────────── */
 
 .statue-preview-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  width: 52px;
-}
-
-.statue-preview-icon {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
-
-.statue-preview-level {
-  font-size: 0.65rem;
-  font-weight: 600;
+  gap: 4px;
+  width: 48px;
 }
 
 .statue-icon-wrap {
   width: 44px;
   height: 44px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.15s, background 0.15s;
   overflow: hidden;
-  position: relative;
+  flex-shrink: 0;
 }
 
 .statue-preview-item:hover .statue-icon-wrap {
-  border-color: rgba(160, 196, 255, 0.3);
-  background: rgba(160, 196, 255, 0.06);
+  border-color: rgba(160, 196, 255, 0.35);
+  background: rgba(160, 196, 255, 0.07);
+}
+
+.statue-preview-icon {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.statue-preview-level {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
 }

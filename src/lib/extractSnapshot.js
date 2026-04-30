@@ -1,6 +1,40 @@
 import { talentMap } from '../data/talentMap'
 import { MASTERCLASSES } from '../data/masterClasses'
 
+// ── Construction ──────────────────────────────────────────────
+const CONSTRUCTION_COG_INDICES = [30, 31, 32, 33, 34, 35, 62, 63, 74, 75, 86, 87]
+
+const CONSTRUCTION_PATTERN_LABELS = {
+  row: 'Boosts entire Row',
+  column: 'Boosts entire Column',
+}
+
+function parseConstruction(json) {
+  const cogMap = typeof json.CogM === 'string' ? JSON.parse(json.CogM) : (json.CogM ?? {})
+  const cogOrder = typeof json.CogO === 'string' ? JSON.parse(json.CogO) : (json.CogO ?? [])
+
+  let totalExpRate = 0
+
+  const cogs = CONSTRUCTION_COG_INDICES.map(index => {
+    const cog = cogMap[index] ?? {}
+    const bonusConstructExp = cog.d ?? 0
+    const playerConstructExp = cog.f ?? 0
+    const total = bonusConstructExp + playerConstructExp
+    totalExpRate += total
+
+    return {
+      index,
+      name: cogOrder[index] ?? 'Blank',
+      bonusConstructExp,
+      playerConstructExp,
+      total,
+      patternLabel: CONSTRUCTION_PATTERN_LABELS[cog.h] ?? null,
+    }
+  })
+
+  return { cogs, totalExpRate }
+}
+
 const weaponKeys = new Set(
   MASTERCLASSES.flatMap(mc =>
     mc.sections
@@ -110,10 +144,6 @@ function parseMiniBosses(json) {
   return kills.slice(0, 9)
 }
 
-// ── Exalted Stamps ────────────────────────────────────────────
-// Returns a Set of compassIndex strings for stamps the player has exalted.
-// Stored in Compass[4] as an array e.g. ['b2', 'a7', '_3', ...]
-// Match against stampMap[rawName].compassIndex to check if a stamp is exalted.
 function parseExaltedStamps(json) {
   try {
     const compass = typeof json['Compass'] === 'string'
@@ -126,10 +156,6 @@ function parseExaltedStamps(json) {
   }
 }
 
-// ── Prisma Bubbles ────────────────────────────────────────────
-// Returns a Set of bubbleIndex strings for bubbles the player has prisma'd.
-// Stored in OptLacc[384] as a comma-separated string e.g. "_1,a1,b1,c9,"
-// Match against bubbleMap[rawName].bubbleIndex to check if a bubble is prisma'd.
 function parsePrismaBubbles(json) {
   try {
     const optLacc = json['OptLacc'] ?? []
@@ -159,6 +185,7 @@ export function extractSnapshot(json) {
     miniBossesKills: parseMiniBosses(json),
     exaltedStamps: parseExaltedStamps(json),
     prismaBubbles: parsePrismaBubbles(json),
+    construction: parseConstruction(json),
     importedAt: new Date().toISOString(),
   }
 }

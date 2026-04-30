@@ -16,6 +16,7 @@ import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
 import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
 import { toClassSlug, classColor } from './utils/appUtils.js'
 import TierList from './components/TierList/TierList.jsx'
+import Construction from './components/Construction/Construction.jsx'
 
 // ============================================================
 // APP
@@ -47,6 +48,7 @@ export default function App() {
     if (selected === 'Minibosses')     return <Minibosses snapshot={snapshot} />
     if (selected === 'MasterClasses')  return <MasterClasses snapshot={snapshot} />
     if (selected === 'Gear Optimizer') return <GearOptimizer />
+    if (selected === 'Construction')   return <Construction snapshot={snapshot} />
     return (
       <div className="page">
         <h2 className="page-title">{selected}</h2>
