@@ -37,7 +37,8 @@ export const MASTERCLASSES = [
       {
         id: 'weapons',
         title: 'Weapons & Gear',
-        inventoryKey: 'Quest96',
+        inventoryKey: ['EquipmentBowsTempest0', 'EquipmentBowsTempest1', 'EquipmentBowsTempest2', 'EquipmentBowsTempest3', 'EquipmentBowsTempest4', 'EquipmentRingsTempest4', 'EquipmentRingsTempest6', 'EquipmentRingsTempest7'],
+        variant: 'weapon',
       },
       {
         id: 'best farms',
@@ -60,20 +61,21 @@ export const MASTERCLASSES = [
     headerItem: 'Quest101',
     sections: [
       {
-        id: 'overview',
-        title: 'Overview',
-        text: 'General info about Arcane Cultist goes here.',
-      },
-      {
         id: 'weapons',
         title: 'Weapons & Gear',
-        inventoryKey: 'Quest101',
+        inventoryKey: ['EquipmentWandsArc0', 'EquipmentRingsArc0'],
+        variant: 'weapon',
       },
       {
-        id: 'notes',
-        title: 'Tips & Notes',
-        text: 'Tips specific to Arcane Cultist go here.',
+        id: 'best farms',
+        title: 'Best Farms',
+        text: 'Information about the best farming locations for Arcane Cultist goes here.',
       },
+      {
+        id: 'prisma-bubbles',
+        title: 'Prisma Bubbles',
+        sectionType: 'prisma-bubbles',
+      }
     ],
   },
 ]

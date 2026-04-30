@@ -120,7 +120,7 @@
   white-space: nowrap;
 }
 
-.tl-item--upgraded .tl-item-img {
-  border-color: rgba(241, 196, 15, 0.7);
-  box-shadow: 0 0 4px rgba(241, 196, 15, 0.5);
+[data-variant="stamps"] .tl-item--upgraded .tl-item-img {
+  border-color: rgba(241, 196, 15, 0.5);
+  box-shadow: 0 0 4px rgba(241, 196, 15, 0.2);
 }

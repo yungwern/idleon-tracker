@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
-import { MASTERCLASSES, itemMap } from '../../data'
+import { MASTERCLASSES, itemMap, equipmentMap } from '../../data'
 import { stampMap, STAMP_TIERS } from '../../data/stampsMap'
+import { bubbleMap, BUBBLE_TIERS } from '../../data/bubblesMap'
 import TierList from '../TierList/TierList'
 import './MasterClasses.css'
 
@@ -11,7 +12,7 @@ import './MasterClasses.css'
 function HeaderItem({ itemKey, snapshot, charIndex }) {
   const name = itemMap[itemKey]
   if (!name) return null
-  const qty = snapshot?.characters?.[charIndex]?.inventory?.[itemKey] ?? 0
+  const qty = snapshot?.characters?.[charIndex]?.inventory?.[itemKey]?.qty ?? 0
   return (
     <div className="mc-header-item">
       <img src={`/images/items/${itemKey}.png`} alt={name} className="mc-header-item-img" />
@@ -20,28 +21,53 @@ function HeaderItem({ itemKey, snapshot, charIndex }) {
   )
 }
 
-function InventorySection({ inventoryKey, snapshot, charIndex }) {
-  const name = itemMap[inventoryKey]
-  if (!name) return null
-  const qty = snapshot?.characters?.[charIndex]?.inventory?.[inventoryKey] ?? 0
+function InventorySection({ inventoryKey, snapshot, charIndex, variant }) {
+  const keys = Array.isArray(inventoryKey) ? inventoryKey : [inventoryKey];
+
   return (
     <div className="mc-items-grid">
-      <div className="mc-item-card">
-        <img src={`/images/items/${inventoryKey}.png`} alt={name} className="mc-item-img" />
-        <span className="mc-item-name">{name}</span>
-        <span className="mc-item-note">Owned: {qty.toLocaleString()}</span>
-      </div>
+      {keys.map((key) => {
+        const name = itemMap[key];
+        if (!name) return null;
+        const item = snapshot?.characters?.[charIndex]?.inventory?.[key];
+
+        if (variant === 'weapon') {
+          const instances = Array.isArray(item) ? item : (item ? [item] : []);
+          const equipment = equipmentMap[key] ?? {};
+          return instances.map((instance, idx) => {
+            const stats = instance?.stats ?? {};
+            const uq1 = equipment.uq1txt && stats.UQ1val != null ? `${stats.UQ1val}${equipment.uq1txt}` : null;
+            const uq2 = equipment.uq2txt && stats.UQ2val != null ? `${stats.UQ2val}${equipment.uq2txt}` : null;
+            return (
+              <div className="mc-item-card" key={`${key}-${idx}`}>
+                <img src={`/images/items/${key}.png`} alt={name} className="mc-item-img" />
+                <span className="mc-item-name">{name}</span>
+                {uq1 && <span className="mc-item-note">{uq1}</span>}
+                {uq2 && <span className="mc-item-note">{uq2}</span>}
+              </div>
+            );
+          });
+        }
+
+        const qty = item?.qty ?? 0;
+        return (
+          <div className="mc-item-card" key={key}>
+            <img src={`/images/items/${key}.png`} alt={name} className="mc-item-img" />
+            <span className="mc-item-name">{name}</span>
+            <span className="mc-item-note">Owned: {qty.toLocaleString()}</span>
+          </div>
+        );
+      })}
     </div>
-  )
+  );
 }
 
 // ── Exalted Stamp Tier List ───────────────────────────────────
 // Builds the upgradedIds Set by cross-referencing snapshot.exaltedStamps
 // (a Set of compassIndex strings) against stampMap entries.
-// Passes rawName-keyed Set to TierList so it can check upgrades generically.
 function ExaltedStampTierList({ snapshot }) {
   const upgradedIds = useMemo(() => {
-    const exalted = snapshot?.exaltedStamps ?? new Set()
+    const exalted = new Set(snapshot?.exaltedStamps ?? [])
     const ids = new Set()
     Object.entries(stampMap).forEach(([rawName, entry]) => {
       if (exalted.has(entry.compassIndex)) {
@@ -59,6 +85,43 @@ function ExaltedStampTierList({ snapshot }) {
       upgradedIds={upgradedIds}
       getOverlay={() => '/images/stamps/Exalted_Stamp_Frame.png'}
       imagePath="/images/stamps"
+      variant="stamps"
+    />
+  )
+}
+
+// ── Prisma Bubble Tier List ───────────────────────────────────
+// Builds the upgradedIds Set by cross-referencing snapshot.prismaBubbles
+// (a Set of bubbleIndex strings) against bubbleMap entries.
+// Glow overlay is cauldron-specific — derived from the rawName at render time.
+const CAULDRON_GLOW_MAP = { O: 0, G: 1, P: 2, Y: 3 }
+
+function PrismaBubbleTierList({ snapshot }) {
+  const upgradedIds = useMemo(() => {
+    const prisma = new Set(snapshot?.prismaBubbles ?? [])
+    const ids = new Set()
+    Object.entries(bubbleMap).forEach(([rawName, entry]) => {
+      if (prisma.has(entry.bubbleIndex)) {
+        ids.add(rawName)
+      }
+    })
+    return ids
+  }, [snapshot?.prismaBubbles])
+
+  function getBubbleOverlay(rawName) {
+    const letter = rawName[9] // 'aUpgradesX...' — index 10 is the cauldron letter
+    const glowIndex = CAULDRON_GLOW_MAP[letter] ?? 0
+    return `/images/bubbles/aUpgradesGlow${glowIndex}.png`
+  }
+
+  return (
+    <TierList
+      tiers={BUBBLE_TIERS}
+      itemsKey="bubbles"
+      itemMap={bubbleMap}
+      upgradedIds={upgradedIds}
+      getOverlay={getBubbleOverlay}
+      imagePath="/images/bubbles"
     />
   )
 }
@@ -73,6 +136,15 @@ function SectionContent({ section, snapshot, charIndex }) {
     )
   }
 
+  // ── Prisma Bubbles tier list ──
+  if (section.sectionType === 'prisma-bubbles') {
+    return (
+      <div className="mc-section-body">
+        <PrismaBubbleTierList snapshot={snapshot} />
+      </div>
+    )
+  }
+
   // ── Default section renderer ──
   return (
     <div className="mc-section-body">
@@ -82,6 +154,7 @@ function SectionContent({ section, snapshot, charIndex }) {
           inventoryKey={section.inventoryKey}
           snapshot={snapshot}
           charIndex={charIndex}
+          variant={section.variant}
         />
       )}
       {section.items && (

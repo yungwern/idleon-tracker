@@ -1,15 +1,34 @@
 import { talentMap } from '../data/talentMap'
+import { MASTERCLASSES } from '../data/masterClasses'
+
+const weaponKeys = new Set(
+  MASTERCLASSES.flatMap(mc =>
+    mc.sections
+      .filter(s => s.variant === 'weapon')
+      .flatMap(s => Array.isArray(s.inventoryKey) ? s.inventoryKey : [s.inventoryKey])
+  )
+)
 
 const extractors = {
   level: (json, i) => json[`Lv0_${i}`]?.[0] ?? null,
   equipOrder: (json, i) => json[`EquipOrder_${i}`]?.[0] ?? {},
-  inventory: (json, i) => {
+  inventory: (json, i, weaponKeys) => {
     const order = json[`InventoryOrder_${i}`] ?? []
     const qty   = json[`ItemQTY_${i}`] ?? []
+    const meta  = JSON.parse(json[`IMm_${i}`] ?? '{}')
     const map = {}
     order.forEach((key, idx) => {
       if (key !== 'Blank' && key !== 'LockedInvSpace') {
-        map[key] = (map[key] ?? 0) + (qty[idx] ?? 0)
+        if (weaponKeys.has(key)) {
+          map[key] = map[key] ?? []
+          map[key].push({ qty: qty[idx] ?? 0, stats: meta[idx] ?? {} })
+        } else {
+          if (map[key]) {
+            map[key].qty += qty[idx] ?? 0
+          } else {
+            map[key] = { qty: qty[idx] ?? 0, stats: meta[idx] ?? {} }
+          }
+        }
       }
     })
     return map
@@ -100,11 +119,10 @@ function parseExaltedStamps(json) {
     const compass = typeof json['Compass'] === 'string'
       ? JSON.parse(json['Compass'])
       : (json['Compass'] ?? [])
-    const exaltedRaw = compass[4] ?? []
-    return new Set(exaltedRaw)
+    return compass[4] ?? []
   } catch {
     console.warn('Failed to parse exalted stamps from Compass.')
-    return new Set()
+    return []
   }
 }
 
@@ -116,12 +134,11 @@ function parsePrismaBubbles(json) {
   try {
     const optLacc = json['OptLacc'] ?? []
     const raw = optLacc[384] ?? ''
-    if (!raw) return new Set()
-    // Split on commas, filter empty strings from trailing comma
-    return new Set(raw.split(',').filter(Boolean))
+    if (!raw) return []
+    return raw.split(',').filter(Boolean).map(id => id.replace(/^0(?=[a-z_])/, ''))
   } catch {
     console.warn('Failed to parse prisma bubbles from OptLacc.')
-    return new Set()
+    return []
   }
 }
 
@@ -130,7 +147,7 @@ export function extractSnapshot(json) {
   const characters = Array.from({ length: characterCount }, (_, i) => {
     const extracted = {}
     for (const [field, fn] of Object.entries(extractors)) {
-      extracted[field] = fn(json, i)
+      extracted[field] = fn(json, i, weaponKeys)
     }
     return extracted
   })

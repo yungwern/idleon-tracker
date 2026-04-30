@@ -20,9 +20,11 @@ export default function TierList({
   itemMap = {},
   upgradedIds = new Set(),
   getOverlay = () => null,
+  imagePath = '/images',
+  variant = '',
 }) {
   return (
-    <div className="tl-root">
+    <div className="tl-root" data-variant={variant}>
       {tiers.map(tier => {
         const items = tier[itemsKey] ?? []
         return (
@@ -53,7 +55,7 @@ export default function TierList({
                   >
                     <div className="tl-item-img-wrap">
                       <img
-                        src={`/images/stamps/${rawName}.png`}
+                        src={`${imagePath}/${rawName}.png`}
                         alt={entry.name}
                         className="tl-item-img"
                       />

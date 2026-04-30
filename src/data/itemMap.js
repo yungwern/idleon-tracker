@@ -3,10 +3,34 @@ export const itemMap = {
 //=========================
 // MASTERCLASS ITEMS
 //=========================
-  // ── AFK Items ──
+// ── Equipment ──
+  // Beast Master
+  EquipmentBowsTempest0: 'Tempest Bow of Dust',
+  EquipmentBowsTempest1: 'Tempest Bow of Ice',
+  EquipmentBowsTempest2: 'Tempest Bow of Fire',
+  EquipmentBowsTempest3: 'Tempest Bow of Wind',
+  EquipmentBowsTempest4: 'Tempest Bow of Grass',
+  EquipmentRingsTempest4: 'Tempest Ring of Power',
+  EquipmentRingsTempest6: 'Tempest Ring of Gold',
+  EquipmentRingsTempest7: 'Tempest Ring of Death',
+
+  // Arcane Cultist
+  EquipmentWandsArc0: 'Arcanist Staff',
+  EquipmentRingsArc0: 'Cultist Ring',
+
+// ── AFK Items ──
   Quest96:  'Aethermoon',
   Quest97:  'Charred Bone',
   Quest101: 'Arcane Rock',
+
+// ── Misc Items ──
+  // Beast Master Upgrade Stones
+  StoneTempestB0: 'Tempest Bow Stone - 60%',
+  StoneTempestB1: 'Tempest Bow Stone - 30%',
+  StoneTempestB2: 'Tempest Bow Stone - 10%',
+  StoneTempestR0: 'Tempest Ring Stone - 60%',
+  StoneTempestR1: 'Tempest Ring Stone - 30%',
+  StoneTempestR2: 'Tempest Ring Stone - 10%',
 
 //=========================
 // WEAPONS / GEAR / TOOLS
