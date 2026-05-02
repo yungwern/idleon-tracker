@@ -24,6 +24,20 @@
   gap: 12px;
 }
 
+.cog-grid-label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
 /* ── Cog Card ── */
 .cog-card {
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -123,4 +137,259 @@
   font-size: 11px;
   color: #60a5fa;
   font-style: italic;
+}
+
+/* ── Toolbar ── */
+.construction-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 269px;
+  margin-bottom: 20px;
+}
+
+.construction-total {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.construction-total strong {
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.compare-open-btn {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(160, 196, 255, 0.3);
+  background: rgba(160, 196, 255, 0.08);
+  color: #a0c4ff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.compare-open-btn:hover {
+  background: rgba(160, 196, 255, 0.15);
+  border-color: rgba(160, 196, 255, 0.5);
+}
+
+/* ── Compare Tool ── */
+.compare-tool {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.compare-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.compare-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #e5e7eb;
+}
+
+.compare-close {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.compare-close:hover {
+  color: #e5e7eb;
+}
+
+.compare-step {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.compare-label {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Pattern Buttons ── */
+.compare-pattern-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.compare-pattern-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #d1d5db;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.compare-pattern-btn:hover {
+  background: rgba(160, 196, 255, 0.1);
+  border-color: rgba(160, 196, 255, 0.4);
+  color: #a0c4ff;
+}
+
+.compare-pattern-img {
+  image-rendering: pixelated;
+}
+
+/* ── Input Display ── */
+.compare-input-display {
+  font-size: 28px;
+  font-weight: 700;
+  color: #e5e7eb;
+  min-width: 120px;
+  text-align: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ── Numpad ── */
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  gap: 6px;
+}
+
+.numpad-key {
+  height: 48px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e5e7eb;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.numpad-key:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.numpad-zero {
+  grid-column: span 2;
+}
+
+.numpad-back {
+  color: #9ca3af;
+}
+
+/* ── Nav Buttons ── */
+.compare-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.compare-back-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.compare-back-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.compare-next-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(160, 196, 255, 0.3);
+  background: rgba(160, 196, 255, 0.08);
+  color: #a0c4ff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.compare-next-btn:hover:not(:disabled) {
+  background: rgba(160, 196, 255, 0.15);
+}
+
+.compare-next-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Result ── */
+.compare-result {
+  width: 100%;
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid;
+}
+
+.compare-result.upgrade {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.compare-result.no-upgrade {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.compare-result-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.compare-result.upgrade .compare-result-label { color: #4ade80; }
+.compare-result.no-upgrade .compare-result-label { color: #f87171; }
+
+.compare-result-detail {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.compare-result-detail strong {
+  color: #e5e7eb;
+}
+
+/* ── Card Highlights ── */
+.cog-card.highlight-lowest {
+  border-color: rgba(74, 222, 128, 0.6);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.cog-card.highlight-upgrade {
+  border-color: rgba(248, 113, 113, 0.6);
+  background: rgba(248, 113, 113, 0.06);
 }

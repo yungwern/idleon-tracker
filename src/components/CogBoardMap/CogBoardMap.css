@@ -1,0 +1,92 @@
+/* ── Toggle Button ── */
+.board-map-toggle {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #d1d5db;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  margin-bottom: 12px;
+}
+
+.board-map-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Board Map Container ── */
+.board-map {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+/* ── Grid ── */
+.board-grid {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+}
+
+/* ── Cell ── */
+.board-cell {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.board-cell-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.board-cell-cog {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* ── Legend ── */
+.board-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+}
+
+.legend-label {
+  font-size: 11px;
+  color: #9ca3af;
+}
