@@ -1,8 +1,9 @@
 export const sections = {
-  Global: ['Minibosses', 'Statues', 'MasterClasses', 'Gear Optimizer'],
+  Global: ['Minibosses', 'MasterClasses', 'Gear Optimizer'],
+  World1: ['Statues', 'Anvil'],
   World2: [],
   World3: ['Construction', 'Shrines',],
-  World4: [],
+  World4: ['Cooking'],
   World5: [],
   World6: [],
   World7: [],

@@ -5,7 +5,7 @@ export function classColor(cls) {
     'Blood Berserker':    '#f87171',
     'Divine Knight':      '#fbbf24',
     'Siege Breaker':      '#16a34a',
-    'Beast Master':       '#059669',
+    'Wind Walker':        '#059669',
     'Elemental Sorcerer': '#7c3aed',
     'Arcane Cultist':     '#65a30d',
     'Voidwalker':         '#af9dce',

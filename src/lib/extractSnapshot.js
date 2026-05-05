@@ -1,5 +1,7 @@
 import { talentMap } from '../data/talentMap'
 import { MASTERCLASSES } from '../data/masterClasses'
+import { anvilMapById } from '../data/anvilMap'
+import { characters } from '../data/characters'
 
 // ── Construction ──────────────────────────────────────────────
 const CONSTRUCTION_COG_INDICES = [30, 31, 32, 33, 34, 35, 62, 63, 74, 75, 86, 87]
@@ -34,6 +36,42 @@ function parseConstruction(json) {
 
   return { cogs, totalExpRate }
 }
+
+// ── Anvil ─────────────────────────────────────────────────────
+function parseAnvil(json) {
+  const characterCount = characters.length
+  const allRows = []
+
+  for (let i = 0; i < characterCount; i++) {
+    const selectKey = `AnvilPAselect_${i}`
+    const raw = json[selectKey]
+    const selected = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+    if (!selected.length) continue
+
+    const hammerCounts = {}
+    selected.forEach(itemId => {
+      hammerCounts[itemId] = (hammerCounts[itemId] || 0) + 1
+    })
+
+    Object.entries(hammerCounts).forEach(([itemIdStr, hammers]) => {
+      const itemId = parseInt(itemIdStr)
+      const item = anvilMapById[itemId]
+      if (!item) return
+
+      allRows.push({
+        charIndex: i,
+        charName: characters[i].name ?? `Character ${i + 1}`,
+        charClass: characters[i].class ?? '',
+        itemId,
+        item,
+        hammers,
+      })
+    })
+  }
+
+  return { rows: allRows }
+}
+
 
 const weaponKeys = new Set(
   MASTERCLASSES.flatMap(mc =>
@@ -170,7 +208,7 @@ function parsePrismaBubbles(json) {
 
 export function extractSnapshot(json) {
   const characterCount = 10
-  const characters = Array.from({ length: characterCount }, (_, i) => {
+  const extractedCharacters = Array.from({ length: characterCount }, (_, i) => {
     const extracted = {}
     for (const [field, fn] of Object.entries(extractors)) {
       extracted[field] = fn(json, i, weaponKeys)
@@ -178,14 +216,17 @@ export function extractSnapshot(json) {
     return extracted
   })
 
+  const statues = parseStatues(json)
+
   return {
-    characters,
-    statues: parseStatues(json),
+    characters: extractedCharacters,
+    statues,
     shrines: parseShrines(json),
     miniBossesKills: parseMiniBosses(json),
     exaltedStamps: parseExaltedStamps(json),
     prismaBubbles: parsePrismaBubbles(json),
     construction: parseConstruction(json),
+    anvil: parseAnvil(json),
     importedAt: new Date().toISOString(),
   }
 }

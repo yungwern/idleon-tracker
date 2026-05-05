@@ -16,10 +16,15 @@ export function useSaveImport() {
   }, [])
 
   function importFromText(text) {
-    const json = JSON.parse(text.trim())
-    const newSnapshot = extractSnapshot(json)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newSnapshot))
-    setSnapshot(newSnapshot)
+    try {
+      const json = JSON.parse(text.trim())
+      const newSnapshot = extractSnapshot(json)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSnapshot))
+      setSnapshot(newSnapshot)
+    } catch (err) {
+      console.error('Import failed:', err)
+      throw err
+    }
   }
 
   function clearSnapshot() {
