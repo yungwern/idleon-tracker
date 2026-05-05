@@ -1,6 +1,6 @@
 import { shrineMap } from '../../data'
 import './Shrines.css'
-import { statueLevelColor } from '../../utils/appUtils'
+import { shrineLevelColor } from '../../utils/appUtils'
 
 export default function Shrines({ snapshot }) {
   const shrines = snapshot?.shrines
@@ -23,11 +23,7 @@ export default function Shrines({ snapshot }) {
           const name = shrineMap[id] ?? `Shrine ${id}`
           const pct = xpRequired > 0 ? Math.min((xp / xpRequired) * 100, 100) : 0
           return (
-            <div
-              key={id}
-              className="shrine-preview-item"
-              title={`${name}\n${Math.floor(xp).toLocaleString()} / ${xpRequired.toLocaleString()}`}
-            >
+            <div key={id} className="shrine-preview-item tooltip-anchor">
               <div className="shrine-icon-wrap">
                 <img
                   src={`/images/shrines/ConTowerB${id}.png`}
@@ -35,12 +31,16 @@ export default function Shrines({ snapshot }) {
                   className="shrine-preview-icon"
                 />
               </div>
-              <span className="shrine-preview-level" style={{ color: statueLevelColor(level) }}>
+              <span className="shrine-preview-level" style={{ color: shrineLevelColor(level) }}>
                 Lv {level}
               </span>
               <div className="shrine-xp-bar-track">
-                <div className="shrine-xp-bar-fill" style={{ width: `${pct}%` }} />
+                <div className="shrine-xp-bar-fill" style={{ width: `${pct}%`, background: shrineLevelColor(level) }} />
               </div>
+              <span className="tooltip shrine-tooltip">
+                <span className="shrine-tooltip-name">{name}</span>
+                <span className="shrine-tooltip-xp">{Math.floor(xp).toLocaleString()} / {xpRequired.toLocaleString()} ({pct.toFixed(1)}%)</span>
+              </span>
             </div>
           )
         })}

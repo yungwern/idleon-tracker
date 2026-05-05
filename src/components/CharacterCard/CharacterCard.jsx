@@ -61,13 +61,14 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
         <div className="prayers-bar">
           <span className="prayers-label">Prayers:</span>
           {snapshot.characters[charIndex].prayers.map(id => (
-            <img
-              key={id}
-              src={`/images/prayers/Prayer${id}.png`}
-              alt={prayerMap[id] ?? `Prayer ${id}`}
-              className="prayer-icon"
-              title={prayerMap[id] ?? `Prayer ${id}`}
-            />
+            <div key={id} className="prayer-icon-wrap tooltip-anchor">
+              <img
+                src={`/images/prayers/Prayer${id}.png`}
+                alt={prayerMap[id] ?? `Prayer ${id}`}
+                className="prayer-icon"
+              />
+              <span className="tooltip">{prayerMap[id] ?? `Prayer ${id}`}</span>
+            </div>
           ))}
         </div>
       )}

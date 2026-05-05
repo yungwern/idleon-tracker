@@ -3,7 +3,7 @@ import { MASTERCLASSES } from '../data/masterClasses'
 import { anvilMapById } from '../data/anvilMap'
 import { characters } from '../data/characters'
 
-// ── Construction ──────────────────────────────────────────────
+// ── Construction ──────────────────────────────────────────────────────────────
 const CONSTRUCTION_COG_INDICES = [30, 31, 32, 33, 34, 35, 62, 63, 74, 75, 86, 87]
 
 const CONSTRUCTION_PATTERN_LABELS = {
@@ -37,7 +37,7 @@ function parseConstruction(json) {
   return { cogs, totalExpRate }
 }
 
-// ── Anvil ─────────────────────────────────────────────────────
+// ── Anvil ──────────────────────────────────────────────────────────────────
 function parseAnvil(json) {
   const characterCount = characters.length
   const allRows = []
@@ -72,7 +72,7 @@ function parseAnvil(json) {
   return { rows: allRows }
 }
 
-
+// ── Character Extractors ──────────────────────────────────────────────────────
 const weaponKeys = new Set(
   MASTERCLASSES.flatMap(mc =>
     mc.sections
@@ -153,12 +153,14 @@ const extractors = {
   },
 }
 
+// ── Statues ──────────────────────────────────────────────────────────────────
 function parseStatues(json) {
   const raw = json['StatueLevels_0']
   const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
   return arr.map(([level, xp], id) => ({ id, level, xp }))
 }
 
+// ── Shrines ──────────────────────────────────────────────────────────────────
 function parseShrines(json) {
   const raw = json['Shrine']
   const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
@@ -175,6 +177,7 @@ function parseShrines(json) {
   })
 }
 
+// ── Mini Bosses ───────────────────────────────────────────────────────────────
 function parseMiniBosses(json) {
   const rawSneaking = json['Ninja']
   const arr = typeof rawSneaking === 'string' ? JSON.parse(rawSneaking) : (rawSneaking ?? [])
@@ -182,6 +185,26 @@ function parseMiniBosses(json) {
   return kills.slice(0, 9)
 }
 
+// ── Cooking ──────────────────────────────────────────────────────────────────
+// Meals[0]        — meal levels, indexed by meal ID (CookingMB0–CookingMB73)
+// Ribbon[0–27]    — ribbon cabinet inventory (4 columns × 7 rows)
+// Ribbon[28–101]  — ribbon rank applied per meal, indexed by meal ID
+function parseCooking(json) {
+  const meals = typeof json.Meals === 'string' ? JSON.parse(json.Meals) : (json.Meals ?? [])
+  const ribbon = typeof json.Ribbon === 'string' ? JSON.parse(json.Ribbon) : (json.Ribbon ?? [])
+
+  const mealLevels = meals[0] ?? []
+  const cabinetSlots = ribbon.slice(0, 28)
+  const mealRibbons = ribbon.slice(28)
+
+  return {
+    mealLevels,
+    cabinetSlots,
+    mealRibbons,
+  }
+}
+
+// ── Exalted Stamps ────────────────────────────────────────────────────────────
 function parseExaltedStamps(json) {
   try {
     const compass = typeof json['Compass'] === 'string'
@@ -194,6 +217,7 @@ function parseExaltedStamps(json) {
   }
 }
 
+// ── Prisma Bubbles ────────────────────────────────────────────────────────────
 function parsePrismaBubbles(json) {
   try {
     const optLacc = json['OptLacc'] ?? []
@@ -206,6 +230,7 @@ function parsePrismaBubbles(json) {
   }
 }
 
+// ── Main Export ───────────────────────────────────────────────────────────────
 export function extractSnapshot(json) {
   const characterCount = 10
   const extractedCharacters = Array.from({ length: characterCount }, (_, i) => {
@@ -227,6 +252,7 @@ export function extractSnapshot(json) {
     prismaBubbles: parsePrismaBubbles(json),
     construction: parseConstruction(json),
     anvil: parseAnvil(json),
+    cooking: parseCooking(json),
     importedAt: new Date().toISOString(),
   }
 }

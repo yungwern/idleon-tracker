@@ -1,0 +1,313 @@
+/* ============================================================
+   COOKING PAGE
+   ============================================================ */
+
+.cooking-page {
+  max-width: 900px;
+}
+
+/* ── Section ── */
+.cooking-section {
+  margin-bottom: 28px;
+}
+
+.cooking-section-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+/* ── Meal Grid ── */
+.meal-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ── Meal Card ── */
+.meal-card {
+  width: 130px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s;
+}
+
+.meal-card:hover {
+  border-color: rgba(160, 196, 255, 0.2);
+  background: rgba(160, 196, 255, 0.04);
+}
+
+/* ── Card Top (meal image + ribbon overlay) ── */
+.meal-card-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.meal-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* ── Ribbon Overlay ── */
+.meal-ribbon-overlay {
+  position: absolute;
+
+  top: 4px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+}
+
+.meal-ribbon-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.meal-ribbon-rank {
+  position: absolute;
+  bottom: 0px;
+  right: -2px;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000,
+    -2px  0   0 #000,
+     2px  0   0 #000,
+     0   -2px 0 #000,
+     0    2px 0 #000;
+}
+
+/* ── Card Body (name, bonus, level) ── */
+.meal-card-body {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.meal-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #e5e7eb;
+  line-height: 1.3;
+}
+
+.meal-bonus {
+  font-size: 10px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.meal-level {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* ── Ribbon Rank Colors ── */
+.ribbon-white   { color: #ffffff;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000; }
+.ribbon-bronze  { color: #cd7f32;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(205, 127, 50, 0.9); }
+.ribbon-silver  { color: #c0c0c0;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(192, 192, 192, 0.9); }
+.ribbon-gold    { color: #ffd700;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(255, 215, 0, 0.9); }
+.ribbon-diamond { color: #b9f2ff;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(185, 242, 255, 0.9); }
+
+/* ── Info Panel ── */
+.cooking-info-panel {
+  margin-bottom: 28px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cooking-info-intro {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0 0 10px;
+}
+
+.cooking-info-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cooking-info-list li {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* ── Collapsible Section Label ── */
+.cooking-section-label--clickable {
+  cursor: pointer;
+  user-select: none;
+  justify-content: space-between;
+  transition: color 0.15s;
+}
+
+.cooking-section-label--clickable:hover {
+  color: #9ca3af;
+}
+
+.cooking-section-chevron {
+  font-size: 10px;
+  color: #4b5563;
+}
+
+/* ── Ribbon Shelf ── */
+.ribbon-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  max-width: 260px;
+  margin: 0 auto;
+}
+
+.ribbon-shelf-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ribbon-shelf-slot--empty {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.03);
+}
+
+.ribbon-shelf-img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.ribbon-shelf-empty {
+  width: 40%;
+  height: 40%;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ribbon-shelf-rank {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000,
+    -2px  0   0 #000,
+     2px  0   0 #000,
+     0   -2px 0 #000,
+     0    2px 0 #000;
+}
+
+/* ── Ribbon Shelf Content ── */
+.ribbon-shelf-content {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── Ribbon Table ── */
+.ribbon-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.ribbon-table th {
+  padding: 6px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ribbon-table td {
+  padding: 5px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.ribbon-table-row--milestone td {
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 700;
+}
+
+.ribbon-table-row--milestone td:nth-child(2) {
+  color: #e5e7eb;
+}
+
+/* ── Combined Tracker Section ── */
+.cooking-tracker-content {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cooking-tracker-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.cooking-tracker-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #4b5563;
+}
+
+.cooking-tracker-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  align-self: stretch;
+}

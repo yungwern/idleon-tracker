@@ -7,6 +7,9 @@ rmdir /s /q node_modules\.vite (cache clear)
 mkdir scaled
 magick mogrify -resize 32x32! -path ./scaled *.png  (! forces same size)
 
+javascript:for(let i=0;i<=25;i++){window.open(`https://idleontoolbox.com/data/CookingSpice${i}.png`)}
+    - Opens all images from a range in a new tab. Just replace the url with the image files you're looking to grab.
+
 =================
 NEW FEATURE LIST
 =================
@@ -23,12 +26,14 @@ World 2 -
     Poppy? Megafish obtained?
 
 World 3 -
+    Consturction
+        - Add Blue cog image
+        - add tiny cogs
+
     Figure out how to integrate printer? (FML...)
-    Figure out how to integrate xp cogs from construction board
     Figure out how to integrate worship tower levels
 
 World 4 -
-    Cooking meal level and ribbon level
     Implement basic pet team info / spice teams
 
 World 5 -
@@ -36,8 +41,11 @@ World 5 -
     Sailing stuff? Captains, boat levels, artifacts
 
 World 6 -
-    Farming? 
+    Farming
         - Exotic Market growth optimizer. Find weekly purchases and then compare against crop depot to figure out growth order to optimize weekly grows
+        - Stickers?
+        -Day Market / Night Market 
+            1. Current / Max upgrade levels
     Summoning 
         - Boss locations
     Sneaking 
