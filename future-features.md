@@ -26,9 +26,8 @@ World 2 -
     Poppy? Megafish obtained?
 
 World 3 -
-    Consturction
+    Construction
         - Add Blue cog image
-        - add tiny cogs
 
     Figure out how to integrate printer? (FML...)
     Figure out how to integrate worship tower levels

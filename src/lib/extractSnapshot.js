@@ -230,8 +230,30 @@ function parsePrismaBubbles(json) {
   }
 }
 
+// ── Breeding ──────────────────────────────────────────────────────────────────
+// Shiny counters are stored in the Breeding array starting at index 22,
+// grouped by world. The Pets array's first 27 entries are the fence yard slots,
+// each entry: [petName, type, power, time]
+function parseBreeding(json) {
+  const raw = json['Breeding']
+  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  const petsRaw = typeof json['Pets'] === 'string' ? JSON.parse(json['Pets']) : (json['Pets'] ?? [])
+ 
+  const shinyPetsLevels = arr.slice(22, 26)
+ 
+  // First 27 entries of Pets array are the fence yard slots
+  const fencePets = petsRaw.slice(0, 27).reduce((acc, [name]) => {
+    if (name === 'none') return acc
+    acc[name] = (acc[name] || 0) + 1
+    return acc
+  }, {})
+ 
+  return { shinyPetsLevels, fencePets }
+}
+
 // ── Main Export ───────────────────────────────────────────────────────────────
 export function extractSnapshot(json) {
+  console.log('Breeding raw:', json['Breeding'])
   const characterCount = 10
   const extractedCharacters = Array.from({ length: characterCount }, (_, i) => {
     const extracted = {}
@@ -253,6 +275,7 @@ export function extractSnapshot(json) {
     construction: parseConstruction(json),
     anvil: parseAnvil(json),
     cooking: parseCooking(json),
+    breeding: parseBreeding(json),
     importedAt: new Date().toISOString(),
   }
 }

@@ -19,6 +19,7 @@ import TierList from './components/TierList/TierList.jsx'
 import Construction from './components/Construction/Construction.jsx'
 import Anvil from './components/Anvil/Anvil.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
+import Breeding from './components/Breeding/Breeding.jsx'
 
 // ============================================================
 // APP
@@ -53,6 +54,7 @@ export default function App() {
     if (selected === 'Construction')   return <Construction snapshot={snapshot} />
     if (selected === 'Anvil') return <Anvil snapshot={snapshot} />
     if (selected === 'Cooking') return <Cooking snapshot={snapshot} />
+    if (selected === 'Breeding') return <Breeding snapshot={snapshot} />
     return (
       <div className="page">
         <h2 className="page-title">{selected}</h2>
