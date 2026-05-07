@@ -203,6 +203,9 @@ function parseCooking(json) {
     mealRibbons,
   }
 }
+// ────────────────────────────────────────────────────────────
+// ── Masterclass
+// ────────────────────────────────────────────────────────────
 
 // ── Exalted Stamps ────────────────────────────────────────────────────────────
 function parseExaltedStamps(json) {
@@ -230,6 +233,21 @@ function parsePrismaBubbles(json) {
   }
 }
 
+// ── Map Bonuses (Arcane Cultist) ──────────────────────────────────────────────
+function parseMapBonuses(json) {
+  const raw = json['MapBon']
+  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  return arr.map((entry, mapIndex) => {
+    if (!Array.isArray(entry) || entry.length < 3) return null
+    return {
+      mapIndex,
+      dr: entry[0] ?? 0,
+      exp: entry[1] ?? 0,
+      afk: entry[2] ?? 0,
+    }
+  })
+}
+
 // ── Breeding ──────────────────────────────────────────────────────────────────
 // Shiny counters are stored in the Breeding array starting at index 22,
 // grouped by world. The Pets array's first 27 entries are the fence yard slots,
@@ -253,7 +271,6 @@ function parseBreeding(json) {
 
 // ── Main Export ───────────────────────────────────────────────────────────────
 export function extractSnapshot(json) {
-  console.log('Breeding raw:', json['Breeding'])
   const characterCount = 10
   const extractedCharacters = Array.from({ length: characterCount }, (_, i) => {
     const extracted = {}
@@ -272,6 +289,7 @@ export function extractSnapshot(json) {
     miniBossesKills: parseMiniBosses(json),
     exaltedStamps: parseExaltedStamps(json),
     prismaBubbles: parsePrismaBubbles(json),
+    mapBonuses: parseMapBonuses(json),
     construction: parseConstruction(json),
     anvil: parseAnvil(json),
     cooking: parseCooking(json),

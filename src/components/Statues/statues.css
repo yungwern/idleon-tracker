@@ -54,7 +54,8 @@
   justify-content: center;
   width: 80px;
   min-width: 80px;
-  padding: 13px 4px;
+  padding: 6px 4px;
+  gap: 2px;
   border-right: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(0, 0, 0, 0.15);
 }
@@ -62,8 +63,8 @@
 .statue-mob-img {
   width: 56px;
   height: 56px;
-  max-width: 52px;
-  max-height: 52px;
+  max-width: 42px;
+  max-height: 42px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -79,6 +80,30 @@
   text-align: center;
   line-height: 1.3;
   max-width: 72px;
+}
+
+/* ─── DR Bonus ─────────────────────────────────────────────────── */
+
+.statue-dr-bonus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.statue-dr-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.statue-dr-value {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: #a0c4ff;
+  letter-spacing: 0.02em;
+  line-height: 1;
 }
 
 /* Right: statues */

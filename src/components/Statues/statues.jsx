@@ -1,7 +1,58 @@
-import { statueMap } from '../../data'
-import { statueWorlds } from '../../data/statueWorlds'
+import { statueMap, statueWorlds } from '../../data'
+import { mapEnemyData } from '../../data/mobsMap'
 import './Statues.css'
 import { statueLevelColor } from '../../utils/appUtils.js'
+
+// ── Map Bonus Helpers ─────────────────────────────────────────────
+const lavaLog = (num) => Math.log(Math.max(num, 1)) / 2.30259
+const lavaLog2 = (num) => Math.log(Math.max(num, 1)) / Math.log(2)
+
+function getMapMulti(kills) {
+  return (
+    (2 * Math.max(0, lavaLog(kills) - 3.5) + Math.max(0, lavaLog2(kills) - 12)) *
+    (lavaLog(kills) / 2.5) +
+    (Math.min(2, kills / 1e3) + Math.max(5 * (lavaLog(kills) - 5), 0))
+  )
+}
+
+// Convert mob display name to mobKey format (e.g. 'Bored Bean' → 'Bored_Bean')
+function nameToMobKey(name) {
+  return name.replace(/ /g, '_')
+}
+
+// Look up DR kills for a mob name from the snapshot's mapBonuses
+function getDRKills(mobName, mapBonuses) {
+  if (!mapBonuses) return null
+  const mobKey = nameToMobKey(mobName)
+  const entry = mapEnemyData.find(e => e.mobKey === mobKey)
+  if (!entry) return null
+  const bonus = mapBonuses[entry.mapIndex]
+  if (!bonus) return 0
+  return bonus.dr ?? 0
+}
+
+function formatMulti(value) {
+  return (Math.floor(value * 1000) / 1000).toFixed(3) + 'x'
+}
+
+// ── Components ────────────────────────────────────────────────────
+
+function DRBonus({ mobName, mapBonuses }) {
+  const kills = getDRKills(mobName, mapBonuses)
+  if (kills === null) return null
+  const multi = 1 + getMapMulti(kills) / 100
+
+  return (
+    <div className="statue-dr-bonus">
+      <img
+        src="/images/masterclass/StatusArc0.png"
+        alt="Drop Rate"
+        className="statue-dr-icon"
+      />
+      <span className="statue-dr-value">{formatMulti(multi)}</span>
+    </div>
+  )
+}
 
 function StatueItem({ id, level }) {
   const name = statueMap[id] ?? `Statue ${id}`
@@ -22,11 +73,12 @@ function StatueItem({ id, level }) {
   )
 }
 
-function MobCol({ mob, special = false }) {
+function MobCol({ mob, special = false, mapBonuses }) {
   return (
     <div className="statue-mob-col">
       {mob ? (
         <>
+          <DRBonus mobName={mob.name} mapBonuses={mapBonuses} />
           <img
             src={mob.image}
             alt={mob.name}
@@ -45,8 +97,11 @@ function isCrystal(mob) {
   return mob.name.toLowerCase().includes('crystal')
 }
 
+// ── Page ──────────────────────────────────────────────────────────
+
 export default function Statues({ snapshot }) {
   const statues = snapshot?.statues
+  const mapBonuses = snapshot?.mapBonuses
 
   if (!statues || statues.length === 0) {
     return (
@@ -98,15 +153,13 @@ export default function Statues({ snapshot }) {
 
           return (
             <div key={world} className="statue-world-card">
-
               <div className="statue-world-header">
                 <span className="statue-world-label" style={{ color }}>{world}</span>
               </div>
-
               <div className="statue-mob-rows">
                 {rows.map((row, i) => (
                   <div key={i} className="statue-mob-row">
-                    <MobCol mob={row.mob} special={row.special} />
+                    <MobCol mob={row.mob} special={row.special} mapBonuses={mapBonuses} />
                     <div className="statue-items-col">
                       {row.ids.map(id => {
                         const s = statueById[id]
@@ -116,7 +169,6 @@ export default function Statues({ snapshot }) {
                   </div>
                 ))}
               </div>
-
             </div>
           )
         })}
