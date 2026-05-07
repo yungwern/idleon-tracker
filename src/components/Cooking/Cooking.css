@@ -6,23 +6,92 @@
   max-width: 900px;
 }
 
-/* ── Section ── */
-.cooking-section {
+/* ── Info Panel ── */
+.cooking-info-panel {
   margin-bottom: 28px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.cooking-section-label {
+.cooking-info-intro {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0 0 10px;
+}
+
+.cooking-info-list {
+  margin: 0;
+  padding-left: 18px;
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-  margin-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cooking-info-list li {
   font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* ── Nav Bar (matches .breeding-nav exactly) ── */
+.cooking-nav {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cooking-nav-btn {
+  position: relative;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.cooking-nav-btn:hover {
+  color: #d1d5db;
+}
+
+.cooking-nav-btn--active {
+  color: #a0c4ff;
+}
+
+.cooking-nav-btn--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #a0c4ff;
+}
+
+/* ── Group Label (matches .breeding-passive-label exactly) ── */
+.cooking-group-label {
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: #6b7280;
+  text-align: center;
+  padding: 4px 0;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── Meal Group ── */
+.cooking-meal-group {
+  margin-bottom: 12px;
 }
 
 /* ── Meal Grid ── */
@@ -31,6 +100,33 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
+}
+
+.meal-grid--centered {
+  justify-content: center;
+}
+
+/* ── NRLB / NMLB tracker row ── */
+.cooking-tracker-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cooking-tracker-col {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cooking-tracker-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  align-self: stretch;
 }
 
 /* ── Meal Card ── */
@@ -49,7 +145,7 @@
   background: rgba(160, 196, 255, 0.04);
 }
 
-/* ── Card Top (meal image + ribbon overlay) ── */
+/* ── Card Top ── */
 .meal-card-top {
   position: relative;
   display: flex;
@@ -70,7 +166,6 @@
 /* ── Ribbon Overlay ── */
 .meal-ribbon-overlay {
   position: absolute;
-
   top: 4px;
   right: 4px;
   width: 32px;
@@ -102,7 +197,7 @@
      0    2px 0 #000;
 }
 
-/* ── Card Body (name, bonus, level) ── */
+/* ── Card Body ── */
 .meal-card-body {
   padding: 8px 10px;
   display: flex;
@@ -138,59 +233,44 @@
 .ribbon-gold    { color: #ffd700;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(255, 215, 0, 0.9); }
 .ribbon-diamond { color: #b9f2ff;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(185, 242, 255, 0.9); }
 
-/* ── Info Panel ── */
-.cooking-info-panel {
-  margin-bottom: 28px;
-  padding: 14px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.02);
+/* ── Ribbon Shelf side-by-side layout ── */
+.ribbon-shelf-row {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-.cooking-info-intro {
-  font-size: 13px;
-  color: #9ca3af;
-  margin: 0 0 10px;
-}
-
-.cooking-info-list {
-  margin: 0;
-  padding-left: 18px;
+.ribbon-shelf-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
 }
 
-.cooking-info-list li {
-  font-size: 12px;
-  color: #6b7280;
-  line-height: 1.5;
+.ribbon-table-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* ── Collapsible Section Label ── */
-.cooking-section-label--clickable {
-  cursor: pointer;
-  user-select: none;
-  justify-content: space-between;
-  transition: color 0.15s;
+.ribbon-shelf-col .cooking-group-label,
+.ribbon-table-col .cooking-group-label {
+  width: 100%;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.cooking-section-label--clickable:hover {
-  color: #9ca3af;
-}
-
-.cooking-section-chevron {
-  font-size: 10px;
-  color: #4b5563;
-}
-
-/* ── Ribbon Shelf ── */
 .ribbon-shelf-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   max-width: 260px;
-  margin: 0 auto;
 }
 
 .ribbon-shelf-slot {
@@ -241,16 +321,8 @@
      0    2px 0 #000;
 }
 
-/* ── Ribbon Shelf Content ── */
-.ribbon-shelf-content {
-  display: flex;
-  gap: 32px;
-  align-items: flex-start;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
 /* ── Ribbon Table ── */
+
 .ribbon-table {
   border-collapse: collapse;
   font-size: 12px;
@@ -280,34 +352,4 @@
 
 .ribbon-table-row--milestone td:nth-child(2) {
   color: #e5e7eb;
-}
-
-/* ── Combined Tracker Section ── */
-.cooking-tracker-content {
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.cooking-tracker-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.cooking-tracker-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: #4b5563;
-}
-
-.cooking-tracker-divider {
-  width: 1px;
-  background: rgba(255, 255, 255, 0.04);
-  align-self: stretch;
 }

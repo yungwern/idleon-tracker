@@ -70,8 +70,12 @@ function getCategoryKey(passive) {
 }
 
 function getCategoryLabel(categoryKey) {
-  // If the key is a passive string, format it; otherwise it's already a label
-  return categoryKey.startsWith('+{') ? formatPassiveLabel(categoryKey) : categoryKey
+  // If the key is a passive string, strip the +{% or +{_ prefix; otherwise it's already a label
+  if (!categoryKey.startsWith('+{')) return categoryKey
+  return categoryKey
+    .replace(/^\+\{[%_]?/, '')
+    .replace(/_/g, ' ')
+    .trim()
 }
 
 // ============================================================
@@ -343,6 +347,24 @@ function PetCard({ pet, petKey, shiny, fenceCount }) {
   )
 }
 
+function sumGroupBonus(pets) {
+  const first = pets.find(({ pet, shiny }) => pet.passive && pet.baseValue && shiny.level > 0)
+  if (!first) return null
+  const { pet } = first
+  // All pets in a group share the same passive/baseValue
+  const total = pets.reduce((sum, { pet: p, shiny }) => {
+    if (shiny.level === 0) return sum
+    return sum + p.baseValue * shiny.level
+  }, 0)
+  return { value: total, passive: pet.passive }
+}
+
+function formatGroupTotal(passive, total) {
+  // Show just the value with a % suffix for percent-based passives
+  const isPercent = passive.startsWith('+{%')
+  return isPercent ? `+${total}%` : `+${total}`
+}
+
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
@@ -488,24 +510,42 @@ export default function Breeding({ snapshot }) {
                 </select>
               </div>
 
-              {highlightedPets.length > 0 && (
-                <div className="breeding-grid breeding-grid--highlighted">
-                  {highlightedPets.map(({ key, pet, shiny, fenceCount }) => (
-                    <PetCard key={key} petKey={key} pet={pet} shiny={shiny} fenceCount={fenceCount} />
-                  ))}
-                </div>
-              )}
-
-              {otherGroups.map(({ passive, label, pets }) => (
-                <div key={passive} className="breeding-passive-group">
-                  <div className="breeding-passive-label">{label}</div>
-                  <div className="breeding-grid">
-                    {pets.map(({ key, pet, shiny, fenceCount }) => (
+              {highlightedPets.length > 0 && (() => {
+                const sum = sumGroupBonus(highlightedPets)
+                return (
+                  <div className="breeding-grid breeding-grid--highlighted">
+                    {sum && (
+                      <div className="breeding-highlighted-total">
+                        {formatGroupTotal(sum.passive, sum.value)} total
+                      </div>
+                    )}
+                    {highlightedPets.map(({ key, pet, shiny, fenceCount }) => (
                       <PetCard key={key} petKey={key} pet={pet} shiny={shiny} fenceCount={fenceCount} />
                     ))}
                   </div>
-                </div>
-              ))}
+                )
+              })()}
+
+              {otherGroups.map(({ passive, label, pets }) => {
+                const sum = sumGroupBonus(pets)
+                return (
+                  <div key={passive} className="breeding-passive-group">
+                    <div className="breeding-passive-label">
+                      {sum && (
+                        <span className="breeding-passive-total">
+                          {formatGroupTotal(sum.passive, sum.value)}
+                        </span>
+                      )}
+                      {label}
+                    </div>
+                    <div className="breeding-grid">
+                      {pets.map(({ key, pet, shiny, fenceCount }) => (
+                        <PetCard key={key} petKey={key} pet={pet} shiny={shiny} fenceCount={fenceCount} />
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
             </>
           )}
         </>

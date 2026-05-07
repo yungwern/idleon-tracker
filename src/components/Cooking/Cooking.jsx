@@ -5,7 +5,7 @@ import './Cooking.css'
 
 
 // ============================================================
-// MEAL CARD
+// MEAL CARD (unchanged)
 // ============================================================
 
 function MealCard({ pngKey, level, ribbonRank }) {
@@ -46,20 +46,15 @@ function MealCard({ pngKey, level, ribbonRank }) {
 }
 
 // ============================================================
-// RIBBON SHELF
+// RIBBON SHELF TAB
 // ============================================================
 
-function RibbonShelf({ slots }) {
-  const [open, setOpen] = useState(false)
-
+function RibbonShelfTab({ slots }) {
   return (
-    <div className="cooking-section">
-      <div className="cooking-section-label cooking-section-label--clickable" onClick={() => setOpen(v => !v)}>
-        <span>Ribbon Shelf</span>
-        <span className="cooking-section-chevron">{open ? '▲' : '▼'}</span>
-      </div>
-      {open && (
-        <div className="ribbon-shelf-content">
+    <>
+      <div className="ribbon-shelf-row">
+        <div className="ribbon-shelf-col">
+          <div className="cooking-group-label">Ribbon Shelf</div>
           <div className="ribbon-shelf-grid">
             {slots.map((rank, i) => (
               <div key={i} className={`ribbon-shelf-slot ${rank === 0 ? 'ribbon-shelf-slot--empty' : ''}`}>
@@ -81,6 +76,10 @@ function RibbonShelf({ slots }) {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="ribbon-table-col">
+          <div className="cooking-group-label">Ribbon Multiplier Table</div>
           <table className="ribbon-table">
             <thead>
               <tr>
@@ -104,76 +103,8 @@ function RibbonShelf({ slots }) {
             </tbody>
           </table>
         </div>
-      )}
-    </div>
-  )
-}
-
-// ============================================================
-// COMBINED TRACKER SECTION (Lowest Ribbon + NMLB)
-// ============================================================
-
-function CombinedTrackerSection({ lowestMeals, nmlbMeal }) {
-  const [open, setOpen] = useState(true)
-
-  return (
-    <div className="cooking-section">
-      <div className="cooking-section-label cooking-section-label--clickable" onClick={() => setOpen(v => !v)}>
-        <span>NRLB / NMLB</span>
-        <span className="cooking-section-chevron">{open ? '▲' : '▼'}</span>
       </div>
-      {open && (
-        <div className="cooking-tracker-content">
-          <div className="cooking-tracker-group">
-            <span className="cooking-tracker-label">No Ribbon Left Behind (NRLB)</span>
-            <div className="meal-grid">
-              {lowestMeals.map(({ pngKey, level, ribbonRank }) => (
-                <MealCard key={pngKey} pngKey={pngKey} level={level} ribbonRank={ribbonRank} />
-              ))}
-            </div>
-          </div>
-          <div className="cooking-tracker-divider" />
-          <div className="cooking-tracker-group">
-            <span className="cooking-tracker-label">No Meal Left Behind (NMLB)</span>
-            {nmlbMeal && (
-              <div className="meal-grid">
-                <MealCard pngKey={nmlbMeal.pngKey} level={nmlbMeal.level} ribbonRank={nmlbMeal.ribbonRank} />
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ============================================================
-// BONUS TYPE SECTION
-// ============================================================
-
-function BonusSection({ title, meals, defaultOpen = true }) {
-  const [open, setOpen] = useState(defaultOpen)
-  if (!meals.length) return null
-
-  return (
-    <div className="cooking-section">
-      <div className="cooking-section-label cooking-section-label--clickable" onClick={() => setOpen(v => !v)}>
-        <span>{title}</span>
-        <span className="cooking-section-chevron">{open ? '▲' : '▼'}</span>
-      </div>
-      {open && (
-        <div className="meal-grid">
-          {meals.map(({ pngKey, level, ribbonRank }) => (
-            <MealCard
-              key={pngKey}
-              pngKey={pngKey}
-              level={level}
-              ribbonRank={ribbonRank}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    </>
   )
 }
 
@@ -182,11 +113,9 @@ function BonusSection({ title, meals, defaultOpen = true }) {
 // ============================================================
 
 export default function Cooking({ snapshot }) {
+  const [activeTab, setActiveTab] = useState('meals')
   const { mealLevels = [], mealRibbons = [], cabinetSlots = [] } = snapshot?.cooking ?? {}
 
-  // Build enriched meal list from cookingMap
-  // Extract index from key name (e.g. CookingMB6 -> 6) to correctly
-  // reference save data arrays regardless of order in cookingMap
   const allMeals = Object.keys(cookingMap).map((pngKey) => {
     const index = parseInt(pngKey.replace('CookingMB', ''))
     return {
@@ -197,7 +126,6 @@ export default function Cooking({ snapshot }) {
     }
   })
 
-  // Group meals by bonus type
   const grouped = {}
   const categorized = new Set()
 
@@ -218,28 +146,16 @@ export default function Cooking({ snapshot }) {
 
   const uncategorized = allMeals.filter(m => !categorized.has(m.pngKey))
 
-  // Find the single meal with the lowest ribbon rank across all categorized meals,
-  // tie-broken by highest MB number
   const categorizedMeals = allMeals.filter(m => categorized.has(m.pngKey))
   const overallLowest = Math.min(...categorizedMeals.map(m => m.ribbonRank))
   const lowestRibbonMeal = categorizedMeals
     .filter(m => m.ribbonRank === overallLowest)
-    .sort((a, b) => {
-      const ia = parseInt(a.pngKey.replace('CookingMB', ''))
-      const ib = parseInt(b.pngKey.replace('CookingMB', ''))
-      return ib - ia
-    })[0]
+    .sort((a, b) => parseInt(b.pngKey.replace('CookingMB', '')) - parseInt(a.pngKey.replace('CookingMB', '')))[0]
 
-  // NMLB — find the meal with the lowest level across all meals (including uncategorized)
-  // Tie-break by MB number (earliest unlocked meal)
   const lowestLevel = Math.min(...allMeals.map(m => m.level))
   const nmlbMeal = allMeals
     .filter(m => m.level === lowestLevel)
-    .sort((a, b) => {
-      const ia = parseInt(a.pngKey.replace('CookingMB', ''))
-      const ib = parseInt(b.pngKey.replace('CookingMB', ''))
-      return ib - ia
-    })[0]
+    .sort((a, b) => parseInt(b.pngKey.replace('CookingMB', '')) - parseInt(a.pngKey.replace('CookingMB', '')))[0]
 
   return (
     <div className="page cooking-page">
@@ -259,19 +175,72 @@ export default function Cooking({ snapshot }) {
         </ul>
       </div>
 
-      <RibbonShelf slots={cabinetSlots} />
+      {/* ── Nav Bar ── */}
+      <div className="cooking-nav">
+        <button
+          className={`cooking-nav-btn${activeTab === 'meals' ? ' cooking-nav-btn--active' : ''}`}
+          onClick={() => setActiveTab('meals')}
+        >
+          Meal Ribbons
+        </button>
+        <button
+          className={`cooking-nav-btn${activeTab === 'shelf' ? ' cooking-nav-btn--active' : ''}`}
+          onClick={() => setActiveTab('shelf')}
+        >
+          Ribbon Shelf
+        </button>
+      </div>
 
-      <CombinedTrackerSection
-        lowestMeals={lowestRibbonMeal ? [lowestRibbonMeal] : []}
-        nmlbMeal={nmlbMeal}
-      />
+      {/* ── Ribbon Shelf Tab ── */}
+      {activeTab === 'shelf' && <RibbonShelfTab slots={cabinetSlots} />}
 
-      {Object.entries(grouped).map(([title, meals]) => (
-        <BonusSection key={title} title={title} meals={meals} />
-      ))}
+      {/* ── Meal Ribbons Tab ── */}
+      {activeTab === 'meals' && (
+        <>
+          {/* NRLB / NMLB */}
+          <div className="cooking-tracker-row">
+            <div className="cooking-tracker-col">
+              <div className="cooking-group-label">No Ribbon Left Behind (NRLB)</div>
+              <div className="meal-grid meal-grid--centered">
+                {lowestRibbonMeal && (
+                  <MealCard pngKey={lowestRibbonMeal.pngKey} level={lowestRibbonMeal.level} ribbonRank={lowestRibbonMeal.ribbonRank} />
+                )}
+              </div>
+            </div>
+            <div className="cooking-tracker-divider" />
+            <div className="cooking-tracker-col">
+              <div className="cooking-group-label">No Meal Left Behind (NMLB)</div>
+              <div className="meal-grid meal-grid--centered">
+                {nmlbMeal && (
+                  <MealCard pngKey={nmlbMeal.pngKey} level={nmlbMeal.level} ribbonRank={nmlbMeal.ribbonRank} />
+                )}
+              </div>
+            </div>
+          </div>
 
-      {uncategorized.length > 0 && (
-        <BonusSection title="Uncategorized" meals={uncategorized} />
+          {/* Bonus type groups */}
+          {Object.entries(grouped).map(([title, meals]) => (
+            <div key={title} className="cooking-meal-group">
+              <div className="cooking-group-label">{title}</div>
+              <div className="meal-grid">
+                {meals.map(({ pngKey, level, ribbonRank }) => (
+                  <MealCard key={pngKey} pngKey={pngKey} level={level} ribbonRank={ribbonRank} />
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {uncategorized.length > 0 && (
+            <div className="cooking-meal-group">
+              <div className="cooking-group-label">Uncategorized</div>
+              <div className="meal-grid">
+                {uncategorized.map(({ pngKey, level, ribbonRank }) => (
+                  <MealCard key={pngKey} pngKey={pngKey} level={level} ribbonRank={ribbonRank} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
