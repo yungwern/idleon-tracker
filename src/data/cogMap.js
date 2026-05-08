@@ -4,6 +4,7 @@ export const cogMap = {
   CogCry2: { name: 'Amethyst Cog', color: '#f58dec' },
   CogCry3: { name: 'Garnet Cog',   color: '#fb923c' },
   CogCry4: { name: 'Emerald Cog',  color: '#4ade80' },
+  CogCry5: { name: 'Bluegem Cog',  color: '#00bfff' },
 }
 
 export const BOARD_ROWS = 8

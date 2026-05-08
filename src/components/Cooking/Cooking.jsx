@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { cookingMap, cookingBonusTypes, ribbonData } from '../../data'
+import InfoPanel from '../InfoPanel/InfoPanel'
+
 import './Cooking.css'
 
 
@@ -161,19 +163,17 @@ export default function Cooking({ snapshot }) {
     <div className="page cooking-page">
       <h2 className="page-title">Cooking</h2>
 
-      <div className="cooking-info-panel">
-        <p className="cooking-info-intro">
-          This page is used to track ribbon levels on each meal. A few things to keep in mind when using this page:
-        </p>
-        <ul className="cooking-info-list">
-          <li>Meals are sorted into categories by bonus types.</li>
-          <li>Each category is sorted in priority of which meal to ribbon first.</li>
-          <li>Categories are not ordered in priority — use your best judgement to prioritize categories based on account needs.</li>
-          <li>The category "NRLB / NMLB" is used to easily identify which tier ribbons are no longer needed. For example, if a meal is shown in this category with a level 5 ribbon, then you know that any ribbons below level 5 can be instantly upgraded in your ribbon shelf. This section is NOT intended to be used as a "which ribbon to upgrade next section," although it can be used that way if you want to evenly upgrade ribbon tiers across all your meals.</li>
-          <li>In general it's best to reach ribbon breakpoints of 5, 10, 15, and 20. Reaching these breakpoints provides the highest multi increases.</li>
-          <li>Remember that you can upgrade ribbons on existing meals by dragging a ribbon of the same tier on top of it, the same way you upgrade in the ribbon shelf.</li>
-        </ul>
-      </div>
+      <InfoPanel
+        intro="This page is used to track ribbon levels on each meal. A few things to keep in mind when using this page:"
+        items={[
+          'Meals are sorted into categories by bonus types.',
+          'Each category is sorted in priority of which meal to ribbon first.',
+          'Categories are not ordered in priority — use your best judgement to prioritize categories based on account needs.',
+          'The category "NRLB / NMLB" is used to easily identify which tier ribbons are no longer needed. For example, if a meal is shown in this category with a level 5 ribbon, then you know that any ribbons below level 5 can be instantly upgraded in your ribbon shelf. This section is NOT intended to be used as a "which ribbon to upgrade next section," although it can be used that way if you want to evenly upgrade ribbon tiers across all your meals.',
+          'In general it\'s best to reach ribbon breakpoints of 5, 10, 15, and 20. Reaching these breakpoints provides the highest multi increases.',
+          'Remember that you can upgrade ribbons on existing meals by dragging a ribbon of the same tier on top of it, the same way you upgrade in the ribbon shelf.',
+        ]}
+      />
 
       {/* ── Nav Bar ── */}
       <div className="cooking-nav">

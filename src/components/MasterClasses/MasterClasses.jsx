@@ -6,6 +6,7 @@ import TierList from '../TierList/TierList'
 import { mobsMap, mapEnemyData } from '../../data'
 
 import './MasterClasses.css'
+import InfoPanel from '../InfoPanel/InfoPanel'
 
 // ============================================================
 // SUB-COMPONENTS
@@ -181,7 +182,7 @@ const WORLD_LABELS = {
   5: 'World 5', 6: 'World 6', 7: 'World 7',
 }
 
-const MIN_KILLS = 400
+const MIN_KILLS = 1000
 
 function MapBonusCard({ entry, mapBonuses }) {
   const bonus = mapBonuses?.[entry.mapIndex]
@@ -239,6 +240,14 @@ function MapBonusSection({ snapshot }) {
 
   return (
     <div className="map-bonus-section">
+      <InfoPanel 
+      intro="This section tracks Arcane Crystal Map Bonuses for mobs that have been actively farmed. A few things to keep in mind:"
+      items={[
+        'Only maps with a meaningful bonus are shown here. A minimum threshold of 1.010x is required to filter out bonuses gained simply from progressing through maps.',
+        'DR, EXP, and AFK multipliers are displayed for each mob, giving you a quick overview of where your farming time has paid off.',
+        'Recommended mobs to prioritize: Green Mushrooms (AFK), Dedotated Rams (DR), Bored Beans (DR).',
+      ]}
+      />
       {worldNums.map(world => {
         const entries = byWorld[world]
         // Check if this world has any visible cards before rendering the header

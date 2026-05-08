@@ -1,0 +1,27 @@
+.info-panel {
+  margin-bottom: 28px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.info-panel-intro {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0 0 10px;
+}
+
+.info-panel-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-panel-list li {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}

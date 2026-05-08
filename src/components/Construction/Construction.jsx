@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cogMap, COG_BORDER_CLASS } from '../../data'
-import './Construction.css'
 import CogBoardMap from '../CogBoardMap/CogBoardMap'
+import InfoPanel from '../InfoPanel/InfoPanel'
+
+import './Construction.css'
 
 // ============================================================
 // NUMPAD
@@ -16,6 +18,15 @@ function Numpad({ value, onChange }) {
       onChange(value + key)
     }
   }
+
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === 'Backspace') handleKey('backspace')
+      else if (e.key >= '0' && e.key <= '9') handleKey(e.key)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [value])
 
   return (
     <div className="numpad">
@@ -32,10 +43,10 @@ function Numpad({ value, onChange }) {
 // COMPARE TOOL
 // ============================================================
 
-const STEPS = ['pattern', 'bonus', 'player', 'result']
-
-function CompareTool({ cogs, onClose, onResult }) {
-  const [step, setStep] = useState('pattern')
+function CompareTool({ cogs, onClose, onResult, onReplace }) {
+  const [step, setStep] = useState('color')
+  const [cogColor, setCogColor] = useState(null)
+  const [cogName, setCogName] = useState(null)
   const [pattern, setPattern] = useState(null)
   const [bonusExp, setBonusExp] = useState('')
   const [playerExp, setPlayerExp] = useState('')
@@ -60,7 +71,19 @@ function CompareTool({ cogs, onClose, onResult }) {
   }
 
   function reset() {
-    setStep('pattern')
+    if (isUpgrade) {
+      onReplace({
+        name: cogColor,
+        total,
+        bonusConstructExp: parseInt(bonusExp) || 0,
+        playerConstructExp: parseInt(playerExp) || 0,
+        patternLabel: pattern === 'row' ? 'Boosts entire Row' : 'Boosts entire Column',
+        index: Date.now(),
+      })
+    }
+    setStep('color')
+    setCogColor(null)
+    setCogName(null)
     setPattern(null)
     setBonusExp('')
     setPlayerExp('')
@@ -74,7 +97,29 @@ function CompareTool({ cogs, onClose, onResult }) {
         <button className="compare-close" onClick={onClose}>✕</button>
       </div>
 
-      {/* ── Step 1: Pattern ── */}
+      {/* ── Step 1: Color ── */}
+      {step === 'color' && (
+        <div className="compare-step">
+          <p className="compare-label">What color is this cog?</p>
+          <div className="compare-color-btns">
+            {[0,1,2,3,4,5].map(i => (
+              <button
+                key={i}
+                className="compare-color-btn"
+                onClick={() => {
+                  setCogColor(`CogCry${i}`)
+                  setCogName(cogMap[`CogCry${i}`]?.name ?? `CogCry${i}`)
+                  setStep('pattern')
+                }}
+              >
+                <img src={`/images/cogs/CogCry${i}.png`} alt={`CogCry${i}`} className="compare-color-img" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Step 2: Pattern ── */}
       {step === 'pattern' && (
         <div className="compare-step">
           <p className="compare-label">Does this cog boost a Row or Column?</p>
@@ -86,10 +131,13 @@ function CompareTool({ cogs, onClose, onResult }) {
               Boosts entire Column
             </button>
           </div>
+          <div className="compare-nav">
+            <button className="compare-back-btn" onClick={() => setStep('color')}>Back</button>
+          </div>
         </div>
       )}
 
-      {/* ── Step 2: Bonus Construct EXP ── */}
+      {/* ── Step 3: Bonus Construct EXP ── */}
       {step === 'bonus' && (
         <div className="compare-step">
           <p className="compare-label">Enter Bonus Construct EXP</p>
@@ -97,18 +145,12 @@ function CompareTool({ cogs, onClose, onResult }) {
           <Numpad value={bonusExp} onChange={setBonusExp} />
           <div className="compare-nav">
             <button className="compare-back-btn" onClick={() => setStep('pattern')}>Back</button>
-            <button
-              className="compare-next-btn"
-              disabled={!bonusExp}
-              onClick={() => setStep('player')}
-            >
-              Next
-            </button>
+            <button className="compare-next-btn" disabled={!bonusExp} onClick={() => setStep('player')}>Next</button>
           </div>
         </div>
       )}
 
-      {/* ── Step 3: Player Construct XP ── */}
+      {/* ── Step 4: Player Construct XP ── */}
       {step === 'player' && (
         <div className="compare-step">
           <p className="compare-label">Enter Player Construct XP</p>
@@ -116,29 +158,29 @@ function CompareTool({ cogs, onClose, onResult }) {
           <Numpad value={playerExp} onChange={setPlayerExp} />
           <div className="compare-nav">
             <button className="compare-back-btn" onClick={() => setStep('bonus')}>Back</button>
-            <button
-              className="compare-next-btn"
-              disabled={!playerExp}
-              onClick={goToResult}
-            >
-              Compare
-            </button>
+            <button className="compare-next-btn" disabled={!playerExp} onClick={goToResult}>Compare</button>
           </div>
         </div>
       )}
 
-      {/* ── Step 4: Result ── */}
+      {/* ── Step 5: Result ── */}
       {step === 'result' && (
         <div className="compare-step">
-          <div className={`compare-result ${isUpgrade ? 'upgrade' : 'no-upgrade'}`}>
+          <div className={`compare-result-banner ${isUpgrade ? 'upgrade' : 'no-upgrade'}`}>
             <span className="compare-result-label">{isUpgrade ? '✓ Upgrade' : '✗ Not an upgrade'}</span>
-            <span className="compare-result-detail">
-              New cog total: <strong>+{total}%</strong>
-            </span>
-            <span className="compare-result-detail">
-              Lowest {pattern} cog: <strong>+{lowestEquipped}%</strong>
-            </span>
+            <span className="compare-result-detail">New cog total: <strong>+{total}%</strong></span>
+            <span className="compare-result-detail">Lowest {pattern} cog: <strong>+{lowestEquipped}%</strong></span>
           </div>
+          <CogCard
+            cog={{
+              name: cogColor,
+              total,
+              bonusConstructExp: parseInt(bonusExp) || 0,
+              playerConstructExp: parseInt(playerExp) || 0,
+              patternLabel: pattern === 'row' ? 'Boosts entire Row' : 'Boosts entire Column',
+            }}
+            highlight={isUpgrade ? 'upgrade' : 'no-upgrade'}
+          />
           <button className="compare-next-btn" style={{ marginTop: 12 }} onClick={reset}>
             Compare Another
           </button>
@@ -164,7 +206,12 @@ function CogCard({ cog, highlight }) {
 
   return (
     <div
-      className={`cog-card ${highlight === 'upgrade' ? 'highlight-upgrade' : highlight === 'lowest' ? 'highlight-lowest' : ''}`}
+      className={`cog-card ${
+        highlight === 'upgrade'    ? 'highlight-upgrade' :
+        highlight === 'no-upgrade' ? 'highlight-no-upgrade' :
+        highlight === 'replace'    ? 'highlight-replace' :
+        highlight === 'cant-beat'  ? 'highlight-cant-beat' : ''
+      }`}
       style={{ '--cog-color': cogColor }}
     >
       <div className="cog-card-top">
@@ -201,6 +248,29 @@ export default function Construction({ snapshot }) {
   const [showCompare, setShowCompare] = useState(false)
   const [showBoard, setShowBoard] = useState(false)
   const [compareResult, setCompareResult] = useState(null)
+  const [overrides, setOverrides] = useState([])
+
+  const displayCogs = overrides.length > 0 ? overrides : cogs
+
+  function applyReplacement(newCog) {
+    const base = overrides.length > 0 ? overrides : cogs
+    const patternLabel = newCog.patternLabel
+    const matching = base.filter(c => c.patternLabel === patternLabel)
+
+    // Find and remove the lowest
+    const lowestTotal = Math.min(...matching.map(c => c.total))
+    const lowestIndex = base.findIndex(c => c.patternLabel === patternLabel && c.total === lowestTotal)
+
+    // Find insert position (highest cog the new one beats)
+    const beatable = matching.filter(c => newCog.total > c.total)
+    const highestBeatable = Math.max(...beatable.map(c => c.total))
+    const insertIndex = base.findIndex(c => c.patternLabel === patternLabel && c.total === highestBeatable)
+
+    const updated = [...base]
+    updated.splice(lowestIndex, 1)
+    updated.splice(insertIndex, 0, newCog)
+    setOverrides(updated)
+  }
 
   // Work out which cog to highlight after a comparison
   function getHighlight(cog, compareResult) {
@@ -208,15 +278,32 @@ export default function Construction({ snapshot }) {
     const { pattern, total, isUpgrade } = compareResult
     const patternLabel = pattern === 'row' ? 'Boosts entire Row' : 'Boosts entire Column'
     if (cog.patternLabel !== patternLabel) return null
-    const matchingCogs = cogs.filter(c => c.patternLabel === patternLabel)
-    const lowestTotal = Math.min(...matchingCogs.map(c => c.total))
-    if (cog.total === lowestTotal) return isUpgrade ? 'upgrade' : 'lowest'
-    return null
+    if (!isUpgrade) {
+      const matchingCogs = displayCogs.filter(c => c.patternLabel === patternLabel)
+      const lowestTotal = Math.min(...matchingCogs.map(c => c.total))
+      return cog.total === lowestTotal ? 'cant-beat' : null
+    }
+    const beatable = displayCogs
+      .filter(c => c.patternLabel === patternLabel && total > c.total)
+      .map(c => c.total)
+    if (beatable.length === 0) return null
+    const highestBeatable = Math.max(...beatable)
+    return cog.total === highestBeatable ? 'replace' : null
   }
 
   return (
     <div className="page construction-page">
       <h2 className="page-title">Construction</h2>
+      <InfoPanel
+      intro="This page helps you optimize the Row and Column Boosters on your Construction Board. If you're unfamiliar with how the board works, check out the Optimal Cog Layout. A few things to keep in mind:"
+      items={[
+        'Click "+ Compare New Cog" to get started.',
+        'You\'ll be prompted to select the cog\'s color, whether it boosts a Row or Column, and its EXP values.',
+        'The tool will then tell you whether the cog is an upgrade over what you currently have equipped.',
+        'If it is an upgrade, clicking "Compare Another" will automatically update the cog list to reflect the replacement.',
+        'The order of cogs in the list doesn\'t matter — what\'s important is that all 6 Row and Column slots on your board match the Optimal Cog Layout.',
+      ]}
+      />
 
       <div className="construction-toolbar">
         <button className="compare-open-btn" onClick={() => setShowCompare(v => !v)}>
@@ -225,13 +312,19 @@ export default function Construction({ snapshot }) {
         <button className="compare-open-btn" onClick={() => setShowBoard(v => !v)}>
           {showBoard ? 'Hide Cog Board' : 'View Optimal Cog Layout'}
         </button>
+        {overrides.length > 0 && (
+          <button className="compare-open-btn" onClick={() => setOverrides([])}>
+            Reset to Real Data
+          </button>
+        )}
       </div>
 
       {showCompare && (
         <CompareTool
-          cogs={cogs}
+          cogs={displayCogs}
           onClose={() => { setShowCompare(false); setCompareResult(null) }}
           onResult={setCompareResult}
+          onReplace={applyReplacement}
         />
       )}
 
@@ -241,13 +334,13 @@ export default function Construction({ snapshot }) {
         <div className="cog-grid-label">
           <span>Row Boosters</span>
         </div>
-        {cogs.slice(0, 6).map(cog => (
+        {displayCogs.slice(0, 6).map(cog => (
           <CogCard key={cog.index} cog={cog} highlight={getHighlight(cog, compareResult)} />
         ))}
         <div className="cog-grid-label">
           <span>Column Boosters</span>
         </div>
-        {cogs.slice(6).map(cog => (
+        {displayCogs.slice(6).map(cog => (
           <CogCard key={cog.index} cog={cog} highlight={getHighlight(cog, compareResult)} />
         ))}
       </div>

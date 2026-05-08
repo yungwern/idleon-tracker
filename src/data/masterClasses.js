@@ -1,4 +1,4 @@
-import { BB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION } from './mobsMap'
+import { DB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION } from './mobsMap'
 
 // ============================================================
 // MASTER CLASSES
@@ -20,7 +20,7 @@ export const MASTERCLASSES = [
         id: 'mob-progression',
         title: 'Mob Progression',
         sectionType: 'mob-progression',
-        rows: BB_MOB_PROGRESSION,
+        rows: DB_MOB_PROGRESSION,
       },
     ],
   },
@@ -33,15 +33,15 @@ export const MASTERCLASSES = [
     headerItem: 'Quest96',
     sections: [
       {
+        id: 'exalted-stamps',
+        title: 'Exalted Stamps',
+        sectionType: 'exalted-stamps',
+      },
+      {
         id: 'mob-progression',
         title: 'Mob Progression',
         sectionType: 'mob-progression',
         rows: WW_MOB_PROGRESSION,
-      },
-      {
-        id: 'exalted-stamps',
-        title: 'Exalted Stamps',
-        sectionType: 'exalted-stamps',
       },
       {
         id: 'weapons',
@@ -60,6 +60,11 @@ export const MASTERCLASSES = [
     headerItem: 'Quest101',
     sections: [
       {
+        id: 'prisma-bubbles',
+        title: 'Prisma Bubbles',
+        sectionType: 'prisma-bubbles',
+      },
+      {
         id: 'mob-progression',
         title: 'Mob Progression',
         sectionType: 'mob-progression',
@@ -69,11 +74,6 @@ export const MASTERCLASSES = [
         id: 'map-bonuses',
         title: 'Map Bonuses',
         sectionType: 'map-bonuses',
-      },
-      {
-        id: 'prisma-bubbles',
-        title: 'Prisma Bubbles',
-        sectionType: 'prisma-bubbles',
       },
       {
         id: 'weapons',
