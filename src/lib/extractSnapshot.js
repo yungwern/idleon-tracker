@@ -177,6 +177,20 @@ function parseShrines(json) {
   })
 }
 
+// ── Armor Smithy Sets ─────────────────────────────────────────────────────────
+function parseArmorSmithySets(json) {
+  try {
+    const optLacc = json['OptLacc'] ?? []
+    const raw = optLacc[379] ?? ''
+    if (!raw) return []
+    const [, ...unlockedSets] = raw.toString().split(',')
+    return unlockedSets.filter(Boolean)
+  } catch {
+    console.warn('Failed to parse armor smithy sets from OptLacc.')
+    return []
+  }
+}
+
 // ── Mini Bosses ───────────────────────────────────────────────────────────────
 function parseMiniBosses(json) {
   const rawSneaking = json['Ninja']
@@ -284,8 +298,9 @@ export function extractSnapshot(json) {
 
   return {
     characters: extractedCharacters,
-    statues,
+    statues: parseStatues(json),
     shrines: parseShrines(json),
+    armorSmithySets: parseArmorSmithySets(json),
     miniBossesKills: parseMiniBosses(json),
     exaltedStamps: parseExaltedStamps(json),
     prismaBubbles: parsePrismaBubbles(json),

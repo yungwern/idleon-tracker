@@ -1,6 +1,9 @@
 import { useState, useMemo } from 'react'
 import { GEAR_BONUSES } from '../../data/gearBonuses'
+import { GEAR_SET_PIECES, GEAR_SETS } from '../../data/equipmentMap'
 import { itemMap } from '../../data/itemMap'
+import InfoPanel from '../InfoPanel/InfoPanel'
+
 import './GearOptimizer.css'
 
 const SLOT_MAP = {
@@ -24,6 +27,13 @@ const ALL_BONUS_TYPES = [...new Set(
   Object.values(GEAR_BONUSES).flatMap(bonuses => Object.keys(bonuses))
 )].sort()
 
+// Get the helmet image for a set
+function getSetHelmetImage(setName) {
+  const pieces = GEAR_SET_PIECES[setName]
+  const helmet = pieces?.armors?.find(id => id.startsWith('EquipmentHats'))
+  return helmet ? `/images/items/${helmet}.png` : null
+}
+
 function scoreItem(itemBonuses, primary, secondary) {
   const getScore = (cat) => {
     const b = itemBonuses[cat]
@@ -33,10 +43,20 @@ function scoreItem(itemBonuses, primary, secondary) {
   return getScore(primary) * 100000 + (secondary ? getScore(secondary) : 0)
 }
 
-function optimize(primary, secondary) {
+function optimize(primary, secondary, enabledSets) {
+  // Build a set of all piece IDs that belong to enabled sets
+  const enabledPieces = new Set()
+  for (const setName of enabledSets) {
+    const pieces = GEAR_SET_PIECES[setName]
+    if (!pieces) continue
+    ;[...pieces.armors, ...pieces.tools, ...pieces.weapons].forEach(id => enabledPieces.add(id))
+  }
+
   const results = {}
   for (const slot of SLOTS) {
-    const candidates = Object.entries(GEAR_BONUSES).filter(([id]) => SLOT_MAP[slot](id))
+    const candidates = Object.entries(GEAR_BONUSES).filter(([id]) =>
+      SLOT_MAP[slot](id) && enabledPieces.has(id)
+    )
     const relevant = candidates.filter(([, bonuses]) =>
       bonuses[primary] || (secondary && bonuses[secondary])
     )
@@ -66,18 +86,110 @@ function summarize(results) {
 
 function formatBonus(bonus) {
   if (!bonus) return null
-  return bonus.type === 'multi' ? `${bonus.value}x` : `+${bonus.value}%`
+  return bonus.type === 'multi' ? `+${bonus.value}%` : `+${bonus.value}%`
 }
 
-export default function GearOptimizer() {
+// ── Set Toggle Selector ──────────────────────────────────────
+function SetToggleSelector({ unlockedSets, lockedSets, enabledSets, onToggle }) {
+  const hasLockedEnabled = lockedSets.some(s => enabledSets.has(s))
+
+  return (
+    <div className="go-set-selector">
+      {/* Unlocked Sets */}
+      <div className="go-set-group">
+        <span className="go-set-group-label">Unlocked Sets</span>
+        <div className="go-set-toggles">
+          {unlockedSets.map(setName => {
+            const set = GEAR_SETS[setName]
+            const img = getSetHelmetImage(setName)
+            const active = enabledSets.has(setName)
+            return (
+            <button
+              key={setName}
+              className={`go-set-btn tooltip-anchor ${active ? 'go-set-btn--active' : 'go-set-btn--inactive'}`}
+              onClick={() => onToggle(setName)}
+            >
+              {img && <img src={img} alt={set?.name ?? setName} className="go-set-btn-img" />}
+              <span className="tooltip">{set?.name ?? setName}</span>
+            </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Locked Sets */}
+      {lockedSets.length > 0 && (
+        <div className="go-set-group">
+          <span className="go-set-group-label">Unowned Sets</span>
+          <div className="go-set-toggles">
+            {lockedSets.map(setName => {
+              const set = GEAR_SETS[setName]
+              const img = getSetHelmetImage(setName)
+              const active = enabledSets.has(setName)
+              return (
+                <button
+                  key={setName}
+                  className={`go-set-btn ${active ? 'go-set-btn--active go-set-btn--locked' : 'go-set-btn--inactive'}`}
+                  onClick={() => onToggle(setName)}
+                  title={`${set?.name ?? setName}: ${set?.description ?? ''}`}
+                >
+                  {img && <img src={img} alt={set?.name ?? setName} className="go-set-btn-img" />}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Warning banner */}
+      {hasLockedEnabled && (
+        <div className="go-set-warning">
+          ⚠ One or more unowned sets are enabled. Results may include gear you don't have access to yet.
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Main Component ───────────────────────────────────────────
+export default function GearOptimizer({ snapshot }) {
   const [primary, setPrimary] = useState('')
   const [secondary, setSecondary] = useState('')
   const [searched, setSearched] = useState(false)
 
+  // Derive unlocked/locked sets from snapshot
+  const unlockedSetNames = useMemo(() => {
+    const unlocked = new Set(snapshot?.armorSmithySets ?? [])
+    return Object.keys(GEAR_SETS).filter(s => unlocked.has(s))
+  }, [snapshot?.armorSmithySets])
+
+  const lockedSetNames = useMemo(() => {
+    const unlocked = new Set(snapshot?.armorSmithySets ?? [])
+    return Object.keys(GEAR_SETS).filter(s => !unlocked.has(s))
+  }, [snapshot?.armorSmithySets])
+
+  // Default enabled: all unlocked on, all locked off
+  const [enabledSets, setEnabledSets] = useState(null)
+
+  const resolvedEnabledSets = useMemo(() => {
+    if (enabledSets !== null) return enabledSets
+    return new Set(snapshot?.armorSmithySets ?? [])
+  }, [enabledSets, snapshot?.armorSmithySets])
+
+  function handleToggle(setName) {
+    setEnabledSets(prev => {
+      const next = new Set(prev ?? resolvedEnabledSets)
+      if (next.has(setName)) next.delete(setName)
+      else next.add(setName)
+      return next
+    })
+    setSearched(false)
+  }
+
   const results = useMemo(() => {
     if (!primary || !searched) return {}
-    return optimize(primary, secondary || null)
-  }, [primary, secondary, searched])
+    return optimize(primary, secondary || null, resolvedEnabledSets)
+  }, [primary, secondary, searched, resolvedEnabledSets])
 
   const summary = useMemo(() => summarize(results), [results])
 
@@ -106,8 +218,25 @@ export default function GearOptimizer() {
   return (
     <div className="page">
       <h2 className="page-title">Gear Optimizer</h2>
+      <InfoPanel
+      intro="Use this section to optimize your currently equipped gear set. A few things to keep in mind:"
+      items={[
+        'Use the set toggles at the top to control which gear sets are included in the optimization. Unlocked sets default to on, and unowned sets default to off.',
+        'If you enable an unowned set, a warning will appear to let you know the results may include gear you don\'t currently have access to.',
+        'When optimizing for multiple bonuses, set the primary bonus to whichever category has fewer available pieces. This ensures those pieces are prioritized first, with the remaining slots filled by the secondary bonus.',
+        'Example: When optimizing for DR and Monster Respawn together, set Monster Respawn as the primary. The limited Monster Respawn pieces will be locked in first, and the rest of the set will fill with DR gear.',
+      ]}
+      />
 
       <div className="section-card go-card">
+
+        {/* Set Toggles */}
+        <SetToggleSelector
+          unlockedSets={unlockedSetNames}
+          lockedSets={lockedSetNames}
+          enabledSets={resolvedEnabledSets}
+          onToggle={handleToggle}
+        />
 
         {/* Search */}
         <div className="go-search-row">

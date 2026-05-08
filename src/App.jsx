@@ -50,7 +50,7 @@ export default function App() {
     if (selected === 'Shrines')        return <Shrines snapshot={snapshot} />
     if (selected === 'Minibosses')     return <Minibosses snapshot={snapshot} />
     if (selected === 'MasterClasses')  return <MasterClasses snapshot={snapshot} />
-    if (selected === 'Gear Optimizer') return <GearOptimizer />
+    if (selected === 'Gear Optimizer') return <GearOptimizer snapshot={snapshot} />
     if (selected === 'Construction')   return <Construction snapshot={snapshot} />
     if (selected === 'Anvil') return <Anvil snapshot={snapshot} />
     if (selected === 'Cooking') return <Cooking snapshot={snapshot} />
