@@ -10,18 +10,6 @@
   max-width: 760px;
 }
 
-/* ── Class Dropdown Container ── */
-.mc-class-dropdown {
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  overflow: hidden;
-  transition: border-color 0.2s;
-}
-
-.mc-class-dropdown.open {
-  border-color: var(--class-color);
-}
-
 /* ── Class Header (main toggle button) ── */
 .mc-class-header {
   width: 100%;
@@ -244,4 +232,189 @@
   height: 44px;
   object-fit: contain;
   image-rendering: pixelated;
+}
+
+/* ── Map Bonuses ── */
+.map-bonus-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-bonus-world-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-bonus-world-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--world-color);
+  text-align: center;
+  padding: 4px 0;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.map-bonus-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.map-bonus-card {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s;
+  overflow: hidden;
+}
+
+.map-bonus-card:hover {
+  border-color: var(--class-color);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.map-bonus-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.map-bonus-mob-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.map-bonus-card-body {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.map-bonus-mob-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #e5e7eb;
+  line-height: 1.3;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+.map-bonus-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.map-bonus-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #6b7280;
+  gap: 6px;
+}
+
+.map-bonus-stat strong {
+  font-weight: 600;
+}
+
+.map-bonus-stat[data-type="dr"]  strong { color: #a345fa; }
+.map-bonus-stat[data-type="exp"] strong { color: #fbbf24; }
+.map-bonus-stat[data-type="afk"] strong { color: #60a5fa; }
+
+/* ── Master Classes Nav ── */
+.mc-nav {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mc-nav-btn {
+  position: relative;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mc-nav-btn:hover {
+  color: var(--class-color);
+}
+
+.mc-nav-btn--active {
+  color: var(--active-class-color);
+}
+
+.mc-nav-btn--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--active-class-color);
+}
+
+/* ── Section Nav (inner) ── */
+.mc-section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 12px;
+}
+
+.mc-section-nav-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.mc-section-nav-btn:hover {
+  color: var(--class-color);
+  border-color: var(--class-color);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mc-section-nav-btn--active {
+  color: var(--class-color);
+  border-color: var(--class-color);
+  background: rgba(255, 255, 255, 0.05);
 }

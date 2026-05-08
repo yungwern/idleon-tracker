@@ -22,11 +22,6 @@ export const MASTERCLASSES = [
         sectionType: 'mob-progression',
         rows: BB_MOB_PROGRESSION,
       },
-      {
-        id: 'notes',
-        title: 'Tips & Notes',
-        text: 'Tips specific to Blood Berserker go here.',
-      },
     ],
   },
   {
@@ -69,6 +64,11 @@ export const MASTERCLASSES = [
         title: 'Mob Progression',
         sectionType: 'mob-progression',
         rows: AC_MOB_PROGRESSION,
+      },
+      {
+        id: 'map-bonuses',
+        title: 'Map Bonuses',
+        sectionType: 'map-bonuses',
       },
       {
         id: 'prisma-bubbles',

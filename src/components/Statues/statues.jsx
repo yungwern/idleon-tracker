@@ -118,7 +118,8 @@ export default function Statues({ snapshot }) {
     <div className="page">
       <h2 className="page-title">Statues</h2>
       <div className="statue-worlds">
-        {statueWorlds.map(({ world, color, statueIds, mobs, individual, special }) => {
+        {statueWorlds.map(({ world, statueIds, mobs, individual, special }) => {
+        const worldColor = `var(--world-${world.replace('World ', '')}-color)`
 
           const rows = []
 
@@ -154,7 +155,7 @@ export default function Statues({ snapshot }) {
           return (
             <div key={world} className="statue-world-card">
               <div className="statue-world-header">
-                <span className="statue-world-label" style={{ color }}>{world}</span>
+                <span className="statue-world-label" style={{ color: worldColor }}>{world}</span>
               </div>
               <div className="statue-mob-rows">
                 {rows.map((row, i) => (

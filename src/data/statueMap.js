@@ -36,7 +36,6 @@ export const statueMap = {
 export const statueWorlds = [
   {
     world: 'World 1',
-    color: '#4ade80',
     statueIds: [0, 1, 2, 3, 4, 6, 13, 14],
     mobs: [
       { name: 'Bored Bean', image: '/images/mobs/Bored_Bean.png' },
@@ -45,7 +44,6 @@ export const statueWorlds = [
   },
   {
     world: 'World 2',
-    color: '#fbbf24',
     statueIds: [7, 9, 10, 11, 12],
     mobs: [
       { name: 'Sandy Pot', image: '/images/mobs/Sandy_Pot.png' },
@@ -57,7 +55,6 @@ export const statueWorlds = [
   },
   {
     world: 'World 3',
-    color: '#38bdf8',
     statueIds: [1, 2, 3, 6, 13, 14, 17],
     mobs: [
       { name: 'Dedotated Ram', image: '/images/mobs/Dedotated_Ram.png' }
@@ -70,7 +67,6 @@ export const statueWorlds = [
   },
   {
     world: 'World 4',
-    color: '#c084fc',
     statueIds: [19, 20, 21],
     mobs: [
       { name: 'Clammie', image: '/images/mobs/Clammie.png' },
@@ -79,7 +75,6 @@ export const statueWorlds = [
   },
   {
     world: 'World 5',
-    color: '#fb923c',
     statueIds: [22, 23, 24],
     mobs: [
       { name: 'Tremor Wurm', image: '/images/mobs/Tremor_Wurm.png' },
@@ -92,7 +87,6 @@ export const statueWorlds = [
   },
   {
     world: 'World 6',
-    color: '#2dd4bf',
     statueIds: [25, 26, 27],
     mobs: [
       { name: 'Minichief Spirit', image: '/images/mobs/Minichief_Spirit.png' },
@@ -100,7 +94,6 @@ export const statueWorlds = [
   },
   {
     world: 'World 7',
-    color: '#22d3ee',
     statueIds: [30, 31],
     mobs: [
       { name: 'Eamsy Earl', image: '/images/mobs/Eamsy_Earl.png' },

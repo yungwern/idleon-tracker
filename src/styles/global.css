@@ -129,3 +129,17 @@ body {
 [data-tier="b"] { --tier-color: #16a34a; }
 [data-tier="c"] { --tier-color: #7c3aed; }
 [data-tier="d"] { --tier-color: #6b7280; }
+
+/* ============================================================
+   WORLD COLORS
+   ============================================================ */
+
+:root {
+  --world-1-color: #4ade80;
+  --world-2-color: #fbbf24;
+  --world-3-color: #38bdf8;
+  --world-4-color: #c084fc;
+  --world-5-color: #fb923c;
+  --world-6-color: #2dd4bf;
+  --world-7-color: #22d3ee;
+}

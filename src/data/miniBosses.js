@@ -2,7 +2,7 @@ export const MINIBOSSES = [
   { rawName: 'slimeB',    
     displayName: 'Glunko The Massive',  
     world: 'World 1', 
-    worldColor: '#86efac', 
+    worldColor: 'var(--world-1-color)', 
     index: 0, 
     location: 'Slime', 
     spawnItem: null 
@@ -10,7 +10,7 @@ export const MINIBOSSES = [
   { rawName: 'babayaga',  
     displayName: 'Baba Yaga',           
     world: 'World 1', 
-    worldColor: '#86efac', 
+    worldColor: 'var(--world-1-color)', 
     index: 2, 
     location: 'Red Mushroom', 
     spawnItem: null 
@@ -18,7 +18,7 @@ export const MINIBOSSES = [
   { rawName: 'poopBig',   
     displayName: 'Dr Defecaus',         
     world: 'World 2', 
-    worldColor: '#fcd34d', 
+    worldColor: 'var(--world-2-color)', 
     index: 1, 
     location: 'Poop', 
     spawnItem: null 
@@ -26,7 +26,7 @@ export const MINIBOSSES = [
   { rawName: 'babaHour',  
     displayName: 'Biggie Hours',        
     world: 'World 2', 
-    worldColor: '#fcd34d', 
+    worldColor: 'var(--world-2-color)', 
     index: 3, 
     location: 'Mimic', 
     spawnItem: { displayName: 'Googley Eyes', imageKey: 'Quest35' } 
@@ -34,7 +34,7 @@ export const MINIBOSSES = [
   { rawName: 'babaMummy', 
     displayName: 'King Doot',           
     world: 'World 2', 
-    worldColor: '#fcd34d', 
+    worldColor: 'var(--world-2-color)', 
     index: 4, 
     location: 'Sand Giant', 
     spawnItem: { displayName: 'Dootjat Eye', imageKey: 'Quest36' } 
@@ -42,14 +42,14 @@ export const MINIBOSSES = [
   { rawName: 'mini3a',    
     displayName: 'Dilapidated Slush',   
     world: 'World 3', 
-    worldColor: '#93c5fd', 
+    worldColor: 'var(--world-3-color)', 
     index: 5, location: 'Bloque', 
     spawnItem: { displayName: 'Bucket of Slush', imageKey: 'Quest68' } 
   },
   { rawName: 'mini4a',    
     displayName: 'Mutated Mush',        
     world: 'World 4', 
-    worldColor: '#fb923c', 
+    worldColor: 'var(--world-4-color)', 
     index: 6, 
     location: 'Purp Mushroom', 
     spawnItem: { displayName: 'Toxic Sludge', imageKey: 'OilBarrel2' } 
@@ -57,7 +57,7 @@ export const MINIBOSSES = [
   { rawName: 'mini5a',    
     displayName: 'Domeo Magmus',        
     world: 'World 5', 
-    worldColor: '#fca5a5', 
+    worldColor: 'var(--world-5-color)', 
     index: 7, 
     location: 'Mister Brightside', 
     spawnItem: null 
@@ -65,7 +65,7 @@ export const MINIBOSSES = [
   { rawName: 'mini6a',    
     displayName: 'Demented Spiritlord', 
     world: 'World 6', 
-    worldColor: '#c4b5fd', 
+    worldColor: 'var(--world-6-color)', 
     index: 8, 
     location: 'Mama Troll', 
     spawnItem: null 

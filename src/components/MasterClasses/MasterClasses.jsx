@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
 import { MASTERCLASSES, itemMap, equipmentMap } from '../../data'
-import { stampMap, STAMP_TIERS } from '../../data/stampsMap'
-import { bubbleMap, BUBBLE_TIERS } from '../../data/bubblesMap'
+import { stampMap, STAMP_TIERS } from '../../data/'
+import { bubbleMap, BUBBLE_TIERS } from '../../data'
 import TierList from '../TierList/TierList'
+import { mobsMap, mapEnemyData } from '../../data'
+
 import './MasterClasses.css'
-import { mobsMap } from '../../data'
 
 // ============================================================
 // SUB-COMPONENTS
@@ -159,6 +160,118 @@ function PrismaBubbleTierList({ snapshot }) {
   )
 }
 
+// ── Map Bonus Helpers ─────────────────────────────────────────────────────────
+const lavaLog  = (n) => Math.log(Math.max(n, 1)) / 2.30259
+const lavaLog2 = (n) => Math.log(Math.max(n, 1)) / Math.log(2)
+
+function getMapMulti(kills) {
+  return (
+    (2 * Math.max(0, lavaLog(kills) - 3.5) + Math.max(0, lavaLog2(kills) - 12)) *
+    (lavaLog(kills) / 2.5) +
+    (Math.min(2, kills / 1e3) + Math.max(5 * (lavaLog(kills) - 5), 0))
+  )
+}
+
+function formatMulti(value) {
+  return (Math.floor(value * 1000) / 1000).toFixed(3) + 'x'
+}
+
+const WORLD_LABELS = {
+  1: 'World 1', 2: 'World 2', 3: 'World 3', 4: 'World 4',
+  5: 'World 5', 6: 'World 6', 7: 'World 7',
+}
+
+const MIN_KILLS = 400
+
+function MapBonusCard({ entry, mapBonuses }) {
+  const bonus = mapBonuses?.[entry.mapIndex]
+  const drKills  = bonus?.dr  ?? 0
+  const expKills = bonus?.exp ?? 0
+  const afkKills = bonus?.afk ?? 0
+
+  if (drKills < MIN_KILLS && expKills < MIN_KILLS && afkKills < MIN_KILLS) return null
+
+  const drMulti  = 1 + getMapMulti(drKills)  / 100
+  const expMulti = 1 + getMapMulti(expKills) / 100
+  const afkMulti = 1 + getMapMulti(afkKills) / 100
+
+  return (
+    <div className="map-bonus-card">
+      <div className="map-bonus-card-top">
+        <img
+          src={`/images/mobs/${entry.mobKey}.png`}
+          alt={entry.mobKey}
+          className="map-bonus-mob-img"
+        />
+      </div>
+      <div className="map-bonus-card-body">
+        <span className="map-bonus-mob-name">{mobsMap[entry.mobKey] ?? entry.mobKey}</span>
+        <div className="map-bonus-stats">
+          <span className="map-bonus-stat" data-type="dr">
+            DR <strong>{formatMulti(drMulti)}</strong>
+          </span>
+          <span className="map-bonus-stat" data-type="exp">
+            EXP <strong>{formatMulti(expMulti)}</strong>
+          </span>
+          <span className="map-bonus-stat" data-type="afk">
+            AFK <strong>{formatMulti(afkMulti)}</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MapBonusSection({ snapshot }) {
+  const mapBonuses = snapshot?.mapBonuses
+
+  // Group entries by world
+  const byWorld = useMemo(() => {
+    const groups = {}
+    for (const entry of mapEnemyData) {
+      if (!groups[entry.world]) groups[entry.world] = []
+      groups[entry.world].push(entry)
+    }
+    return groups
+  }, [])
+
+  const worldNums = Object.keys(byWorld).map(Number).sort((a, b) => a - b)
+
+  return (
+    <div className="map-bonus-section">
+      {worldNums.map(world => {
+        const entries = byWorld[world]
+        // Check if this world has any visible cards before rendering the header
+        const hasAny = entries.some(entry => {
+          const bonus = mapBonuses?.[entry.mapIndex]
+          if (!bonus) return false
+          return (bonus.dr ?? 0) >= MIN_KILLS || (bonus.exp ?? 0) >= MIN_KILLS || (bonus.afk ?? 0) >= MIN_KILLS
+        })
+        if (!hasAny) return null
+
+        return (
+          <div
+            key={world}
+            className="map-bonus-world-group"
+            style={{ '--world-color': `var(--world-${world}-color)` }}
+          >
+            <span className="map-bonus-world-label">{WORLD_LABELS[world]}</span>
+            <div className="map-bonus-cards">
+              {entries.map(entry => (
+                <MapBonusCard
+                  key={entry.mapIndex}
+                  entry={entry}
+                  mapBonuses={mapBonuses}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function SectionContent({ section, snapshot, charIndex }) {
   
   // ── Best Farms ──
@@ -184,6 +297,15 @@ function SectionContent({ section, snapshot, charIndex }) {
     return (
       <div className="mc-section-body">
         <PrismaBubbleTierList snapshot={snapshot} />
+      </div>
+    )
+  }
+
+  // ── Map Bonuses ──
+  if (section.sectionType === 'map-bonuses') {
+    return (
+      <div className="mc-section-body">
+        <MapBonusSection snapshot={snapshot} />
       </div>
     )
   }
@@ -218,71 +340,77 @@ function SectionContent({ section, snapshot, charIndex }) {
   )
 }
 
-function ClassDropdown({ mc, isOpen, onToggle, snapshot }) {
-  return (
-    <div className={`mc-class-dropdown ${isOpen ? 'open' : ''}`} style={{ '--class-color': mc.color }}>
-      {/* ── Class Header (main toggle) ── */}
-      <button className="mc-class-header" onClick={onToggle}>
-        {typeof mc.icon === 'string' && mc.icon.match(/\.(png|jpg|webp|gif)$/)
-          ? <img src={mc.icon} alt={mc.name} className="mc-class-icon-img" />
-          : <span className="mc-class-icon">{mc.icon}</span>
-        }
-        <span className="mc-class-name">{mc.name}</span>
-        {mc.headerItem && (
-          <HeaderItem
-            itemKey={mc.headerItem}
-            snapshot={snapshot}
-            charIndex={mc.charIndex}
-          />
-        )}
-        <span className="mc-class-chevron">{isOpen ? '▲' : '▼'}</span>
-      </button>
-
-      {/* ── Class Body ── */}
-      {isOpen && (
-        <div className="mc-class-body">
-          {mc.sections.map(section => (
-            <div key={section.id} className="mc-section">
-              <h3 className="mc-section-title">{section.title}</h3>
-              <SectionContent
-                section={section}
-                snapshot={snapshot}
-                charIndex={mc.charIndex}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
 
 export default function MasterClasses({ snapshot }) {
-  const [openClass, setOpenClass] = useState()
+  const [activeId, setActiveId] = useState(MASTERCLASSES[0].id)
+  const [activeSectionId, setActiveSectionId] = useState(MASTERCLASSES[0].sections[0].id)
 
-  function toggleClass(id) {
-    setOpenClass(prev => (prev === id ? null : id))
+  function selectClass(id) {
+    setActiveId(id)
+    const mc = MASTERCLASSES.find(mc => mc.id === id)
+    setActiveSectionId(mc.sections[0].id)
   }
 
+  const activeMc = MASTERCLASSES.find(mc => mc.id === activeId)
+  const activeSection = activeMc?.sections.find(s => s.id === activeSectionId)
+
   return (
-    <div className="page masterclasses-page">
+    <div className="page masterclasses-page" style={{ '--active-class-color': activeMc?.color }}>
       <h2 className="page-title">Master Classes</h2>
 
-      <div className="mc-list">
+      {/* ── Class Nav ── */}
+      <div className="mc-nav">
         {MASTERCLASSES.map(mc => (
-          <ClassDropdown
+          <button
             key={mc.id}
-            mc={mc}
-            isOpen={openClass === mc.id}
-            onToggle={() => toggleClass(mc.id)}
-            snapshot={snapshot}
-          />
+            className={`mc-nav-btn${activeId === mc.id ? ' mc-nav-btn--active' : ''}`}
+            onClick={() => selectClass(mc.id)}
+            style={{ '--class-color': mc.color }}
+          >
+            {mc.name}
+            {mc.headerItem && (
+              <HeaderItem
+                itemKey={mc.headerItem}
+                snapshot={snapshot}
+                charIndex={mc.charIndex}
+              />
+            )}
+          </button>
         ))}
       </div>
+
+      {/* ── Active Class Content ── */}
+      {activeMc && (
+        <div className="mc-class-body" style={{ '--class-color': activeMc.color }}>
+
+          {/* ── Section Nav ── */}
+          <div className="mc-section-nav">
+            {activeMc.sections.map(section => (
+              <button
+                key={section.id}
+                className={`mc-section-nav-btn${activeSectionId === section.id ? ' mc-section-nav-btn--active' : ''}`}
+                onClick={() => setActiveSectionId(section.id)}
+              >
+                {section.title}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Active Section ── */}
+          {activeSection && (
+            <div className="mc-section">
+              <SectionContent
+                section={activeSection}
+                snapshot={snapshot}
+                charIndex={activeMc.charIndex}
+              />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
