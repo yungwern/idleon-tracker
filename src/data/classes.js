@@ -1,5 +1,5 @@
 export const classes = [
-  'Blood Berserker',
+  'Death Bringer',
   'Divine Knight',
   'Siege Breaker',
   'Beast Master',

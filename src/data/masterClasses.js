@@ -9,10 +9,10 @@ import { BB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION } from './mo
 
 export const MASTERCLASSES = [
   {
-    id: 'blood-berserker',
-    name: 'Blood Berserker',
+    id: 'death-bringer',
+    name: 'Death Bringer',
     color: '#f87171',
-    icon: '/images/class icons/bloodberserker.png',
+    icon: '/images/class icons/deathbringer.png',
     charIndex: 0,
     headerItem: 'Quest97',
     sections: [

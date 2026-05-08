@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react'
-import { breedingMap, geneMap, spiceMap } from '../../data/breedingMap'
+import { breedingMap, geneMap, spiceMap, PASSIVE_ORDER, PASSIVE_CATEGORIES, fightingTierList, fightingComps, territoryComps } from '../../data/breedingMap'
+import TierList from '../TierList/TierList'
+
 import './Breeding.css'
 
 // ============================================================
@@ -19,50 +21,8 @@ const FORMATION_1_SPICE = 5
 const MAX_SHINY_LEVEL = 20
 
 // ── Passive group order ───────────────────────────────────────────────────────
-const PASSIVE_ORDER = [
-  '+{%_Faster_Shiny_Mob_Lv_Up_Rate',
-  '+{%_Bonuses_from_All_Meals',
-  '+{%_Drop_Rate',
-  '+{%_Multikill_Per_Tier',
-  '+{_Base_Critters_per_Trap',
-  '+{%_Farming_EXP_gain',
-  '+{%_Summoning_EXP_gain',
-  '+{%_Faster_Refinery_Speed',
-  '+{%_Sail_Captain_EXP_Gain',
-  '+{%_Lower_Minimum_Travel_Time_for_Sailing',
-  '+{%_Higher_Artifact_Find_Chance',
-  '+{%_Line_Width_in_Lab',
-  '+{_Base_Efficiency_for_All_Skills',
-  '+{%_Total_Damage',
-  '+{_Infinite_Star_Signs',
-  '+{_Base_STR',
-  '+{_Base_AGI',
-  '+{_Base_LUK',
-  '+{_Base_WIS',
-  '+{%_Class_EXP',
-  '+{%_Skill_EXP',
-  '+{_Tab_1_Talent_Pts',
-  '+{_Tab_2_Talent_Pts',
-  '+{_Tab_3_Talent_Pts',
-  '+{_Tab_4_Talent_Pts',
-  '+{_Star_Talent_Pts',
-]
-
 function formatPassiveLabel(passive) {
   return passive.replace('+{', '').replace(/_/g, ' ').trim()
-}
-
-// Maps individual passives to a shared category label
-const PASSIVE_CATEGORIES = {
-  '+{_Base_STR': 'Base Stats',
-  '+{_Base_AGI': 'Base Stats',
-  '+{_Base_LUK': 'Base Stats',
-  '+{_Base_WIS': 'Base Stats',
-  '+{_Tab_1_Talent_Pts': 'Talent Pts',
-  '+{_Tab_2_Talent_Pts': 'Talent Pts',
-  '+{_Tab_3_Talent_Pts': 'Talent Pts',
-  '+{_Tab_4_Talent_Pts': 'Talent Pts',
-  '+{_Star_Talent_Pts': 'Talent Pts',
 }
 
 function getCategoryKey(passive) {
@@ -366,11 +326,100 @@ function formatGroupTotal(passive, total) {
 }
 
 // ============================================================
+// PICK SLOT — overlapping fanned gene icons
+// ============================================================
+
+function PickSlot({ geneKeys }) {
+  const total = geneKeys.length
+  const fanOffset = 16
+
+  return (
+    <div className="breeding-pick-slot" style={{ width: `${36 + fanOffset * (total - 1)}px` }}>
+      <span className="breeding-pick-badge">1</span>
+      {geneKeys.map((geneKey, i) => (
+        <div
+          key={geneKey}
+          className="breeding-pick-item tooltip-anchor"
+          style={{ left: `${i * fanOffset}px`, zIndex: i }}
+        >
+          <img
+            src={`/images/breeding/${geneKey}.png`}
+            alt={geneKey}
+            className="breeding-gene-img"
+            onError={e => { e.currentTarget.style.display = 'none' }}
+          />
+          <span className="tooltip">
+            {geneMap[geneKey]?.name.charAt(0).toUpperCase() + geneMap[geneKey]?.name.slice(1)}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ============================================================
+// COMP ROW — a labeled row of gene slots
+// ============================================================
+
+const PLACEHOLDER_GENES = {
+  FIGHTER_PLACEHOLDER: { key: 'GeneReady0', label: 'Best Fighter' },
+  TANK_PLACEHOLDER:    { key: 'GeneReady1', label: 'Best Tank' },
+}
+
+function CompSlot({ slot }) {
+  // Pick 1 — array of gene name strings
+  if (Array.isArray(slot)) {
+    const geneKeys = slot.map(name => {
+      const entry = Object.entries(geneMap).find(([, v]) => v.name === name)
+      return entry ? entry[0] : null
+    }).filter(Boolean)
+    return <PickSlot geneKeys={geneKeys} />
+  }
+
+  // Placeholder
+  if (PLACEHOLDER_GENES[slot]) {
+    const { key, label } = PLACEHOLDER_GENES[slot]
+    return (
+      <div className="breeding-gene-slot breeding-gene-slot--placeholder tooltip-anchor">
+        <img
+          src={`/images/breeding/${key}.png`}
+          alt={label}
+          className="breeding-gene-img breeding-gene-img--placeholder"
+          onError={e => { e.currentTarget.style.display = 'none' }}
+        />
+        <span className="tooltip">{label}</span>
+      </div>
+    )
+  }
+
+  // Normal gene name string
+  return <GeneIcon geneName={slot} />
+}
+
+function CompRow({ comp }) {
+  return (
+    <div className="breeding-comp-row">
+      <div className="breeding-comp-label-col">
+        <span className="breeding-comp-label">{comp.label}</span>
+        {comp.sublabel && (
+          <span className="breeding-comp-sublabel">{comp.sublabel}</span>
+        )}
+      </div>
+      <div className="breeding-comp-slots">
+        {comp.slots.map((slot, i) => (
+          <CompSlot key={i} slot={slot} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 
 export default function Breeding({ snapshot }) {
-  const [activeTab, setActiveTab] = useState('spice')
+  const [activeTab, setActiveTab] = useState('shiny')
   const [activeFormation, setActiveFormation] = useState(DEFAULT_FORMATION)
   const [hideMaxed, setHideMaxed] = useState(false)
   const [bonusFilter, setBonusFilter] = useState('')
@@ -379,6 +428,12 @@ export default function Breeding({ snapshot }) {
   const shinyPetsLevels = snapshot?.breeding?.shinyPetsLevels ?? []
   const fencePets = snapshot?.breeding?.fencePets ?? {}
 
+  const geneItemMap = useMemo(() =>
+    Object.fromEntries(Object.entries(geneMap).map(([key, v]) => [key, { name: v.name }]))
+  , [])
+
+  const [fightingSubTab, setFightingSubTab] = useState('wave')
+  
   const sortedPets = useMemo(() => {
     const allPets = Object.entries(breedingMap).map(([key, pet]) => {
       const { worldIndex: wi, petIndex: pi } = parseWorldCoords(pet.world)
@@ -446,16 +501,22 @@ export default function Breeding({ snapshot }) {
       {/* ── Nav Bar ── */}
       <div className="breeding-nav">
         <button
+          className={`breeding-nav-btn${activeTab === 'shiny' ? ' breeding-nav-btn--active' : ''}`}
+          onClick={() => setActiveTab('shiny')}
+        >
+          Shiny Levels
+        </button>
+        <button
           className={`breeding-nav-btn${activeTab === 'spice' ? ' breeding-nav-btn--active' : ''}`}
           onClick={() => setActiveTab('spice')}
         >
           Spice Formations
         </button>
         <button
-          className={`breeding-nav-btn${activeTab === 'shiny' ? ' breeding-nav-btn--active' : ''}`}
-          onClick={() => setActiveTab('shiny')}
+          className={`breeding-nav-btn${activeTab === 'fighting' ? ' breeding-nav-btn--active' : ''}`}
+          onClick={() => setActiveTab('fighting')}
         >
-          Shiny Levels
+          Pet Fighting Comps
         </button>
       </div>
 
@@ -547,6 +608,59 @@ export default function Breeding({ snapshot }) {
                 )
               })}
             </>
+          )}
+        </>
+      )}
+
+      {/* ── Pet Fighting Comps Tab ── */}
+      {activeTab === 'fighting' && (
+        <>
+          {/* ── Fighting Sub-Nav ── */}
+          <div className="breeding-subnav">
+            <button
+              className={`breeding-subnav-btn${fightingSubTab === 'tierlist' ? ' breeding-subnav-btn--active' : ''}`}
+              onClick={() => setFightingSubTab('tierlist')}
+            >
+              Tier List
+            </button>
+            <button
+              className={`breeding-subnav-btn${fightingSubTab === 'wave' ? ' breeding-subnav-btn--active' : ''}`}
+              onClick={() => setFightingSubTab('wave')}
+            >
+              Wave Comps
+            </button>
+            <button
+              className={`breeding-subnav-btn${fightingSubTab === 'territory' ? ' breeding-subnav-btn--active' : ''}`}
+              onClick={() => setFightingSubTab('territory')}
+            >
+              Territory Fights
+            </button>
+          </div>
+
+          {fightingSubTab === 'tierlist' && (
+            <TierList
+              tiers={fightingTierList}
+              itemsKey="items"
+              itemMap={geneItemMap}
+              imagePath="/images/breeding"
+              variant="fighting"
+            />
+          )}
+
+          {fightingSubTab === 'wave' && (
+            <div className="breeding-comps-table">
+              {fightingComps.map(comp => (
+                <CompRow key={comp.id} comp={comp} />
+              ))}
+            </div>
+          )}
+
+          {fightingSubTab === 'territory' && (
+            <div className="breeding-comps-table">
+              {territoryComps.map(comp => (
+                <CompRow key={comp.id} comp={comp} />
+              ))}
+            </div>
           )}
         </>
       )}

@@ -25,7 +25,7 @@ export const itemMap = {
   Quest101: 'Arcane Rock',
 
   // ── Currencies  ──
-  // Blood Berserker
+  // Death Bringer
   Bone0_x1: 'Femur',  
   Bone1_x1: 'Ribcage',
   Bone2_x1: 'Cranium',

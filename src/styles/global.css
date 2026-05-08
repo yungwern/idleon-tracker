@@ -91,9 +91,9 @@ body {
    CLASS THEMES / ICONS
    ============================================================ */
 
-.character-card[data-class="blood-berserker"] { 
+.character-card[data-class="death-bringer"] { 
   --class-color: #f87171; 
-  --class-icon: url("/images/class icons/bloodberserker.png"); 
+  --class-icon: url("/images/class icons/deathbringer.png"); 
 }
 .character-card[data-class="divine-knight"] { 
   --class-color: #fbbf24; 

@@ -893,3 +893,120 @@ export const geneMap = {
   GeneReady32: { name: 'peapeapod' },
   GeneReady33: { name: 'borger' },
 }
+
+export const PASSIVE_ORDER = [
+  '+{%_Faster_Shiny_Mob_Lv_Up_Rate',
+  '+{%_Bonuses_from_All_Meals',
+  '+{%_Drop_Rate',
+  '+{%_Multikill_Per_Tier',
+  '+{_Base_Critters_per_Trap',
+  '+{%_Farming_EXP_gain',
+  '+{%_Summoning_EXP_gain',
+  '+{%_Faster_Refinery_Speed',
+  '+{%_Sail_Captain_EXP_Gain',
+  '+{%_Lower_Minimum_Travel_Time_for_Sailing',
+  '+{%_Higher_Artifact_Find_Chance',
+  '+{%_Line_Width_in_Lab',
+  '+{_Base_Efficiency_for_All_Skills',
+  '+{%_Total_Damage',
+  '+{_Infinite_Star_Signs',
+  '+{_Base_STR',
+  '+{_Base_AGI',
+  '+{_Base_LUK',
+  '+{_Base_WIS',
+  '+{%_Class_EXP',
+  '+{%_Skill_EXP',
+  '+{_Tab_1_Talent_Pts',
+  '+{_Tab_2_Talent_Pts',
+  '+{_Tab_3_Talent_Pts',
+  '+{_Tab_4_Talent_Pts',
+  '+{_Star_Talent_Pts',
+]
+
+// Maps individual passives to a shared category label
+export const PASSIVE_CATEGORIES = {
+  '+{_Base_STR': 'Base Stats',
+  '+{_Base_AGI': 'Base Stats',
+  '+{_Base_LUK': 'Base Stats',
+  '+{_Base_WIS': 'Base Stats',
+  '+{_Tab_1_Talent_Pts': 'Talent Pts',
+  '+{_Tab_2_Talent_Pts': 'Talent Pts',
+  '+{_Tab_3_Talent_Pts': 'Talent Pts',
+  '+{_Tab_4_Talent_Pts': 'Talent Pts',
+  '+{_Star_Talent_Pts': 'Talent Pts',
+}
+
+export const fightingTierList = [
+  {
+    id: 's',
+    label: 'S',
+    sublabel: 'Get ASAP',
+    items: ['GeneReady1', 'GeneReady11', 'GeneReady21', 'GeneReady22', 'GeneReady18'],
+  },
+  {
+    id: 'a',
+    label: 'A',
+    sublabel: 'Supporter',
+    items: ['GeneReady27', 'GeneReady33', 'GeneReady12', 'GeneReady26', 'GeneReady23', 'GeneReady10', 'GeneReady3', 'GeneReady16', 'GeneReady30'],
+  },
+  {
+    id: 'b',
+    label: 'B',
+    sublabel: 'Specific Fights',
+    items: ['GeneReady17', 'GeneReady13', 'GeneReady6', 'GeneReady25', 'GeneReady2', 'GeneReady19', 'GeneReady14'],
+  },
+  {
+    id: 'c',
+    label: 'C',
+    sublabel: 'Bad',
+    items: ['GeneReady29', 'GeneReady28', 'GeneReady15', 'GeneReady9', 'GeneReady31', 'GeneReady8', 'GeneReady7', 'GeneReady0', 'GeneReady20', 'GeneReady32', 'GeneReady24'],
+  },
+]
+
+export const fightingComps = [
+  {
+    id: 'wave15',
+    label: 'Wave 15',
+    sublabel: 'Unlocks 4th Slot',
+    slots: ['FIGHTER_PLACEHOLDER', 'looter', 'TANK_PLACEHOLDER'],
+  },
+  {
+    id: 'wave50',
+    label: 'Wave 50',
+    sublabel: 'Unlocks 5th Slot',
+    slots: ['FIGHTER_PLACEHOLDER', 'looter', 'defender', 'TANK_PLACEHOLDER'],
+  },
+  {
+    id: 'wave125',
+    label: 'Wave 125',
+    sublabel: 'Unlocks 6th Slot',
+    slots: ['looter', 'ninja', 'badumdum', ['defender', 'fleeter', 'refiller', 'looter'], 'borger'],
+  },
+  {
+    id: 'wave200',
+    label: 'Wave 200',
+    sublabel: 'The Goal',
+    slots: ['rattler', 'defender', 'looter', ['converter', 'refiller', 'looter'], 'badumdum', 'borger'],
+  },
+]
+
+export const territoryComps = [
+  {
+    id: 'w3w4',
+    label: 'W3 / W4',
+    sublabel: '',
+    slots: ['rattler', 'refiller', 'monolithic', 'defender', 'refiller'],
+  },
+  {
+    id: 'w5',
+    label: 'W5',
+    sublabel: '',
+    slots: ['rattler', 'looter', 'trasher', 'refiller', 'rattler', 'refiller'],
+  },
+  {
+    id: 'w6w7',
+    label: 'W6 / W7',
+    sublabel: '',
+    slots: ['rattler', 'looter', 'monolithic', 'refiller', 'defender', 'refiller'],
+  },
+]

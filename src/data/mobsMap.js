@@ -664,8 +664,8 @@ export const mapEnemyData = [
     world: 7 },
 ];
 
-// ── Blood Berserker Mob Progression ──
-export const BB_MOB_PROGRESSION = [
+// ── Death Bringer Mob Progression ──
+export const DB_MOB_PROGRESSION = [
   {
     currencyKey: 'Bone0_x1',
     mobs: [

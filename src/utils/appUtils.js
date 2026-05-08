@@ -2,7 +2,7 @@ export const toClassSlug = (className) => className.toLowerCase().replace(/\s+/g
 
 export function classColor(cls) {
   const colors = {
-    'Blood Berserker':    '#f87171',
+    'Death Bringer':      '#f87171',
     'Divine Knight':      '#fbbf24',
     'Siege Breaker':      '#16a34a',
     'Wind Walker':        '#059669',

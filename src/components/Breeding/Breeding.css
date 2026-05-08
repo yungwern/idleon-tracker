@@ -460,3 +460,155 @@
   font-size: 10px;
   color: #6b7280;
 }
+
+/* ── Pet Comp Tier List ── */
+[data-variant="fighting"] .tl-item-img-wrap {
+  width: 46px;
+  height: 46px;
+}
+
+[data-variant="fighting"] .tl-item-img {
+  width: 46px;
+  height: 46px;
+}
+
+[data-variant="fighting"] .tl-items-wrap {
+  gap: 2px;
+}
+
+/* ── Fighting Sub-Nav ── */
+.breeding-subnav {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.breeding-subnav-btn {
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.breeding-subnav-btn:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.breeding-subnav-btn--active {
+  border-color: rgba(160, 196, 255, 0.3);
+  background: rgba(160, 196, 255, 0.08);
+  color: #a0c4ff;
+}
+
+/* ── Comp Table ── */
+.breeding-comps-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ── Comp Row ── */
+.breeding-comp-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.breeding-comp-label-col {
+  width: 100px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.breeding-comp-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.breeding-comp-sublabel {
+  font-size: 10px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.breeding-comp-slots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Pick Slot (fanned overlapping) ── */
+.breeding-pick-slot {
+  position: relative;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.breeding-pick-item {
+  position: absolute;
+  top: 0;
+  width: 36px;
+  height: 36px;
+  transition: transform 0.15s ease;
+  cursor: default;
+}
+
+.breeding-pick-item:hover {
+  transform: translateY(-6px);
+  z-index: 10 !important;
+}
+
+.breeding-pick-badge {
+  position: absolute;
+  top: -10px;
+  left: 100%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 800;
+  color: #facc15;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  border-radius: 4px;
+  padding: 0 4px;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ── Placeholder gene slot ── */
+.breeding-gene-img--placeholder {
+  filter: grayscale(0.3);
+  opacity: 0.7;
+}
+
+.breeding-slot-label {
+  font-size: 8px;
+  color: #6b7280;
+  text-align: center;
+  line-height: 1.2;
+  width: 36px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

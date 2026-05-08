@@ -2,7 +2,7 @@ export const characters = [
   {
     id: 'char1',
     name: 'YungWern',
-    class: 'Blood Berserker',
+    class: 'Death Bringer',
     level: 0,
     bestFor: ['Cooking', 'GMush Kills'],
     todos: [
