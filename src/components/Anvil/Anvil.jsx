@@ -1,4 +1,6 @@
 import { classColor } from '../../utils/appUtils'
+import InfoPanel from '../InfoPanel/InfoPanel'
+
 import './Anvil.css'
 
 // ============================================================
@@ -40,10 +42,9 @@ export default function Anvil({ snapshot }) {
   return (
     <div className="page anvil-page">
       <h2 className="page-title">Anvil</h2>
-
-      <div className="anvil-info-banner">
-        This section currently only shows what each character is producing. Full production stats and optimizations coming in a future update.
-      </div>
+      <InfoPanel
+        intro="This section currently only shows what each character is producing. Full production stats and optimizations coming in a future update."
+      />
 
       {!hasData ? (
         <p className="anvil-empty">No active anvil production found.</p>

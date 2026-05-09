@@ -1,7 +1,9 @@
 import { statueMap, statueWorlds } from '../../data'
 import { mapEnemyData } from '../../data/mobsMap'
-import './Statues.css'
 import { statueLevelColor } from '../../utils/appUtils.js'
+import InfoPanel from '../InfoPanel/InfoPanel'
+
+import './Statues.css'
 
 // ── Map Bonus Helpers ─────────────────────────────────────────────
 const lavaLog = (num) => Math.log(Math.max(num, 1)) / 2.30259
@@ -117,6 +119,15 @@ export default function Statues({ snapshot }) {
   return (
     <div className="page">
       <h2 className="page-title">Statues</h2>
+      <InfoPanel
+      intro="This page shows the best mob to farm in each world for each statue type."
+      items={[
+        'The bonus shown above each mob is your current Arcane Cultist DR Map Bonus.',
+        'World 3 mobs (except Dedotated Ram) are best farmed with Elemental Sorcerer or AFK.',
+        'World 5 mobs from "The Hole" are not compatible with Arcane Cultist, so no bonus is displayed.',
+        'World 7 does not yet have a clearly defined best mob, though Eamsy Earl has a solid layout if you can consistently kill crystal mobs.'
+      ]}
+      />
       <div className="statue-worlds">
         {statueWorlds.map(({ world, statueIds, mobs, individual, special }) => {
         const worldColor = `var(--world-${world.replace('World ', '')}-color)`
