@@ -72,6 +72,25 @@ function parseAnvil(json) {
   return { rows: allRows }
 }
 
+// ── Storage ───────────────────────────────────────────────────────────────────
+function parseStorage(json) {
+  const order    = typeof json.ChestOrder    === 'string' ? JSON.parse(json.ChestOrder)    : (json.ChestOrder    ?? [])
+  const quantity = typeof json.ChestQuantity === 'string' ? JSON.parse(json.ChestQuantity) : (json.ChestQuantity ?? [])
+
+  const items = {}
+  order.forEach((key, idx) => {
+    if (key === 'Blank' || key === 'LockedInvSpace') return
+    const qty = quantity[idx] ?? 0
+    if (items[key]) {
+      items[key] += qty
+    } else {
+      items[key] = qty
+    }
+  })
+
+  return { items }
+}
+
 // ── Character Extractors ──────────────────────────────────────────────────────
 const weaponKeys = new Set(
   MASTERCLASSES.flatMap(mc =>
@@ -298,6 +317,7 @@ export function extractSnapshot(json) {
 
   return {
     characters: extractedCharacters,
+    storage: parseStorage(json),
     statues: parseStatues(json),
     shrines: parseShrines(json),
     armorSmithySets: parseArmorSmithySets(json),

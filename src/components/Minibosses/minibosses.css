@@ -245,3 +245,104 @@
   color: #4b5563;
   font-style: italic;
 }
+
+/* Bone Joe Pickle */
+.bjp-tracker {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 12px 6px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: default;
+}
+
+.bjp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bjp-row--divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 6px;
+}
+
+.bjp-multiplier {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.bjp-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.bjp-wrapper:hover .bjp-tooltip {
+  display: flex;
+}
+
+.bjp-icon {
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
+}
+
+.bjp-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.bjp-count {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.bjp-multiplier {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #f87171;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  padding-left: 8px;
+  margin-left: 2px;
+}
+
+.bjp-tooltip-multi {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.bjp-tooltip-total-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  font-size: 0.78rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 2px;
+  padding-top: 5px;
+  align-items: center;
+}
+
+.bjp-tooltip {
+  min-width: 170px;
+  padding: 8px 10px;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  white-space: normal;
+}
+
+.bjp-tooltip-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  font-size: 0.78rem;
+  align-items: center;
+}
+
+.bjp-tooltip-source { color: #9ca3af; }
+.bjp-tooltip-qty    { font-weight: 600; color: #e5e7eb; }
