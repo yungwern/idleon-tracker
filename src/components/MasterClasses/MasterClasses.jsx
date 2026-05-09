@@ -4,29 +4,51 @@ import { stampMap, STAMP_TIERS } from '../../data/'
 import { bubbleMap, BUBBLE_TIERS } from '../../data'
 import TierList from '../TierList/TierList'
 import { mobsMap, mapEnemyData } from '../../data'
+import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './MasterClasses.css'
-import InfoPanel from '../InfoPanel/InfoPanel'
+
 
 // ============================================================
 // SUB-COMPONENTS
 // ============================================================
 
-function HeaderItem({ itemKey, snapshot, charIndex }) {
-  const name = itemMap[itemKey]
+function ActiveClassItem({ snapshot, mc }) {
+  if (!mc?.headerItem) return null
+
+  const name = itemMap[mc.headerItem]
   if (!name) return null
-  const qty = snapshot?.characters?.[charIndex]?.inventory?.[itemKey]?.qty ?? 0
+
+  const qty = snapshot?.characters?.[mc.charIndex]?.inventory?.[mc.headerItem]?.qty ?? 0
+
   return (
-    <div className="mc-header-item">
-      <img src={`/images/items/${itemKey}.png`} alt={name} className="mc-header-item-img" />
-      <span className="mc-header-item-qty">{qty.toLocaleString()}</span>
+    <div className="mc-header-pill-wrapper">
+      <div className="mc-header-pill">
+        <div className="mc-header-pill-row">
+          <img src={`/images/items/${mc.headerItem}.png`} alt={name} className="mc-header-pill-icon" />
+          <span className="mc-header-pill-label">{name}</span>
+          <span className="mc-header-pill-count">{qty.toLocaleString()}</span>
+        </div>
+      </div>
     </div>
   )
 }
 
 function MobProgressionTable({ rows }) {
+
+  const mobWorldMap = Object.fromEntries(
+  mapEnemyData.map(entry => [entry.mobKey, entry.world])
+)
+
   return (
     <div className="mob-prog-table">
+      <InfoPanel
+        intro="The mob progression tab shows the best mobs to farm for each Masterclass currency at endgame."
+        items={[
+          'Only the most relevant endgame mobs are listed — earlier worlds are excluded for clarity.',
+          'World 6 mobs should be your primary focus. World 7 mobs are included for reference when they become farmable.',
+        ]}
+      />
       {rows.map((row) => (
         <div key={row.currencyKey} className="mob-prog-row">
           <div className="mob-prog-currency">
@@ -37,18 +59,24 @@ function MobProgressionTable({ rows }) {
             />
           </div>
           <div className="mob-prog-mobs">
-            {row.mobs.map((mob) => (
-              <div key={mob.key} className="mob-prog-chip tooltip-anchor">
-                <img
-                  src={`/images/mobs/${mob.key}.png`}
-                  alt={mobsMap[mob.key] ?? mob.key}
-                  className="mob-prog-mob-img"
-                />
-                <span className="tooltip">
-                  {mobsMap[mob.key] ?? mob.key} — {mob.drop.toLocaleString()}
-                </span>
-              </div>
-            ))}
+            {row.mobs.map((mob) => {
+              const isW7 = mobWorldMap[mob.key] === 7
+              return (
+                <div
+                  key={mob.key}
+                  className={`mob-prog-chip tooltip-anchor${isW7 ? ' mob-prog-chip--w7' : ''}`}
+                >
+                  <img
+                    src={`/images/mobs/${mob.key}.png`}
+                    alt={mobsMap[mob.key]?.name ?? mob.key}
+                    className="mob-prog-mob-img"
+                  />
+                  <span className="tooltip">
+                    {mobsMap[mob.key]?.replace(/_/g, ' ') ?? mob.key.replace(/_/g, ' ')} — {mob.drop.toLocaleString()}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
       ))}
@@ -57,44 +85,80 @@ function MobProgressionTable({ rows }) {
 }
 
 function InventorySection({ inventoryKey, snapshot, charIndex, variant }) {
-  const keys = Array.isArray(inventoryKey) ? inventoryKey : [inventoryKey];
+  const keys = Array.isArray(inventoryKey) ? inventoryKey : [inventoryKey]
+
+  if (variant === 'weapon') {
+    const weapons = []
+    const rings = []
+
+    keys.forEach(key => {
+      const name = itemMap[key]
+      if (!name) return
+      const item = snapshot?.characters?.[charIndex]?.inventory?.[key]
+      const instances = Array.isArray(item) ? item : (item ? [item] : [])
+      const equipment = equipmentMap[key] ?? {}
+      const isRing = key.includes('Rings')
+
+      instances.forEach((instance, idx) => {
+        const stats = instance?.stats ?? {}
+        const uq1 = equipment.uq1txt && stats.UQ1val != null ? `${stats.UQ1val}${equipment.uq1txt}` : null
+        const uq2 = equipment.uq2txt && stats.UQ2val != null ? `${stats.UQ2val}${equipment.uq2txt}` : null
+        const card = (
+          <div className="mc-item-card" key={`${key}-${idx}`}>
+            <div className="mc-item-card-top">
+              <img src={`/images/items/${key}.png`} alt={name} className="mc-item-img" />
+            </div>
+            <div className="mc-item-card-body">
+              <span className="mc-item-name">{name}</span>
+              {uq1 && <span className="mc-item-note">{uq1}</span>}
+              {uq2 && <span className="mc-item-note">{uq2}</span>}
+            </div>
+          </div>
+        )
+        if (isRing) rings.push(card)
+        else weapons.push(card)
+      })
+    })
+
+    return (
+      <div className="mc-equipment-sections">
+        {weapons.length > 0 && (
+          <div className="mc-equipment-group">
+            <span className="mc-equipment-heading">Weapons</span>
+            <div className="mc-items-grid">{weapons}</div>
+          </div>
+        )}
+        {rings.length > 0 && (
+          <div className="mc-equipment-group">
+            <span className="mc-equipment-heading">Rings</span>
+            <div className="mc-items-grid">{rings}</div>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="mc-items-grid">
-      {keys.map((key) => {
-        const name = itemMap[key];
-        if (!name) return null;
-        const item = snapshot?.characters?.[charIndex]?.inventory?.[key];
-
-        if (variant === 'weapon') {
-          const instances = Array.isArray(item) ? item : (item ? [item] : []);
-          const equipment = equipmentMap[key] ?? {};
-          return instances.map((instance, idx) => {
-            const stats = instance?.stats ?? {};
-            const uq1 = equipment.uq1txt && stats.UQ1val != null ? `${stats.UQ1val}${equipment.uq1txt}` : null;
-            const uq2 = equipment.uq2txt && stats.UQ2val != null ? `${stats.UQ2val}${equipment.uq2txt}` : null;
-            return (
-              <div className="mc-item-card" key={`${key}-${idx}`}>
-                <img src={`/images/items/${key}.png`} alt={name} className="mc-item-img" />
-                <span className="mc-item-name">{name}</span>
-                {uq1 && <span className="mc-item-note">{uq1}</span>}
-                {uq2 && <span className="mc-item-note">{uq2}</span>}
-              </div>
-            );
-          });
-        }
-
-        const qty = item?.qty ?? 0;
+      {keys.map(key => {
+        const name = itemMap[key]
+        if (!name) return null
+        const item = snapshot?.characters?.[charIndex]?.inventory?.[key]
+        const qty = item?.qty ?? 0
         return (
           <div className="mc-item-card" key={key}>
-            <img src={`/images/items/${key}.png`} alt={name} className="mc-item-img" />
-            <span className="mc-item-name">{name}</span>
-            <span className="mc-item-note">Owned: {qty.toLocaleString()}</span>
+            <div className="mc-item-card-top">
+              <img src={`/images/items/${key}.png`} alt={name} className="mc-item-img" />
+            </div>
+            <div className="mc-item-card-body">
+              <span className="mc-item-name">{name}</span>
+              <span className="mc-item-note">Owned: {qty.toLocaleString()}</span>
+            </div>
           </div>
-        );
+        )
       })}
     </div>
-  );
+  )
 }
 
 // ── Exalted Stamp Tier List ───────────────────────────────────
@@ -113,15 +177,26 @@ function ExaltedStampTierList({ snapshot }) {
   }, [snapshot?.exaltedStamps])
 
   return (
-    <TierList
-      tiers={STAMP_TIERS}
-      itemsKey="stamps"
-      itemMap={stampMap}
-      upgradedIds={upgradedIds}
-      getOverlay={() => '/images/stamps/Exalted_Stamp_Frame.png'}
-      imagePath="/images/stamps"
-      variant="stamps"
-    />
+    <div>
+      <InfoPanel
+      intro="This tier list tracks your Exalted Stamp upgrades and provides general guidance on upgrade priority."
+      items={[
+        'Automatically updates when you import a new save.',
+        'Stamps are ordered by priority within each tier.',
+        'Priority is intended as general guidance — always consider your own account progression before upgrading.',
+        'Exalted Stamps cannot be reset. Upgrade with caution!',
+      ]}
+      />
+      <TierList
+        tiers={STAMP_TIERS}
+        itemsKey="stamps"
+        itemMap={stampMap}
+        upgradedIds={upgradedIds}
+        getOverlay={() => '/images/stamps/Exalted_Stamp_Frame.png'}
+        imagePath="/images/stamps"
+        variant="stamps"
+      />
+    </div>
   )
 }
 
@@ -150,14 +225,25 @@ function PrismaBubbleTierList({ snapshot }) {
   }
 
   return (
-    <TierList
-      tiers={BUBBLE_TIERS}
-      itemsKey="bubbles"
-      itemMap={bubbleMap}
-      upgradedIds={upgradedIds}
-      getOverlay={getBubbleOverlay}
-      imagePath="/images/bubbles"
-    />
+    <div>
+      <InfoPanel
+      intro="This tier list tracks your Prisma Bubble upgrades and provides general guidance on upgrade priority."
+      items={[
+        'Automatically updates when you import a new save.',
+        'Bubbles are ordered by priority within each tier.',
+        'Priority is intended as general guidance — always consider your own account progression before upgrading.',
+        'Prisma Bubbles cannot be reset. Upgrade with caution!',
+      ]}
+      />
+      <TierList
+        tiers={BUBBLE_TIERS}
+        itemsKey="bubbles"
+        itemMap={bubbleMap}
+        upgradedIds={upgradedIds}
+        getOverlay={getBubbleOverlay}
+        imagePath="/images/bubbles"
+      />
+    </div>
   )
 }
 
@@ -369,6 +455,16 @@ export default function MasterClasses({ snapshot }) {
   return (
     <div className="page masterclasses-page" style={{ '--active-class-color': activeMc?.color }}>
       <h2 className="page-title">Master Classes</h2>
+      
+      {/* ── Main Masterclass Info Panel ── */}
+      <InfoPanel
+      intro="This page breaks down each Masterclass and their unique progression systems. The AFK item for the active class is displayed at the top for a quick overview of your accumulated AFK hours."
+      items={[
+        'Switch between Masterclasses using the nav below. Each class has its own set of sections tailored to their specific mechanics.',
+        'AFK items are tracked per character — the count shown reflects the character assigned to that Masterclass.',
+        'Some sections contain tier lists, farm recommendations, and map bonuses that update automatically when you import a new save.',
+      ]}
+      />
 
       {/* ── Class Nav ── */}
       <div className="mc-nav">
@@ -380,16 +476,12 @@ export default function MasterClasses({ snapshot }) {
             style={{ '--class-color': mc.color }}
           >
             {mc.name}
-            {mc.headerItem && (
-              <HeaderItem
-                itemKey={mc.headerItem}
-                snapshot={snapshot}
-                charIndex={mc.charIndex}
-              />
-            )}
           </button>
         ))}
       </div>
+
+      {/* ── Active Class Header Item ── */}
+      <ActiveClassItem snapshot={snapshot} mc={activeMc} />      
 
       {/* ── Active Class Content ── */}
       {activeMc && (

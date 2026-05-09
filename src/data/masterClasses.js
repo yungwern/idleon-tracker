@@ -38,16 +38,16 @@ export const MASTERCLASSES = [
         sectionType: 'exalted-stamps',
       },
       {
-        id: 'mob-progression',
-        title: 'Mob Progression',
-        sectionType: 'mob-progression',
-        rows: WW_MOB_PROGRESSION,
-      },
-      {
         id: 'weapons',
         title: 'Weapons & Gear',
         inventoryKey: ['EquipmentBowsTempest0', 'EquipmentBowsTempest1', 'EquipmentBowsTempest2', 'EquipmentBowsTempest3', 'EquipmentBowsTempest4', 'EquipmentRingsTempest4', 'EquipmentRingsTempest6', 'EquipmentRingsTempest7'],
         variant: 'weapon',
+      },
+      {
+        id: 'mob-progression',
+        title: 'Mob Progression',
+        sectionType: 'mob-progression',
+        rows: WW_MOB_PROGRESSION,
       },
     ],
   },
@@ -65,12 +65,6 @@ export const MASTERCLASSES = [
         sectionType: 'prisma-bubbles',
       },
       {
-        id: 'mob-progression',
-        title: 'Mob Progression',
-        sectionType: 'mob-progression',
-        rows: AC_MOB_PROGRESSION,
-      },
-      {
         id: 'map-bonuses',
         title: 'Map Bonuses',
         sectionType: 'map-bonuses',
@@ -80,6 +74,12 @@ export const MASTERCLASSES = [
         title: 'Weapons & Gear',
         inventoryKey: ['EquipmentWandsArc0', 'EquipmentRingsArc0'],
         variant: 'weapon',
+      },
+      {
+        id: 'mob-progression',
+        title: 'Mob Progression',
+        sectionType: 'mob-progression',
+        rows: AC_MOB_PROGRESSION,
       },
     ],
   },

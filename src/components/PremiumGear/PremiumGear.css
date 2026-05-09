@@ -1,87 +1,94 @@
-/* ============================================================
-   PREMIUM GEAR
-   ============================================================ */
-.premium-gear-tab {
-  padding: 16px 0;
+/* ── Grid ── */
+.pg-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
 }
 
-.premium-gear-slots {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 16px;
-}
-
-/* Individual slot wrapper */
-.premium-gear-item {
+/* ── Card ── */
+.pg-card {
+  width: 130px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-/* The image box */
-.premium-gear-slot {
-  width: 100%;
-  aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.pg-card:hover {
+  border-color: rgba(160, 196, 255, 0.2);
+  background: rgba(160, 196, 255, 0.04);
+}
+
+/* ── Top image area ── */
+.pg-card-top {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  transition: border-color 0.15s;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px 10px 0 0;
+  min-height: 76px;
 }
 
-.premium-gear-slot.equipped:hover {
-  border-color: rgba(160, 196, 255, 0.3);
-  background: rgba(160, 196, 255, 0.06);
-}
-
-.premium-gear-slot.unequipped {
-  border: 1px dashed #4b5563;
-}
-
-/* Equipped image */
-.premium-gear-image {
-  width: 75%;
-  height: 75%;
+.pg-card-img {
+  width: 56px;
+  height: 56px;
   object-fit: contain;
   image-rendering: pixelated;
 }
 
-/* Empty slot placeholder */
-.premium-gear-empty {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.pg-card-empty-icon {
+  font-size: 2rem;
   opacity: 0.2;
 }
 
-.premium-gear-empty-icon {
-  font-size: 28px;
+/* ── Body ── */
+.pg-card-body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
 }
 
-/* Slot labels */
-.premium-gear-label {
-  font-size: 0.72rem;
-  color: #9ca3af;
+.pg-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e5e7eb;
+  border-bottom: 1px solid #2dd4bf;
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
   text-align: center;
-  max-width: 100%;
-  word-wrap: break-word;
-  white-space: normal;
 }
 
-.premium-gear-label.unequipped-label {
-  color: #374151;
-  font-style: italic;
+.pg-card-name-empty {
+  color: #4b5563;
+  border-bottom-color: rgba(45, 212, 191, 0.15);
+  font-weight: 400;
 }
 
-.premium-gear-stat {
+.pg-card-stat {
   font-size: 11px;
-  font-style: italic;
-  color: #9ca3af;
+  color: #a0c4ff;
   text-align: center;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 0px 0px 0px;
+}
+
+.pg-card-stat::before {
+  content: '•';
+  color: #2dd4bf;
+  flex-shrink: 0;
 }

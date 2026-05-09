@@ -119,18 +119,36 @@
   gap: 14px;
 }
 
-.mc-item-card {
+.mc-equipment-sections {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.02);
+  gap: 20px;
+}
+
+.mc-equipment-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mc-equipment-heading {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--class-color);
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mc-item-card {
+  width: 130px;
+  display: flex;
+  flex-direction: column;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  min-width: 100px;
-  max-width: 140px;
-  transition: border-color 0.15s;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s;
 }
 
 .mc-item-card:hover {
@@ -138,32 +156,44 @@
   background: rgba(160, 196, 255, 0.04);
 }
 
-.mc-item-img-placeholder {
-  font-size: 28px;
-  line-height: 1;
+.mc-item-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px 10px 0 0;
 }
 
 .mc-item-img {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.mc-item-card-body {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
 }
 
 .mc-item-name {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: #e5e7eb;
-  text-align: center;
   border-bottom: 1px solid var(--class-color);
-  padding-bottom: 6px;
-  width: 100%;
+  padding-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .mc-item-note {
   font-size: 11px;
   font-style: italic;
   color: #9ca3af;
-  text-align: center;
 }
 
 /* ── Best Farms ── */
@@ -222,7 +252,16 @@
 }
 
 .mob-prog-chip:hover {
-  border-color: var(--class-color);
+  border-color: var(--world-6-color);
+}
+
+.mob-prog-chip--w7 {
+  opacity: 0.4;
+}
+
+.mob-prog-chip--w7:hover {
+  opacity: 1;
+  border-color: var(--world-7-color);
 }
 
 .mob-prog-mob-img {
@@ -415,4 +454,46 @@
   color: var(--class-color);
   border-color: var(--class-color);
   background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Active Class Header Pill ── */
+.mc-header-pill-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.mc-header-pill {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 12px 6px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: default;
+}
+
+.mc-header-pill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mc-header-pill-icon {
+  width: 22px;
+  height: 22px;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+.mc-header-pill-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.mc-header-pill-count {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e5e7eb;
 }

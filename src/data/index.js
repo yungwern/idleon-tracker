@@ -19,3 +19,4 @@ export { cogMap, BOARD_ROWS, BOARD_COLS, COG_BORDER_CLASS, COG_PLACEMENTS } from
 export { anvilMap, anvilMapById } from './anvilMap'
 export { cookingMap, cookingBonusTypes, ribbonData } from './cookingMap'
 export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps } from './breedingMap'
+export { worldMap } from './worldMap'

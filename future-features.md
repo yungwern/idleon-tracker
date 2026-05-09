@@ -7,7 +7,7 @@ rmdir /s /q node_modules\.vite (cache clear)
 mkdir scaled
 magick mogrify -resize 32x32! -path ./scaled *.png  (! forces same size)
 
-javascript:for(let i=0;i<=25;i++){window.open(`https://idleontoolbox.com/data/CookingSpice${i}.png`)}
+javascript:for(let i=0;i<=62;i++){window.open(`https://idleontoolbox.com/data/Mface${i}.png`)}
     - Opens all images from a range in a new tab. Just replace the url with the image files you're looking to grab.
 
 =================
@@ -18,6 +18,11 @@ CharacterCard -
 
 MasterClasses -
 
+Global -
+    Daily Checklist - W1 miniboss kills, bone dust dudes?, things that don't appear on IT
+
+    MiniBosses - give info about maxing orb kills on daily reset with guaranteed crystals
+
 World 1 -
     Orion? Megafeathers obtained?
 
@@ -25,15 +30,17 @@ World 2 -
     Figure out a way to integrate weekly trophy boss
     Poppy? Megafish obtained?
 
+    Killroy - Timer/Skull Ratio, arcade ball info
+
 World 3 -
     Construction
-        - Add Blue cog image
+        - Pull all cogs into optimal cog layout to check for correct placements
 
     Figure out how to integrate printer? (FML...)
     Figure out how to integrate worship tower levels
 
 World 4 -
-    Implement basic pet team info / spice teams
+    InfoPanel for Breeding Shinies/PetFightingComps
 
 World 5 -
     Stuff from Hole? (Justice website link?)
@@ -54,8 +61,6 @@ World 7 -
     Legend Talents
     Spelunking Info
     Bubba Info
-
-Dropdown nav handler for each section to collapse
 
 
 

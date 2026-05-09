@@ -3,40 +3,6 @@ import { MASTERCLASSES } from '../data/masterClasses'
 import { anvilMapById } from '../data/anvilMap'
 import { characters } from '../data/characters'
 
-// ── Construction ──────────────────────────────────────────────────────────────
-const CONSTRUCTION_COG_INDICES = [30, 31, 32, 33, 34, 35, 62, 63, 74, 75, 86, 87]
-
-const CONSTRUCTION_PATTERN_LABELS = {
-  row: 'Boosts entire Row',
-  column: 'Boosts entire Column',
-}
-
-function parseConstruction(json) {
-  const cogMap = typeof json.CogM === 'string' ? JSON.parse(json.CogM) : (json.CogM ?? {})
-  const cogOrder = typeof json.CogO === 'string' ? JSON.parse(json.CogO) : (json.CogO ?? [])
-
-  let totalExpRate = 0
-
-  const cogs = CONSTRUCTION_COG_INDICES.map(index => {
-    const cog = cogMap[index] ?? {}
-    const bonusConstructExp = cog.d ?? 0
-    const playerConstructExp = cog.f ?? 0
-    const total = bonusConstructExp + playerConstructExp
-    totalExpRate += total
-
-    return {
-      index,
-      name: cogOrder[index] ?? 'Blank',
-      bonusConstructExp,
-      playerConstructExp,
-      total,
-      patternLabel: CONSTRUCTION_PATTERN_LABELS[cog.h] ?? null,
-    }
-  })
-
-  return { cogs, totalExpRate }
-}
-
 // ── Anvil ──────────────────────────────────────────────────────────────────
 function parseAnvil(json) {
   const characterCount = characters.length
@@ -172,26 +138,80 @@ const extractors = {
   },
 }
 
-// ── Statues ──────────────────────────────────────────────────────────────────
+// ── Statues ─────────────────────────────────────────────────────────────────
 function parseStatues(json) {
   const raw = json['StatueLevels_0']
   const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
   return arr.map(([level, xp], id) => ({ id, level, xp }))
 }
 
-// ── Shrines ──────────────────────────────────────────────────────────────────
+// ── Construction ──────────────────────────────────────────────────────────────
+const CONSTRUCTION_COG_INDICES = [30, 31, 32, 33, 34, 35, 62, 63, 74, 75, 86, 87]
+
+const CONSTRUCTION_PATTERN_LABELS = {
+  row: 'Boosts entire Row',
+  column: 'Boosts entire Column',
+}
+
+function parseConstruction(json) {
+  const cogMap = typeof json.CogM === 'string' ? JSON.parse(json.CogM) : (json.CogM ?? {})
+  const cogOrder = typeof json.CogO === 'string' ? JSON.parse(json.CogO) : (json.CogO ?? [])
+
+  let totalExpRate = 0
+
+  const cogs = CONSTRUCTION_COG_INDICES.map(index => {
+    const cog = cogMap[index] ?? {}
+    const bonusConstructExp = cog.d ?? 0
+    const playerConstructExp = cog.f ?? 0
+    const total = bonusConstructExp + playerConstructExp
+    totalExpRate += total
+
+    return {
+      index,
+      name: cogOrder[index] ?? 'Blank',
+      bonusConstructExp,
+      playerConstructExp,
+      total,
+      patternLabel: CONSTRUCTION_PATTERN_LABELS[cog.h] ?? null,
+    }
+  })
+
+  return { cogs, totalExpRate }
+}
+
+function parseTowerLevels(json) {
+  const raw = json['Tower']
+  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  // Tower layout: 9 towers per row, 3 rows (indices 0–26)
+  // Row 1: indices  0– 8  (first building row)
+  // Row 2: indices  9–17  (second building row)
+  // Row 3: indices 18–26  (shrines)
+  return arr.slice(0, 27).map(v => Number(v) || 0)
+}
+
+// ── Shrines ─────────────────────────────────────────────────────────────────
 function parseShrines(json) {
   const raw = json['Shrine']
   const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  const towerLevels = parseTowerLevels(json)
+
   return arr.map((entry, i) => {
     const level = entry[3]
-    const xp = entry[4]
-    const xpRequired = Math.floor(20 * (level - 1) + 6 * level * Math.pow(1.63, level - 1))
+    const xp = entry[4] ?? 0
+    const xpRequired = level > 0
+      ? Math.floor(20 * (level - 1) + 6 * level * Math.pow(1.63, level - 1))
+      : 0
+    // Shrine construction levels occupy tower row 3 (indices 18–26),
+    // matching shrine order (i=0 → Woodular → towerLevels[18])
+    const constructionLevel = towerLevels[18 + i] ?? 0
+
     return {
       id: i + 18,
+      mapIndex: entry[0],
       level,
       xp,
       xpRequired,
+      constructionLevel,
     }
   })
 }
