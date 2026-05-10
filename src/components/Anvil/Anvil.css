@@ -12,6 +12,47 @@
   margin-top: 12px;
 }
 
+/* ── Nav Bar ── */
+.anvil-nav {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.anvil-nav-btn {
+  position: relative;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.anvil-nav-btn:hover {
+  color: #d1d5db;
+}
+
+.anvil-nav-btn--active {
+  color: #a0c4ff;
+}
+
+.anvil-nav-btn--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #a0c4ff;
+}
+
 /* ── Character Group ── */
 .anvil-list {
   display: flex;
@@ -50,7 +91,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   padding: 14px 10px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
@@ -81,6 +122,18 @@
   line-height: 1.3;
 }
 
+/* ── Item Stats ── */
+.anvil-item-stat {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.anvil-item-exp {
+  color: #a0c4ff;
+}
+
 /* ── Slots Badge ── */
 .anvil-slots-badge {
   position: absolute;
@@ -93,4 +146,422 @@
   border: 1px solid rgba(160, 196, 255, 0.2);
   border-radius: 5px;
   padding: 2px 6px;
+}
+
+/* ── Production Tab ── */
+.anvil-production {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── AFK Row ── */
+.anvil-afk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.anvil-afk-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+.anvil-afk-input {
+  width: 80px;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.anvil-afk-input:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.anvil-afk-input:focus {
+  border-color: rgba(160, 196, 255, 0.4);
+  background: rgba(160, 196, 255, 0.08);
+}
+
+/* ── Inputs Row ── */
+.anvil-inputs-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.anvil-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.anvil-input-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+/* ── Suffix Input ── */
+.anvil-suffix-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.anvil-suffix-field {
+  width: 100px;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.anvil-suffix-field:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.anvil-suffix-field:focus {
+  border-color: rgba(160, 196, 255, 0.4);
+  background: rgba(160, 196, 255, 0.08);
+}
+
+/* ── Suffix Buttons ── */
+.anvil-suffix-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.anvil-suffix-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.anvil-suffix-btn:hover {
+  color: #d1d5db;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.anvil-suffix-btn.anvil-suffix-btn--active,
+.anvil-suffix-btn.anvil-suffix-btn--active:hover {
+  color: #a0c4ff;
+  background: rgba(160, 196, 255, 0.1);
+  border-color: rgba(160, 196, 255, 0.3);
+}
+
+/* ── Production Tab ── */
+.anvil-production {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Top Controls ── */
+.anvil-top-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── AFK Row ── */
+.anvil-afk-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.anvil-afk-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+.anvil-afk-input {
+  width: 72px;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.anvil-afk-input:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.anvil-afk-input:focus {
+  border-color: rgba(160, 196, 255, 0.4);
+  background: rgba(160, 196, 255, 0.08);
+}
+
+/* ── Top Buttons ── */
+.anvil-top-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.anvil-action-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #a0c4ff;
+  background: rgba(160, 196, 255, 0.08);
+  border: 1px solid rgba(160, 196, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.anvil-action-btn:hover {
+  background: rgba(160, 196, 255, 0.14);
+  border-color: rgba(160, 196, 255, 0.35);
+}
+
+.anvil-action-btn--danger {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.2);
+}
+
+.anvil-action-btn--danger:hover {
+  background: rgba(248, 113, 113, 0.14);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+/* ── Inputs Row ── */
+.anvil-inputs-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.anvil-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.anvil-input-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+/* ── Suffix Input ── */
+.anvil-suffix-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.anvil-suffix-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.anvil-suffix-field {
+  width: 100px;
+  padding: 5px 10px;
+  font-size: 13px;
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.anvil-suffix-field:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.anvil-suffix-field:focus {
+  border-color: rgba(160, 196, 255, 0.4);
+  background: rgba(160, 196, 255, 0.08);
+}
+
+.anvil-suffix-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.anvil-suffix-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.anvil-suffix-btn:hover {
+  color: #d1d5db;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.anvil-input-error {
+  font-size: 10px;
+  color: #f87171;
+}
+
+/* ── Locked Display ── */
+.anvil-locked-row {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.anvil-locked-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.anvil-locked-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+/* ── Per-char Reset Button ── */
+.anvil-char-reset-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.anvil-char-reset-btn:hover {
+  color: #f87171;
+}
+
+/* ── Confirm Dialog ── */
+.anvil-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 8px;
+  background: rgba(248, 113, 113, 0.06);
+  flex-wrap: wrap;
+}
+
+.anvil-confirm-msg {
+  font-size: 12px;
+  color: #f87171;
+  font-weight: 600;
+}
+
+.anvil-confirm-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.anvil-confirm-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.anvil-confirm-btn--yes {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.anvil-confirm-btn--yes:hover {
+  background: rgba(248, 113, 113, 0.2);
+}
+
+.anvil-confirm-btn--no {
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.anvil-confirm-btn--no:hover {
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Item Stats ── */
+.anvil-item-stat {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.anvil-item-exp {
+  color: #a0c4ff;
 }

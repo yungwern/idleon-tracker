@@ -16,12 +16,12 @@ NEW FEATURE LIST
 CharacterCard -
     Add ability to edit existing to-do list items
 
-MasterClasses -
-
 Global -
     Daily Checklist - W1 miniboss kills, bone dust dudes?, things that don't appear on IT
 
     MiniBosses - give info about maxing orb kills on daily reset with guaranteed crystals
+
+    Card Setups - Multi set vs. % set for non endgame players, test sets for damage, drop rate to find best cards to display
 
 World 1 -
     Orion? Megafeathers obtained?

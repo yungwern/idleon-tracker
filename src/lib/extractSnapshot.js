@@ -3,41 +3,6 @@ import { MASTERCLASSES } from '../data/masterClasses'
 import { anvilMapById } from '../data/anvilMap'
 import { characters } from '../data/characters'
 
-// ── Anvil ──────────────────────────────────────────────────────────────────
-function parseAnvil(json) {
-  const characterCount = characters.length
-  const allRows = []
-
-  for (let i = 0; i < characterCount; i++) {
-    const selectKey = `AnvilPAselect_${i}`
-    const raw = json[selectKey]
-    const selected = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
-    if (!selected.length) continue
-
-    const hammerCounts = {}
-    selected.forEach(itemId => {
-      hammerCounts[itemId] = (hammerCounts[itemId] || 0) + 1
-    })
-
-    Object.entries(hammerCounts).forEach(([itemIdStr, hammers]) => {
-      const itemId = parseInt(itemIdStr)
-      const item = anvilMapById[itemId]
-      if (!item) return
-
-      allRows.push({
-        charIndex: i,
-        charName: characters[i].name ?? `Character ${i + 1}`,
-        charClass: characters[i].class ?? '',
-        itemId,
-        item,
-        hammers,
-      })
-    })
-  }
-
-  return { rows: allRows }
-}
-
 // ── Storage ───────────────────────────────────────────────────────────────────
 function parseStorage(json) {
   const order    = typeof json.ChestOrder    === 'string' ? JSON.parse(json.ChestOrder)    : (json.ChestOrder    ?? [])
@@ -90,6 +55,20 @@ const extractors = {
     })
     return map
   },
+  carryBags: (json, i) => {
+    const raw = json[`MaxCarryCap_${i}`]
+    const caps = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {})
+    return {
+      Mining:   caps.Mining   ?? 0,
+      Chopping: caps.Chopping ?? 0,
+      Foods:    caps.Foods    ?? 0,
+      bCraft:   caps.bCraft   ?? 0,
+      Fishing:  caps.Fishing  ?? 0,
+      Bugs:     caps.Bugs     ?? 0,
+      Critters: caps.Critters ?? 0,
+      Souls:    caps.Souls    ?? 0,
+    }
+  },
   superTalentPresets: (json, i) => {
     const spelunk = typeof json.Spelunk === 'string'
       ? JSON.parse(json.Spelunk)
@@ -136,6 +115,50 @@ const extractors = {
       alternate: parseRows(json[`AttackLoadoutpre_${i}`]),
     }
   },
+}
+
+// ── Anvil ─────────────────────────────────────────────────────────────────
+function parseAnvil(json) {
+  const characterCount = characters.length
+  const allRows = []
+  const charStats = []
+
+  for (let i = 0; i < characterCount; i++) {
+    const selectKey = `AnvilPAselect_${i}`
+    const raw = json[selectKey]
+    const selected = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+
+    const statsKey = `AnvilPAstats_${i}`
+    const rawStats = json[statsKey]
+    const paStats = typeof rawStats === 'string' ? JSON.parse(rawStats) : (rawStats ?? [])
+    const capPoints = paStats[5] ?? 0
+
+    charStats.push({ capPoints, totalHammers: selected.length })
+
+    if (!selected.length) continue
+
+    const hammerCounts = {}
+    selected.forEach(itemId => {
+      hammerCounts[itemId] = (hammerCounts[itemId] || 0) + 1
+    })
+
+    Object.entries(hammerCounts).forEach(([itemIdStr, hammers]) => {
+      const itemId = parseInt(itemIdStr)
+      const item = anvilMapById[itemId]
+      if (!item) return
+
+      allRows.push({
+        charIndex: i,
+        charName: characters[i].name ?? `Character ${i + 1}`,
+        charClass: characters[i].class ?? '',
+        itemId,
+        item,
+        hammers,
+      })
+    })
+  }
+
+  return { rows: allRows, charStats }
 }
 
 // ── Statues ─────────────────────────────────────────────────────────────────
