@@ -89,19 +89,20 @@ export function getSkullIndex(kills) {
   if (kills < 5000)   return 3
   if (kills < 25000)  return 4
   if (kills < 100000) return 5
-  return 6
+  if (kills < 1000000) return 6
+  return 7
 }
 
 export function rankColor(skullIndex) {
   switch (skullIndex) {
     case 0:  return '#6b7280'
-    case 1:  return '#cd7f32'
-    case 2:  return '#94a3b8'
-    case 3:  return '#fbbf24'
-    case 4:  return '#34d399'
-    case 5:  return '#60a5fa'
+    case 1:  return '#ffffff'
+    case 2:  return '#cd7f32'
+    case 3:  return '#94a3b8'
+    case 4:  return '#fbbf24'
+    case 5:  return '#37c7f9'
     case 6:  return '#f43f5e'
-    default: return '#6b7280'
+    case 7:  return '#f43f5e'
   }
 }
 

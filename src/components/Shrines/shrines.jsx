@@ -100,14 +100,16 @@ export default function Shrines({ snapshot }) {
     <div className="page">
       <h2 className="page-title">Shrines</h2>
       <InfoPanel
-      intro="This page helps you keep track of everything you need to know about shrines. Shrine Level, Shrine Bonus, Required EXP and Shrine location are all included."
+      intro="This page covers everything you need to know about Shrines — including Shrine Level, Shrine Bonus, required EXP, and Shrine location."
       items={[
-        'To place shrines in your map, use the Star Talent called "Shrine Architect." This talent is unlocked by completing the quest "Taking Samples" from Hoggindaz in World 3.',
-        'Shrines will give bonuses to any character in the same map. Shrines will gain EXP when you collect AFK time on that same map. You will also lose all of your progress towards the next level if you move the shrine to a new map.',
-        'There are a few bonuses throughout IdleOn that give quality of life to gaining access to shrine bonuses.',
-        'World 4 - Lab Bonus "Shrine World Tour" - If a shrine is placed within town, instead of in a monster map, it will act as though it is placed in EVERY map in that entire world!',
-        'World 5 - Sailing Artifact "Moai Head" - Get bonuses from all shrines from any map! You must be in same map/world to level them up though., Ancient: All shrines level up +100% faster!',
-        'World 6 - Jade Emporium "Shrine Collective Bargaining Agreement" - Shrines no longer lose EXP when moved around, so you can finally bring those baddies out of retirement!',
+        'To place Shrines on a map, you\'ll need the Star Talent "Shrine Architect," which is unlocked by completing the quest "Taking Samples" from Hoggindaz in World 3.',
+        'Shrines grant bonuses to any character on the same map and gain EXP when you collect AFK gains there. Be careful — moving a Shrine to a new map will reset all progress toward its next level.',
+        'Several bonuses across IdleOn make working with Shrines more convenient:',
+        'World 4 – Lab Bonus "Shrine World Tour": Place a Shrine in a town map and it will apply to every map in that entire world!',
+        'World 5 – Sailing Artifact "Moai Head": Receive bonuses from all Shrines regardless of which map you\'re on. Note: you must still be in the same map or world to level them up.',
+        'World 6 – Jade Emporium "Shrine Collective Bargaining Agreement": Shrines no longer lose EXP when moved, so feel free to relocate them without any penalty.',
+        'World 7 – Legend Talent "Shrine World Order Bill": Shrines gain EXP from AFK gains regardless of which world you\'re in!',
+        'With all bonuses active, Shrines can be placed in any world and you\'ll receive all bonuses and level them up no matter where your characters are.',
       ]}
       />
       <div className="shrine-card-grid">
