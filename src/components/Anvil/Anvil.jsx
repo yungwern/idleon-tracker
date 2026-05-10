@@ -159,18 +159,28 @@ function computeOptimal(speed, capacity, totalHammers, afkHours) {
 // ANVIL CARD
 // ============================================================
 
-function AnvilCard({ row }) {
+function AnvilCard({ row, matchState = 'none' }) {
   const { item, hammers } = row
+  const borderClass = matchState === 'match'
+    ? ' anvil-card--match'
+    : matchState === 'mismatch'
+    ? ' anvil-card--mismatch'
+    : ''
+
   return (
-    <div className="anvil-card">
-      <img
-        src={`/images/anvil/${item.rawName}.png`}
-        alt={item.displayName}
-        className="anvil-item-img"
-        onError={e => { e.currentTarget.style.display = 'none' }}
-      />
-      <span className="anvil-item-name">{item.displayName}</span>
-      {hammers > 1 && <span className="anvil-slots-badge">×{hammers}</span>}
+    <div className={`anvil-card${borderClass}`}>
+      <div className="anvil-card-top">
+        <img
+          src={`/images/anvil/${item.rawName}.png`}
+          alt={item.displayName}
+          className="anvil-item-img"
+          onError={e => { e.currentTarget.style.display = 'none' }}
+        />
+        {hammers > 1 && <span className="anvil-slots-badge">×{hammers}</span>}
+      </div>
+      <div className="anvil-card-body">
+        <span className="anvil-item-name">{item.displayName}</span>
+      </div>
     </div>
   )
 }
@@ -183,16 +193,20 @@ function OptimalCard({ item }) {
   const { rawName, displayName, produced, exp, hammers } = item
   return (
     <div className="anvil-card">
-      <img
-        src={`/images/anvil/${rawName}.png`}
-        alt={displayName}
-        className="anvil-item-img"
-        onError={e => { e.currentTarget.style.display = 'none' }}
-      />
-      <span className="anvil-item-name">{displayName}</span>
-      <span className="anvil-item-stat">{formatNumber(Math.round(produced))} items</span>
-      <span className="anvil-item-stat anvil-item-exp">{formatNumber(Math.round(exp))} EXP</span>
-      {hammers > 1 && <span className="anvil-slots-badge">×{hammers}</span>}
+      <div className="anvil-card-top">
+        <img
+          src={`/images/anvil/${rawName}.png`}
+          alt={displayName}
+          className="anvil-item-img"
+          onError={e => { e.currentTarget.style.display = 'none' }}
+        />
+        {hammers > 1 && <span className="anvil-slots-badge">×{hammers}</span>}
+      </div>
+      <div className="anvil-card-body">
+        <span className="anvil-item-name">{displayName}</span>
+        <span className="anvil-item-stat">{formatNumber(Math.round(produced))} items</span>
+        <span className="anvil-item-stat anvil-item-exp">{formatNumber(Math.round(exp))} EXP</span>
+      </div>
     </div>
   )
 }
@@ -301,10 +315,13 @@ export default function Anvil({ snapshot }) {
       <h2 className="page-title">Anvil</h2>
 
       <InfoPanel
-        intro="Enter each character's anvil speed and capacity from their in-game anvil screen. The Production tab will recommend the best items to craft for your chosen AFK interval to maximise EXP gain."
+        intro="Use this page to find the best anvil items to produce for maximum EXP gain based on your AFK interval. A few things to keep in mind:"
         items={[
-          'Hammer counts are based on currently equipped items in your save file. If a character is not fully utilising all hammers the recommendation may not be accurate.',
-          'Capacity max is 2000M. Values above 2000M are not supported.',
+          'Anvil speed and capacity cannot be calculated automatically, so you will need to enter them manually for each character. Both values can be found on the anvil screen in-game.',
+          'If all of your characters have the maximum capacity of 2000M, use the Fill All Capacities button to set it for everyone at once before entering speeds.',
+          'Speed and capacity are saved to local storage — you only need to enter them once and they will persist across save imports until you choose to update or reset them.',
+          'Once speed and capacity are entered, set your AFK interval at the top and the Production tab will recommend the highest EXP items for each character to produce in that time window.',
+          'Switch to the Active Items tab to compare your current production against the recommendations. Items that match will be highlighted green, items that don\'t match will be highlighted red.',
         ]}
       />
 
@@ -330,18 +347,35 @@ export default function Anvil({ snapshot }) {
           {rows.length === 0 ? (
             <p className="anvil-empty">No active anvil production found.</p>
           ) : (
-            Object.entries(byChar).map(([charIndex, charRows]) => (
-              <div key={charIndex} className="anvil-char-group">
-                <div className="anvil-char-header">
-                  <span className="anvil-char-label" style={{ color: classColor(charRows[0].charClass) }}>
-                    {charRows[0].charName}
-                  </span>
+            Object.entries(byChar).map(([charIndex, charRows]) => {
+              const idx = parseInt(charIndex)
+              const stat = charStats[idx]
+              const speed = speeds[idx] ?? 0
+              const capacity = capacities[idx] ?? 0
+              const optimal = speed > 0 && capacity > 0 && stat
+                ? computeOptimal(speed, capacity, stat.totalHammers, afkHours)
+                : []
+              const optimalIds = new Set(optimal.map(item => item.id))
+
+              return (
+                <div key={charIndex} className="anvil-char-group">
+                  <div className="anvil-char-header">
+                    <span className="anvil-char-label" style={{ color: classColor(charRows[0].charClass) }}>
+                      {charRows[0].charName}
+                    </span>
+                  </div>
+                  <div className="anvil-cards">
+                    {charRows.map((row, i) => (
+                      <AnvilCard
+                        key={i}
+                        row={row}
+                        matchState={optimalIds.size === 0 ? 'none' : optimalIds.has(row.itemId) ? 'match' : 'mismatch'}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="anvil-cards">
-                  {charRows.map((row, i) => <AnvilCard key={i} row={row} />)}
-                </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
       )}
