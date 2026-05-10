@@ -2,7 +2,7 @@ import { premiumGearNames, premiumGearMap } from '../../data'
 
 import './PremiumGear.css'
 
-export function getPremiumGear(snapshot, charIndex) {
+function getPremiumGear(snapshot, charIndex) {
   const equipOrder = snapshot?.characters?.[charIndex]?.equipOrder ?? {}
   const slots = {
     hat:     
