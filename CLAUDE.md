@@ -26,7 +26,7 @@ src/
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
-└── utils/              # appUtils.js (toClassSlug, classColor), premiumGearUtils.js
+└── utils/              # appUtils.js (toClassSlug, classColor)
 
 IdleOn Resources/       # Outside src/ — save data copy + website-data.json
                         # website-data.json is a large game data mapping file from IdleOn Toolbox GitHub
