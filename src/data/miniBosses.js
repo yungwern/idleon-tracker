@@ -17,8 +17,8 @@ export const MINIBOSSES = [
   },
   { rawName: 'poopBig',   
     displayName: 'Dr Defecaus',         
-    world: 'World 2', 
-    worldColor: 'var(--world-2-color)', 
+    world: 'World 1', 
+    worldColor: 'var(--world-1-color)', 
     index: 1, 
     location: 'Poop', 
     spawnItem: null 

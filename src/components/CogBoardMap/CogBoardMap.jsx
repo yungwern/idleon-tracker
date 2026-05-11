@@ -42,9 +42,9 @@ function BoardCell({ cell }) {
       className="board-cell"
       style={{ borderColor: cell.border.color }}
     >
-      <img src="/images/cogs/CogSq0.png" alt="" className="board-cell-bg" />
+      <img src="/images/construction/CogSq0.png" alt="" className="board-cell-bg" />
       <img
-        src={`/images/cogs/${cell.cog}.png`}
+        src={`/images/construction/${cell.cog}.png`}
         alt={cell.cog}
         className="board-cell-cog"
         onError={e => { e.currentTarget.style.display = 'none' }}

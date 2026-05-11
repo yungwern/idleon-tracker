@@ -40,7 +40,8 @@ IdleOn Resources/       # Outside src/ — save data copy + website-data.json
 
 **CSS naming**: namespace all classes with a component prefix to avoid conflicts
 - e.g. `shrine-preview-*`, `statue-preview-*`, `miniboss-*`
-- Shared layout classes and reusable components live in `global.css` — adding to global is preferred where it makes sense so future components can reuse them
+- Shared layout classes and reusable components live in `global.css` — adding to global is preferred where it makes sense so future components can reuse them.
+- Always use `global.css` if possible, especially for tooltips.
 
 **CSS formatting**: multi-line format — each property on its own line
 

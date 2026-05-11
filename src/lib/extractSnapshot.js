@@ -2,6 +2,7 @@ import { talentMap } from '../data/talentMap'
 import { MASTERCLASSES } from '../data/masterClasses'
 import { anvilMapById } from '../data/anvilMap'
 import { characters } from '../data/characters'
+import { worshipMap } from '../data'
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 function parseStorage(json) {
@@ -115,6 +116,59 @@ const extractors = {
       alternate: parseRows(json[`AttackLoadoutpre_${i}`]),
     }
   },
+}
+
+// ────────────────────────────────────────────────────────────
+// ── Masterclass
+// ────────────────────────────────────────────────────────────
+
+// ── Exalted Stamps ────────────────────────────────────────────────────────────
+function parseExaltedStamps(json) {
+  try {
+    const compass = typeof json['Compass'] === 'string'
+      ? JSON.parse(json['Compass'])
+      : (json['Compass'] ?? [])
+    return compass[4] ?? []
+  } catch {
+    console.warn('Failed to parse exalted stamps from Compass.')
+    return []
+  }
+}
+
+// ── Prisma Bubbles ────────────────────────────────────────────────────────────
+function parsePrismaBubbles(json) {
+  try {
+    const optLacc = json['OptLacc'] ?? []
+    const raw = optLacc[384] ?? ''
+    if (!raw) return []
+    return raw.split(',').filter(Boolean).map(id => id.replace(/^0(?=[a-z_])/, ''))
+  } catch {
+    console.warn('Failed to parse prisma bubbles from OptLacc.')
+    return []
+  }
+}
+
+// ── Map Bonuses (Arcane Cultist) ──────────────────────────────────────────────
+function parseMapBonuses(json) {
+  const raw = json['MapBon']
+  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  return arr.map((entry, mapIndex) => {
+    if (!Array.isArray(entry) || entry.length < 3) return null
+    return {
+      mapIndex,
+      dr: entry[0] ?? 0,
+      exp: entry[1] ?? 0,
+      afk: entry[2] ?? 0,
+    }
+  })
+}
+
+// ── Minibosses ───────────────────────────────────────────────────────────────
+function parseMiniBosses(json) {
+  const rawSneaking = json['Ninja']
+  const arr = typeof rawSneaking === 'string' ? JSON.parse(rawSneaking) : (rawSneaking ?? [])
+  const kills = arr?.[105] ?? []
+  return kills.slice(0, 9)
 }
 
 // ── Anvil ─────────────────────────────────────────────────────────────────
@@ -239,6 +293,24 @@ function parseShrines(json) {
   })
 }
 
+// ── Worship ─────────────────────────────────────────────────────────
+function parseWorship(json) {
+    const raw = json?.TotemInfo
+    const totemInfoRaw = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+    const maxWaves = totemInfoRaw?.[0] ?? []
+    const totemEntries = Object.values(worshipMap)
+
+    return {
+        totems: maxWaves.map((maxWave, index) => {
+            const waveMulti = maxWave === 0 ? 0 : Math.pow((5 + maxWave) / 10, 2.6)
+            const expReward = Math.floor(15 * Math.pow(index + 1, 2) * Math.pow(waveMulti, 0.9)) || 0
+            const chargeReq = totemEntries[index]?.chargeReq ?? 1
+            const expPerCharge = Math.floor(expReward / chargeReq) || 0
+            return { maxWave, waveMulti, expReward, expPerCharge }
+        }),
+    }
+}
+
 // ── Armor Smithy Sets ─────────────────────────────────────────────────────────
 function parseArmorSmithySets(json) {
   try {
@@ -251,14 +323,6 @@ function parseArmorSmithySets(json) {
     console.warn('Failed to parse armor smithy sets from OptLacc.')
     return []
   }
-}
-
-// ── Mini Bosses ───────────────────────────────────────────────────────────────
-function parseMiniBosses(json) {
-  const rawSneaking = json['Ninja']
-  const arr = typeof rawSneaking === 'string' ? JSON.parse(rawSneaking) : (rawSneaking ?? [])
-  const kills = arr?.[105] ?? []
-  return kills.slice(0, 9)
 }
 
 // ── Cooking ──────────────────────────────────────────────────────────────────
@@ -278,50 +342,6 @@ function parseCooking(json) {
     cabinetSlots,
     mealRibbons,
   }
-}
-// ────────────────────────────────────────────────────────────
-// ── Masterclass
-// ────────────────────────────────────────────────────────────
-
-// ── Exalted Stamps ────────────────────────────────────────────────────────────
-function parseExaltedStamps(json) {
-  try {
-    const compass = typeof json['Compass'] === 'string'
-      ? JSON.parse(json['Compass'])
-      : (json['Compass'] ?? [])
-    return compass[4] ?? []
-  } catch {
-    console.warn('Failed to parse exalted stamps from Compass.')
-    return []
-  }
-}
-
-// ── Prisma Bubbles ────────────────────────────────────────────────────────────
-function parsePrismaBubbles(json) {
-  try {
-    const optLacc = json['OptLacc'] ?? []
-    const raw = optLacc[384] ?? ''
-    if (!raw) return []
-    return raw.split(',').filter(Boolean).map(id => id.replace(/^0(?=[a-z_])/, ''))
-  } catch {
-    console.warn('Failed to parse prisma bubbles from OptLacc.')
-    return []
-  }
-}
-
-// ── Map Bonuses (Arcane Cultist) ──────────────────────────────────────────────
-function parseMapBonuses(json) {
-  const raw = json['MapBon']
-  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
-  return arr.map((entry, mapIndex) => {
-    if (!Array.isArray(entry) || entry.length < 3) return null
-    return {
-      mapIndex,
-      dr: entry[0] ?? 0,
-      exp: entry[1] ?? 0,
-      afk: entry[2] ?? 0,
-    }
-  })
 }
 
 // ── Breeding ──────────────────────────────────────────────────────────────────
@@ -356,13 +376,12 @@ export function extractSnapshot(json) {
     return extracted
   })
 
-  const statues = parseStatues(json)
-
   return {
     characters: extractedCharacters,
     storage: parseStorage(json),
     statues: parseStatues(json),
     shrines: parseShrines(json),
+    worship: parseWorship(json),
     armorSmithySets: parseArmorSmithySets(json),
     miniBossesKills: parseMiniBosses(json),
     exaltedStamps: parseExaltedStamps(json),

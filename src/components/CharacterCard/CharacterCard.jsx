@@ -64,10 +64,10 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
             <div key={id} className="prayer-icon-wrap tooltip-anchor">
               <img
                 src={`/images/prayers/Prayer${id}.png`}
-                alt={prayerMap[id] ?? `Prayer ${id}`}
+                alt={prayerMap[id]?.name ?? `Prayer ${id}`}
                 className="prayer-icon"
               />
-              <span className="tooltip">{prayerMap[id] ?? `Prayer ${id}`}</span>
+              <span className="tooltip">{prayerMap[id]?.name ?? `Prayer ${id}`}</span>
             </div>
           ))}
         </div>

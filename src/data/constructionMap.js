@@ -60,3 +60,33 @@ export const COG_PLACEMENTS = [
     positions: [[5,2],[5,3],[6,2],[6,3],[7,2],[7,3]],             border: COG_BORDER_CLASS.garnet    
 },
 ]
+
+export const saltMap = {
+  Refinery1: {
+    name: 'Redox Salts',
+  },
+  Refinery2: {
+    name: 'Explosive Salts',
+  },
+  Refinery3: {
+    name: 'Spontaneity Salts',
+  },
+  Refinery4: {
+    name: 'Dioxide Synthesis',
+  },
+  Refinery5: {
+    name: 'Purple Salt',
+  },
+  Refinery6: {
+    name: 'Nullo Salt',
+  },
+  Refinery7: {
+    name: 'Crosslink Salt',
+  },
+  Refinery8: {
+    name: 'Propagated Salt',
+  },
+  Refinery9: {
+    name: 'Anionic Salt',
+  },
+}

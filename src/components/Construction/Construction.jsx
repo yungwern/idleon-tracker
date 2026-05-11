@@ -112,7 +112,7 @@ function CompareTool({ cogs, onClose, onResult, onReplace }) {
                   setStep('pattern')
                 }}
               >
-                <img src={`/images/cogs/CogCry${i}.png`} alt={`CogCry${i}`} className="compare-color-img" />
+                <img src={`/images/construction/CogCry${i}.png`} alt={`CogCry${i}`} className="compare-color-img" />
               </button>
             ))}
           </div>
@@ -218,7 +218,7 @@ function CogCard({ cog, highlight }) {
         <span className="cog-total">+{cog.total}%</span>
         <div className="cog-image-wrap">
           <img
-            src={`/images/cogs/${cog.name}.png`}
+            src={`/images/construction/${cog.name}.png`}
             alt={displayName}
             className="cog-img"
             onError={e => { e.currentTarget.style.display = 'none' }}

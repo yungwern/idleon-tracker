@@ -5,8 +5,6 @@ import { characters, sections } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import TodoList from './components/TodoList/TodoList.jsx'
-import PremiumGearTab from './components/PremiumGear/PremiumGear.jsx'
-import { getPremiumGear } from './components/PremiumGear/PremiumGear.jsx'
 import TalentsTab from './components/TalentsTab/TalentsTab.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
 import Statues from './components/Statues/Statues.jsx'
@@ -20,6 +18,7 @@ import Construction from './components/Construction/Construction.jsx'
 import Anvil from './components/Anvil/Anvil.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
+import Worship from './components/Worship/Worship.jsx'
 
 // ============================================================
 // APP
@@ -31,12 +30,14 @@ export default function App() {
 
   // ── Merge imported levels into characters, falling back to data.js values ──
   const mergedCharacters = characters.map((c, i) => {
-    const gear = snapshot ? getPremiumGear(snapshot, i) : {}
+    const equipOrder = snapshot?.characters?.[i]?.equipOrder ?? {}
+    const nametagId = equipOrder['nametagSlot'] ?? 'Blank'   // adjust slot key as needed
+    const trophyId  = equipOrder['trophySlot']  ?? 'Blank'   // adjust slot key as needed
     return {
       ...c,
       level:   snapshot?.characters?.[i]?.level ?? c.level,
-      nametag: gear.nametag?.equipped ? gear.nametag : c.nametag,
-      trophy:  gear.trophy?.equipped  ? gear.trophy  : c.trophy,
+      nametag: nametagId !== 'Blank' ? { id: nametagId, equipped: true } : c.nametag,
+      trophy:  trophyId  !== 'Blank' ? { id: trophyId,  equipped: true } : c.trophy,
       superTalentPresets: snapshot?.characters?.[i]?.superTalentPresets ?? null,
     }
   })
@@ -46,13 +47,14 @@ export default function App() {
 
   function renderContent() {
     if (character) return <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
-    if (selected === 'Statues')        return <Statues snapshot={snapshot} />
-    if (selected === 'Shrines')        return <Shrines snapshot={snapshot} />
-    if (selected === 'Minibosses')     return <Minibosses snapshot={snapshot} />
     if (selected === 'MasterClasses')  return <MasterClasses snapshot={snapshot} />
+    if (selected === 'Minibosses')     return <Minibosses snapshot={snapshot} />
     if (selected === 'Gear Optimizer') return <GearOptimizer snapshot={snapshot} />
-    if (selected === 'Construction')   return <Construction snapshot={snapshot} />
+    if (selected === 'Statues')        return <Statues snapshot={snapshot} />
     if (selected === 'Anvil') return <Anvil snapshot={snapshot} />
+    if (selected === 'Construction')   return <Construction snapshot={snapshot} />
+    if (selected === 'Shrines')        return <Shrines snapshot={snapshot} />
+    if (selected === 'Worship') return <Worship snapshot={snapshot} />
     if (selected === 'Cooking') return <Cooking snapshot={snapshot} />
     if (selected === 'Breeding') return <Breeding snapshot={snapshot} />
     return (

@@ -1,0 +1,327 @@
+/* ============================================================
+   WORSHIP PAGE
+   ============================================================ */
+
+.worship-page {
+  max-width: 900px;
+}
+
+/* ── Section Label ── */
+.worship-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+}
+
+.worship-sub-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #4b5563;
+  text-align: center;
+}
+
+/* ── Summary Row ── */
+.worship-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* ── Totem Summary Strip ── */
+.worship-summary-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.worship-summary-strip {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.worship-summary-totem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.worship-summary-totem--inactive {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.worship-summary-img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.worship-summary-wave {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a0c4ff;
+}
+
+/* ── Best EXP Card ── */
+.worship-best-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.worship-best-label,
+.worship-summary-wrap .worship-best-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+  width: 100%;
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 2px;
+}
+
+.worship-best-card {
+  display: flex;
+  flex-direction: row;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: visible;
+}
+
+
+.worship-totem-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Totem Card ── */
+.worship-totem-card {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s;
+  overflow: hidden;
+}
+
+.worship-totem-card:hover {
+  border-color: rgba(160, 196, 255, 0.2);
+  background: rgba(160, 196, 255, 0.04);
+}
+
+.worship-totem-card--inactive {
+  opacity: 0.5;
+}
+
+/* ── Left: Images ── */
+.worship-totem-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 74px;
+}
+
+.worship-totem-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.worship-soul-anchor {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.worship-soul-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  opacity: 0.9;
+}
+
+/* ── Right: Info ── */
+.worship-totem-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+/* ── Header ── */
+.worship-totem-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.worship-totem-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.worship-totem-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.worship-totem-map {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* ── Stats Row ── */
+.worship-totem-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.worship-totem-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.worship-totem-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+.worship-totem-stat-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #a0c4ff;
+}
+
+.worship-totem-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Prayers Section ── */
+.worship-prayers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.worship-prayers-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  text-align: left;
+}
+
+/* ── Prayer Icon Strip ── */
+.worship-prayers-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.worship-prayer-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.worship-prayer-icon--locked {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.worship-prayer-icon-img-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.worship-prayer-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.worship-prayer-check {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  font-size: 10px;
+  color: #86efac;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.worship-prayer-wave-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+}
+
+.worship-prayer-wave-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  line-height: 1;
+}
