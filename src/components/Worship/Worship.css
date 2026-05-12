@@ -6,6 +6,47 @@
   max-width: 900px;
 }
 
+/* ── Nav Bar ── */
+.worship-nav {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.worship-nav-btn {
+  position: relative;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.worship-nav-btn:hover {
+  color: #d1d5db;
+}
+
+.worship-nav-btn--active {
+  color: #a0c4ff;
+}
+
+.worship-nav-btn--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #a0c4ff;
+}
+
 /* ── Section Label ── */
 .worship-section-label {
   font-size: 10px;
@@ -112,14 +153,13 @@
   overflow: visible;
 }
 
-
 .worship-totem-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* ── Totem Card ── */
+/* ── Totem / Tower Card ── */
 .worship-totem-card {
   position: relative;
   display: flex;
@@ -214,11 +254,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .worship-totem-stat {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
 }
 
@@ -324,4 +366,122 @@
   font-weight: 700;
   color: #9ca3af;
   line-height: 1;
+}
+
+/* ── Salt Image ── */
+.worship-salt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.worship-salt-anchor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.worship-salt-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* ── Tower Traits ── */
+.worship-tower-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.worship-tower-trait {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.worship-tower-trait-badge {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.worship-tower-trait-badge--a {
+  background: rgba(134, 239, 172, 0.15);
+  border: 1px solid rgba(134, 239, 172, 0.3);
+  color: #86efac;
+}
+
+.worship-tower-trait-badge--b {
+  background: rgba(160, 196, 255, 0.15);
+  border: 1px solid rgba(160, 196, 255, 0.3);
+  color: #a0c4ff;
+}
+
+.worship-tower-trait-text {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+/* ── Tower Guide ── */
+.worship-tower-note {
+  font-size: 11px;
+  color: #6b7280;
+  text-align: center;
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+.worship-tower-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.worship-tower-setups {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.worship-tower-setup-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.worship-tower-setup-desc {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.worship-tower-setup-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.worship-tower-setup-chip {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: monospace;
+  color: #a0c4ff;
+  background: rgba(160, 196, 255, 0.08);
+  border: 1px solid rgba(160, 196, 255, 0.15);
+  border-radius: 4px;
+  padding: 3px 8px;
+  letter-spacing: 0.5px;
 }

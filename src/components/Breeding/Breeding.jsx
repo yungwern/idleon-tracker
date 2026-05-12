@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { breedingMap, geneMap, spiceMap, PASSIVE_ORDER, PASSIVE_CATEGORIES, fightingTierList, fightingComps, territoryComps } from '../../data/breedingMap'
 import TierList from '../TierList/TierList'
+import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './Breeding.css'
 
@@ -497,6 +498,13 @@ export default function Breeding({ snapshot }) {
   return (
     <div className="page breeding-page">
       <h2 className="page-title">Breeding</h2>
+      <InfoPanel
+      intro="This page is used for all things Breeding. Track the levels and bonus of shiny pets, find the best spice formations as well as best comps for completing The Arena. Here are a few things to keep in mind:"
+      items={[
+        'Shinies are for the most part displayed in order of importance. There are a few exceptions like obtaining all infinite star signs and as always weigh things based on your accounts needs.',
+        'Pet Fighting Comps are just a general guidance. No guarantees for 100% success rate. If you\'re following the guide and still struggling, pet power can often be a way to brute force through the content.',
+      ]}
+      />
 
       {/* ── Nav Bar ── */}
       <div className="breeding-nav">

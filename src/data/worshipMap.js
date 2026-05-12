@@ -94,45 +94,125 @@ export const towerMap = {
         name: 'Pulse Mage',
         bonus: 'Damage',
         upgReq: 'Refinery1',
+        amount: 2,
+        costInc: [15, 1.4],
+        traits: {
+            a: '+25 chance to multihit',
+            b: 'Hits push back Non Gigao enemies by +5 pixels',
+        },
     },
     ConTower10: {
         name: 'Fireball Lobber',
         bonus: 'Damage',
         upgReq: 'Refinery1',
+        amount: 4,
+        costInc: [20, 1.5],
+        traits: {
+            a: '+15% chance to throw 2 fireballs',
+            b: '+25% bigger explosion radius',
+        },
     },
     ConTower11: {
         name: 'Boulder Roller',
         bonus: 'Damage',
         upgReq: 'Refinery2',
+        amount: 4,
+        costInc: [25, 1.6],
+        traits: {
+            a: 'Boulders travel +50% farther',
+            b: 'Boulders can hit +2 more enemies',
+        },
     },
-    ConTower12: {
-        name: 'Frozone Malone',
-        bonus: 'Range',
-        upgReq: 'Refinery2',
+ConTower12: {
+    name: 'Frozone Malone',
+    bonus: 'Range',
+    upgReq: 'Refinery2',
+    amount: 7,
+    costInc: [1.5, 1.6],
+    traits: {
+        a: 'Freezing effect slows enemies +15% more',
+        b: 'Monsters stay frozen +2 seconds longer',
     },
-    ConTower13: {
-        name: 'Stormcaller',
-        bonus: 'Damage',
-        upgReq: 'Refinery3',
+    setup: ['AAAAAA'],
+    setupDesc: [
+        'Maximizes the slow effect on enemies, keeping them in range of your damage towers longer.',
+    ],
+},
+ConTower13: {
+    name: 'Stormcaller',
+    bonus: 'Damage',
+    upgReq: 'Refinery3',
+    amount: 5,
+    costInc: [30, 1.7],
+    traits: {
+        a: '+200% dmg to monsters below 60% HP',
+        b: 'All towers in range gain +20% crit chance',
     },
-    ConTower14: {
-        name: 'Party Starter',
-        bonus: 'Range',
-        upgReq: 'Refinery3',
+    setup: ['BBBBBA', 'AAAAAA'],
+    setupDesc: [
+        'Boosts crit chance for all nearby towers, amplifying your entire setup\'s damage output.',
+        'Greatly increases damage against weakened enemies, making Stormcaller a powerful finisher.',
+    ],
+},
+ConTower14: {
+    name: 'Party Starter',
+    bonus: 'Range',
+    upgReq: 'Refinery3',
+    amount: 9,
+    costInc: [4, 1.7],
+    traits: {
+        a: 'Other towers in range get +25% speed',
+        b: 'All towers in entire map get +15% dmg',
     },
-    ConTower15: {
-        name: 'Kraken Cosplayer',
-        bonus: 'Spawn Rate',
-        upgReq: 'Refinery4',
+    setup: ['AAABBB', 'BBBBBB'],
+    setupDesc: [
+        'Increases the attack speed of nearby towers while also buffing map-wide damage.',
+        'Maximizes the damage buff across your entire map for the highest possible tower output.',
+    ],
+},
+ConTower15: {
+    name: 'Kraken Cosplayer',
+    bonus: 'Spawn Rate',
+    upgReq: 'Refinery4',
+    amount: 7,
+    costInc: [3, 1.6],
+    traits: {
+        a: '+1 max underlings from this tower',
+        b: 'Underlings push mobs back +25% farther',
     },
-    ConTower16: {
-        name: 'Poisonic Elder',
-        bonus: 'Damage',
-        upgReq: 'Refinery5',
+    setup: ['BAAAA'],
+    setupDesc: [
+        'Leads with an extra underling, then stacks additional pushback for sustained crowd control.',
+    ],
+},
+ConTower16: {
+    name: 'Poisonic Elder',
+    bonus: 'Damage',
+    upgReq: 'Refinery5',
+    amount: 10,
+    costInc: [15, 1.6],
+    traits: {
+        a: 'Poison cloud lasts +5 seconds longer (base time is 10s)',
+        b: 'Clouds hit monsters +30% more often',
     },
-    ConTower17: {
-        name: 'Voidinator',
-        bonus: 'Range',
-        upgReq: 'Refinery6',
+    setup: ['ABABBB'],
+    setupDesc: [
+        'Balances longer poison duration with more frequent cloud hits before committing to maximizing hit frequency.',
+    ],
+},
+ConTower17: {
+    name: 'Voidinator',
+    bonus: 'Range',
+    upgReq: 'Refinery6',
+    amount: 20,
+    costInc: [0.7, 0.8],
+    traits: {
+        a: '+25% chance on cast for fast cooldown',
+        b: 'All towers in entire map get +20% dmg',
     },
+    setup: ['BBBB'],
+    setupDesc: [
+        'Provides a strong map-wide damage bonus to all towers.',
+    ],
+},
 }

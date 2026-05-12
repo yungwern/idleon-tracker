@@ -23,6 +23,8 @@ Global -
 
     Card Setups - Multi set vs. % set for non endgame players, test sets for damage, drop rate to find best cards to display
 
+    Item Filter Guide?
+
 World 1 -
     Orion? Megafeathers obtained?
 

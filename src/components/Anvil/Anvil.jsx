@@ -322,6 +322,7 @@ export default function Anvil({ snapshot }) {
           'Speed and capacity are saved to local storage — you only need to enter them once and they will persist across save imports until you choose to update or reset them.',
           'Once speed and capacity are entered, set your AFK interval at the top and the Production tab will recommend the highest EXP items for each character to produce in that time window.',
           'Switch to the Active Items tab to compare your current production against the recommendations. Items that match will be highlighted green, items that don\'t match will be highlighted red.',
+          'If you don\'t have the ability to craft 3 items at once, check the Gem Shop for "The Infinity Hammer" upgrade. The other possibility is that you don\'t have all big bubbles always equipped so you\'ll have to manually equip the "Hammer Hammer" bubble in Alchemy.' 
         ]}
       />
 

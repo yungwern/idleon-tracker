@@ -382,6 +382,7 @@ export function extractSnapshot(json) {
     statues: parseStatues(json),
     shrines: parseShrines(json),
     worship: parseWorship(json),
+    towerLevels: parseTowerLevels(json),
     armorSmithySets: parseArmorSmithySets(json),
     miniBossesKills: parseMiniBosses(json),
     exaltedStamps: parseExaltedStamps(json),
