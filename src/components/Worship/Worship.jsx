@@ -334,7 +334,8 @@ function TowerGuideTab({ towerLevels }) {
       <div className="worship-section-label">Tower Overview</div>
       <InfoPanel
         items= {[
-            "Pulse Mage, Fireball Lobber, and Boulder Roller are early-game towers used before the more powerful options become available. They are not included in end-game setups."
+            "Pulse Mage, Fireball Lobber, and Boulder Roller are early-game towers used before the more powerful options become available. They are not included in end-game setups.",
+            "Actual guides for specific tower placements and upgrade paths can be found in the main IdleOn Discord."
         ]}
       />
       {Object.entries(towerMap).map(([towerKey, towerData], i) => {

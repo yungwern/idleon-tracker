@@ -1,24 +1,26 @@
 import { useState, useEffect } from 'react'
-import './App.css'
-import './styles/global.css'
+import { toClassSlug, classColor } from './utils/appUtils.js'
 import { characters, sections } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import TodoList from './components/TodoList/TodoList.jsx'
-import TalentsTab from './components/TalentsTab/TalentsTab.jsx'
-import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
-import Statues from './components/Statues/Statues.jsx'
-import Shrines from './components/Shrines/Shrines.jsx'
-import Minibosses from './components/MiniBosses/MiniBosses.jsx'
-import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
-import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
-import { toClassSlug, classColor } from './utils/appUtils.js'
 import TierList from './components/TierList/TierList.jsx'
-import Construction from './components/Construction/Construction.jsx'
+import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
+import TalentsTab from './components/TalentsTab/TalentsTab.jsx'
+import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
+import Minibosses from './components/MiniBosses/MiniBosses.jsx'
+import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
+import Statues from './components/Statues/Statues.jsx'
 import Anvil from './components/Anvil/Anvil.jsx'
+
+import Construction from './components/Construction/Construction.jsx'
+import Shrines from './components/Shrines/Shrines.jsx'
+import Worship from './components/Worship/Worship.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
-import Worship from './components/Worship/Worship.jsx'
+
+import './App.css'
+import './styles/global.css'
 
 // ============================================================
 // APP
@@ -52,6 +54,7 @@ export default function App() {
     if (selected === 'Gear Optimizer') return <GearOptimizer snapshot={snapshot} />
     if (selected === 'Statues')        return <Statues snapshot={snapshot} />
     if (selected === 'Anvil') return <Anvil snapshot={snapshot} />
+    if (selected === 'Obols') return <Obols snapshot={snapshot} />
     if (selected === 'Construction')   return <Construction snapshot={snapshot} />
     if (selected === 'Shrines')        return <Shrines snapshot={snapshot} />
     if (selected === 'Worship') return <Worship snapshot={snapshot} />
