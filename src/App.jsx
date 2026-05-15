@@ -18,6 +18,7 @@ import Shrines from './components/Shrines/Shrines.jsx'
 import Worship from './components/Worship/Worship.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
+import Obols from './components/Obols/Obols.jsx'
 
 import './App.css'
 import './styles/global.css'

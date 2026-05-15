@@ -120,6 +120,30 @@ export const mobsMap = {
   Pirate_Deckhand: 'Pirate Deckhand',
   Crystal_Cuttlefish: 'Crystal Cuttlefish',
 
+  // ── Bosses/MiniBosses/Event Bosses ──
+  Grumblo: 'Mega Grumblo',
+  Grandfrogger: 'Angry Frogs',
+  Snakenhotep: 'Snake Swarm',
+  Ice_Guard: 'Glacial Guild',
+  Fallen_Meteor: 'Meteorite',
+
+  Glunko_The_Massive: 'Glunko The Massive',
+  Baba_Yaga: 'Baba Yaga',
+  Dr_Defacus: 'Dr Defacus',
+  Biggie_Hours: 'Biggie Hours',
+  King_Doot: 'King Doot',
+  Dilapidated_Slush: 'Dilapidated Slush',
+  Mutated_Mush: 'Mutated Mush',
+  Domeo_Magmus: 'Domeo Magmus',
+  Demented_Spiritlord: 'Demented Spiritlord',
+
+  Amarok: 'Amarok',
+  Efaunt: 'Efaunt',
+  Chizoar: 'Chizoar',
+  Massive_Troll: 'Massive Troll',
+  Kattlekruk: 'Kattlekruk',
+  Emperor: 'Emperor',
+
   // ── Other ──
   Ancient_Golem: 'Ancient Golem',
   Ancientfish: 'Ancientfish',

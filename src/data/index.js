@@ -22,3 +22,4 @@ export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORD
 export { worldMap } from './worldMap'
 export { prayerMap } from './prayerMap'
 export { worshipMap, soulsMap, towerMap } from './worshipMap'
+export { obolMap, obolByRawName, obolFarmMap, circleTiers, squareTiers, hexagonTiers, sparkleTiers, idealAccountBoard, endgameAccountBoard, characterBoards } from './obolMap'

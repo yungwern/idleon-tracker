@@ -37,6 +37,7 @@ IdleOn Resources/       # Outside src/ — save data copy + website-data.json
 ---
 
 ## Key Conventions
+**General Formatting**: multi-line format - each property on its own line
 
 **CSS naming**: namespace all classes with a component prefix to avoid conflicts
 - e.g. `shrine-preview-*`, `statue-preview-*`, `miniboss-*`

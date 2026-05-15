@@ -1,0 +1,333 @@
+/* ============================================================
+   OBOLS
+   ============================================================ */
+
+.obols-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Nav ── */
+.obols-nav {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.obols-nav-btn {
+  position: relative;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.obols-nav-btn:hover {
+  color: #d1d5db;
+}
+
+.obols-nav-btn--active {
+  color: #a0c4ff;
+}
+
+.obols-nav-btn--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #a0c4ff;
+}
+
+/* ── Section Label ── */
+.obols-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+}
+
+/* ── Obol Slot ── */
+.obols-slot {
+  position: relative;
+  border-radius: 6px;
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+.obols-slot--md {
+  width: 48px;
+  height: 48px;
+}
+
+.obols-slot--lg {
+  width: 52px;
+  height: 52px;
+}
+
+.obols-slot--sm {
+  width: 38px;
+  height: 38px;
+}
+
+.obols-slot--empty {
+  opacity: 0.2;
+}
+
+.obols-slot-img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.obols-slot--upgraded .obols-slot-img {
+  filter: drop-shadow(0 0 4px #facc15) drop-shadow(0 0 8px #ca8a04);
+}
+
+/* ── Account Board ── */
+.obols-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.obols-board-row {
+  display: flex;
+  gap: 4px;
+}
+
+.obols-board-row--centered {
+  justify-content: center;
+}
+
+/* ── Character Board ── */
+.obols-char-board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.obols-char-board-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+/* Small rows form a diamond pattern.
+   Top/bottom rows (2,4,6,8): narrow gap so middle row fits without overlap.
+   Middle row (3,7): wide gap + pulled up to sit between top and bottom. */
+
+/* First small section */
+.obols-char-board .obols-char-board-row--small:nth-child(2) {
+  gap: 10px;
+}
+
+.obols-char-board .obols-char-board-row--small:nth-child(3) {
+  gap: 88px;
+  margin-top: -20px;
+  margin-bottom: -20px;
+}
+
+.obols-char-board .obols-char-board-row--small:nth-child(4) {
+  gap: 10px;
+}
+
+/* Second small section */
+.obols-char-board .obols-char-board-row--small:nth-child(6) {
+  gap: 10px;
+}
+
+.obols-char-board .obols-char-board-row--small:nth-child(7) {
+  gap: 88px;
+  margin-top: -20px;
+  margin-bottom: -20px;
+}
+
+.obols-char-board .obols-char-board-row--small:nth-child(8) {
+  gap: 10px;
+}
+
+/* ── Example Boards Tab ── */
+.obols-example-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.obols-comparison {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.obols-comparison-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.obols-comparison-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  align-self: stretch;
+}
+
+.obols-empty-state {
+  font-size: 12px;
+  color: #4b5563;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.obols-char-boards-row {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.obols-char-board-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+
+
+/* ── Tier Grid ── */
+.obols-tier-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.obols-tier-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Farm Tab ── */
+.obols-farm-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.obols-farm-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Farm Grid ── */
+.obols-farm-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.obols-farm-card {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s;
+}
+
+.obols-farm-card:hover {
+  border-color: rgba(160, 196, 255, 0.2);
+  background: rgba(160, 196, 255, 0.04);
+}
+
+.obols-farm-card-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  min-height: 90px;
+}
+
+.obols-farm-card-obol-img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.obols-farm-card-mob-img {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  object-position: center;
+  image-rendering: pixelated;
+}
+
+.obols-farm-card-top .obols-farm-card-mob-img--scaled {
+  width: 40px;
+  height: 40px;
+  top: 2px;
+  right: 2px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.obols-farm-card-body {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.obols-farm-card-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #e5e7eb;
+  line-height: 1.3;
+}
+
+.obols-farm-card-map {
+  font-size: 10px;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.obols-farm-card-notes {
+  font-size: 10px;
+  color: #6b7280;
+  line-height: 1.3;
+}

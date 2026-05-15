@@ -116,6 +116,21 @@ const extractors = {
       alternate: parseRows(json[`AttackLoadoutpre_${i}`]),
     }
   },
+  obols: (json, i) => {
+    const order = json[`ObolEqO0_${i}`] ?? []
+    const mapRaw = json[`ObolEqMAP_${i}`]
+    const stoneMap = typeof mapRaw === 'string' ? JSON.parse(mapRaw) : (mapRaw ?? {})
+
+    return order.map((rawName, idx) => {
+      if (rawName === 'Blank') return { rawName: 'Blank', stoneData: {} }
+      const stoneData = stoneMap[String(idx)] ?? {}
+      const { SuperFunItemDisplayType: _, ...bonuses } = stoneData
+      return {
+        rawName,
+        stoneData: bonuses,
+      }
+    })
+  },
 }
 
 // ────────────────────────────────────────────────────────────
@@ -259,10 +274,6 @@ function parseConstruction(json) {
 function parseTowerLevels(json) {
   const raw = json['Tower']
   const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
-  // Tower layout: 9 towers per row, 3 rows (indices 0–26)
-  // Row 1: indices  0– 8  (first building row)
-  // Row 2: indices  9–17  (second building row)
-  // Row 3: indices 18–26  (shrines)
   return arr.slice(0, 27).map(v => Number(v) || 0)
 }
 
@@ -278,8 +289,6 @@ function parseShrines(json) {
     const xpRequired = level > 0
       ? Math.floor(20 * (level - 1) + 6 * level * Math.pow(1.63, level - 1))
       : 0
-    // Shrine construction levels occupy tower row 3 (indices 18–26),
-    // matching shrine order (i=0 → Woodular → towerLevels[18])
     const constructionLevel = towerLevels[18 + i] ?? 0
 
     return {
@@ -295,20 +304,20 @@ function parseShrines(json) {
 
 // ── Worship ─────────────────────────────────────────────────────────
 function parseWorship(json) {
-    const raw = json?.TotemInfo
-    const totemInfoRaw = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
-    const maxWaves = totemInfoRaw?.[0] ?? []
-    const totemEntries = Object.values(worshipMap)
+  const raw = json?.TotemInfo
+  const totemInfoRaw = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  const maxWaves = totemInfoRaw?.[0] ?? []
+  const totemEntries = Object.values(worshipMap)
 
-    return {
-        totems: maxWaves.map((maxWave, index) => {
-            const waveMulti = maxWave === 0 ? 0 : Math.pow((5 + maxWave) / 10, 2.6)
-            const expReward = Math.floor(15 * Math.pow(index + 1, 2) * Math.pow(waveMulti, 0.9)) || 0
-            const chargeReq = totemEntries[index]?.chargeReq ?? 1
-            const expPerCharge = Math.floor(expReward / chargeReq) || 0
-            return { maxWave, waveMulti, expReward, expPerCharge }
-        }),
-    }
+  return {
+    totems: maxWaves.map((maxWave, index) => {
+      const waveMulti = maxWave === 0 ? 0 : Math.pow((5 + maxWave) / 10, 2.6)
+      const expReward = Math.floor(15 * Math.pow(index + 1, 2) * Math.pow(waveMulti, 0.9)) || 0
+      const chargeReq = totemEntries[index]?.chargeReq ?? 1
+      const expPerCharge = Math.floor(expReward / chargeReq) || 0
+      return { maxWave, waveMulti, expReward, expPerCharge }
+    }),
+  }
 }
 
 // ── Armor Smithy Sets ─────────────────────────────────────────────────────────
@@ -326,9 +335,6 @@ function parseArmorSmithySets(json) {
 }
 
 // ── Cooking ──────────────────────────────────────────────────────────────────
-// Meals[0]        — meal levels, indexed by meal ID (CookingMB0–CookingMB73)
-// Ribbon[0–27]    — ribbon cabinet inventory (4 columns × 7 rows)
-// Ribbon[28–101]  — ribbon rank applied per meal, indexed by meal ID
 function parseCooking(json) {
   const meals = typeof json.Meals === 'string' ? JSON.parse(json.Meals) : (json.Meals ?? [])
   const ribbon = typeof json.Ribbon === 'string' ? JSON.parse(json.Ribbon) : (json.Ribbon ?? [])
@@ -345,30 +351,42 @@ function parseCooking(json) {
 }
 
 // ── Breeding ──────────────────────────────────────────────────────────────────
-// Shiny counters are stored in the Breeding array starting at index 22,
-// grouped by world. The Pets array's first 27 entries are the fence yard slots,
-// each entry: [petName, type, power, time]
 function parseBreeding(json) {
   const raw = json['Breeding']
   const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
   const petsRaw = typeof json['Pets'] === 'string' ? JSON.parse(json['Pets']) : (json['Pets'] ?? [])
- 
+
   const shinyPetsLevels = arr.slice(22, 26)
- 
-  // First 27 entries of Pets array are the fence yard slots
+
   const fencePets = petsRaw.slice(0, 27).reduce((acc, [name]) => {
     if (name === 'none') return acc
     acc[name] = (acc[name] || 0) + 1
     return acc
   }, {})
- 
+
   return { shinyPetsLevels, fencePets }
+}
+
+// ── Obols ─────────────────────────────────────────────────────────────────────
+function parseAccountObols(json) {
+  const order = json['ObolEqO1'] ?? []
+  const mapRaw = json['ObolEqMAPz1']
+  const stoneMap = typeof mapRaw === 'string' ? JSON.parse(mapRaw) : (mapRaw ?? {})
+
+  return order.map((rawName, idx) => {
+    if (rawName === 'Blank') return { rawName: 'Blank', stoneData: {} }
+    const stoneData = stoneMap[String(idx)] ?? {}
+    const { SuperFunItemDisplayType: _, ...bonuses } = stoneData
+    return {
+      rawName,
+      stoneData: bonuses,
+    }
+  })
 }
 
 // ── Main Export ───────────────────────────────────────────────────────────────
 export function extractSnapshot(json) {
-  const characterCount = 10
-  const extractedCharacters = Array.from({ length: characterCount }, (_, i) => {
+  const extractedCharacters = Array.from({ length: characters.length }, (_, i) => {
     const extracted = {}
     for (const [field, fn] of Object.entries(extractors)) {
       extracted[field] = fn(json, i, weaponKeys)
@@ -380,6 +398,7 @@ export function extractSnapshot(json) {
     characters: extractedCharacters,
     storage: parseStorage(json),
     statues: parseStatues(json),
+    accountObols: parseAccountObols(json),
     shrines: parseShrines(json),
     worship: parseWorship(json),
     towerLevels: parseTowerLevels(json),
