@@ -10,6 +10,9 @@ magick mogrify -resize 32x32! -path ./scaled *.png  (! forces same size)
 javascript:for(let i=0;i<=6;i++){window.open(`https://idleontoolbox.com/data/Boss${i}.png`)}
     - Opens all images from a range in a new tab. Just replace the url with the image files you're looking to grab.
 
+/grill-me
+    
+
 =================
 NEW FEATURE LIST
 =================

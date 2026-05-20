@@ -62,114 +62,6 @@
   margin-bottom: 8px;
 }
 
-/* ── Obol Slot ── */
-.obols-slot {
-  position: relative;
-  border-radius: 6px;
-  background: #18181b;
-  border: 1px solid #3f3f46;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-  flex-shrink: 0;
-}
-
-.obols-slot--md {
-  width: 48px;
-  height: 48px;
-}
-
-.obols-slot--lg {
-  width: 52px;
-  height: 52px;
-}
-
-.obols-slot--sm {
-  width: 38px;
-  height: 38px;
-}
-
-.obols-slot--empty {
-  opacity: 0.2;
-}
-
-.obols-slot-img {
-  width: 80%;
-  height: 80%;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-.obols-slot--upgraded .obols-slot-img {
-  filter: drop-shadow(0 0 4px #facc15) drop-shadow(0 0 8px #ca8a04);
-}
-
-/* ── Account Board ── */
-.obols-board {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.obols-board-row {
-  display: flex;
-  gap: 4px;
-}
-
-.obols-board-row--centered {
-  justify-content: center;
-}
-
-/* ── Character Board ── */
-.obols-char-board {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.obols-char-board-row {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-}
-
-/* Small rows form a diamond pattern.
-   Top/bottom rows (2,4,6,8): narrow gap so middle row fits without overlap.
-   Middle row (3,7): wide gap + pulled up to sit between top and bottom. */
-
-/* First small section */
-.obols-char-board .obols-char-board-row--small:nth-child(2) {
-  gap: 10px;
-}
-
-.obols-char-board .obols-char-board-row--small:nth-child(3) {
-  gap: 88px;
-  margin-top: -20px;
-  margin-bottom: -20px;
-}
-
-.obols-char-board .obols-char-board-row--small:nth-child(4) {
-  gap: 10px;
-}
-
-/* Second small section */
-.obols-char-board .obols-char-board-row--small:nth-child(6) {
-  gap: 10px;
-}
-
-.obols-char-board .obols-char-board-row--small:nth-child(7) {
-  gap: 88px;
-  margin-top: -20px;
-  margin-bottom: -20px;
-}
-
-.obols-char-board .obols-char-board-row--small:nth-child(8) {
-  gap: 10px;
-}
-
 /* ── Example Boards Tab ── */
 .obols-example-tab {
   display: flex;
@@ -217,8 +109,6 @@
   align-items: center;
   gap: 8px;
 }
-
-
 
 /* ── Tier Grid ── */
 .obols-tier-grid {

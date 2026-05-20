@@ -15,122 +15,17 @@ import {
 } from '../../data'
 import TierList from '../TierList/TierList'
 import InfoPanel from '../InfoPanel/InfoPanel'
+import { AccountBoard, CharacterBoard } from './ObolBoard'
+import { isUpgraded } from './obolUtils'
 import './Obols.css'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function isUpgraded(stoneData) {
-  if (!stoneData || typeof stoneData !== 'object') return false
-  return Object.entries(stoneData).some(([key, val]) => {
-    if (key === 'SuperFunItemDisplayType') return false
-    return typeof val === 'number' && val !== 0
-  })
-}
 
 function buildUpgradedIds(accountObols = []) {
   return new Set(
     accountObols
       .filter(slot => slot.rawName !== 'Blank' && isUpgraded(slot.stoneData))
       .map(slot => slot.rawName)
-  )
-}
-
-// ── Obol Slot ─────────────────────────────────────────────────────────────────
-
-function ObolSlot({ rawName, stoneData, size = 'md' }) {
-  if (!rawName || rawName === 'Blank') {
-    return <div className={`obols-slot obols-slot--empty obols-slot--${size}`} />
-  }
-  const entry = obolByRawName[rawName]
-  const upgraded = stoneData !== undefined ? isUpgraded(stoneData) : false
-  return (
-    <div className={`obols-slot obols-slot--${size} tooltip-anchor${upgraded ? ' obols-slot--upgraded' : ''}`}>
-      <img
-        src={`/images/obols/${rawName}.png`}
-        alt={entry?.name ?? rawName}
-        className="obols-slot-img"
-        onError={e => { e.currentTarget.style.display = 'none' }}
-      />
-      <span className="tooltip">{entry?.name ?? rawName}</span>
-    </div>
-  )
-}
-
-// ── Account Board ─────────────────────────────────────────────────────────────
-const ACCOUNT_BOARD_ROWS = [5, 5, 4, 5, 5]
-
-function buildAccountRows(slots) {
-  const rows = []
-  let idx = 0
-  for (const count of ACCOUNT_BOARD_ROWS) {
-    rows.push(slots.slice(idx, idx + count))
-    idx += count
-  }
-  return rows
-}
-
-function AccountBoard({ slots, stoneDataMap = {} }) {
-  const rows = buildAccountRows(slots)
-  return (
-    <div className="obols-board">
-      {rows.map((row, rowIdx) => (
-        <div
-          key={rowIdx}
-          className={`obols-board-row${row.length === 4 ? ' obols-board-row--centered' : ''}`}
-        >
-          {row.map((rawName, slotIdx) => {
-            const globalIdx = ACCOUNT_BOARD_ROWS.slice(0, rowIdx).reduce((a, b) => a + b, 0) + slotIdx
-            return (
-              <ObolSlot
-                key={slotIdx}
-                rawName={rawName}
-                stoneData={stoneDataMap[globalIdx]}
-              />
-            )
-          })}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// ── Character Board ───────────────────────────────────────────────────────────
-// Layout: 3 / 2 / 2 / 2 / 3 / 2 / 2 / 2 / 3 (21 slots)
-const CHAR_BOARD_ROWS = [3, 2, 2, 2, 3, 2, 2, 2, 3]
-
-function buildCharRows(slots) {
-  const rows = []
-  let idx = 0
-  for (const count of CHAR_BOARD_ROWS) {
-    rows.push(slots.slice(idx, idx + count))
-    idx += count
-  }
-  return rows
-}
-
-function CharacterBoard({ slots, stoneDataMap = {} }) {
-  const rows = buildCharRows(slots)
-  return (
-    <div className="obols-char-board">
-      {rows.map((row, rowIdx) => (
-        <div
-          key={rowIdx}
-          className={`obols-char-board-row obols-char-board-row--${row.length === 3 ? 'large' : 'small'}`}
-        >
-          {row.map((rawName, slotIdx) => {
-            const globalIdx = CHAR_BOARD_ROWS.slice(0, rowIdx).reduce((a, b) => a + b, 0) + slotIdx
-            return (
-              <ObolSlot
-                key={slotIdx}
-                rawName={rawName}
-                stoneData={stoneDataMap[globalIdx]}
-                size={row.length === 3 ? 'lg' : 'sm'}
-              />
-            )
-          })}
-        </div>
-      ))}
-    </div>
   )
 }
 
@@ -260,7 +155,6 @@ function FarmingTab() {
   const grouped = {}
 
   Object.entries(obolFarmMap).forEach(([key, entry]) => {
-    // Derive type from obolMap
     const obolEntry = obolMap[key]
     const type = obolEntry?.type ?? 'misc'
     const groupLabel = FARM_GROUP_LABELS[type] ?? 'Misc Obols'
@@ -310,9 +204,9 @@ export default function Obols({ snapshot }) {
   ]
 
   const TABS = [
-    { id: 'examples',   label: 'Example Boards' },
-    { id: 'tierlist',   label: 'Tier List' },
-    { id: 'farming',    label: 'Farming' },
+    { id: 'examples', label: 'Example Boards' },
+    { id: 'tierlist', label: 'Tier List' },
+    { id: 'farming',  label: 'Farming' },
   ]
 
   return (
