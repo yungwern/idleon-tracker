@@ -4,51 +4,29 @@ import './ObolBoard.css'
 
 // ── Obol Slot ─────────────────────────────────────────────────────────────────
 
-function formatStatLine(entry, stoneData) {
-  if (!entry) return null
-  const lines = []
+function formatUQ(txt, val) {
+  if (!txt || !val) return null
+  const hasPercent = txt.startsWith('%')
+  let label = txt.replace(/^%_?|^_/, '').replace(/_/g, ' ')
+  // Normalize game inconsistency: DROP CHANCE and DROP RATE are the same thing
+  label = label.replace(/DROP CHANCE/i, 'DROP RATE')
+  return hasPercent ? `${label}: +${val}%` : `${label}: +${val}`
+}
 
-  // Base stats (non-zero only)
-  const baseStats = [
-    entry.STR  > 0 && `STR +${entry.STR}`,
-    entry.AGI  > 0 && `AGI +${entry.AGI}`,
-    entry.WIS  > 0 && `WIS +${entry.WIS}`,
-    entry.LUK  > 0 && `LUK +${entry.LUK}`,
-    entry.def  > 0 && `DEF +${entry.def}`,
-    entry.wp   > 0 && `WP +${entry.wp}`,
-  ].filter(Boolean)
+// Stat color map
+const STAT_COLORS = {
+  STR: '#f87171',
+  AGI: '#4ade80',
+  WIS: '#c084fc',
+  LUK: '#fbbf24',
+}
 
-  if (baseStats.length) lines.push(baseStats.join(' | '))
-
-  // Skill power
-  if (entry.skillPower) {
-    for (const [skill, val] of Object.entries(entry.skillPower)) {
-      if (val > 0) lines.push(`${skill} Power: ${val}`)
-    }
-  }
-
-  // Unique bonuses
-  if (entry.uq1 && entry.uq1val > 0) {
-    lines.push(`${entry.uq1.replace(/_/g, ' ').replace(/%/g, '%')}: ${entry.uq1val}`)
-  }
-  if (entry.uq2 && entry.uq2val > 0) {
-    lines.push(`${entry.uq2.replace(/_/g, ' ').replace(/%/g, '%')}: ${entry.uq2val}`)
-  }
-
-  // Reroll bonuses from stoneData
-  if (stoneData && typeof stoneData === 'object') {
-    const rerollStats = [
-      stoneData.STR  > 0 && `STR +${stoneData.STR} (reroll)`,
-      stoneData.AGI  > 0 && `AGI +${stoneData.AGI} (reroll)`,
-      stoneData.WIS  > 0 && `WIS +${stoneData.WIS} (reroll)`,
-      stoneData.LUK  > 0 && `LUK +${stoneData.LUK} (reroll)`,
-      stoneData.UQ1txt && stoneData.UQ1val > 0 && `${stoneData.UQ1txt.replace(/_/g, ' ')}: +${stoneData.UQ1val} (reroll)`,
-      stoneData.UQ2txt && stoneData.UQ2val > 0 && `${stoneData.UQ2txt.replace(/_/g, ' ')}: +${stoneData.UQ2val} (reroll)`,
-    ].filter(Boolean)
-    if (rerollStats.length) lines.push(...rerollStats)
-  }
-
-  return lines
+function StatChip({ label, value }) {
+  return (
+    <span className="obol-tooltip-stat-chip" style={{ color: STAT_COLORS[label] ?? '#a1a1aa' }}>
+      {label} +{value}
+    </span>
+  )
 }
 
 export function ObolSlot({ rawName, stoneData, size = 'md' }) {
@@ -57,7 +35,34 @@ export function ObolSlot({ rawName, stoneData, size = 'md' }) {
   }
   const entry = obolByRawName[rawName]
   const upgraded = stoneData !== undefined ? isUpgraded(stoneData) : false
-  const statLines = formatStatLine(entry, stoneData)
+
+  // Base stat chips
+  const statChips = ['STR', 'AGI', 'WIS', 'LUK'].filter(s => entry?.[s] > 0)
+  const otherStats = [
+    entry?.def  > 0 && `DEF +${entry.def}`,
+    entry?.wp   > 0 && `WP +${entry.wp}`,
+  ].filter(Boolean)
+
+  // Skill power
+  const skillLines = entry?.skillPower
+    ? Object.entries(entry.skillPower).filter(([, v]) => v > 0).map(([k, v]) => `${k} Power: ${v}`)
+    : []
+
+  // Unique bonuses
+  const uqLines = [
+    formatUQ(entry?.uq1, entry?.uq1val),
+    formatUQ(entry?.uq2, entry?.uq2val),
+  ].filter(Boolean)
+
+  // Reroll bonuses
+  const rerollLines = stoneData && typeof stoneData === 'object' ? [
+    stoneData.STR  > 0 && `STR +${stoneData.STR} 🎲`,
+    stoneData.AGI  > 0 && `AGI +${stoneData.AGI} 🎲`,
+    stoneData.WIS  > 0 && `WIS +${stoneData.WIS} 🎲`,
+    stoneData.LUK  > 0 && `LUK +${stoneData.LUK} 🎲`,
+    stoneData.UQ1txt && stoneData.UQ1val > 0 && formatUQ(stoneData.UQ1txt, stoneData.UQ1val) + ' 🎲',
+    stoneData.UQ2txt && stoneData.UQ2val > 0 && formatUQ(stoneData.UQ2txt, stoneData.UQ2val) + ' 🎲',
+  ].filter(Boolean) : []
 
   return (
     <div className={`obol-slot obol-slot--${size} tooltip-anchor${upgraded ? ' obol-slot--upgraded' : ''}`}>
@@ -69,9 +74,15 @@ export function ObolSlot({ rawName, stoneData, size = 'md' }) {
       />
       <div className="obol-tooltip">
         <span className="obol-tooltip-name">{entry?.name ?? rawName}</span>
-        {statLines && statLines.map((line, i) => (
-          <span key={i} className="obol-tooltip-stat">{line}</span>
-        ))}
+        {(statChips.length > 0 || otherStats.length > 0) && (
+          <div className="obol-tooltip-stat-row">
+            {statChips.map(s => <StatChip key={s} label={s} value={entry[s]} />)}
+            {otherStats.map((s, i) => <span key={i} className="obol-tooltip-stat">{s}</span>)}
+          </div>
+        )}
+        {skillLines.map((s, i) => <span key={i} className="obol-tooltip-stat">{s}</span>)}
+        {uqLines.map((s, i) => <span key={i} className="obol-tooltip-stat">{s}</span>)}
+        {rerollLines.map((s, i) => <span key={i} className={`obol-tooltip-stat obol-tooltip-reroll${i === 0 ? ' obol-tooltip-reroll--first' : ''}`}>{s}</span>)}
       </div>
     </div>
   )

@@ -12,13 +12,13 @@ import Minibosses from './components/MiniBosses/MiniBosses.jsx'
 import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
 import Statues from './components/Statues/Statues.jsx'
 import Anvil from './components/Anvil/Anvil.jsx'
-
+import Obols from './components/Obols/Obols.jsx'
 import Construction from './components/Construction/Construction.jsx'
 import Shrines from './components/Shrines/Shrines.jsx'
 import Worship from './components/Worship/Worship.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
-import Obols from './components/Obols/Obols.jsx'
+import Farming from './components/Farming/Farming.jsx'
 
 import './App.css'
 import './styles/global.css'
@@ -61,6 +61,7 @@ export default function App() {
     if (selected === 'Worship') return <Worship snapshot={snapshot} />
     if (selected === 'Cooking') return <Cooking snapshot={snapshot} />
     if (selected === 'Breeding') return <Breeding snapshot={snapshot} />
+    if (selected === 'Farming') return <Farming snapshot={snapshot} />
     return (
       <div className="page">
         <h2 className="page-title">{selected}</h2>

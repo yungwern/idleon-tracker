@@ -3,6 +3,7 @@ import { MASTERCLASSES } from '../data/masterClasses'
 import { anvilMapById } from '../data/anvilMap'
 import { characters } from '../data/characters'
 import { worshipMap } from '../data'
+import { seedInfo } from '../data/farmingMap'
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 function parseStorage(json) {
@@ -186,6 +187,27 @@ function parseMiniBosses(json) {
   return kills.slice(0, 9)
 }
 
+// ── Gear Optimizer ─────────────────────────────────────────────────────────
+function parseArmorSmithySets(json) {
+  try {
+    const optLacc = json['OptLacc'] ?? []
+    const raw = optLacc[379] ?? ''
+    if (!raw) return []
+    const [, ...unlockedSets] = raw.toString().split(',')
+    return unlockedSets.filter(Boolean)
+  } catch {
+    console.warn('Failed to parse armor smithy sets from OptLacc.')
+    return []
+  }
+}
+
+// ── Statues ─────────────────────────────────────────────────────────────────
+function parseStatues(json) {
+  const raw = json['StatueLevels_0']
+  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  return arr.map(([level, xp], id) => ({ id, level, xp }))
+}
+
 // ── Anvil ─────────────────────────────────────────────────────────────────
 function parseAnvil(json) {
   const characterCount = characters.length
@@ -230,11 +252,21 @@ function parseAnvil(json) {
   return { rows: allRows, charStats }
 }
 
-// ── Statues ─────────────────────────────────────────────────────────────────
-function parseStatues(json) {
-  const raw = json['StatueLevels_0']
-  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
-  return arr.map(([level, xp], id) => ({ id, level, xp }))
+// ── Obols ─────────────────────────────────────────────────────────────────────
+function parseAccountObols(json) {
+  const order = json['ObolEqO1'] ?? []
+  const mapRaw = json['ObolEqMAPz1']
+  const stoneMap = typeof mapRaw === 'string' ? JSON.parse(mapRaw) : (mapRaw ?? {})
+
+  return order.map((rawName, idx) => {
+    if (rawName === 'Blank') return { rawName: 'Blank', stoneData: {} }
+    const stoneData = stoneMap[String(idx)] ?? {}
+    const { SuperFunItemDisplayType: _, ...bonuses } = stoneData
+    return {
+      rawName,
+      stoneData: bonuses,
+    }
+  })
 }
 
 // ── Construction ──────────────────────────────────────────────────────────────
@@ -320,20 +352,6 @@ function parseWorship(json) {
   }
 }
 
-// ── Armor Smithy Sets ─────────────────────────────────────────────────────────
-function parseArmorSmithySets(json) {
-  try {
-    const optLacc = json['OptLacc'] ?? []
-    const raw = optLacc[379] ?? ''
-    if (!raw) return []
-    const [, ...unlockedSets] = raw.toString().split(',')
-    return unlockedSets.filter(Boolean)
-  } catch {
-    console.warn('Failed to parse armor smithy sets from OptLacc.')
-    return []
-  }
-}
-
 // ── Cooking ──────────────────────────────────────────────────────────────────
 function parseCooking(json) {
   const meals = typeof json.Meals === 'string' ? JSON.parse(json.Meals) : (json.Meals ?? [])
@@ -367,21 +385,132 @@ function parseBreeding(json) {
   return { shinyPetsLevels, fencePets }
 }
 
-// ── Obols ─────────────────────────────────────────────────────────────────────
-function parseAccountObols(json) {
-  const order = json['ObolEqO1'] ?? []
-  const mapRaw = json['ObolEqMAPz1']
-  const stoneMap = typeof mapRaw === 'string' ? JSON.parse(mapRaw) : (mapRaw ?? {})
+// ── Farming ───────────────────────────────────────────────────────────────────
+function parseFarming(json) {
+  // ── Raw save keys ──
+  const rawTimeAway = typeof json['TimeAway'] === 'string'
+  ? JSON.parse(json['TimeAway'])
+  : (json['TimeAway'] ?? {})
 
-  return order.map((rawName, idx) => {
-    if (rawName === 'Blank') return { rawName: 'Blank', stoneData: {} }
-    const stoneData = stoneMap[String(idx)] ?? {}
-    const { SuperFunItemDisplayType: _, ...bonuses } = stoneData
+  const globalTime = rawTimeAway?.GlobalTime ?? null
+
+  const rawUpgrades = typeof json['FarmUpg'] === 'string'
+    ? JSON.parse(json['FarmUpg'])
+    : (json['FarmUpg'] ?? [])
+
+  const rawPlot = typeof json['FarmPlot'] === 'string'
+    ? JSON.parse(json['FarmPlot'])
+    : (json['FarmPlot'] ?? [])
+
+  const rawCrop = typeof json['FarmCrop'] === 'string'
+    ? JSON.parse(json['FarmCrop'])
+    : (json['FarmCrop'] ?? {})
+
+  const rawRanks = typeof json['FarmRank'] === 'string'
+    ? JSON.parse(json['FarmRank'])
+    : (json['FarmRank'] ?? [])
+
+  // ── Market upgrade levels ──
+  // Index 1 = beans, index 19 = instaGrow (matches toolbox)
+  // Indices 2–17 = 16 market upgrades (day market 0–7, night market 8–15)
+  // Indices 20+ = exotic market upgrade levels: rawUpgrades[20 + exoticIndex]
+  const beans     = rawUpgrades[1] ?? 0
+  const instaGrow = rawUpgrades[19] ?? 0
+
+  const marketLevels = rawUpgrades.slice(2, 18)   // 16 entries
+  const exoticLevels = rawUpgrades.slice(20, 80)  // 60 entries, exoticLevels[i] = rawUpgrades[20 + i]
+
+  // ── Plots ──
+  // Each entry: [seedType, progress, cropType, isLocked, cropQuantity, currentOG, cropProgress]
+  const plots = rawPlot.map((entry, index) => {
+    const [seedType, progress, cropType, isLocked, cropQuantity, currentOG, cropProgress] = entry
+
+    const seed = seedInfo.find(s => seedType >= 0 && s.seedId === seedType) ?? null
+    const cropId = seed ? Math.round(seed.cropIdMin + cropType) : null
+    const growthReq = seedType === 6
+      ? 25200
+      : 14400 * Math.pow(1.5, seedType)
+
     return {
-      rawName,
-      stoneData: bonuses,
+      index,
+      seedType,
+      seed,
+      cropType,
+      cropId,
+      progress,
+      cropQuantity,
+      currentOG,
+      cropProgress,
+      isLocked: Boolean(isLocked),
+      growthReq,
     }
   })
+
+  // ── Crop depot ──
+  const cropDepot = Object.entries(rawCrop).reduce((acc, [idStr, qty]) => {
+    const id = parseFloat(idStr)
+    const seed = seedInfo.find(s => id >= s.cropIdMin && id <= s.cropIdMax) ?? null
+    acc[idStr] = {
+      cropId: id,
+      qty: parseFloat(qty),
+      seed,
+      rawName: `FarmCrop${Math.round(id)}.png`,
+    }
+    return acc
+  }, {})
+
+  const cropQtys = Object.values(cropDepot).map(e => e.qty ?? 0)
+  const gmoCropCounts = {
+  200:    cropQtys.filter(q => q >= 200).length,
+  1000:   cropQtys.filter(q => q >= 1000).length,
+  2500:   cropQtys.filter(q => q >= 2500).length,
+  10000:  cropQtys.filter(q => q >= 10000).length,
+  100000: cropQtys.filter(q => q >= 100000).length,
+  }
+  const plotCount = Array.isArray(rawPlot) ? rawPlot.length : 0
+
+  // ── Land ranks ──
+  // rawRanks is [farmingRanks[], ranksProgress[], upgradesLevels[]]
+  const farmingRanks   = Array.isArray(rawRanks[0]) ? rawRanks[0] : []
+  const ranksProgress  = Array.isArray(rawRanks[1]) ? rawRanks[1] : []
+  const upgradesLevels = Array.isArray(rawRanks[2]) ? rawRanks[2] : []
+
+  const plotRanks = farmingRanks.map((rank, i) => ({
+    plotIndex: i,
+    rank,
+    progress:     ranksProgress[i]  ?? 0,
+    upgradeLevel: upgradesLevels[i] ?? 0,
+  }))
+
+  const totalRankPoints = farmingRanks.reduce((s, r) => s + r, 0)
+  const usedRankPoints  = upgradesLevels.reduce((s, l) => s + l, 0)
+
+  return {
+    globalTime,
+    marketLevels,
+    exoticLevels,
+    beans,
+    instaGrow,
+    plots,
+    cropDepot,
+    cropsFound: Object.keys(rawCrop).length,
+    plotRanks,
+    farmingRanks,
+    upgradesLevels,
+    totalRankPoints,
+    usedRankPoints,
+    gmoCropCounts,
+    plotCount,
+  }
+}
+
+// ── Legend Talents ────────────────────────────────────────────────────────────────
+function parseLegendTalents(json) {
+  const spelunk = typeof json['Spelunk'] === 'string'
+    ? JSON.parse(json['Spelunk'])
+    : (json['Spelunk'] ?? [])
+  const levels = spelunk[18] ?? []
+  return levels
 }
 
 // ── Main Export ───────────────────────────────────────────────────────────────
@@ -391,13 +520,17 @@ export function extractSnapshot(json) {
     for (const [field, fn] of Object.entries(extractors)) {
       extracted[field] = fn(json, i, weaponKeys)
     }
+    extracted.name  = characters[i]?.name  ?? `Character ${i + 1}`
+    extracted.class = characters[i]?.class ?? ''
     return extracted
   })
 
   return {
+    importedAt: new Date().toISOString(),
     characters: extractedCharacters,
     storage: parseStorage(json),
     statues: parseStatues(json),
+    anvil: parseAnvil(json),
     accountObols: parseAccountObols(json),
     shrines: parseShrines(json),
     worship: parseWorship(json),
@@ -408,9 +541,9 @@ export function extractSnapshot(json) {
     prismaBubbles: parsePrismaBubbles(json),
     mapBonuses: parseMapBonuses(json),
     construction: parseConstruction(json),
-    anvil: parseAnvil(json),
     cooking: parseCooking(json),
     breeding: parseBreeding(json),
-    importedAt: new Date().toISOString(),
+    farming: parseFarming(json),
+    legendTalents: parseLegendTalents(json),
   }
 }

@@ -271,9 +271,9 @@ export const hexagonTiers = [
 ]
 
 export const sparkleTiers = [
-  { id: 's', label: 'S', sublabel: TIER_SUBLABELS.s, items: ['ObolPinkLuck', 'ObolEmp', 'ObolKruk'] },
-  { id: 'a', label: 'A', sublabel: TIER_SUBLABELS.a, items: ['ObolPinkMining', 'ObolTroll', 'ObolPinkCons'] },
-  { id: 'b', label: 'B', sublabel: TIER_SUBLABELS.b, items: [] },
+  { id: 's', label: 'S', sublabel: TIER_SUBLABELS.s, items: ['ObolPinkLuck', 'ObolEmp'] },
+  { id: 'a', label: 'A', sublabel: TIER_SUBLABELS.a, items: [ 'ObolKruk', 'ObolPinkCons'] },
+  { id: 'b', label: 'B', sublabel: TIER_SUBLABELS.b, items: ['ObolPinkMining', 'ObolTroll',] },
   { id: 'c', label: 'C', sublabel: TIER_SUBLABELS.c, items: ['ObolPinkPop', 'ObolPinkTrapping', 'ObolPinkWorship'] },
   { id: 'd', label: 'D', sublabel: TIER_SUBLABELS.d, items: ['ObolPinkCard', 'ObolPinkEXP', 'ObolPinkKill', 'ObolPinkDef'] },
 ]

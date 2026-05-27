@@ -148,3 +148,27 @@
   color: #a1a1aa;
   line-height: 1.4;
 }
+
+.obol-tooltip-stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.obol-tooltip-stat-chip {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.obol-tooltip-reroll {
+  color: #2dd4bf;
+  font-style: italic;
+}
+
+.obol-tooltip-reroll--first {
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 2px;
+}
