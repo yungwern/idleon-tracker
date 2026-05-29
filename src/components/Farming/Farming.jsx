@@ -112,7 +112,12 @@ function LandRanksTab({ farming }) {
   const plotCount     = farming?.plotCount     ?? 0
 
   const [optimizerResult, setOptimizerResult] = useState(null)
-  const [seedMaxLevel,    setSeedMaxLevel]    = useState('')
+  const currentSeedLevel = Math.max(
+    upgradesLevels[4]  ?? 0,
+    upgradesLevels[9]  ?? 0,
+    upgradesLevels[14] ?? 0,
+    upgradesLevels[19] ?? 0,
+  )
   const [farmExpPoints,   setFarmExpPoints]   = useState('')
 
   // Lowest individual plot rank
@@ -349,7 +354,7 @@ function runOptimizer() {
   let pointsLeft = budget
 
   // ── Step 1: Utility (seeds) up to seedMaxLevel ──
-  const seedMax = parseInt(seedMaxLevel) || 0
+  const seedMax = currentSeedLevel
   if (seedMax > 0) {
     for (const ri of SEED_RANK_INDICES) {
       const current = levels[ri] ?? 0
@@ -472,9 +477,26 @@ function runOptimizer() {
         {plotCount > 0 && (
           <div className="rank-stat-chip">
             <span className="rank-stat-chip-label">Plot Count:</span>
-            <span className="rank-stat-chip-value">{plotCount}</span>
+            <span className="rank-stat-chip-value">{plotCount}/36</span>
           </div>
         )}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, margin: '10px 0 4px' }}>
+        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Evo Boost %
+        </span>
+        <input
+          type="number"
+          className="optimizer-input"
+          placeholder="e.g. 1500"
+          value={dankRanksInput}
+          onChange={handleDankRanksChange}
+          style={{ width: 90, margin: 0 }}
+        />
+        <span style={{ fontSize: 10, color: '#4b5563' }}>
+          Enter to calibrate land rank bonus calculations.
+        </span>
       </div>
 
       {/* ── Rank Database ── */}
@@ -548,27 +570,6 @@ function runOptimizer() {
         <div className="optimizer-controls">
 
           <div className="optimizer-control-group tooltip-anchor">
-            <span className="optimizer-label">Seed Ranks Max Level</span>
-            <input
-              type="number"
-              min="0"
-              className={`optimizer-input${!seedMaxLevel ? ' optimizer-input--warn' : ''}`}
-              placeholder="e.g. 100"
-              value={seedMaxLevel}
-              onChange={e => setSeedMaxLevel(e.target.value)}
-            />
-            {!seedMaxLevel && (
-              <span className="optimizer-warn">
-                ⚠ Set your seed rank max level.
-              </span>
-            )}
-            <span className="tooltip">
-              Stealth, Loot, Damage &amp; Stats seeds share a max level. Points needed
-              to reach this level are reserved before optimizing other ranks.
-            </span>
-          </div>
-
-          <div className="optimizer-control-group tooltip-anchor">
           <span className="optimizer-label">Farm EXP Points</span>
           <input
             type="number"
@@ -591,18 +592,12 @@ function runOptimizer() {
 
         {freePoints > 0 && (
         <p style={{ textAlign: 'center', fontSize: 11, color: '#6b7280', margin: '0 0 4px' }}>
-            You have <span style={{ color: '#86efac', fontWeight: 700 }}>{freePoints.toLocaleString()}</span> unallocated points — optimizer always plans from scratch using all {totalRankPoints.toLocaleString()} points.
+            You have <span style={{ color: '#86efac', fontWeight: 700 }}>{freePoints.toLocaleString()}</span> unallocated points — optimizer always plans from scratch using all {totalRankPoints.toLocaleString()} points. Enter any points you want to reserve for Farm EXP, then click Optimize.
         </p>
         )}
 
         {optimizerResult && (
           <div className="optimizer-results">
-            <div className="optimizer-results-header">
-              <span>Rank</span>
-              <span style={{ textAlign: 'right' }}>Before</span>
-              <span style={{ textAlign: 'right' }}>After</span>
-              <span style={{ textAlign: 'right' }}>Gain</span>
-            </div>
             {optimizerResult.length === 0 ? (
               <p style={{ textAlign: 'center', fontSize: 12, color: '#4b5563', padding: '12px 0' }}>
                 {freePoints <= 0
@@ -611,36 +606,46 @@ function runOptimizer() {
                 }
               </p>
             ) : (
-              optimizerResult.map(rank => (
-                <div
-                  key={rank.index}
-                  className="optimizer-result-row optimizer-result-row--changed"
-                >
-                  <span className="optimizer-result-name">
+              <div className="rank-database-grid">
+                {optimizerResult.map(rank => {
+                  const gainDelta  = rank.bonusAfter - rank.bonusBefore
+                  const isPositive = gainDelta >= 0
+                  const isUnlocked = totalRankPoints >= rank.unlockAt
+                  return (
+                  <div
+                    key={rank.index}
+                    className={`rank-upg-card${!isUnlocked ? ' rank-upg-card--locked' : ''}`}
+                    style={{ position: 'relative' }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: 4, right: 4,
+                      fontSize: 9, fontWeight: 700, borderRadius: 4, padding: '1px 5px',
+                      background: rank.after > rank.before ? '#14532d' : rank.after < rank.before ? '#450a0a' : '#1f2937',
+                      color: rank.after > rank.before ? '#86efac' : rank.after < rank.before ? '#fca5a5' : '#6b7280',
+                    }}>
+                      {rank.before} → {rank.after}
+                    </span>
                     <img
                       src={`/images/farming/RankUpg${rank.index}.png`}
                       alt={rank.name}
-                      className="optimizer-result-img"
+                      className="rank-upg-img"
                       onError={e => { e.currentTarget.style.display = 'none' }}
                     />
-                    {rank.name}
-                    <span style={{ fontSize: 10, color: '#6b7280' }}>
-                      {rank.before} → {rank.after}
-                    </span>
-                  </span>
-                  <span className={`optimizer-result-val${rank.bonusAfter < rank.bonusBefore ? ' optimizer-result-val--new' : ''}`}>
-                    {rank.base !== null ? `+${formatBonus(rank.bonusBefore)}%` : '—'}
-                  </span>
-                  <span className={`optimizer-result-val${rank.bonusAfter >= rank.bonusBefore ? ' optimizer-result-val--new' : ''}`}>
-                    {rank.base !== null ? `+${formatBonus(rank.bonusAfter)}%` : '—'}
-                  </span>
-                  <span className={`optimizer-result-delta${rank.bonusAfter >= rank.bonusBefore ? ' optimizer-result-delta--pos' : ' optimizer-result-delta--neg'}`}>
-                    {rank.base !== null
-                      ? `${rank.bonusAfter >= rank.bonusBefore ? '+' : ''}${formatBonus(rank.bonusAfter - rank.bonusBefore)}`
-                      : '—'}
-                  </span>
-                </div>
-              ))
+                    <span className="rank-upg-name">{rank.name}</span>
+                    <span className="rank-upg-level">Lv. {rank.after}</span>
+                    {rank.base !== null && gainDelta !== 0 && (
+                      <span style={{
+                        fontSize: 10,
+                        color: isPositive ? '#86efac' : '#fca5a5',
+                        fontWeight: 600,
+                      }}>
+                        {isPositive ? '+' : ''}{formatBonus(gainDelta, 2)}%
+                      </span>
+                    )}
+                  </div>
+                  )
+                })}
+              </div>
             )}
           </div>
         )}
@@ -1050,7 +1055,8 @@ export default function Farming({ snapshot }) {
         items={[
           'The Land Ranks tab shows all 20 Land Rank Database upgrades. Locked upgrades are dimmed — hover to see the total plot rank required to unlock.',
           'The first 3 land ranks scale per rank of each land plot. The card shows the base bonus per rank and the scaled total using your lowest plot rank.',
-          'The optimizer uses a greedy marginal-gain algorithm. Enter a Seed Ranks Max Level to reserve points for the four Seed upgrades before optimizing other ranks.',
+          'Seed Ranks Max Level will automatically fill to your highest of the four seed ranks to reserve points for them before optimizing other ranks. Ensure these are maxed in-game before importing your JSON save data.',
+          'The optimizer is likely to reduce your production levels in order to calculate the needed ranks to reach your production cap. Anything more would be wasted points and you shouldn\'t see any change in your actual production values.',
           'The Market tab shows Day and Night market upgrades with current levels and the next crop cost requirements.',
           'The Exotic Market tab shows the current weekly rotation at the top.',
           'Set a target level gain in the Crop Grow Order to see which crops in the rotation you still need to farm — accounts for your Better Exotic and Legend Talent bonuses.',

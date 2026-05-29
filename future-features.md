@@ -7,7 +7,7 @@ rmdir /s /q node_modules\.vite (cache clear)
 mkdir scaled
 magick mogrify -resize 32x32! -path ./scaled *.png  (! forces same size)
 
-javascript:for(let i=0;i<=6;i++){window.open(`https://idleontoolbox.com/data/Boss${i}.png`)}
+javascript:for(let i=0;i<=10;i++){window.open(`https://idleontoolbox.com/data/NjGl${i}.png`)}
     - Opens all images from a range in a new tab. Just replace the url with the image files you're looking to grab.
 
 /grill-me

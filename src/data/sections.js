@@ -5,6 +5,6 @@ export const sections = {
   World3: ['Construction', 'Shrines', 'Worship',],
   World4: ['Cooking', 'Breeding'],
   World5: [],
-  World6: ['Farming',],
+  World6: ['Farming', 'Sneaking'],
   World7: [],
 }
