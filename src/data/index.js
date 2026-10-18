@@ -1,5 +1,4 @@
 // ── Shared / Global ───────────────────────────────────────────────────────────
-export { defaultTodos } from './characters'
 export { CLASS_NAMES, CLASS_BEST_FOR, getClassName } from './classes'
 export { sections } from './sections'
 export { talentMap } from './talentMap'

@@ -197,3 +197,13 @@
   justify-content: center;
   padding: 16px 0;
 }
+
+/* ── Overview Tab ── */
+.char-overview {
+  min-height: 120px;
+}
+
+.char-overview-empty {
+  color: #6b7280;
+  font-size: 13px;
+}

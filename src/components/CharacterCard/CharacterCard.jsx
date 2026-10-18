@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import TodoList from '../TodoList/TodoList.jsx'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import TalentsTab from '../TalentsTab/TalentsTab.jsx'
 import ActionBar from '../ActionBars/ActionBars.jsx'
 import { CharacterBoard } from '../Obols/ObolBoard.jsx'
-import { isUpgraded } from '../Obols/ObolUtils'
 import { prayerMap } from '../../data/prayerMap'
 import './CharacterCard.css'
 import '../ActionBars/ActionBars.css'
@@ -48,7 +46,7 @@ function CharacterObolsTab({ charIndex, snapshot }) {
 }
 
 export default function CharacterCard({ character, charIndex, snapshot }) {
-  const [activeTab, setActiveTab] = useState('to-do list:')
+  const [activeTab, setActiveTab] = useState('overview')
   const slug = toClassSlug(character.class)
 
   const actionBar = snapshot?.characters?.[charIndex]?.actionBar ?? null
@@ -113,7 +111,7 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
 
       {/* ── Tab Navigation ── */}
       <div className="card-tabs" style={{ '--tab-count': 5 }}>
-        {['to-do list:', 'premium gear', 'super talents', 'action bar', 'obols'].map(tab => (
+        {['overview', 'premium gear', 'super talents', 'action bar', 'obols'].map(tab => (
           <button
             key={tab}
             className={activeTab === tab ? 'active' : ''}
@@ -127,11 +125,10 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
       {/* ── Tab Content ── */}
       <div className="card-body">
 
-        {activeTab === 'to-do list:' && (
-          <TodoList
-            characterId={character.id}
-            defaultTodos={character.todos}
-          />
+        {activeTab === 'overview' && (
+          <div className="char-overview">
+            <p className="char-overview-empty">Overview coming soon.</p>
+          </div>
         )}
 
         {activeTab === 'premium gear' && (

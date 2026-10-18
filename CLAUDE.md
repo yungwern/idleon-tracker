@@ -21,7 +21,7 @@ src/
 │   ├── Section pages:  Anvil, Breeding, Construction, Cooking, Farming, GearOptimizer,
 │   │                   MasterClasses, Minibosses, Obols, Shrines, Statues, Worship
 │   └── Shared/sub:     ActionBars, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
-│                       ObolBoard (in Obols/), PremiumGear, TalentsTab, TierList, TodoList
+│                       ObolBoard (in Obols/), PremiumGear, TalentsTab, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js
 ├── hooks/              # useSaveImport.js
@@ -69,8 +69,7 @@ case-sensitive on the live site even though Windows ignores case.
 
 **Characters come from the save**: names from `playerNames`, classes from `CharacterClass_N` (IDs mapped in
 `data/classes.js`). Character count is whatever the save has, so never hard-code 10 or 11. `snapshot.characters[i]`
-lines up with every `_i` save key. `data/characters.js` only holds starter to-dos keyed by character name;
-class "best for" pills live in `CLASS_BEST_FOR` in `data/classes.js`.
+lines up with every `_i` save key. Class "best for" pills live in `CLASS_BEST_FOR` in `data/classes.js`.
 
 **Class colors/icons**: one place only, the CLASS THEMES block in `global.css`. Any element with
 `data-class={toClassSlug(className)}` gets `--class-color` / `--class-icon`. Icons are grouped by family in

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { toClassSlug } from './utils/appUtils.js'
-import { sections, defaultTodos, CLASS_BEST_FOR } from './data'
+import { sections, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
@@ -34,12 +34,11 @@ export default function App() {
     const nametagId = equipOrder['nametagSlot'] ?? 'Blank'   // adjust slot key as needed
     const trophyId  = equipOrder['trophySlot']  ?? 'Blank'   // adjust slot key as needed
     return {
-      id:      `char${i + 1}`,   // keeps existing to-do lists (stored per id) attached
+      id:      `char${i + 1}`,
       name:    c.name,
       class:   c.class,
       level:   c.level,
       bestFor: CLASS_BEST_FOR[c.class] ?? [],
-      todos:   defaultTodos[c.name] ?? [],
       nametag: nametagId !== 'Blank' ? { id: nametagId, equipped: true } : null,
       trophy:  trophyId  !== 'Blank' ? { id: trophyId,  equipped: true } : null,
       superTalentPresets: c.superTalentPresets ?? null,
