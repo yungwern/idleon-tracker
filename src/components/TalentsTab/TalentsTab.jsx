@@ -6,7 +6,7 @@ function TalentCard({ talent }) {
     <div className="talent-card">
       <div className="talent-icon" >
         <img
-          src={`/images/talents/UISkillIcon${talent.id}.png`}
+          src={`images/talents/UISkillIcon${talent.id}.png`}
           alt={talent.name}
           onError={(e) => { e.currentTarget.style.display = 'none' }}
         />

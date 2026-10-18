@@ -30,7 +30,7 @@ function getPremiumGear(snapshot, charIndex) {
       const equipped = id !== 'Blank'
       return [key, {
         id,
-        src: equipped ? `/images/${base}/${folder}/${id}.png` : null,
+        src: equipped ? `images/${base}/${folder}/${id}.png` : null,
         label,
         equipped,
       }]

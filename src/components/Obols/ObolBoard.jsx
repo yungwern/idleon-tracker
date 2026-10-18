@@ -67,7 +67,7 @@ export function ObolSlot({ rawName, stoneData, size = 'md' }) {
   return (
     <div className={`obol-slot obol-slot--${size} tooltip-anchor${upgraded ? ' obol-slot--upgraded' : ''}`}>
       <img
-        src={`/images/obols/${rawName}.png`}
+        src={`images/obols/${rawName}.png`}
         alt={entry?.name ?? rawName}
         className="obol-slot-img"
         onError={e => { e.currentTarget.style.display = 'none' }}

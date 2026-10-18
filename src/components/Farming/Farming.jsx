@@ -28,12 +28,12 @@ function cropImgPath(cropId) {
   const seed = getSeedByCropId(cropId)
   if (!seed) return null
   const resolvedId = seed.seedId === 6 ? 230 : Math.round(cropId)
-  return `/images/farming/FarmCrop${resolvedId}.png`
+  return `images/farming/FarmCrop${resolvedId}.png`
 }
 
 function seedImgPath(seedId) {
-  if (seedId === 6) return `/images/farming/FarmCrop230.png`
-  return `/images/farming/Seed_${seedId}.png`
+  if (seedId === 6) return `images/farming/FarmCrop230.png`
+  return `images/farming/Seed_${seedId}.png`
 }
 
 function renderBonusText(bonusText, value) {
@@ -514,7 +514,7 @@ function runOptimizer() {
                 </span>
               )}
               <img
-                src={`/images/farming/RankUpg${rank.index}.png`}
+                src={`images/farming/RankUpg${rank.index}.png`}
                 alt={rank.name}
                 className="rank-upg-img"
                 onError={e => { e.currentTarget.style.display = 'none' }}
@@ -626,7 +626,7 @@ function runOptimizer() {
                       {rank.before} → {rank.after}
                     </span>
                     <img
-                      src={`/images/farming/RankUpg${rank.index}.png`}
+                      src={`images/farming/RankUpg${rank.index}.png`}
                       alt={rank.name}
                       className="rank-upg-img"
                       onError={e => { e.currentTarget.style.display = 'none' }}
@@ -677,7 +677,7 @@ function MarketCard({ upgrade, level, cropDepot = {} }) {
     <div className={`market-card${isMaxed ? ' market-card--maxed' : ''}`}>
       <div className="market-card-header">
         <img
-          src={isNightMarket ? '/images/farming/FarmCropBean.png' : cropImgPath(headerCropId)}
+          src={isNightMarket ? 'images/farming/FarmCropBean.png' : cropImgPath(headerCropId)}
           alt=""
           className="market-crop-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -698,7 +698,7 @@ function MarketCard({ upgrade, level, cropDepot = {} }) {
             <span className="market-next-cost-label">Next level</span>
             <div className="market-next-cost-row">
               <img
-                src={isNightMarket ? '/images/farming/FarmCropBean.png' : cropImgPath(nextLevelCropId)}
+                src={isNightMarket ? 'images/farming/FarmCropBean.png' : cropImgPath(nextLevelCropId)}
                 alt=""
                 className="market-next-cost-img"
                 onError={e => { e.currentTarget.style.display = 'none' }}
@@ -718,7 +718,7 @@ function MarketCard({ upgrade, level, cropDepot = {} }) {
               return (
                 <div key={i} className="market-next-cost-row">
                   <img
-                    src={isNightMarket ? '/images/farming/FarmCropBean.png' : cropImgPath(cid)}
+                    src={isNightMarket ? 'images/farming/FarmCropBean.png' : cropImgPath(cid)}
                     alt=""
                     className="market-next-cost-img"
                     onError={e => { e.currentTarget.style.display = 'none' }}

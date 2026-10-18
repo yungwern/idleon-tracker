@@ -3,12 +3,20 @@
 A personal React + Vite companion app for **Legends of IdleOn**. Paste in an exported save and it
 shows character cards (talents, action bars, obols, to-dos) plus per-world trackers and guides.
 
-## Running it
+## Live site
+
+**https://yungwern.github.io/idleon-tracker/**. Every push to `main` rebuilds and redeploys it
+automatically (see `.github/workflows/deploy.yml`, progress under the repo's **Actions** tab).
+Each visitor imports their own save; it's stored only in their browser.
+
+## Running it locally
 
 ```
 npm install
 npm run dev
 ```
+
+To preview the production build exactly as GitHub Pages serves it: `npm run build && npm run preview`.
 
 If hot reload stops working, clear Vite's cache: `rmdir /s /q node_modules\.vite` (Windows).
 

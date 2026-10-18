@@ -31,7 +31,7 @@ const ALL_BONUS_TYPES = [...new Set(
 function getSetHelmetImage(setName) {
   const pieces = GEAR_SET_PIECES[setName]
   const helmet = pieces?.armors?.find(id => id.startsWith('EquipmentHats'))
-  return helmet ? `/images/items/${helmet}.png` : null
+  return helmet ? `images/items/${helmet}.png` : null
 }
 
 function scoreItem(itemBonuses, primary, secondary) {
@@ -319,7 +319,7 @@ export default function GearOptimizer({ snapshot }) {
                     <span className="go-slot-name">{slot}</span>
                     <div className="go-item-header">
                       <img
-                        src={`/images/items/${id}.png`}
+                        src={`images/items/${id}.png`}
                         alt={name}
                         className="go-item-icon"
                         onError={e => { e.target.style.display = 'none' }}

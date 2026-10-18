@@ -36,13 +36,13 @@ function BoneJoePickleTracker({ snapshot }) {
     <div className="bjp-wrapper tooltip-anchor">
       <div className="bjp-tracker">
         <div className="bjp-row">
-          <img src={`/images/items/${BONE_JOE_KEY}.png`} alt="Bone Joe Pickle" className="bjp-icon" />
+          <img src={`images/items/${BONE_JOE_KEY}.png`} alt="Bone Joe Pickle" className="bjp-icon" />
           <span className="bjp-label">Bone Joe Pickles</span>
           <span className="bjp-count">{total.toLocaleString()}</span>
         </div>
         {inventoryTotal > 0 && (
           <div className="bjp-row bjp-row--divider">
-            <img src="/images/spelunking/CaveElix10.png" alt="HP Multiplier" className="bjp-icon" />
+            <img src="images/spelunking/CaveElix10.png" alt="HP Multiplier" className="bjp-icon" />
             <span className="bjp-label">Miniboss HP Multi</span>
             <span className="bjp-multiplier">{formatMultiplier(multiplier)}</span>
           </div>
@@ -98,7 +98,7 @@ function KillBar({ kills }) {
 
 function MinibossCard({ boss, kills }) {
   const skullIndex = getSkullIndex(kills ?? 0)
-  const imagePath = `/images/mobs/${boss.displayName.replace(/ /g, '_')}.png`
+  const imagePath = `images/mobs/${boss.displayName.replace(/ /g, '_')}.png`
 
   return (
     <div className="mb-card">
@@ -111,7 +111,7 @@ function MinibossCard({ boss, kills }) {
         />
         {skullIndex > 0 && (
           <img
-            src={`/images/death note/StatusSkull${skullIndex - 1}.png`}
+            src={`images/death note/StatusSkull${skullIndex - 1}.png`}
             alt={`Skull ${skullIndex}`}
             className="mb-card-skull"
           />
@@ -133,7 +133,7 @@ function MinibossCard({ boss, kills }) {
         {boss.spawnItem && (
           <div className="mb-card-detail">
             <img
-              src={`/images/items/${boss.spawnItem.imageKey}.png`}
+              src={`images/items/${boss.spawnItem.imageKey}.png`}
               alt={boss.spawnItem.displayName}
               className="mb-card-spawn-icon"
               onError={e => { e.currentTarget.style.display = 'none' }}

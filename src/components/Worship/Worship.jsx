@@ -29,7 +29,7 @@ function PrayerIcon({ prayerId, wave, maxWave }) {
     <div className={`worship-prayer-icon ${unlocked ? 'worship-prayer-icon--unlocked' : 'worship-prayer-icon--locked'}`}>
       <div className="worship-prayer-icon-img-wrap">
         <img
-          src={`/images/prayers/Prayer${prayerId}.png`}
+          src={`images/prayers/Prayer${prayerId}.png`}
           alt={prayer.name}
           className="worship-prayer-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -58,7 +58,7 @@ function TotemCard({ totemKey, totemData, worshipData }) {
       {soulKey && (
         <div className="worship-soul-anchor tooltip-anchor">
           <img
-            src={`/images/worship/${soulKey}.png`}
+            src={`images/worship/${soulKey}.png`}
             alt={totemData.soul}
             className="worship-soul-img"
             onError={e => { e.currentTarget.style.display = 'none' }}
@@ -70,7 +70,7 @@ function TotemCard({ totemKey, totemData, worshipData }) {
       {/* ── Left: totem image ── */}
       <div className="worship-totem-left">
         <img
-          src={`/images/worship/${totemKey}.png`}
+          src={`images/worship/${totemKey}.png`}
           alt={totemData.name}
           className="worship-totem-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -150,7 +150,7 @@ function TotemSummary({ worshipData }) {
           return (
             <div key={totemKey} className={`worship-summary-totem ${maxWave === 0 ? 'worship-summary-totem--inactive' : ''}`}>
               <img
-                src={`/images/worship/${totemKey}.png`}
+                src={`images/worship/${totemKey}.png`}
                 alt={totemData.name}
                 className="worship-summary-img"
                 onError={e => { e.currentTarget.style.display = 'none' }}
@@ -187,7 +187,7 @@ function BestExpCard({ worshipData }) {
       <div className="worship-best-card">
         <div className="worship-totem-left">
           <img
-            src={`/images/worship/${totemKey}.png`}
+            src={`images/worship/${totemKey}.png`}
             alt={bestTotem.name}
             className="worship-totem-img"
             onError={e => { e.currentTarget.style.display = 'none' }}
@@ -230,7 +230,7 @@ function TowerCard({ towerKey, towerData, level }) {
       {/* ── Left: tower image ── */}
       <div className="worship-totem-left">
         <img
-          src={`/images/worship/${towerKey}.png`}
+          src={`images/worship/${towerKey}.png`}
           alt={towerData.name}
           className="worship-totem-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -271,7 +271,7 @@ function TowerCard({ towerKey, towerData, level }) {
                 <div className="worship-salt-row">
                   <div className="tooltip-anchor worship-salt-anchor">
                     <img
-                      src={`/images/construction/${towerData.upgReq}.png`}
+                      src={`images/construction/${towerData.upgReq}.png`}
                       alt={salt.name}
                       className="worship-salt-img"
                       onError={e => { e.currentTarget.style.display = 'none' }}

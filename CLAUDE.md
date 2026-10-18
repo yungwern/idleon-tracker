@@ -55,6 +55,14 @@ match the real filename exactly. Three components are lowercase on disk:
 
 **CSS values**: `px` for sizing, hex codes for colors (e.g. `#c084fc`), class-based styling always — no inline styles
 
+**Image paths**: images live in `public/images/`. In JS/JSX write them **without** a leading slash
+(`images/mobs/Penguin.png`) so they work both locally and under the GitHub Pages subpath. In CSS write
+them **with** one (`url("/images/...")`) so Vite can prefix the base path at build time. Filenames are
+case-sensitive on the live site even though Windows ignores case.
+
+**Deployment**: pushing to `main` deploys to https://yungwern.github.io/idleon-tracker/ via
+`.github/workflows/deploy.yml`. `vite.config.js` sets `base: '/idleon-tracker/'` for builds only.
+
 **Adding new pages**: register the section in `data/sections.js` and wire up the component in `App.jsx`
 
 **Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components

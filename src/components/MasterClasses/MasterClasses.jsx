@@ -25,7 +25,7 @@ function ActiveClassItem({ snapshot, mc }) {
     <div className="mc-header-pill-wrapper">
       <div className="mc-header-pill">
         <div className="mc-header-pill-row">
-          <img src={`/images/items/${mc.headerItem}.png`} alt={name} className="mc-header-pill-icon" />
+          <img src={`images/items/${mc.headerItem}.png`} alt={name} className="mc-header-pill-icon" />
           <span className="mc-header-pill-label">{name}</span>
           <span className="mc-header-pill-count">{qty.toLocaleString()}</span>
         </div>
@@ -53,7 +53,7 @@ function MobProgressionTable({ rows }) {
         <div key={row.currencyKey} className="mob-prog-row">
           <div className="mob-prog-currency">
             <img
-              src={`/images/items/${row.currencyKey}.png`}
+              src={`images/items/${row.currencyKey}.png`}
               alt={row.currencyKey}
               className="mob-prog-currency-img"
             />
@@ -67,7 +67,7 @@ function MobProgressionTable({ rows }) {
                   className={`mob-prog-chip tooltip-anchor${isW7 ? ' mob-prog-chip--w7' : ''}`}
                 >
                   <img
-                    src={`/images/mobs/${mob.key}.png`}
+                    src={`images/mobs/${mob.key}.png`}
                     alt={mobsMap[mob.key]?.name ?? mob.key}
                     className="mob-prog-mob-img"
                   />
@@ -106,7 +106,7 @@ function InventorySection({ inventoryKey, snapshot, charIndex, variant }) {
         const card = (
           <div className="mc-item-card" key={`${key}-${idx}`}>
             <div className="mc-item-card-top">
-              <img src={`/images/items/${key}.png`} alt={name} className="mc-item-img" />
+              <img src={`images/items/${key}.png`} alt={name} className="mc-item-img" />
             </div>
             <div className="mc-item-card-body">
               <span className="mc-item-name">{name}</span>
@@ -148,7 +148,7 @@ function InventorySection({ inventoryKey, snapshot, charIndex, variant }) {
         return (
           <div className="mc-item-card" key={key}>
             <div className="mc-item-card-top">
-              <img src={`/images/items/${key}.png`} alt={name} className="mc-item-img" />
+              <img src={`images/items/${key}.png`} alt={name} className="mc-item-img" />
             </div>
             <div className="mc-item-card-body">
               <span className="mc-item-name">{name}</span>
@@ -192,8 +192,8 @@ function ExaltedStampTierList({ snapshot }) {
         itemsKey="stamps"
         itemMap={stampMap}
         upgradedIds={upgradedIds}
-        getOverlay={() => '/images/stamps/Exalted_Stamp_Frame.png'}
-        imagePath="/images/stamps"
+        getOverlay={() => 'images/stamps/Exalted_Stamp_Frame.png'}
+        imagePath="images/stamps"
         variant="stamps"
       />
     </div>
@@ -221,7 +221,7 @@ function PrismaBubbleTierList({ snapshot }) {
   function getBubbleOverlay(rawName) {
     const letter = rawName[9] // 'aUpgradesX...' — index 10 is the cauldron letter
     const glowIndex = CAULDRON_GLOW_MAP[letter] ?? 0
-    return `/images/bubbles/aUpgradesGlow${glowIndex}.png`
+    return `images/bubbles/aUpgradesGlow${glowIndex}.png`
   }
 
   return (
@@ -241,7 +241,7 @@ function PrismaBubbleTierList({ snapshot }) {
         itemMap={bubbleMap}
         upgradedIds={upgradedIds}
         getOverlay={getBubbleOverlay}
-        imagePath="/images/bubbles"
+        imagePath="images/bubbles"
       />
     </div>
   )
@@ -286,7 +286,7 @@ function MapBonusCard({ entry, mapBonuses }) {
     <div className="map-bonus-card">
       <div className="map-bonus-card-top">
         <img
-          src={`/images/mobs/${entry.mobKey}.png`}
+          src={`images/mobs/${entry.mobKey}.png`}
           alt={entry.mobKey}
           className="map-bonus-mob-img"
         />

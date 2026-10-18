@@ -43,7 +43,7 @@ function ShrineCard({ id, level, xp, xpRequired, mapIndex, constructionLevel }) 
     <div className="shrine-card">
       <div className="shrine-card-top">
         <img
-          src={`/images/shrines/ConTowerB${id}.png`}
+          src={`images/shrines/ConTowerB${id}.png`}
           alt={name}
           className="shrine-card-img"
           onError={e => { e.currentTarget.style.opacity = '0.3' }}

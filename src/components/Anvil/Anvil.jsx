@@ -171,7 +171,7 @@ function AnvilCard({ row, matchState = 'none' }) {
     <div className={`anvil-card${borderClass}`}>
       <div className="anvil-card-top">
         <img
-          src={`/images/anvil/${item.rawName}.png`}
+          src={`images/anvil/${item.rawName}.png`}
           alt={item.displayName}
           className="anvil-item-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -195,7 +195,7 @@ function OptimalCard({ item }) {
     <div className="anvil-card">
       <div className="anvil-card-top">
         <img
-          src={`/images/anvil/${rawName}.png`}
+          src={`images/anvil/${rawName}.png`}
           alt={displayName}
           className="anvil-item-img"
           onError={e => { e.currentTarget.style.display = 'none' }}

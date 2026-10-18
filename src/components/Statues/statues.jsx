@@ -47,7 +47,7 @@ function DRBonus({ mobName, mapBonuses }) {
   return (
     <div className="statue-dr-bonus">
       <img
-        src="/images/masterclass/StatusArc0.png"
+        src="images/masterclass/StatusArc0.png"
         alt="Drop Rate"
         className="statue-dr-icon"
       />
@@ -63,7 +63,7 @@ function StatueItem({ id, level }) {
       <div className="tooltip">{name}</div>
       <div className="statue-icon-wrap">
         <img
-          src={`/images/statues/StatueZ${id + 1}.png`}
+          src={`images/statues/StatueZ${id + 1}.png`}
           alt={name}
           className="statue-preview-icon"
         />

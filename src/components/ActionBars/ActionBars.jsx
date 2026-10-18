@@ -13,7 +13,7 @@ function SkillSlot({ id }) {
   return (
     <div className="action-bar-slot filled tooltip-anchor">
       <img
-        src={`/images/talents/UISkillIcon${id}.png`}
+        src={`images/talents/UISkillIcon${id}.png`}
         alt={name}
         className="action-bar-slot-icon"
         onError={(e) => { e.currentTarget.style.display = 'none' }}

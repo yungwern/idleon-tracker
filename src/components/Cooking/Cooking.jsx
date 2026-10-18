@@ -18,14 +18,14 @@ function MealCard({ pngKey, level, ribbonRank }) {
     <div className="meal-card">
       <div className="meal-card-top">
         <img
-          src={`/images/cooking/${pngKey}.png`}
+          src={`images/cooking/${pngKey}.png`}
           alt={meal.name}
           className="meal-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
         />
         <div className="meal-ribbon-overlay tooltip-anchor">
           <img
-            src={`/images/cooking/Ribbon${ribbonRank > 0 ? ribbonRank - 1 : 0}.png`}
+            src={`images/cooking/Ribbon${ribbonRank > 0 ? ribbonRank - 1 : 0}.png`}
             alt={`Ribbon ${ribbonRank}`}
             className={`meal-ribbon-img ${ribbonRank === 0 ? 'meal-ribbon-none' : ''}`}
             onError={e => { e.currentTarget.style.display = 'none' }}
@@ -63,7 +63,7 @@ function RibbonShelfTab({ slots }) {
                 {rank > 0 ? (
                   <>
                     <img
-                      src={`/images/cooking/Ribbon${rank - 1}.png`}
+                      src={`images/cooking/Ribbon${rank - 1}.png`}
                       alt={`Ribbon ${rank}`}
                       className="ribbon-shelf-img"
                       onError={e => { e.currentTarget.style.display = 'none' }}

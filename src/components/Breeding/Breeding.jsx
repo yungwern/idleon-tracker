@@ -55,7 +55,7 @@ function GeneIcon({ geneName }) {
     <div className="breeding-gene-slot tooltip-anchor">
       {geneKey ? (
         <img
-          src={`/images/breeding/${geneKey}.png`}
+          src={`images/breeding/${geneKey}.png`}
           alt={geneName}
           className="breeding-gene-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -79,7 +79,7 @@ function SpiceRow({ spiceKey, spice, formationIndex }) {
     <div className="breeding-spice-row">
       <div className="breeding-spice-info">
         <img
-          src={`/images/breeding/${spiceKey}.png`}
+          src={`images/breeding/${spiceKey}.png`}
           alt={spice.name}
           className="breeding-spice-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -276,13 +276,13 @@ function PetCard({ pet, petKey, shiny, fenceCount }) {
           </span>
         )}
         <img
-          src={`/images/breeding/${mobImageName}.png`}
+          src={`images/breeding/${mobImageName}.png`}
           alt={pet.name}
           className="breeding-mob-img"
           onError={e => {
             if (!e.currentTarget.dataset.fallback) {
               e.currentTarget.dataset.fallback = 'true'
-              e.currentTarget.src = `/images/breeding/${petKey}.png`
+              e.currentTarget.src = `images/breeding/${petKey}.png`
             } else {
               e.currentTarget.style.opacity = '0.3'
             }
@@ -290,7 +290,7 @@ function PetCard({ pet, petKey, shiny, fenceCount }) {
         />
         {geneKey && (
           <img
-            src={`/images/breeding/${geneKey}.png`}
+            src={`images/breeding/${geneKey}.png`}
             alt={pet.gene}
             className="breeding-card-gene-img"
             title={pet.gene}
@@ -344,7 +344,7 @@ function PickSlot({ geneKeys }) {
           style={{ left: `${i * fanOffset}px`, zIndex: i }}
         >
           <img
-            src={`/images/breeding/${geneKey}.png`}
+            src={`images/breeding/${geneKey}.png`}
             alt={geneKey}
             className="breeding-gene-img"
             onError={e => { e.currentTarget.style.display = 'none' }}
@@ -383,7 +383,7 @@ function CompSlot({ slot }) {
     return (
       <div className="breeding-gene-slot breeding-gene-slot--placeholder tooltip-anchor">
         <img
-          src={`/images/breeding/${key}.png`}
+          src={`images/breeding/${key}.png`}
           alt={label}
           className="breeding-gene-img breeding-gene-img--placeholder"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -650,7 +650,7 @@ export default function Breeding({ snapshot }) {
               tiers={fightingTierList}
               itemsKey="items"
               itemMap={geneItemMap}
-              imagePath="/images/breeding"
+              imagePath="images/breeding"
               variant="fighting"
             />
           )}

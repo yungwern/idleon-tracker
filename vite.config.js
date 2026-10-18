@@ -1,7 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+// `npm run dev` serves from the site root; `npm run build` targets GitHub Pages,
+// which hosts the site at https://yungwern.github.io/idleon-tracker/
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/idleon-tracker/' : '/',
   plugins: [react()],
   server: {
     hmr: {
@@ -24,4 +27,4 @@ export default defineConfig({
     hasErrorLogged() { return false },
     hasWarned: false,
   }
-})
+}))

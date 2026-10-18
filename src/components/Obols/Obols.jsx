@@ -78,9 +78,9 @@ const SCALED_MOB_KEYS = new Set([
 
 function getMobImageSrc(mobKey) {
   if (!mobKey) return null
-  if (mobKey === 'PremiumGem') return '/images/gem shop/PremiumGem.png'
-  if (mobKey === 'Liquid1_x1') return '/images/alchemy/Liquid1_x1.png'
-  return `/images/mobs/${mobKey}.png`
+  if (mobKey === 'PremiumGem') return 'images/gem shop/PremiumGem.png'
+  if (mobKey === 'Liquid1_x1') return 'images/alchemy/Liquid1_x1.png'
+  return `images/mobs/${mobKey}.png`
 }
 
 function FarmCard({ farmEntry }) {
@@ -107,7 +107,7 @@ function FarmCard({ farmEntry }) {
     <div className="obols-farm-card">
       <div className="obols-farm-card-top">
         <img
-          src={`/images/obols/${farmRawName}.png`}
+          src={`images/obols/${farmRawName}.png`}
           alt={obolInfo?.name ?? farmRawName}
           className="obols-farm-card-obol-img"
           onError={e => { e.currentTarget.style.display = 'none' }}
@@ -193,7 +193,7 @@ export default function Obols({ snapshot }) {
   const tierListProps = {
     itemMap: obolByRawName,
     upgradedIds,
-    imagePath: '/images/obols',
+    imagePath: 'images/obols',
   }
 
   const TIER_LISTS = [

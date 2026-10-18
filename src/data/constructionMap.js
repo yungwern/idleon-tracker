@@ -50,7 +50,7 @@ export const COG_PLACEMENTS = [
   { cog: 'CogZA03', 
     positions: [[6,1],[6,5]],                                     border: COG_BORDER_CLASS.gemshop 
 },
-  { cog: 'headBig', 
+  { cog: 'headBIG', 
     positions: [[2,2],[2,3]],                                     border: COG_BORDER_CLASS.white   
 },
   { cog: 'CogCry4', 

@@ -107,7 +107,7 @@
   content:'';
   position: absolute;
   inset: 0;
-  background-image: url(images/talents/Super_Talent_Passive_Border.png);
+  background-image: url("/images/talents/Super_Talent_Passive_Border.png");
   background-size: 100% 100%;
   pointer-events: none;
   z-index: 1;
