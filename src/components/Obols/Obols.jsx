@@ -16,7 +16,7 @@ import {
 import TierList from '../TierList/TierList'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import { AccountBoard, CharacterBoard } from './ObolBoard'
-import { isUpgraded } from './obolUtils'
+import { isUpgraded } from './ObolUtils'
 import './Obols.css'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

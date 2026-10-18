@@ -1,5 +1,5 @@
 import { obolByRawName } from '../../data'
-import { isUpgraded } from './obolUtils'
+import { isUpgraded } from './ObolUtils'
 import './ObolBoard.css'
 
 // ── Obol Slot ─────────────────────────────────────────────────────────────────

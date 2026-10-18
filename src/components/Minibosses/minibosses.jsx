@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { MINIBOSSES, RANK_THRESHOLDS, getSkullIndex, rankColor, formatKills, characters } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
-import './MiniBosses.css'
+import './minibosses.css'
 
 const BONE_JOE_KEY = 'BoneJoePickle'
 

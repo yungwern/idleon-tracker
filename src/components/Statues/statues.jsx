@@ -3,7 +3,7 @@ import { mapEnemyData } from '../../data/mobsMap'
 import { statueLevelColor } from '../../utils/appUtils.js'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
-import './Statues.css'
+import './statues.css'
 
 // ── Map Bonus Helpers ─────────────────────────────────────────────
 const lavaLog = (num) => Math.log(Math.max(num, 1)) / 2.30259

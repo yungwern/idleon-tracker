@@ -17,22 +17,29 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 
 ```
 src/
-├── components/         # PascalCase folders, one per feature
-│                       # ActionBars, Anvil, Breeding, CharacterCard, CogBoardMap,
-│                       # Construction, Cooking, GearOptimizer, ImportModal, InfoPanel,
-│                       # MasterClasses, MiniBosses, PremiumGear, Shrines, Statues,
-│                       # TalentsTab, TierList, TodoList
-├── data/               # Game data; index.js barrel file + statueWorlds.js for farming locations
+├── components/         # One folder per feature (see casing note below)
+│   ├── Section pages:  Anvil, Breeding, Construction, Cooking, Farming, GearOptimizer,
+│   │                   MasterClasses, Minibosses, Obols, Shrines, Statues, Worship
+│   └── Shared/sub:     ActionBars, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
+│                       ObolBoard (in Obols/), PremiumGear, TalentsTab, TierList, TodoList
+├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
+│                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
-└── utils/              # appUtils.js (toClassSlug, classColor)
+└── utils/              # appUtils.js (toClassSlug, classColor, statueLevelColor, shrineLevelColor)
 
+images/                 # Game sprites, served at /images/... by the Vite dev server (project root)
 IdleOn Resources/       # Outside src/ — save data copy + website-data.json
                         # website-data.json is a large game data mapping file from IdleOn Toolbox GitHub
                         # Reference for working out data mappings for new components
                         # Ask Eli to parse out the relevant section rather than loading the whole file
 ```
+
+**File casing**: Windows doesn't care about filename case, but Linux/GitHub builds do — imports must
+match the real filename exactly. Three components are lowercase on disk:
+`Minibosses/minibosses.jsx|css`, `Shrines/shrines.jsx|css`, `Statues/statues.jsx|css`.
+`Obols/ObolUtils.js` is PascalCase.
 
 ---
 

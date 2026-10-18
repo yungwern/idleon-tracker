@@ -542,7 +542,7 @@ export const STAMP_TIERS = [
     id: 'b',
     label: 'B',
     sublabel: 'Nice to Have',
-    stamps: ['StampC7', 'StampB4', 'StampB15', 'StampC22', 'StampB6', 'StampC25', 'StampA38', 'StampC5', 'StampB52', 'StampA23'],
+    stamps: ['StampC7', 'StampB4', 'StampB15', 'StampC22', 'StampB6', 'StampC25', 'StampA38', 'StampC5', 'StampB51', 'StampA23'],
   },
   {
     id: 'c',

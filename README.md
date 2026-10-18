@@ -1,16 +1,41 @@
-# React + Vite
+# YungWern's IdleOn Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A personal React + Vite companion app for **Legends of IdleOn**. Paste in an exported save and it
+shows character cards (talents, action bars, obols, to-dos) plus per-world trackers and guides.
 
-Currently, two official plugins are available:
+## Running it
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```
+npm install
+npm run dev
+```
 
-## React Compiler
+If hot reload stops working, clear Vite's cache: `rmdir /s /q node_modules\.vite` (Windows).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Sections
 
-## Expanding the ESLint configuration
+| Area    | Pages                                    |
+|---------|------------------------------------------|
+| Global  | MasterClasses, Minibosses, Gear Optimizer |
+| World 1 | Statues, Anvil                           |
+| World 2 | Obols                                    |
+| World 3 | Construction, Shrines, Worship           |
+| World 4 | Cooking, Breeding                        |
+| World 6 | Farming (Sneaking planned)               |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## How data flows
+
+Save JSON → `src/lib/extractSnapshot.js` → localStorage → `useSaveImport` hook → props into each page.
+Static game data lives in `src/data/` (re-exported from `src/data/index.js`).
+
+## Adding a page
+
+1. Add the name to `src/data/sections.js`.
+2. Create `src/components/<Name>/<Name>.jsx` + `<Name>.css`.
+3. Import it and add a line to `renderContent()` in `src/App.jsx`.
+
+See `CLAUDE.md` for code conventions and `future-features.md` for the idea list.
+
+## Credits
+
+IdleOn and its art belong to Lavaflame2. Game data mappings referenced from IdleOn Toolbox.

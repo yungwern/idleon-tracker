@@ -3,7 +3,7 @@ import { worldMap } from '../../data/worldMap'
 import { shrineLevelColor } from '../../utils/appUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
-import './Shrines.css'
+import './shrines.css'
 
 function compactNumber(n) {
   if (n >= 1e9) return (Math.floor(n / 1e8) / 10).toFixed(1).replace(/\.0$/, '') + 'B'
