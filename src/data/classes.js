@@ -43,7 +43,7 @@ export function getClassName(classId) {
 // What each class is best used for — shown as pills on the character card
 export const CLASS_BEST_FOR = {
   'Death Bringer': [
-    'Cooking',
+    'Cooking - Ladles',
     'GMush Kills',
   ],
   'Siege Breaker': [
@@ -52,7 +52,7 @@ export const CLASS_BEST_FOR = {
   'Arcane Cultist': [
     'Cranium Cooking',
     'Lab',
-    'Money Farming',
+    'Emperor Boss Kills',
   ],
   'Wind Walker': [
     'Shinies',
@@ -60,16 +60,17 @@ export const CLASS_BEST_FOR = {
   ],
   'Divine Knight': [
     'Statue Farming',
-    'Colosseum',
+    'Minibosses with Orb',
+  ],
+  'Royal Guardian': [
+    'Statue Farming',
     'Minibosses with Orb',
   ],
   'Elemental Sorcerer': [
-    'Greenstacks',
     'Rare Drops',
     'Card Farming',
   ],
   'Voidwalker': [
-    'Boss Kills?',
     'Carry Capacity',
   ],
 }

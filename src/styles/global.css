@@ -104,6 +104,10 @@ body {
   --class-color: #fbbf24; 
   --class-icon: url("/images/class icons/divineknight.png"); 
 }
+.character-card[data-class="royal-guardian"] {
+  --class-color: #fbbf24;
+  --class-icon: url("/images/class icons/royalguardian.png");
+}
 .character-card[data-class="siege-breaker"] { 
   --class-color: #16a34a; 
   --class-icon: url("/images/class icons/siegebreaker.png"); 
