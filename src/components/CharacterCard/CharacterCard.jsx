@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import TalentsTab from '../TalentsTab/TalentsTab.jsx'
-import ActionBar from '../ActionBars/ActionBars.jsx'
 import { CharacterBoard } from '../Obols/ObolBoard.jsx'
 import { prayerMap } from '../../data/prayerMap'
 import './CharacterCard.css'
-import '../ActionBars/ActionBars.css'
 
 import { toClassSlug } from '../../utils/appUtils.js'
 
@@ -48,8 +46,6 @@ function CharacterObolsTab({ charIndex, snapshot }) {
 export default function CharacterCard({ character, charIndex, snapshot }) {
   const [activeTab, setActiveTab] = useState('overview')
   const slug = toClassSlug(character.class)
-
-  const actionBar = snapshot?.characters?.[charIndex]?.actionBar ?? null
 
   return (
     <div className="character-card" data-class={slug}>
@@ -110,8 +106,8 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
       )}
 
       {/* ── Tab Navigation ── */}
-      <div className="card-tabs" style={{ '--tab-count': 5 }}>
-        {['overview', 'premium gear', 'super talents', 'action bar', 'obols'].map(tab => (
+      <div className="card-tabs" style={{ '--tab-count': 3 }}>
+        {['overview', 'super talents', 'obols'].map(tab => (
           <button
             key={tab}
             className={activeTab === tab ? 'active' : ''}
@@ -127,20 +123,15 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
 
         {activeTab === 'overview' && (
           <div className="char-overview">
-            <p className="char-overview-empty">Overview coming soon.</p>
+            <section className="char-overview-section">
+              <h3 className="char-overview-heading">Premium Gear</h3>
+              <PremiumGearTab charIndex={charIndex} snapshot={snapshot} />
+            </section>
           </div>
-        )}
-
-        {activeTab === 'premium gear' && (
-          <PremiumGearTab charIndex={charIndex} snapshot={snapshot} />
         )}
 
         {activeTab === 'super talents' && (
           <TalentsTab character={character} />
-        )}
-
-        {activeTab === 'action bar' && (
-          <ActionBar actionBar={actionBar} />
         )}
 
         {activeTab === 'obols' && (

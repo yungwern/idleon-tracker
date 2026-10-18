@@ -20,7 +20,7 @@ src/
 ├── components/         # One folder per feature (see casing note below)
 │   ├── Section pages:  Anvil, Breeding, Construction, Cooking, Farming, GearOptimizer,
 │   │                   MasterClasses, Minibosses, Obols, Shrines, Statues, Worship
-│   └── Shared/sub:     ActionBars, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
+│   └── Shared/sub:     CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TalentsTab, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js

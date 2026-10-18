@@ -1,7 +1,7 @@
 # YungWern's IdleOn Hub
 
 A personal React + Vite companion app for **Legends of IdleOn**. Paste in an exported save and it
-shows character cards (overview, premium gear, super talents, action bars, obols) plus per-world trackers and guides.
+shows character cards (overview with premium gear, super talents, obols) plus per-world trackers and guides.
 
 ## Live site
 

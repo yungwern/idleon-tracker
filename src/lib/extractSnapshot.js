@@ -125,18 +125,6 @@ const extractors = {
     const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
     return arr.filter(id => id !== -1)
   },
-  actionBar: (json, i) => {
-    const parseRows = (raw) => {
-      const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
-      return arr.slice(0, 3).map(row =>
-        (Array.isArray(row) ? row : []).slice(0, 6).map(v => v === 'Null' ? null : v)
-      )
-    }
-    return {
-      active: parseRows(json[`AttackLoadout_${i}`]),
-      alternate: parseRows(json[`AttackLoadoutpre_${i}`]),
-    }
-  },
   obols: (json, i) => {
     const order = json[`ObolEqO0_${i}`] ?? []
     const mapRaw = json[`ObolEqMAP_${i}`]
