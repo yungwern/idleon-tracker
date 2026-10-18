@@ -1,18 +1,5 @@
-export const toClassSlug = (className) => className.toLowerCase().replace(/\s+/g, '-')
-
-export function classColor(cls) {
-  const colors = {
-    'Death Bringer':      '#f87171',
-    'Divine Knight':      '#fbbf24',
-    'Royal Guardian':     '#60a5fa',
-    'Siege Breaker':      '#16a34a',
-    'Wind Walker':        '#059669',
-    'Elemental Sorcerer': '#7c3aed',
-    'Arcane Cultist':     '#65a30d',
-    'Voidwalker':         '#af9dce',
-  }
-  return colors[cls] ?? '#fff'
-}
+// "Blood Berserker" → "blood-berserker" — matches the data-class themes in global.css
+export const toClassSlug = (className = '') => className.toLowerCase().replace(/\s+/g, '-')
 
 export function statueLevelColor(level) {
   if (level >= 500) return '#e879f9'

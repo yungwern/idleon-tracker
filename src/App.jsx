@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { classColor } from './utils/appUtils.js'
+import { toClassSlug } from './utils/appUtils.js'
 import { sections, defaultTodos, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
@@ -130,7 +130,7 @@ export default function App() {
           <button
             key={c.id}
             className={current === c.name ? 'active' : ''}
-            style={current === c.name ? { color: classColor(c.class) } : {}}
+            data-class={toClassSlug(c.class)}
             onClick={() => setSelected(c.name)}
           >
             {c.name}

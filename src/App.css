@@ -58,6 +58,11 @@
   font-weight: bold;
 }
 
+/* Selected character name takes its class color (set in global.css) */
+.sidebar button:not(.import-btn):not(.clear-btn).active[data-class] {
+  color: var(--class-color, #fff);
+}
+
 /* ── Level Badge ── */
 .sidebar-level {
   float: right;

@@ -9,7 +9,7 @@ import { prayerMap } from '../../data/prayerMap'
 import './CharacterCard.css'
 import '../ActionBars/ActionBars.css'
 
-const toClassSlug = (className) => className.toLowerCase().replace(/\s+/g, '-')
+import { toClassSlug } from '../../utils/appUtils.js'
 
 // Save stores slots in a mixed order — this maps visual position to save index
 const CHAR_OBOL_VISUAL_TO_SAVE = [

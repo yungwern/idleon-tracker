@@ -12,7 +12,6 @@ export const MASTERCLASSES = [
     id: 'death-bringer',
     name: 'Death Bringer',
     color: '#f87171',
-    icon: 'images/class icons/deathbringer.png',
     headerItem: 'Quest97',
     sections: [
       {
@@ -27,7 +26,6 @@ export const MASTERCLASSES = [
     id: 'wind-walker',
     name: 'Wind Walker',
     color: '#059669',
-    icon: 'images/class icons/windwalker.png',
     headerItem: 'Quest96',
     sections: [
       {
@@ -53,7 +51,6 @@ export const MASTERCLASSES = [
     id: 'arcane-cultist',
     name: 'Arcane Cultist',
     color: '#65a30d',
-    icon: 'images/class icons/arcanecultist.png',
     headerItem: 'Quest101',
     sections: [
       {

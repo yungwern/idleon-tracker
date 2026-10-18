@@ -72,6 +72,10 @@ case-sensitive on the live site even though Windows ignores case.
 lines up with every `_i` save key. `data/characters.js` only holds starter to-dos keyed by character name;
 class "best for" pills live in `CLASS_BEST_FOR` in `data/classes.js`.
 
+**Class colors/icons**: one place only, the CLASS THEMES block in `global.css`. Any element with
+`data-class={toClassSlug(className)}` gets `--class-color` / `--class-icon`. Icons are grouped by family in
+`public/images/class icons/<beginner|warrior|archer|mage>/`. Don't add JS color maps.
+
 ---
 
 ## Deeper Reference

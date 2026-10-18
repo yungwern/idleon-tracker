@@ -89,44 +89,120 @@ body {
 
 /* ============================================================
    CLASS THEMES / ICONS
+   Applies to anything with data-class="<class-slug>" (character cards,
+   sidebar buttons, Anvil labels). Icons: public/images/class icons/<family>/
    ============================================================ */
 
-/* Fallback for classes without a theme below (e.g. a new character or a friend's class) */
+/* Fallback for classes without a theme below */
 .character-card {
   --class-color: #a0c4ff;
 }
 
-.character-card[data-class="death-bringer"] { 
-  --class-color: #f87171; 
-  --class-icon: url("/images/class icons/deathbringer.png"); 
+/* ── Beginner family ──
+   Beginner → Journeyman → Maestro → Voidwalker */
+[data-class="beginner"] {
+  --class-color: #84e7ea;
+  --class-icon: url("/images/class icons/beginner/beginner.png");
 }
-.character-card[data-class="divine-knight"] { 
-  --class-color: #fbbf24; 
-  --class-icon: url("/images/class icons/divineknight.png"); 
+[data-class="journeyman"] {
+  --class-color: #3b9be0;
+  --class-icon: url("/images/class icons/beginner/journeyman.png");
 }
-.character-card[data-class="royal-guardian"] {
+[data-class="maestro"] {
+  --class-color: #e5a339;
+  --class-icon: url("/images/class icons/beginner/maestro.png");
+}
+[data-class="voidwalker"] {
+  --class-color: #af9dce;
+  --class-icon: url("/images/class icons/beginner/voidwalker.png");
+}
+
+/* ── Warrior family ──
+   Warrior → Barbarian → Blood Berserker → Death Bringer
+   Warrior → Squire → Divine Knight → Royal Guardian */
+[data-class="warrior"] {
+  --class-color: #6fa8b8;
+  --class-icon: url("/images/class icons/warrior/warrior.png");
+}
+[data-class="barbarian"] {
+  --class-color: #de854d;
+  --class-icon: url("/images/class icons/warrior/barbarian.png");
+}
+[data-class="blood-berserker"] {
+  --class-color: #dc2626;
+  --class-icon: url("/images/class icons/warrior/bloodberserker.png");
+}
+[data-class="death-bringer"] {
+  --class-color: #f87171;
+  --class-icon: url("/images/class icons/warrior/deathbringer.png");
+}
+[data-class="squire"] {
+  --class-color: #c0606b;
+  --class-icon: url("/images/class icons/warrior/squire.png");
+}
+[data-class="divine-knight"] {
+  --class-color: #ee921d;
+  --class-icon: url("/images/class icons/warrior/divineknight.png");
+}
+[data-class="royal-guardian"] {
   --class-color: #fbbf24;
-  --class-icon: url("/images/class icons/royalguardian.png");
+  --class-icon: url("/images/class icons/warrior/royalguardian.png");
 }
-.character-card[data-class="siege-breaker"] { 
-  --class-color: #16a34a; 
-  --class-icon: url("/images/class icons/siegebreaker.png"); 
+
+/* ── Archer family ──
+   Archer → Bowman → Siege Breaker
+   Archer → Hunter → Beast Master → Wind Walker */
+[data-class="archer"] {
+  --class-color: #c98150;
+  --class-icon: url("/images/class icons/archer/archer.png");
 }
-.character-card[data-class="wind-walker"] { 
-  --class-color: #059669; 
-  --class-icon: url("/images/class icons/windwalker.png"); 
+[data-class="bowman"] {
+  --class-color: #c084a4;
+  --class-icon: url("/images/class icons/archer/bowman.png");
 }
-.character-card[data-class="elemental-sorcerer"] { 
-  --class-color: #7c3aed; 
-  --class-icon: url("/images/class icons/elementalsorcerer.png"); 
+[data-class="siege-breaker"] {
+  --class-color: #16a34a;
+  --class-icon: url("/images/class icons/archer/siegebreaker.png");
 }
-.character-card[data-class="arcane-cultist"]   { 
-  --class-color: #65a30d; 
-  --class-icon: url("/images/class icons/arcanecultist.png"); 
+[data-class="hunter"] {
+  --class-color: #b08477;
+  --class-icon: url("/images/class icons/archer/hunter.png");
 }
-.character-card[data-class="voidwalker"]         { 
-  --class-color: #af9dce; 
-  --class-icon: url("/images/class icons/voidwalker.png"); 
+[data-class="beast-master"] {
+  --class-color: #81ab4b;
+  --class-icon: url("/images/class icons/archer/beastmaster.png");
+}
+[data-class="wind-walker"] {
+  --class-color: #059669;
+  --class-icon: url("/images/class icons/archer/windwalker.png");
+}
+
+/* ── Mage family ──
+   Mage → Shaman → Bubonic Conjuror → Arcane Cultist
+   Mage → Wizard → Elemental Sorcerer */
+[data-class="mage"] {
+  --class-color: #db7dae;
+  --class-icon: url("/images/class icons/mage/mage.png");
+}
+[data-class="shaman"] {
+  --class-color: #c29b3a;
+  --class-icon: url("/images/class icons/mage/shaman.png");
+}
+[data-class="bubonic-conjuror"] {
+  --class-color: #81dd41;
+  --class-icon: url("/images/class icons/mage/bubonicconjuror.png");
+}
+[data-class="arcane-cultist"] {
+  --class-color: #65a30d;
+  --class-icon: url("/images/class icons/mage/arcanecultist.png");
+}
+[data-class="wizard"] {
+  --class-color: #d97706;
+  --class-icon: url("/images/class icons/mage/wizard.png");
+}
+[data-class="elemental-sorcerer"] {
+  --class-color: #7c3aed;
+  --class-icon: url("/images/class icons/mage/elementalsorcerer.png");
 }
 
 /* ============================================================

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { anvilMap } from '../../data/anvilMap'
-import { classColor } from '../../utils/appUtils'
+import { toClassSlug } from '../../utils/appUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './Anvil.css'
@@ -361,7 +361,7 @@ export default function Anvil({ snapshot }) {
               return (
                 <div key={charIndex} className="anvil-char-group">
                   <div className="anvil-char-header">
-                    <span className="anvil-char-label" style={{ color: classColor(charRows[0].charClass) }}>
+                    <span className="anvil-char-label" data-class={toClassSlug(charRows[0].charClass)}>
                       {charRows[0].charName}
                     </span>
                   </div>
@@ -436,7 +436,7 @@ export default function Anvil({ snapshot }) {
 
                   {/* Header */}
                   <div className="anvil-char-header">
-                    <span className="anvil-char-label" style={{ color: classColor(charClass) }}>
+                    <span className="anvil-char-label" data-class={toClassSlug(charClass)}>
                       {charName}
                     </span>
                     {locked && confirmReset !== charIndex && (
