@@ -29,7 +29,7 @@ src/
 ├── styles/             # global.css — shared layout classes and reusable components
 └── utils/              # appUtils.js (toClassSlug, classColor, statueLevelColor, shrineLevelColor)
 
-images/                 # Game sprites, served at /images/... by the Vite dev server (project root)
+public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
 IdleOn Resources/       # Outside src/ — save data copy + website-data.json
                         # website-data.json is a large game data mapping file from IdleOn Toolbox GitHub
                         # Reference for working out data mappings for new components

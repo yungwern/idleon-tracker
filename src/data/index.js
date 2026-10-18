@@ -1,6 +1,5 @@
 // ── Shared / Global ───────────────────────────────────────────────────────────
 export { characters } from './characters'
-export { classes } from './classes'
 export { sections } from './sections'
 export { talentMap } from './talentMap'
 export { MASTERCLASSES } from './masterClasses'
