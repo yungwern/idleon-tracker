@@ -13,13 +13,20 @@ import './MasterClasses.css'
 // SUB-COMPONENTS
 // ============================================================
 
+// First character in the save with this masterclass, or null if the account doesn't have one
+function findClassCharIndex(snapshot, mc) {
+  const index = snapshot?.characters?.findIndex(c => c.class === mc?.name) ?? -1
+  return index >= 0 ? index : null
+}
+
 function ActiveClassItem({ snapshot, mc }) {
   if (!mc?.headerItem) return null
 
   const name = itemMap[mc.headerItem]
   if (!name) return null
 
-  const qty = snapshot?.characters?.[mc.charIndex]?.inventory?.[mc.headerItem]?.qty ?? 0
+  const charIndex = findClassCharIndex(snapshot, mc)
+  const qty = snapshot?.characters?.[charIndex]?.inventory?.[mc.headerItem]?.qty ?? 0
 
   return (
     <div className="mc-header-pill-wrapper">
@@ -461,7 +468,7 @@ export default function MasterClasses({ snapshot }) {
       intro="This page breaks down each Masterclass and their unique progression systems. The AFK item for the active class is displayed at the top for a quick overview of your accumulated AFK hours."
       items={[
         'Switch between Masterclasses using the nav below. Each class has its own set of sections tailored to their specific mechanics.',
-        'AFK items are tracked per character — the count shown reflects the character assigned to that Masterclass.',
+        'AFK items are tracked per character — the count shown is from your first character with that Masterclass.',
         'Some sections contain tier lists, farm recommendations, and map bonuses that update automatically when you import a new save.',
       ]}
       />
@@ -506,7 +513,7 @@ export default function MasterClasses({ snapshot }) {
               <SectionContent
                 section={activeSection}
                 snapshot={snapshot}
-                charIndex={activeMc.charIndex}
+                charIndex={findClassCharIndex(snapshot, activeMc)}
               />
             </div>
           )}

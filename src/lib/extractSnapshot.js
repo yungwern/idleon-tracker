@@ -1,7 +1,7 @@
 import { talentMap } from '../data/talentMap'
 import { MASTERCLASSES } from '../data/masterClasses'
 import { anvilMapById } from '../data/anvilMap'
-import { characters } from '../data/characters'
+import { getClassName } from '../data/classes'
 import { worshipMap } from '../data'
 import { seedInfo } from '../data/farmingMap'
 
@@ -22,6 +22,26 @@ function parseStorage(json) {
   })
 
   return { items }
+}
+
+// ── Character List ────────────────────────────────────────────────────────────
+// Names and classes straight from the save, so any account (and any number of
+// characters) works. Save index i matches every `_${i}` key (Lv0_i, EquipOrder_i, ...).
+function parseCharacterList(json) {
+  const rawNames = json.playerNames ?? json.charNames ?? []
+  let names = typeof rawNames === 'string' ? JSON.parse(rawNames) : rawNames
+
+  // No name list in this export — count the characters by their class keys instead
+  if (!Array.isArray(names) || names.length === 0) {
+    let count = 0
+    while (json[`CharacterClass_${count}`] !== undefined) count++
+    names = Array.from({ length: count }, (_, i) => `Character ${i + 1}`)
+  }
+
+  return names.map((name, i) => ({
+    name,
+    class: getClassName(json[`CharacterClass_${i}`]),
+  }))
 }
 
 // ── Character Extractors ──────────────────────────────────────────────────────
@@ -209,8 +229,8 @@ function parseStatues(json) {
 }
 
 // ── Anvil ─────────────────────────────────────────────────────────────────
-function parseAnvil(json) {
-  const characterCount = characters.length
+function parseAnvil(json, charList) {
+  const characterCount = charList.length
   const allRows = []
   const charStats = []
 
@@ -240,8 +260,8 @@ function parseAnvil(json) {
 
       allRows.push({
         charIndex: i,
-        charName: characters[i].name ?? `Character ${i + 1}`,
-        charClass: characters[i].class ?? '',
+        charName: charList[i].name,
+        charClass: charList[i].class,
         itemId,
         item,
         hammers,
@@ -514,14 +534,34 @@ function parseLegendTalents(json) {
 }
 
 // ── Main Export ───────────────────────────────────────────────────────────────
-export function extractSnapshot(json) {
-  const extractedCharacters = Array.from({ length: characters.length }, (_, i) => {
+// Accepts a flat save, or a wrapped export like IdleOn Toolbox's { data: {...}, charNames: [...] }
+function unwrapSave(json) {
+  const isWrapped = json?.data
+    && typeof json.data === 'object'
+    && !Array.isArray(json.data)
+    && json.playerNames === undefined
+    && json.CharacterClass_0 === undefined
+  if (!isWrapped) return json
+  return {
+    ...json.data,
+    playerNames: json.data.playerNames ?? json.charNames,
+  }
+}
+
+export function extractSnapshot(rawJson) {
+  const json = unwrapSave(rawJson)
+  const charList = parseCharacterList(json)
+  if (charList.length === 0) {
+    const keys = Object.keys(rawJson ?? {}).slice(0, 8).join(', ')
+    throw new Error(`No characters found in this save. Top-level keys: ${keys}`)
+  }
+  const extractedCharacters = charList.map(({ name, class: charClass }, i) => {
     const extracted = {}
     for (const [field, fn] of Object.entries(extractors)) {
       extracted[field] = fn(json, i, weaponKeys)
     }
-    extracted.name  = characters[i]?.name  ?? `Character ${i + 1}`
-    extracted.class = characters[i]?.class ?? ''
+    extracted.name  = name
+    extracted.class = charClass
     return extracted
   })
 
@@ -530,7 +570,7 @@ export function extractSnapshot(json) {
     characters: extractedCharacters,
     storage: parseStorage(json),
     statues: parseStatues(json),
-    anvil: parseAnvil(json),
+    anvil: parseAnvil(json, charList),
     accountObols: parseAccountObols(json),
     shrines: parseShrines(json),
     worship: parseWorship(json),

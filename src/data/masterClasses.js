@@ -2,7 +2,7 @@ import { DB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION } from './mo
 
 // ============================================================
 // MASTER CLASSES
-// charIndex     — which character's inventory to check
+// The character for each class is found automatically by class name (see MasterClasses.jsx)
 // inventoryKey  — the item key to look up in that character's inventory
 // headerItem    — item key to display on the dropdown bar (uses itemMap)
 // ============================================================
@@ -13,7 +13,6 @@ export const MASTERCLASSES = [
     name: 'Death Bringer',
     color: '#f87171',
     icon: 'images/class icons/deathbringer.png',
-    charIndex: 0,
     headerItem: 'Quest97',
     sections: [
       {
@@ -29,7 +28,6 @@ export const MASTERCLASSES = [
     name: 'Wind Walker',
     color: '#059669',
     icon: 'images/class icons/windwalker.png',
-    charIndex: 3,
     headerItem: 'Quest96',
     sections: [
       {
@@ -56,7 +54,6 @@ export const MASTERCLASSES = [
     name: 'Arcane Cultist',
     color: '#65a30d',
     icon: 'images/class icons/arcanecultist.png',
-    charIndex: 2,
     headerItem: 'Quest101',
     sections: [
       {

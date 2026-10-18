@@ -15,8 +15,10 @@ export default function ImportModal({ onImport, onClose }) {
     try {
       onImport(text)
       onClose()
-    } catch {
-      setError('Invalid JSON — make sure you copied the full save data from the decoder.')
+    } catch (err) {
+      setError(err instanceof SyntaxError
+        ? 'Invalid JSON — make sure you copied the full save data from the decoder.'
+        : err.message)
     }
   }
 

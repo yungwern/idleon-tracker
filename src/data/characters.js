@@ -1,113 +1,42 @@
-export const characters = [
-  {
-    id: 'char1',
-    name: 'YungWern',
-    class: 'Death Bringer',
-    level: 0,
-    bestFor: ['Cooking', 'GMush Kills'],
-    todos: [
-      "Zow/Chow Kills",
-      "GMush Candies",
-    ],
-  },
+// ============================================================
+// STARTER TO-DOS
+// Characters themselves (names, classes, levels) come from the imported save.
+// These are just the starting to-do items for a character the first time its
+// to-do list is opened in a browser — after that the list lives in localStorage.
+// Characters not listed here start with an empty list.
+// ============================================================
 
-  {
-    id: 'char2',
-    name: 'YungLA',
-    class: 'Siege Breaker',
-    level: 0,
-    bestFor: ['Plunderous Mob Kills'],
-    todos: [
-      "Plunderous Kills",
-    ],
-  },
-
-  {
-    id: 'char3',
-    name: 'YungBern',
-    class: 'Arcane Cultist',
-    level: 0,
-    bestFor: ['Cranium Cooking', 'Lab', 'Money Farming'],
-    todos: [
-      "Cranium Cooking",
-    ],
-  },
-
-  {
-    id: 'char4',
-    name: 'YungFern',
-    class: 'Wind Walker',
-    level: 0,
-    bestFor: ['Shinies', 'Pet Breeding'],
-    todos: [
-      "Shiny Mob Farming",
-    ],
-  },
-
-  {
-    id: 'char5',
-    name: 'YungSlam',
-    class: 'Divine Knight',
-    level: 0,
-    bestFor: ['Statue Farming', 'Colosseum', 'Minibosses with Orb'],
-    todos: [
-      "Statue Farming",
-    ],
-  },
-
-  {
-    id: 'char6',
-    name: 'YungOrtin',
-    class: 'Elemental Sorcerer',
-    level: 0,
-    bestFor: ['Greenstacks', 'Rare Drops', 'Card Farming'],
-    todos: [
-      "Wormhole Kills",
-    ],
-  },
-
-  {
-    id: 'char7',
-    name: 'YungSap',
-    class: 'Voidwalker',
-    level: 0,
-    bestFor: ['Boss Kills?', 'Carry Capacity'],
-    todos: [
-      "Portal Run",
-    ],
-  },
-
-  {
-    id: 'char8',
-    name: 'YungRunas',
-    class: 'Divine Knight',
-    level: 0,
-    bestFor: ['Statue Farming', 'Colosseum', 'Minibosses with Orb'],
-    todos: [
-      "Statue Farming",
-      "Craft better gear"
-    ],
-  },
-
-  {
-    id: 'char9',
-    name: 'YungSorc',
-    class: 'Elemental Sorcerer',
-    level: 0,
-    bestFor: ['Greenstacks', 'Rare Drops', 'Card Farming'],
-    todos: [
-      "Wormhole Kills",
-    ],
-  },
-
-  {
-    id: 'char10',
-    name: 'YungBru',
-    class: 'Siege Breaker',
-    level: 0,
-    bestFor: ['Plunderous Mob Kills'],
-    todos: [
-      "Plunderous Kills",
-    ],
-  },
-]
+export const defaultTodos = {
+  YungWern: [
+    'Zow/Chow Kills',
+    'GMush Candies',
+  ],
+  YungLA: [
+    'Plunderous Kills',
+  ],
+  YungBern: [
+    'Cranium Cooking',
+  ],
+  YungFern: [
+    'Shiny Mob Farming',
+  ],
+  YungSlam: [
+    'Statue Farming',
+  ],
+  YungOrtin: [
+    'Wormhole Kills',
+  ],
+  YungSap: [
+    'Portal Run',
+  ],
+  YungRunas: [
+    'Statue Farming',
+    'Craft better gear',
+  ],
+  YungSorc: [
+    'Wormhole Kills',
+  ],
+  YungBru: [
+    'Plunderous Kills',
+  ],
+}

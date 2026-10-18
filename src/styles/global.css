@@ -91,6 +91,11 @@ body {
    CLASS THEMES / ICONS
    ============================================================ */
 
+/* Fallback for classes without a theme below (e.g. a new character or a friend's class) */
+.character-card {
+  --class-color: #a0c4ff;
+}
+
 .character-card[data-class="death-bringer"] { 
   --class-color: #f87171; 
   --class-icon: url("/images/class icons/deathbringer.png"); 

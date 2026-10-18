@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { MINIBOSSES, RANK_THRESHOLDS, getSkullIndex, rankColor, formatKills, characters } from '../../data'
+import { MINIBOSSES, RANK_THRESHOLDS, getSkullIndex, rankColor, formatKills } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import './minibosses.css'
 
@@ -22,7 +22,7 @@ function BoneJoePickleTracker({ snapshot }) {
 
     ;(snapshot?.characters ?? []).forEach((char, i) => {
       const qty = char?.inventory?.[BONE_JOE_KEY]?.qty ?? 0
-      if (qty > 0) lines.push({ label: characters[i]?.name ?? `Character ${i + 1}`, qty, inStorage: false })
+      if (qty > 0) lines.push({ label: char?.name ?? `Character ${i + 1}`, qty, inStorage: false })
     })
 
     const total = lines.reduce((sum, l) => sum + l.qty, 0)

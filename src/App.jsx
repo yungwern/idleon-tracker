@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { toClassSlug, classColor } from './utils/appUtils.js'
-import { characters, sections } from './data'
+import { classColor } from './utils/appUtils.js'
+import { sections, defaultTodos, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
@@ -24,44 +24,64 @@ import './styles/global.css'
 // APP
 // ============================================================
 export default function App() {
-  const [selected, setSelected] = useState(characters[0]?.name || '')
+  const [selected, setSelected] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const { snapshot, importFromText, clearSnapshot, importedAt } = useSaveImport()
 
-  // ── Merge imported levels into characters, falling back to data.js values ──
-  const mergedCharacters = characters.map((c, i) => {
-    const equipOrder = snapshot?.characters?.[i]?.equipOrder ?? {}
+  // ── Characters come straight from the imported save (any account, any count) ──
+  const mergedCharacters = (snapshot?.characters ?? []).map((c, i) => {
+    const equipOrder = c.equipOrder ?? {}
     const nametagId = equipOrder['nametagSlot'] ?? 'Blank'   // adjust slot key as needed
     const trophyId  = equipOrder['trophySlot']  ?? 'Blank'   // adjust slot key as needed
     return {
-      ...c,
-      level:   snapshot?.characters?.[i]?.level ?? c.level,
-      nametag: nametagId !== 'Blank' ? { id: nametagId, equipped: true } : c.nametag,
-      trophy:  trophyId  !== 'Blank' ? { id: trophyId,  equipped: true } : c.trophy,
-      superTalentPresets: snapshot?.characters?.[i]?.superTalentPresets ?? null,
+      id:      `char${i + 1}`,   // keeps existing to-do lists (stored per id) attached
+      name:    c.name,
+      class:   c.class,
+      level:   c.level,
+      bestFor: CLASS_BEST_FOR[c.class] ?? [],
+      todos:   defaultTodos[c.name] ?? [],
+      nametag: nametagId !== 'Blank' ? { id: nametagId, equipped: true } : null,
+      trophy:  trophyId  !== 'Blank' ? { id: trophyId,  equipped: true } : null,
+      superTalentPresets: c.superTalentPresets ?? null,
     }
   })
 
-  const charIndex = mergedCharacters.findIndex(c => c.name === selected)
+  // Default to the first character once a save is loaded
+  const current = selected ?? mergedCharacters[0]?.name ?? null
+  const charIndex = mergedCharacters.findIndex(c => c.name === current)
   const character = charIndex >= 0 ? mergedCharacters[charIndex] : null
+  const sectionItems = Object.values(sections).flat()
+
+  function handleClearSave() {
+    clearSnapshot()
+    setSelected(null)
+  }
 
   function renderContent() {
     if (character) return <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
-    if (selected === 'MasterClasses')  return <MasterClasses snapshot={snapshot} />
-    if (selected === 'Minibosses')     return <Minibosses snapshot={snapshot} />
-    if (selected === 'Gear Optimizer') return <GearOptimizer snapshot={snapshot} />
-    if (selected === 'Statues')        return <Statues snapshot={snapshot} />
-    if (selected === 'Anvil') return <Anvil snapshot={snapshot} />
-    if (selected === 'Obols') return <Obols snapshot={snapshot} />
-    if (selected === 'Construction')   return <Construction snapshot={snapshot} />
-    if (selected === 'Shrines')        return <Shrines snapshot={snapshot} />
-    if (selected === 'Worship') return <Worship snapshot={snapshot} />
-    if (selected === 'Cooking') return <Cooking snapshot={snapshot} />
-    if (selected === 'Breeding') return <Breeding snapshot={snapshot} />
-    if (selected === 'Farming') return <Farming snapshot={snapshot} />
+    if (current === 'MasterClasses')  return <MasterClasses snapshot={snapshot} />
+    if (current === 'Minibosses')     return <Minibosses snapshot={snapshot} />
+    if (current === 'Gear Optimizer') return <GearOptimizer snapshot={snapshot} />
+    if (current === 'Statues')        return <Statues snapshot={snapshot} />
+    if (current === 'Anvil') return <Anvil snapshot={snapshot} />
+    if (current === 'Obols') return <Obols snapshot={snapshot} />
+    if (current === 'Construction')   return <Construction snapshot={snapshot} />
+    if (current === 'Shrines')        return <Shrines snapshot={snapshot} />
+    if (current === 'Worship') return <Worship snapshot={snapshot} />
+    if (current === 'Cooking') return <Cooking snapshot={snapshot} />
+    if (current === 'Breeding') return <Breeding snapshot={snapshot} />
+    if (current === 'Farming') return <Farming snapshot={snapshot} />
+    if (!sectionItems.includes(current)) {
+      return (
+        <div className="page">
+          <h2 className="page-title">Welcome to the IdleOn Hub</h2>
+          <p className="page-empty">Import your save with the 📂 Import Save button to see your characters.</p>
+        </div>
+      )
+    }
     return (
       <div className="page">
-        <h2 className="page-title">{selected}</h2>
+        <h2 className="page-title">{current}</h2>
         <p className="page-empty">Content for this section coming soon!</p>
       </div>
     )
@@ -91,7 +111,7 @@ export default function App() {
             {importedAt ? (
               <>
                 <span className="import-timestamp">Last imported: {importedAt}</span>
-                <button className="clear-btn" onClick={clearSnapshot}>
+                <button className="clear-btn" onClick={handleClearSave}>
                   🗑️ Delete Save
                 </button>
               </>
@@ -103,11 +123,14 @@ export default function App() {
 
         {/* Character List */}
         <h2>Characters</h2>
+        {mergedCharacters.length === 0 && (
+          <p className="sidebar-empty">Import a save to see your characters</p>
+        )}
         {mergedCharacters.map(c => (
           <button
             key={c.id}
-            className={selected === c.name ? 'active' : ''}
-            style={selected === c.name ? { color: classColor(c.class) } : {}}
+            className={current === c.name ? 'active' : ''}
+            style={current === c.name ? { color: classColor(c.class) } : {}}
             onClick={() => setSelected(c.name)}
           >
             {c.name}
@@ -122,7 +145,7 @@ export default function App() {
             {items.map(item => (
               <button
                 key={item}
-                className={selected === item ? 'active' : ''}
+                className={current === item ? 'active' : ''}
                 onClick={() => setSelected(item)}
               >
                 {item}

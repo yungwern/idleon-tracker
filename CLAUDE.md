@@ -67,6 +67,11 @@ case-sensitive on the live site even though Windows ignores case.
 
 **Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components
 
+**Characters come from the save**: names from `playerNames`, classes from `CharacterClass_N` (IDs mapped in
+`data/classes.js`). Character count is whatever the save has, so never hard-code 10 or 11. `snapshot.characters[i]`
+lines up with every `_i` save key. `data/characters.js` only holds starter to-dos keyed by character name;
+class "best for" pills live in `CLASS_BEST_FOR` in `data/classes.js`.
+
 ---
 
 ## Deeper Reference
