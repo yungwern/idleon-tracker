@@ -2,7 +2,9 @@ import { useState } from 'react'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import TalentsTab from '../TalentsTab/TalentsTab.jsx'
 import { CharacterBoard } from '../Obols/ObolBoard.jsx'
+import { getObolNotices } from '../Obols/ObolUtils.js'
 import { prayerMap } from '../../data/prayerMap'
+import { obolByRawName } from '../../data'
 import './CharacterCard.css'
 
 import { toClassSlug } from '../../utils/appUtils.js'
@@ -40,6 +42,67 @@ function CharacterObolsTab({ charIndex, snapshot }) {
     <div className="char-obols-tab">
       <CharacterBoard slots={slots} stoneDataMap={stoneDataMap} />
     </div>
+  )
+}
+
+// ── Overview Notifications ────────────────────────────────────────────────────
+// Things on this character that need attention. Add new checks here as
+// more notification types are built.
+function CharacterNotices({ character, charIndex, snapshot, onViewObols }) {
+  const obols = snapshot?.characters?.[charIndex]?.obols ?? []
+  const { noBonus, emptySlots } = getObolNotices(obols, character.level ?? 0)
+  const noBonusTotal = noBonus.reduce((sum, o) => sum + o.count, 0)
+  const hasNotices = noBonusTotal > 0 || emptySlots > 0
+
+  if (!snapshot) return null
+
+  return (
+    <section className="char-overview-section">
+      <h3 className="char-overview-heading">Notifications</h3>
+
+      {!hasNotices && (
+        <p className="char-notice-clear">✓ Nothing needs attention</p>
+      )}
+
+      {noBonusTotal > 0 && (
+        <div className="char-notice">
+          <div className="char-notice-header">
+            <span className="char-notice-title">
+              ⚠ {noBonusTotal} {noBonusTotal === 1 ? 'obol has' : 'obols have'} no bonus stat
+            </span>
+            <button className="char-notice-link" onClick={onViewObols}>
+              View obols →
+            </button>
+          </div>
+          <div className="char-notice-items">
+            {noBonus.map(({ rawName, count }) => (
+              <div key={rawName} className="char-notice-item tooltip-anchor">
+                <img
+                  src={`images/obols/${rawName}.png`}
+                  alt={obolByRawName[rawName]?.name ?? rawName}
+                  className="char-notice-item-img"
+                />
+                {count > 1 && <span className="char-notice-item-count">×{count}</span>}
+                <span className="tooltip">{obolByRawName[rawName]?.name ?? rawName}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {emptySlots > 0 && (
+        <div className="char-notice">
+          <div className="char-notice-header">
+            <span className="char-notice-title">
+              ⚠ {emptySlots} empty obol {emptySlots === 1 ? 'slot' : 'slots'}
+            </span>
+            <button className="char-notice-link" onClick={onViewObols}>
+              View obols →
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -123,6 +186,12 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
 
         {activeTab === 'overview' && (
           <div className="char-overview">
+            <CharacterNotices
+              character={character}
+              charIndex={charIndex}
+              snapshot={snapshot}
+              onViewObols={() => setActiveTab('obols')}
+            />
             <section className="char-overview-section">
               <h3 className="char-overview-heading">Premium Gear</h3>
               <PremiumGearTab charIndex={charIndex} snapshot={snapshot} />

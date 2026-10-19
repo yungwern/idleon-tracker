@@ -291,7 +291,7 @@ export const endgameAccountBoard = [
   'ObolSilverPop', 'ObolSilverPop', 'ObolKnight', 'ObolSilverPop', 'ObolSilverPop',
   'ObolSilverPop', 'ObolLava', 'ObolEmp', 'ObolLava', 'ObolSilverPop',
   'ObolKnight', 'ObolEmp', 'ObolEmp', 'ObolKnight',
-  'ObolSilverPop', 'ObolLava', 'ObolEmp', 'ObolKnight', 'ObolSilverPop',
+  'ObolSilverPop', 'ObolLava', 'ObolEmp', 'ObolLava', 'ObolSilverPop',
   'ObolSilverPop', 'ObolSilverPop', 'ObolKnight', 'ObolSilverPop', 'ObolSilverPop',
 ]
 

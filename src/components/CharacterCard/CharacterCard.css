@@ -213,3 +213,98 @@
   text-transform: uppercase;
   margin: 0 0 10px;
 }
+
+/* ── Overview Notifications ── */
+.char-notice-clear {
+  color: #4ade80;
+  font-size: 13px;
+  margin: 0;
+}
+
+.char-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-left: 3px solid #fbbf24;
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.char-notice + .char-notice {
+  margin-top: 10px;
+}
+
+.char-notice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.char-notice-title {
+  color: #fcd34d;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.char-notice-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #9ca3af;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.char-notice-link:hover {
+  color: var(--class-color);
+}
+
+.char-notice-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.char-notice-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  background: #18181b;
+}
+
+/* Obol art is 36px pixel art — keep it at native size so it stays sharp */
+.char-notice-item-img {
+  width: 36px;
+  height: 36px;
+  image-rendering: pixelated;
+}
+
+.char-notice-item-count {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #fbbf24;
+  color: #111827;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+/* Tooltip opens below and grows rightward from the icon, so it isn't cut off
+   at the card's left edge and doesn't cover the notification title */
+.char-notice-item .tooltip {
+  top: calc(100% + 8px);
+  bottom: auto;
+  left: 0;
+  transform: none;
+}
