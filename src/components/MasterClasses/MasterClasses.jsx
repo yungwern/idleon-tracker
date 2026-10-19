@@ -13,10 +13,18 @@ import './MasterClasses.css'
 // SUB-COMPONENTS
 // ============================================================
 
-// First character in the save with this masterclass, or null if the account doesn't have one
-function findClassCharIndex(snapshot, mc) {
-  const index = snapshot?.characters?.findIndex(c => c.class === mc?.name) ?? -1
-  return index >= 0 ? index : null
+// Every character in the save with this masterclass (accounts can have 2-3 of the same one)
+function findClassCharIndexes(snapshot, mc) {
+  return (snapshot?.characters ?? [])
+    .map((c, i) => (c.class === mc?.name ? i : null))
+    .filter(i => i !== null)
+}
+
+// Account-wide count of an item: every character's inventory plus storage
+function accountItemTotal(snapshot, key) {
+  const inInventories = (snapshot?.characters ?? [])
+    .reduce((sum, c) => sum + (c?.inventory?.[key]?.qty ?? 0), 0)
+  return inInventories + (snapshot?.storage?.items?.[key] ?? 0)
 }
 
 function ActiveClassItem({ snapshot, mc }) {
@@ -25,14 +33,13 @@ function ActiveClassItem({ snapshot, mc }) {
   const name = itemMap[mc.headerItem]
   if (!name) return null
 
-  const charIndex = findClassCharIndex(snapshot, mc)
-  const qty = snapshot?.characters?.[charIndex]?.inventory?.[mc.headerItem]?.qty ?? 0
+  const qty = accountItemTotal(snapshot, mc.headerItem)
 
   return (
     <div className="mc-header-pill-wrapper">
       <div className="mc-header-pill">
         <div className="mc-header-pill-row">
-          <img src={`images/items/${mc.headerItem}.png`} alt={name} className="mc-header-pill-icon" />
+          <img src={`images/${mc.imageFolder ?? 'items'}/${mc.headerItem}.png`} alt={name} className="mc-header-pill-icon" />
           <span className="mc-header-pill-label">{name}</span>
           <span className="mc-header-pill-count">{qty.toLocaleString()}</span>
         </div>
@@ -41,7 +48,7 @@ function ActiveClassItem({ snapshot, mc }) {
   )
 }
 
-function MobProgressionTable({ rows }) {
+function MobProgressionTable({ rows, imageFolder = 'items' }) {
 
   const mobWorldMap = Object.fromEntries(
   mapEnemyData.map(entry => [entry.mobKey, entry.world])
@@ -56,11 +63,14 @@ function MobProgressionTable({ rows }) {
           'World 6 mobs should be your primary focus. World 7 mobs are included for reference when they become farmable.',
         ]}
       />
+      {rows.length === 0 && (
+        <p>Mob progression coming soon.</p>
+      )}
       {rows.map((row) => (
         <div key={row.currencyKey} className="mob-prog-row">
           <div className="mob-prog-currency">
             <img
-              src={`images/items/${row.currencyKey}.png`}
+              src={`images/${imageFolder}/${row.currencyKey}.png`}
               alt={row.currencyKey}
               className="mob-prog-currency-img"
             />
@@ -91,56 +101,82 @@ function MobProgressionTable({ rows }) {
   )
 }
 
-function InventorySection({ inventoryKey, snapshot, charIndex, variant }) {
+// One character's masterclass weapons and rings (from their inventory)
+function CharacterGear({ keys, inventory, imageFolder }) {
+  const weapons = []
+  const rings = []
+
+  keys.forEach(key => {
+    const name = itemMap[key]
+    if (!name) return
+    const item = inventory?.[key]
+    const instances = Array.isArray(item) ? item : (item ? [item] : [])
+    const equipment = equipmentMap[key] ?? {}
+    const isRing = key.includes('Rings')
+
+    instances.forEach((instance, idx) => {
+      const stats = instance?.stats ?? {}
+      const uq1 = equipment.uq1txt && stats.UQ1val != null ? `${stats.UQ1val}${equipment.uq1txt}` : null
+      const uq2 = equipment.uq2txt && stats.UQ2val != null ? `${stats.UQ2val}${equipment.uq2txt}` : null
+      const card = (
+        <div className="mc-item-card" key={`${key}-${idx}`}>
+          <div className="mc-item-card-top">
+            <img src={`images/${imageFolder}/${key}.png`} alt={name} className="mc-item-img" />
+          </div>
+          <div className="mc-item-card-body">
+            <span className="mc-item-name">{name}</span>
+            {uq1 && <span className="mc-item-note">{uq1}</span>}
+            {uq2 && <span className="mc-item-note">{uq2}</span>}
+          </div>
+        </div>
+      )
+      if (isRing) rings.push(card)
+      else weapons.push(card)
+    })
+  })
+
+  if (weapons.length === 0 && rings.length === 0) return null
+
+  return (
+    <div className="mc-equipment-sections">
+      {weapons.length > 0 && (
+        <div className="mc-equipment-group">
+          <span className="mc-equipment-heading">Weapons</span>
+          <div className="mc-items-grid">{weapons}</div>
+        </div>
+      )}
+      {rings.length > 0 && (
+        <div className="mc-equipment-group">
+          <span className="mc-equipment-heading">Rings</span>
+          <div className="mc-items-grid">{rings}</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function InventorySection({ inventoryKey, snapshot, charIndexes = [], variant, accountWide, imageFolder = 'items' }) {
   const keys = Array.isArray(inventoryKey) ? inventoryKey : [inventoryKey]
 
+  // Gear belongs to a specific character, so show one group per character of this class
   if (variant === 'weapon') {
-    const weapons = []
-    const rings = []
-
-    keys.forEach(key => {
-      const name = itemMap[key]
-      if (!name) return
-      const item = snapshot?.characters?.[charIndex]?.inventory?.[key]
-      const instances = Array.isArray(item) ? item : (item ? [item] : [])
-      const equipment = equipmentMap[key] ?? {}
-      const isRing = key.includes('Rings')
-
-      instances.forEach((instance, idx) => {
-        const stats = instance?.stats ?? {}
-        const uq1 = equipment.uq1txt && stats.UQ1val != null ? `${stats.UQ1val}${equipment.uq1txt}` : null
-        const uq2 = equipment.uq2txt && stats.UQ2val != null ? `${stats.UQ2val}${equipment.uq2txt}` : null
-        const card = (
-          <div className="mc-item-card" key={`${key}-${idx}`}>
-            <div className="mc-item-card-top">
-              <img src={`images/items/${key}.png`} alt={name} className="mc-item-img" />
-            </div>
-            <div className="mc-item-card-body">
-              <span className="mc-item-name">{name}</span>
-              {uq1 && <span className="mc-item-note">{uq1}</span>}
-              {uq2 && <span className="mc-item-note">{uq2}</span>}
-            </div>
-          </div>
-        )
-        if (isRing) rings.push(card)
-        else weapons.push(card)
-      })
-    })
-
+    if (charIndexes.length === 0) {
+      return <p>No characters with this masterclass.</p>
+    }
     return (
-      <div className="mc-equipment-sections">
-        {weapons.length > 0 && (
-          <div className="mc-equipment-group">
-            <span className="mc-equipment-heading">Weapons</span>
-            <div className="mc-items-grid">{weapons}</div>
-          </div>
-        )}
-        {rings.length > 0 && (
-          <div className="mc-equipment-group">
-            <span className="mc-equipment-heading">Rings</span>
-            <div className="mc-items-grid">{rings}</div>
-          </div>
-        )}
+      <div className="mc-gear-characters">
+        {charIndexes.map(i => {
+          const char = snapshot?.characters?.[i]
+          return (
+            <div key={i} className="mc-gear-character">
+              <span className="mc-gear-character-name">{char?.name ?? `Character ${i + 1}`}</span>
+              <CharacterGear keys={keys} inventory={char?.inventory} imageFolder={imageFolder} />
+              {!keys.some(k => char?.inventory?.[k]) && (
+                <p>No masterclass gear in this character's inventory.</p>
+              )}
+            </div>
+          )
+        })}
       </div>
     )
   }
@@ -150,12 +186,13 @@ function InventorySection({ inventoryKey, snapshot, charIndex, variant }) {
       {keys.map(key => {
         const name = itemMap[key]
         if (!name) return null
-        const item = snapshot?.characters?.[charIndex]?.inventory?.[key]
-        const qty = item?.qty ?? 0
+        const qty = accountWide
+          ? accountItemTotal(snapshot, key)
+          : (snapshot?.characters?.[charIndexes[0]]?.inventory?.[key]?.qty ?? 0)
         return (
           <div className="mc-item-card" key={key}>
             <div className="mc-item-card-top">
-              <img src={`images/items/${key}.png`} alt={name} className="mc-item-img" />
+              <img src={`images/${imageFolder}/${key}.png`} alt={name} className="mc-item-img" />
             </div>
             <div className="mc-item-card-body">
               <span className="mc-item-name">{name}</span>
@@ -374,13 +411,14 @@ function MapBonusSection({ snapshot }) {
   )
 }
 
-function SectionContent({ section, snapshot, charIndex }) {
-  
+// imageFolder: the masterclass's image folder; a section can override it with its own imageFolder
+function SectionContent({ section, snapshot, charIndexes, imageFolder }) {
+
   // ── Best Farms ──
   if (section.sectionType === 'mob-progression') {
   return (
     <div className="mc-section-body">
-      <MobProgressionTable rows={section.rows} />
+      <MobProgressionTable rows={section.rows} imageFolder={imageFolder} />
     </div>
   )
 }
@@ -420,8 +458,10 @@ function SectionContent({ section, snapshot, charIndex }) {
         <InventorySection
           inventoryKey={section.inventoryKey}
           snapshot={snapshot}
-          charIndex={charIndex}
+          charIndexes={charIndexes}
           variant={section.variant}
+          accountWide={section.accountWide}
+          imageFolder={section.imageFolder ?? imageFolder}
         />
       )}
       {section.items && (
@@ -462,7 +502,7 @@ export default function MasterClasses({ snapshot }) {
   return (
     <div className="page masterclasses-page" style={{ '--active-class-color': activeMc?.color }}>
       <h2 className="page-title">Master Classes</h2>
-      
+
       {/* ── Main Masterclass Info Panel ── */}
       <InfoPanel
       intro="This page breaks down each Masterclass and their unique progression systems. The AFK item for the active class is displayed at the top for a quick overview of your accumulated AFK hours."
@@ -513,7 +553,8 @@ export default function MasterClasses({ snapshot }) {
               <SectionContent
                 section={activeSection}
                 snapshot={snapshot}
-                charIndex={findClassCharIndex(snapshot, activeMc)}
+                charIndexes={findClassCharIndexes(snapshot, activeMc)}
+                imageFolder={activeMc.imageFolder}
               />
             </div>
           )}

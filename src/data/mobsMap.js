@@ -745,7 +745,7 @@ export const DB_MOB_PROGRESSION = [
 // ── Wind Walker Mob Progression ──
 export const WW_MOB_PROGRESSION = [
   {
-    currencyKey: 'dust0_x1',
+    currencyKey: 'Dust0_x1',
     mobs: [
       { key: 'Leek_Spirit', drop: 28041 },
       { key: 'Royal_Egg', drop: 52328 },
@@ -760,7 +760,7 @@ export const WW_MOB_PROGRESSION = [
     ],
   },
   {
-    currencyKey: 'dust1_x1',
+    currencyKey: 'Dust1_x1',
     mobs: [
       { key: 'River_Spirit', drop: 13808 },
       { key: 'Samurai_Guardian', drop: 72090 },
@@ -771,7 +771,7 @@ export const WW_MOB_PROGRESSION = [
     ],
   },
   {
-    currencyKey: 'dust2_x1',
+    currencyKey: 'Dust2_x1',
     mobs: [
       { key: 'Woodlin_Spirit', drop: 11500 },
       { key: 'Bamboo_Spirit', drop: 14795 },
@@ -786,7 +786,7 @@ export const WW_MOB_PROGRESSION = [
     ],
   },
   {
-    currencyKey: 'dust3_x1',
+    currencyKey: 'Dust3_x1',
     mobs: [
       { key: 'Baby_Troll', drop: 10057 },
       { key: 'Mama_Troll', drop: 17454 },
@@ -865,3 +865,7 @@ export const AC_MOB_PROGRESSION = [
     ],
   },
 ];
+
+// ── Royal Guardian Mob Progression ──
+// TODO: fill in currency + best mobs, same shape as the lists above
+export const RG_MOB_PROGRESSION = [];

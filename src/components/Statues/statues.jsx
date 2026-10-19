@@ -47,7 +47,7 @@ function DRBonus({ mobName, mapBonuses }) {
   return (
     <div className="statue-dr-bonus">
       <img
-        src="images/masterclass/StatusArc0.png"
+        src="images/masterclass/arcane cultist/StatusArc0.png"
         alt="Drop Rate"
         className="statue-dr-icon"
       />

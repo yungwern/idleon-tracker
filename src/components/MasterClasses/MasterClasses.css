@@ -497,3 +497,22 @@
   font-weight: 700;
   color: #e5e7eb;
 }
+
+/* ── Gear per character (accounts can have several of one masterclass) ── */
+.mc-gear-characters {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mc-gear-character {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mc-gear-character-name {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}

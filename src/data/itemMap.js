@@ -4,6 +4,15 @@ export const itemMap = {
 // MASTERCLASS ITEMS
 //=========================
 // ── Equipment ──
+  // Royal Guardian
+  Orblet: 'Orblet',
+  RGshard0: 'Leafy Marble',
+  RGshard1: 'Sandy Marble',
+  RGshard2: 'Frosty Marble',
+  RGshard3: 'Sparkly Marble',
+  RGshard4: 'Toasty Marble',
+  RGshard5: 'Wispy Marble',
+  RGshard6: 'Briny Marble',
   // Beast Master
   EquipmentBowsTempest0: 'Tempest Bow of Dust',
   EquipmentBowsTempest1: 'Tempest Bow of Ice',

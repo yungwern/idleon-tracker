@@ -1,10 +1,15 @@
-import { DB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION } from './mobsMap'
+import { DB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION, RG_MOB_PROGRESSION } from './mobsMap'
 
 // ============================================================
 // MASTER CLASSES
 // The character for each class is found automatically by class name (see MasterClasses.jsx)
 // inventoryKey  — the item key to look up in that character's inventory
 // headerItem    — item key to display on the dropdown bar (uses itemMap)
+// accountWide   — count an item across every character's inventory plus storage
+// Header currency is always counted account-wide. Weapons (variant: 'weapon') show one
+// group per character of that class, since gear belongs to a specific character.
+// imageFolder   — folder under public/images/ for this class's images (header item, weapons,
+//                 mob progression currency). A section can set its own to override it.
 // ============================================================
 
 export const MASTERCLASSES = [
@@ -12,6 +17,7 @@ export const MASTERCLASSES = [
     id: 'death-bringer',
     name: 'Death Bringer',
     color: '#f87171',
+    imageFolder: 'masterclass/death bringer',
     headerItem: 'Quest97',
     sections: [
       {
@@ -26,6 +32,7 @@ export const MASTERCLASSES = [
     id: 'wind-walker',
     name: 'Wind Walker',
     color: '#059669',
+    imageFolder: 'masterclass/wind walker',
     headerItem: 'Quest96',
     sections: [
       {
@@ -51,6 +58,7 @@ export const MASTERCLASSES = [
     id: 'arcane-cultist',
     name: 'Arcane Cultist',
     color: '#65a30d',
+    imageFolder: 'masterclass/arcane cultist',
     headerItem: 'Quest101',
     sections: [
       {
@@ -74,6 +82,32 @@ export const MASTERCLASSES = [
         title: 'Mob Progression',
         sectionType: 'mob-progression',
         rows: AC_MOB_PROGRESSION,
+      },
+    ],
+  },
+  {
+    id: 'royal-guardian',
+    name: 'Royal Guardian',
+    color: '#fbbf24',
+    imageFolder: 'masterclass/royal guardian',
+    headerItem: 'Orblet',
+    sections: [
+      {
+        id: 'marbles',
+        title: 'Marbles',
+        inventoryKey: ['RGshard0', 'RGshard1', 'RGshard2', 'RGshard3', 'RGshard4', 'RGshard5', 'RGshard6'],
+        accountWide: true,
+      },
+      {
+        id: 'weapons',
+        title: 'Weapons & Gear',
+        text: 'Coming soon.', // TODO: add Royal Guardian weapon/ring keys + variant: 'weapon'
+      },
+      {
+        id: 'mob-progression',
+        title: 'Mob Progression',
+        sectionType: 'mob-progression',
+        rows: RG_MOB_PROGRESSION,
       },
     ],
   },
