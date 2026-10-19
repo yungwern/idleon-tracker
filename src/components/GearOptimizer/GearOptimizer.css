@@ -2,324 +2,160 @@
 .go-card {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* Search row */
-.go-search-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.go-select-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-  min-width: 180px;
-}
-
-.go-label {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b7280;
-}
-
-.go-label-optional {
-  font-size: 0.65rem;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
-  color: #4b5563;
-}
-
-.go-select {
-  padding: 7px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: #e5e7eb;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.go-select:hover:not(:disabled) {
-  border-color: rgba(160, 196, 255, 0.2);
-}
-
-.go-select:focus {
-  outline: none;
-  border-color: rgba(160, 196, 255, 0.3);
-}
-
-.go-select:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.go-select option {
-  background: #1f2937;
-  color: #e5e7eb;
-}
-
-/* Buttons */
-.go-button-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.go-btn-search {
-  padding: 7px 18px;
-  border-radius: 8px;
-  border: 1px solid rgba(160, 196, 255, 0.25);
-  background: rgba(160, 196, 255, 0.08);
-  color: #a0c4ff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.go-btn-search:hover:not(:disabled) {
-  background: rgba(160, 196, 255, 0.14);
-  border-color: rgba(160, 196, 255, 0.4);
-}
-
-.go-btn-search:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.go-btn-reset {
-  padding: 7px 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: transparent;
-  color: #6b7280;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.go-btn-reset:hover {
-  color: #9ca3af;
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-/* Section label */
-.go-section-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #4b5563;
-  margin-bottom: -8px;
-}
-
-/* Results grid */
-.go-results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 8px;
-}
-
-.go-slot-card {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-}
-
-.go-slot-card--empty {
-  opacity: 0.35;
-}
-
-.go-slot-name {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b7280;
-}
-
-.go-item-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.go-item-name {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #e5e7eb;
-}
-
-.go-item-icon {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-.go-slot-none {
-  font-size: 0.75rem;
-  color: #4b5563;
-  font-style: italic;
-}
-
-/* Bonus pills */
-.go-pill-list {
+/* Setup selector */
+.go-setup-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 2px;
-}
-
-.go-pill {
-  font-size: 0.65rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid;
-  white-space: nowrap;
-}
-
-.go-pill--primary {
-  background: rgba(74, 222, 128, 0.08);
-  color: #4ade80;
-  border-color: rgba(74, 222, 128, 0.2);
-}
-
-.go-pill--secondary {
-  background: rgba(96, 165, 250, 0.08);
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.2);
-}
-
-.go-pill--other {
-  background: rgba(255, 255, 255, 0.04);
-  color: #9ca3af;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-/* Summary grid */
-.go-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 8px;
-}
-
-.go-summary-card {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-}
-
-.go-summary-card--multi {
-  border-color: rgba(74, 222, 128, 0.12);
-}
-
-.go-summary-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b7280;
-}
-
-.go-summary-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #e5e7eb;
-}
-
-/* Set Selector */
-.go-set-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-bottom: 16px;
+  padding-bottom: 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.go-set-group {
+.go-setup-tab {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.go-set-group-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #4b5563;
-}
-
-.go-set-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.go-set-btn {
-  position: relative;
-  padding: 4px;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 14px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
+  color: #9ca3af;
   cursor: pointer;
-  transition: border-color 0.15s, opacity 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
-.go-set-btn--active {
-  opacity: 1;
+.go-setup-tab:hover {
+  border-color: rgba(160, 196, 255, 0.2);
+  color: #e5e7eb;
+}
+
+.go-setup-tab--active {
   border-color: rgba(160, 196, 255, 0.4);
   background: rgba(160, 196, 255, 0.08);
+  color: #a0c4ff;
 }
 
-.go-set-btn--inactive {
-  opacity: 0.3;
+.go-setup-tab-name {
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
-.go-set-btn--locked.go-set-btn--active {
-  border-color: rgba(251, 191, 36, 0.4);
-  background: rgba(251, 191, 36, 0.08);
+.go-setup-tab-classes {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
 }
 
-.go-set-btn:hover {
-  opacity: 1;
+/* Two columns: gear on the left, consumables on the right */
+.go-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 12px 24px;
 }
 
-.go-set-btn-img {
-  width: 38px;
-  height: 38px;
+.go-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Rows */
+.go-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.go-row-title {
+  flex-shrink: 0;
+  width: 78px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  text-align: left;
+}
+
+.go-row-slots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.go-row-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0 2px;
+}
+
+/* Slots */
+.go-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: default;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.go-slot:hover {
+  border-color: rgba(160, 196, 255, 0.35);
+  background: rgba(160, 196, 255, 0.06);
+}
+
+.go-slot--todo {
+  border-style: dashed;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.go-slot-img {
+  width: 36px;
+  height: 36px;
   object-fit: contain;
   image-rendering: pixelated;
-  display: block;
 }
 
-/* Warning banner */
-.go-set-warning {
-  font-size: 0.75rem;
-  font-weight: 600;
+.go-slot-missing {
   color: #fbbf24;
-  background: rgba(251, 191, 36, 0.08);
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  border-radius: 8px;
-  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* Tooltip content (positioning comes from global .tooltip) */
+.go-tooltip {
+  text-align: left;
+}
+
+.go-tooltip-slot {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.go-tooltip-name {
+  display: block;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.go-tooltip-line {
+  display: block;
+  color: #9ca3af;
 }

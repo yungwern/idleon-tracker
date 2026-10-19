@@ -20,6 +20,9 @@ export {
   getAvailableKills,
   getDaysForKills,
   getOptimalKills,
+  getVerminousHit,
+  getVerminousHits,
+  getBestVerminousPickles,
 } from './miniBosses'
 
 // ── World 1 ───────────────────────────────────────────────────────────────────

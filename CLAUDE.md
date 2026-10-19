@@ -28,7 +28,8 @@ src/
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
 └── utils/              # appUtils.js (toClassSlug, statueLevelColor, shrineLevelColor),
-                        # talentUtils.js (super talent points for Overview notifications)
+                        # talentUtils.js (super talent points for Overview notifications),
+                        # *Notices.js (notification counts, see Notifications below)
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
 IdleOn Resources/       # Outside src/ — not shipped with the site
@@ -75,6 +76,13 @@ case-sensitive on the live site even though Windows ignores case.
 `data/classes.js`). Character count is whatever the save has, so never hard-code 10 or 11. `snapshot.characters[i]`
 lines up with every `_i` save key. Class "best for" pills live in `CLASS_BEST_FOR` in `data/classes.js`.
 
+**Notifications**: each count has one source so every badge agrees. `utils/characterNotices.js` (character
+Overview), `utils/masterclassNotices.js` (returns `{ masterclassId: { sectionId: count } }`, feeding the sidebar
+badge and the masterclass/section nav badges), `utils/minibossNotices.js`. Sidebar badges are wired in
+`sectionNotices` in `App.jsx`; in-page badges use the shared `.notice-badge` class in `global.css`.
+
+**Line endings**: files use Windows CRLF. Keep them CRLF when editing so git diffs stay clean.
+
 **Class colors/icons**: one place only, the CLASS THEMES block in `global.css`. Any element with
 `data-class={toClassSlug(className)}` gets `--class-color` / `--class-icon`. Icons are grouped by family in
 `public/images/class icons/<beginner|warrior|archer|mage>/`. Don't add JS color maps.
@@ -90,3 +98,11 @@ If more detail is needed on a specific area, ask to search past conversations:
 - **Data refactor** (barrel file, extractSnapshot, characters/sections split) → search "data.js refactor idleon"
 - **Component naming / CSS conflicts** (PascalCase rename, namespace prefixes) → search "shrines statues CSS conflict"
 - **Image processing** (Python PIL cleanup for PNG assets) → search "boosts column row image processing"
+
+---
+
+## Maintaining This File
+
+Claude may add to or update this file when something would help future sessions (new conventions, file
+locations, gotchas). Keep entries short, update existing lines instead of appending duplicates, and remove
+anything that goes stale so the file stays compact.

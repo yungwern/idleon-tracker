@@ -74,7 +74,48 @@ export const MINIBOSSES = [
     spawnItem: null,
     spawnTimer: { exponent: 0.5, max: 6 }
   },
+  { rawName: 'fm_rat',
+    displayName: 'Verminous Rats',
+    world: 'Royal Castle',
+    worldColor: '#fbbf24',
+    index: 9,
+    location: 'Royal Castle Cellar',
+    spawnItem: null,
+    castleBoss: true
+  },
 ]
+
+// Verminous (Royal Guardian): inside the Royal Castle your own damage is ignored. Every hit uses the
+// castle damage from the Armory (Anti-Rodent Power Move I/II) with 20% mastery, so min = max * 0.2.
+// Formula from IdleOn Toolbox (parsers/misc/boneJoeCalculator.ts, parsers/class-specific/royalGuardian.ts).
+const VERMINOUS_BASE_HP = 100000
+const VERMINOUS_MASTERY = 0.2
+const ARMORY_RAT_BASE_DMG = 35 // +5 base damage per level
+const ARMORY_RAT_TOTAL_DMG = 36 // +2% total damage per level
+const PICKLE_HP_MULTI = 1.1
+
+// Average non-crit hit inside the castle
+export function getVerminousHit(armory) {
+  const level = id => Number(armory?.[id] ?? 0)
+  const maxHit = (10 + 5 * level(ARMORY_RAT_BASE_DMG)) * (1 + (2 * level(ARMORY_RAT_TOTAL_DMG)) / 100)
+  return (maxHit * (1 + VERMINOUS_MASTERY)) / 2
+}
+
+export function getVerminousHits(avgHit, pickles) {
+  return Math.ceil((VERMINOUS_BASE_HP * Math.pow(PICKLE_HP_MULTI, pickles)) / avgHit)
+}
+
+// Death Note kills per hit = (pickles + 1) / 1.1^pickles. It peaks at 9-10 pickles (a tie);
+// 10 is used since it needs fewer kills for the same total hits.
+export function getBestVerminousPickles() {
+  let best = 0
+  for (let p = 1; p <= 50; p++) {
+    const perHit = q => (q + 1) / Math.pow(PICKLE_HP_MULTI, q)
+    if (perHit(p) >= perHit(best) - 1e-9) best = p
+    else break
+  }
+  return best
+}
 
 // Spawned minibosses (W3–W6) stack kills from the days since you last spawned them.
 // Game formula: min(max, floor((days - 3) ^ exponent)), nothing before day 4.

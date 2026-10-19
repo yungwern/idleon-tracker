@@ -8,6 +8,9 @@ import {
   getAvailableKills,
   getDaysForKills,
   getOptimalKills,
+  getVerminousHit,
+  getVerminousHits,
+  getBestVerminousPickles,
 } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import './minibosses.css'
@@ -82,7 +85,7 @@ function BoneJoePickleTracker({ pickles }) {
   )
 }
 
-function KillBar({ kills, killsPerKill }) {
+function KillBar({ kills, killsPerKill, pickleLabel = 'pickles' }) {
   const skullIndex = getSkullIndex(kills)
   const nextThreshold = RANK_THRESHOLDS.find(t => kills < t.kills)
   const prevThreshold = [...RANK_THRESHOLDS].reverse().find(t => kills >= t.kills)
@@ -112,7 +115,7 @@ function KillBar({ kills, killsPerKill }) {
       )}
       {nextThreshold && killsPerKill > 1 && (
         <span className="mb-killbar-actual">
-          ≈ {formatKills(actualKills)} kills w/ pickles
+          ≈ {formatKills(actualKills)} kills w/ {pickleLabel}
         </span>
       )}
     </div>
@@ -185,7 +188,43 @@ function SpawnBar({ spawnDays }) {
   )
 }
 
-function MinibossCard({ boss, kills, killsPerKill }) {
+// Verminous: pickles still add +1 kill each, but its HP gets out of hand fast, so this shows the
+// best pickle count instead of "all your pickles"
+function VerminousPickles({ avgHit, pickles, best }) {
+  const fmt = n => (n >= 1e6 ? n.toExponential(1) : n.toLocaleString())
+  const efficiency = (best + 1) / Math.pow(1.1, best)
+  return (
+    <div className="mb-verm tooltip-anchor">
+      <span className="mb-verm-warning">⚠ Carry {best} pickles max</span>
+      <div className="tooltip mb-verm-tooltip">
+        <div className="mb-verm-row">
+          <span>Castle hit (Armory, before crits)</span>
+          <span>{Math.round(avgHit).toLocaleString()}</span>
+        </div>
+        <div className="mb-verm-row">
+          <span>0 pickles</span>
+          <span>{fmt(getVerminousHits(avgHit, 0))} hits · 1 kill</span>
+        </div>
+        <div className="mb-verm-row mb-verm-row--best">
+          <span>{best} pickles</span>
+          <span>{fmt(getVerminousHits(avgHit, best))} hits · {best + 1} kills</span>
+        </div>
+        {pickles > best && (
+          <div className="mb-verm-row mb-verm-row--bad">
+            <span>All {pickles.toLocaleString()} pickles</span>
+            <span>{fmt(getVerminousHits(avgHit, pickles))} hits</span>
+          </div>
+        )}
+        <p className="mb-verm-note">
+          Your own damage doesn&apos;t count in the castle. {best} pickles gives the most Death Note kills per
+          hit ({efficiency.toFixed(1)}x carrying none). Prayers that raise monster HP make it tankier.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function MinibossCard({ boss, kills, killsPerKill, verminous }) {
   const skullIndex = getSkullIndex(kills ?? 0)
   const imagePath = bossImage(boss)
 
@@ -212,7 +251,22 @@ function MinibossCard({ boss, kills, killsPerKill }) {
           {boss.world}
         </span>
         <span className="mb-card-kills">{formatKills(kills ?? 0)} kills</span>
-        <KillBar kills={kills ?? 0} killsPerKill={killsPerKill} />
+        {boss.castleBoss && verminous ? (
+          <>
+            <KillBar
+              kills={kills ?? 0}
+              killsPerKill={verminous.best + 1}
+              pickleLabel={`${verminous.best} pickles`}
+            />
+            <VerminousPickles
+              avgHit={verminous.avgHit}
+              pickles={verminous.pickles}
+              best={verminous.best}
+            />
+          </>
+        ) : (
+          <KillBar kills={kills ?? 0} killsPerKill={killsPerKill} />
+        )}
         {boss.location && (
           <div className="mb-card-detail">
             <span className="mb-card-detail-label">📍</span>
@@ -249,6 +303,13 @@ export default function Minibosses({ snapshot }) {
   }
 
   const killsPerKill = pickles.total + 1
+  const verminous = snapshot?.royalGuardian?.armory
+    ? {
+        avgHit: getVerminousHit(snapshot.royalGuardian.armory),
+        pickles: pickles.total,
+        best: getBestVerminousPickles(),
+      }
+    : null
 
   return (
     <div className="page">
@@ -261,6 +322,7 @@ export default function Minibosses({ snapshot }) {
           'This bonus only applies after unlocking Revenge of the Pickle in World 6 at the Jade Emporium.',
           'It is recommended to consolidate all pickles onto a single character, as long as you can still comfortably kill the boss.',
           'World 3–6 minibosses stack spawns over time. The most kills per day comes from spawning them once 2 are stacked (every 7 days). The Spawns bar shows how many are stacked as of your last save import: Kill = ready, Max = capped, or days until 2 are stacked.',
+          'Verminous (Royal Guardian) ignores your own damage, so all your pickles would make it unkillable. Its card shows the best number to carry; hover the warning for the math.',
           'The "kills w/ pickles" estimate on each card assumes every pickle you own (storage included) is on the character doing the killing.',
         ]}
       />
@@ -275,6 +337,7 @@ export default function Minibosses({ snapshot }) {
             boss={boss}
             kills={miniBossesKills[boss.index]}
             killsPerKill={killsPerKill}
+            verminous={verminous}
           />
         ))}
       </div>

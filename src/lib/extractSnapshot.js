@@ -193,7 +193,7 @@ function parseMiniBosses(json) {
   const rawSneaking = json['Ninja']
   const arr = typeof rawSneaking === 'string' ? JSON.parse(rawSneaking) : (rawSneaking ?? [])
   const kills = arr?.[105] ?? []
-  return kills.slice(0, 9)
+  return kills.slice(0, 10)
 }
 
 // Days since each spawned miniboss was last spawned (OptLacc = account options list)
