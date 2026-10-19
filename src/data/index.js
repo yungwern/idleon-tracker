@@ -7,6 +7,9 @@ export { itemMap } from './itemMap'
 export { equipmentMap, GEAR_SETS, GEAR_SET_PIECES } from './equipmentMap'
 export { GEAR_BONUSES } from './gearBonuses'
 export { premiumGearNames, premiumGearMap } from './premiumGear'
+export { foodMap } from './foodMap'
+export { cardMap, cardSetMap } from './cardMap'
+export { BIS_SETUPS } from './bisSetups'
 export { mobsMap, mapEnemyData } from './mobsMap'
 export { worldMap } from './worldMap'
 export { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier, STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti } from './royalGuardianMap'
@@ -43,6 +46,7 @@ export { worshipMap, soulsMap, towerMap } from './worshipMap'
 export { prayerMap } from './prayerMap'
 
 // ── World 4 ───────────────────────────────────────────────────────────────────
+export { labChipMap } from './labChipMap'
 export { cookingMap, cookingBonusTypes, ribbonData } from './cookingMap'
 export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps } from './breedingMap'
 
@@ -51,4 +55,4 @@ export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORD
 // ── World 6 ───────────────────────────────────────────────────────────────────
 export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, landRankMap, landRankStatGroups, calcRankBonus } from './farmingMap'
 
-// ── World 7 ───────────────────────────────────────────────────────────────────
+// ── World 7 ───────────────────────────────────────────────────────────────────

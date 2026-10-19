@@ -199,13 +199,47 @@ export const itemMap = {
   EquipmentShoes41: 'Prehistoric Bracers',
   // Pendants
   EquipmentPendant6: 'Blueberry Icecream',
+  EquipmentPendant17: 'Chaotic Amarok Pendant',
   EquipmentPendant30: 'The Divine Scarf',
   EquipmentPendant31: 'Deathbloom Flower Pendant',
+  EquipmentPendant33: 'Emerald Bling Pendant',
   EquipmentPendant35: 'Bramble of the Emperor',
   // Rings
   EquipmentRings25: 'Chef Ring',
   EquipmentRings26: 'Serrated Rex Ring',
+  EquipmentRings35: 'Zero Point Stopwatch',
   EquipmentRings36: 'Demented Opal Ring',
+  // Keychains (stats in equipmentMap.js)
+  EquipmentKeychain0: 'Simple Key Chain',
+  EquipmentKeychain1: 'Leafy Chain',
+  EquipmentKeychain2: 'Red Sneaker Chain',
+  EquipmentKeychain3: 'Wartooth Chain',
+  EquipmentKeychain4: '8 Ball Chain',
+  EquipmentKeychain5: 'Piggy Chain',
+  EquipmentKeychain6: 'Dumbphone Chain',
+  EquipmentKeychain7: 'Horn Chain',
+  EquipmentKeychain8: 'Rustic Key Chain',
+  EquipmentKeychain9: 'Taco Chain',
+  EquipmentKeychain10: 'Cactus Chain',
+  EquipmentKeychain11: 'Relic Chain',
+  EquipmentKeychain12: 'Balloon Dog Chain',
+  EquipmentKeychain13: 'Frozen Tart Chain',
+  EquipmentKeychain14: 'Whatamelon Chain',
+  EquipmentKeychain15: '9 Ball Chain',
+  EquipmentKeychain16: 'Pincer Hand Chain',
+  EquipmentKeychain17: 'Gilded Key Chain',
+  EquipmentKeychain18: 'Sushi Chain',
+  EquipmentKeychain19: 'Time Candy Chain',
+  EquipmentKeychain20: 'Star Blobulyte Galaxy Chain',
+  EquipmentKeychain21: 'Mmm Donut Chain',
+  EquipmentKeychain22: 'Negative 7 Chain',
+  EquipmentKeychain23: 'Diamond Honker Chain',
+  EquipmentKeychain24: 'BobGoldPickle Chain',
+  EquipmentKeychain25: 'Eye Owe Ess Chain',
+  EquipmentKeychain26: 'Key to Desert Chain',
+  EquipmentKeychain27: 'Key to Mountains Chain',
+  EquipmentKeychain28: 'Key to Purgatory Chain',
+  EquipmentKeychain29: 'Spiritlord Horn Chain',
 
   // ── Tools ──
   // Mining
@@ -282,4 +316,4 @@ export const itemMap = {
   TrapBoxSet9: 'Forbidden Traps',
   TrapBoxSet10: 'Containment of the Zrgyios',
   TrapBoxSet11: 'Prehistoric Traps',
-}
+}

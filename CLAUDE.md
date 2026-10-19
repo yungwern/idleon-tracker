@@ -24,6 +24,9 @@ src/
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js
+│                       # Item names → itemMap.js; fixed UQ stats (keychains, etc.) → equipmentMap.js
+│                       # cardMap.js (all cards + cardSetMap), labChipMap.js, foodMap.js share one
+│                       #   entry shape: { name, img, effect }. bisSetups.js only holds ids.
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
@@ -32,6 +35,10 @@ src/
                         # *Notices.js (notification counts, see Notifications below)
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
+                        # Data source of truth: the IdleonToolbox repo (github.com/Morta1/IdleonToolbox) —
+                        #   data/website-data/*.json (items, cards, shared-data: chips, cardSets…). Eli
+                        #   grabs PNGs from Toolbox (public/data/), so its ids match our image filenames.
+                        #   Prefer it over the wiki; clone it shallow when you need data.
 IdleOn Resources/       # Outside src/ — not shipped with the site
                         # raw-save.json — Eli's latest IdleOn Toolbox export ({ data, charNames, ... })
                         # items.json — every item (displayName, UQ1txt/UQ1val stats, rawName keys),

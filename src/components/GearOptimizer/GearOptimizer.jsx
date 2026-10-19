@@ -1,8 +1,16 @@
 import { useState } from 'react'
-import { BIS_SETUPS } from '../../data/bisSetups'
-import { GEAR_BONUSES } from '../../data/gearBonuses'
-import { itemMap } from '../../data/itemMap'
-import { premiumGearNames, premiumGearMap } from '../../data/premiumGear'
+import {
+  BIS_SETUPS,
+  GEAR_BONUSES,
+  itemMap,
+  equipmentMap,
+  premiumGearNames,
+  premiumGearMap,
+  foodMap,
+  labChipMap,
+  cardMap,
+  cardSetMap,
+} from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './GearOptimizer.css'
@@ -15,13 +23,13 @@ function getItemImage(id) {
   return `images/items/${id}.png`
 }
 
-// '%_BONUS_DROP_RATE' → 'Bonus Drop Rate'
-function formatStatText(txt) {
-  return txt
-    .replace(/^%_/, '')
+// (4, '%_DROP_RATE') or (4, '% DROP RATE') → '+4% Drop Rate'
+function formatStat(val, txt) {
+  const text = txt
     .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/\b\w/g, c => c.toUpperCase())
+  return `+${val}${text}`
 }
 
 // Stat lines shown in the tooltip for an equipment id
@@ -30,48 +38,47 @@ function getItemStats(id) {
   if (gear) {
     return Object.entries(gear).map(([cat, bonus]) => `+${bonus.value}% ${cat}`)
   }
-  const premium = premiumGearMap[id]
-  if (premium) {
-    return [
-      [premium.uq1val, premium.uq1txt],
-      [premium.uq2val, premium.uq2txt],
-    ]
-      .filter(([val, txt]) => val != null && txt)
-      .map(([val, txt]) => `+${val}% ${formatStatText(txt)}`)
-  }
-  return []
+  const stats = premiumGearMap[id] ?? equipmentMap[id]
+  if (!stats) return []
+  return [
+    [stats.uq1val, stats.uq1txt],
+    [stats.uq2val, stats.uq2txt],
+  ]
+    .filter(([val, txt]) => val != null && txt)
+    .map(([val, txt]) => formatStat(val, txt))
 }
 
-// Turns a data entry into what the slot needs to render
-function resolveEntry(entry) {
-  if (entry.todo) {
-    return {
-      name: 'Not identified yet',
-      img: null,
-      lines: [entry.todo],
-    }
+function resolveEquipment(id) {
+  return {
+    name: itemMap[id] ?? premiumGearNames[id] ?? id,
+    img: getItemImage(id),
+    lines: getItemStats(id),
   }
-  if (entry.id) {
+}
+
+// Food, chips and cards share one shape: { name, img, effect }
+function resolveFromMap(map, id) {
+  const entry = map[id]
+  if (!entry) {
     return {
-      name: itemMap[entry.id] ?? premiumGearNames[entry.id] ?? entry.id,
-      img: getItemImage(entry.id),
-      lines: getItemStats(entry.id),
+      name: id,
+      img: null,
+      lines: ['Missing from data'],
     }
   }
   return {
     name: entry.name,
     img: entry.img,
-    lines: entry.desc ? [entry.desc] : [],
+    lines: entry.effect ? [entry.effect] : [],
   }
 }
 
 // ── Slot (icon + hover tooltip) ──────────────────────────────
-function Slot({ entry, label }) {
-  const { name, img, lines } = resolveEntry(entry)
-  const slotLabel = label ?? entry.slot
+function Slot({ item, label }) {
+  const { name, img, lines } = item
 
   return (
-    <div className={`go-slot tooltip-anchor ${img ? '' : 'go-slot--todo'}`}>
+    <div className={`go-slot tooltip-anchor ${img ? '' : 'go-slot--missing'}`}>
       {img ? (
         <img
           src={img}
@@ -83,7 +90,7 @@ function Slot({ entry, label }) {
         <span className="go-slot-missing">?</span>
       )}
       <span className="tooltip go-tooltip">
-        {slotLabel && <span className="go-tooltip-slot">{slotLabel}</span>}
+        {label && <span className="go-tooltip-slot">{label}</span>}
         <span className="go-tooltip-name">{name}</span>
         {lines.map(line => (
           <span
@@ -99,20 +106,45 @@ function Slot({ entry, label }) {
 }
 
 // ── Row (label + icons) ──────────────────────────────────────
-function SlotRow({ title, entries }) {
-  if (!entries?.length) return null
+function SlotRow({ title, children }) {
   return (
     <div className="go-row">
       <span className="go-row-title">{title}</span>
       <div className="go-row-slots">
-        {entries.map((entry, i) => (
-          <Slot
-            key={i}
-            entry={entry}
-          />
-        ))}
+        {children}
       </div>
     </div>
+  )
+}
+
+// Equipment-style rows: [{ slot, id }]
+function EquipmentRow({ title, entries }) {
+  if (!entries?.length) return null
+  return (
+    <SlotRow title={title}>
+      {entries.map((entry, i) => (
+        <Slot
+          key={i}
+          item={resolveEquipment(entry.id)}
+          label={entry.slot}
+        />
+      ))}
+    </SlotRow>
+  )
+}
+
+// Id-list rows (food, chips): ['FoodG2', ...]
+function MapRow({ title, ids, map }) {
+  if (!ids?.length) return null
+  return (
+    <SlotRow title={title}>
+      {ids.map((id, i) => (
+        <Slot
+          key={i}
+          item={resolveFromMap(map, id)}
+        />
+      ))}
+    </SlotRow>
   )
 }
 
@@ -151,15 +183,15 @@ export default function GearOptimizer() {
         <div className="go-columns">
           {/* Gear */}
           <div className="go-column">
-            <SlotRow
+            <EquipmentRow
               title="Equipment"
               entries={setup.equipment}
             />
-            <SlotRow
+            <EquipmentRow
               title="Tools"
               entries={setup.tools}
             />
-            <SlotRow
+            <EquipmentRow
               title="Specials"
               entries={setup.specials}
             />
@@ -167,30 +199,29 @@ export default function GearOptimizer() {
 
           {/* Consumables & bonuses */}
           <div className="go-column">
-            <SlotRow
+            <MapRow
               title="Food"
-              entries={setup.food}
+              ids={setup.food}
+              map={foodMap}
             />
-            <SlotRow
+            <MapRow
               title="Lab Chips"
-              entries={setup.chips}
+              ids={setup.chips}
+              map={labChipMap}
             />
-            <div className="go-row">
-              <span className="go-row-title">Cards</span>
-              <div className="go-row-slots">
+            <SlotRow title="Cards">
+              <Slot
+                item={resolveFromMap(cardSetMap, setup.cards.set)}
+                label="Card Set"
+              />
+              <span className="go-row-divider" />
+              {setup.cards.cards.map((id, i) => (
                 <Slot
-                  entry={setup.cards.set}
-                  label="Card Set"
+                  key={i}
+                  item={resolveFromMap(cardMap, id)}
                 />
-                <span className="go-row-divider" />
-                {setup.cards.cards.map((entry, i) => (
-                  <Slot
-                    key={i}
-                    entry={entry}
-                  />
-                ))}
-              </div>
-            </div>
+              ))}
+            </SlotRow>
           </div>
         </div>
       </div>
