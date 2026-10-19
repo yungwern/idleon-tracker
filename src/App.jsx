@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toClassSlug } from './utils/appUtils.js'
+import { getCharacterNotices } from './utils/characterNotices.js'
 import { sections, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
@@ -42,6 +43,7 @@ export default function App() {
       nametag: nametagId !== 'Blank' ? { id: nametagId, equipped: true } : null,
       trophy:  trophyId  !== 'Blank' ? { id: trophyId,  equipped: true } : null,
       superTalentPresets: c.superTalentPresets ?? null,
+      noticeCount: getCharacterNotices(c).count,
     }
   })
 
@@ -134,6 +136,14 @@ export default function App() {
           >
             {c.name}
             <span className="sidebar-level">Lv {c.level || '?'}</span>
+            {c.noticeCount > 0 && (
+              <span
+                className="sidebar-notice-badge"
+                title={`${c.noticeCount} ${c.noticeCount === 1 ? 'notification' : 'notifications'} in Overview`}
+              >
+                {c.noticeCount}
+              </span>
+            )}
           </button>
         ))}
 

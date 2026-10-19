@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import { CharacterBoard } from '../Obols/ObolBoard.jsx'
-import { getObolNotices } from '../Obols/ObolUtils.js'
-import { getUnspentSuperTalents } from '../../utils/talentUtils.js'
+import { getCharacterNotices } from '../../utils/characterNotices.js'
 import { prayerMap } from '../../data/prayerMap'
 import { obolByRawName } from '../../data'
 import './CharacterCard.css'
@@ -48,13 +47,16 @@ function CharacterObolsTab({ charIndex, snapshot }) {
 // ── Overview Notifications ────────────────────────────────────────────────────
 // Things on this character that need attention. Add new checks here as
 // more notification types are built.
-function CharacterNotices({ character, charIndex, snapshot, onViewObols }) {
-  const obols = snapshot?.characters?.[charIndex]?.obols ?? []
-  const { noBonus, emptySlots } = getObolNotices(obols, character.level ?? 0)
-  const noBonusTotal = noBonus.reduce((sum, o) => sum + o.count, 0)
-  const unspentTalents = getUnspentSuperTalents(character.superTalentPresets, character.level ?? 0)
-  const unspentTotal = unspentTalents.reduce((sum, t) => sum + t.unspent, 0)
-  const hasNotices = noBonusTotal > 0 || emptySlots > 0 || unspentTotal > 0
+function CharacterNotices({ charIndex, snapshot, onViewObols }) {
+  const {
+    noBonus,
+    noBonusTotal,
+    emptySlots,
+    unspentTalents,
+    unspentTotal,
+    count,
+  } = getCharacterNotices(snapshot?.characters?.[charIndex])
+  const hasNotices = count > 0
 
   if (!snapshot) return null
 
@@ -206,7 +208,6 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
         {activeTab === 'overview' && (
           <div className="char-overview">
             <CharacterNotices
-              character={character}
               charIndex={charIndex}
               snapshot={snapshot}
               onViewObols={() => setActiveTab('obols')}
