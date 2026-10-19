@@ -42,3 +42,24 @@ export function royalStatueBonus(statue, level, royalReverenceLevel = 0) {
 export function formatStatueMultiplier(bonus) {
   return `${(1 + bonus / 100).toFixed(2)}x`
 }
+
+// ============================================================
+// STATUE FLAIR
+// Spends marbles to boost the EXP of your regular statues (statueMap ids 0-31).
+// Source: IdleOn Toolbox — statues[].flairShardIndex, "SF_bonus", "SF_costo"
+// Save: RoyalG[22] = flair level per statue, RoyalG[2][78] = Statue Flair unlocked (armory)
+// ============================================================
+
+// Which marble (RGshard index) upgrades each statue's flair, by statue id
+export const STATUE_FLAIR_MARBLE = [0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 2, 2, 2, 2, 1, 3, 3, 0, 4, 4, 5, 5, 5, 4, 3, 6, 6]
+
+// Marbles needed to go from `level` to `level + 1`
+export function statueFlairCost(statueId, level) {
+  return 10 * (statueId + 1) * 5 ** level
+}
+
+// Statue EXP multiplier at a flair level: 1x, 7x, 15x, 25x, ...
+export function statueFlairExpMulti(level) {
+  const bonus = 2 * (300 * level + 100 * Math.floor(level / 2) + 200 * Math.floor(level / 3))
+  return 1 + bonus / 100
+}

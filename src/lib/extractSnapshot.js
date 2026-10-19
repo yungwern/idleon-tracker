@@ -522,14 +522,22 @@ function parseLegendTalents(json) {
 }
 
 // ── Royal Guardian ────────────────────────────────────────────────────────────
-// RoyalG[0] = Royal Statue levels, RoyalG[2] = armory upgrade levels (45 = Royal Reverence)
+// RoyalG[0] = Royal Statue levels, RoyalG[2] = armory upgrade levels
+//   (45 = Royal Reverence, 78 = Statue Flair unlocked), RoyalG[22] = Statue Flair level per statue
+// Menagerie[2][17] = unlock that raises the Statue Flair max level from 3 to 4
 function parseRoyalGuardian(json) {
   const raw = typeof json['RoyalG'] === 'string'
     ? JSON.parse(json['RoyalG'])
     : (json['RoyalG'] ?? [])
+  const menagerie = typeof json['Menagerie'] === 'string'
+    ? JSON.parse(json['Menagerie'])
+    : (json['Menagerie'] ?? [])
   return {
     statueLevels: raw[0] ?? [],
     royalReverenceLevel: raw[2]?.[45] ?? 0,
+    flairUnlocked: (raw[2]?.[78] ?? 0) >= 1,
+    flairLevels: raw[22] ?? [],
+    flairMaxLevel: 3 + ((menagerie[2]?.[17] ?? 0) >= 1 ? 1 : 0),
   }
 }
 

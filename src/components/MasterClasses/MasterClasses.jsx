@@ -5,6 +5,7 @@ import { bubbleMap, BUBBLE_TIERS } from '../../data'
 import TierList from '../TierList/TierList'
 import { mobsMap, mapEnemyData } from '../../data'
 import { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier } from '../../data'
+import { STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti, statueMap } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './MasterClasses.css'
@@ -419,7 +420,8 @@ function formatChance(n) {
   return `1 in ${n.toLocaleString()} (${pct >= 1 ? pct.toFixed(1) : pct.toFixed(2)}%)`
 }
 
-function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFolder }) {
+function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFolder, rg }) {
+  const [flipped, setFlipped] = useState(false)
   const name = itemMap[statue.marble] ?? statue.marble
   const released = statue.bonus !== null
   const locked = level === 0
@@ -428,7 +430,8 @@ function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFol
   const next = royalStatueBonus(statue, level + 1, royalReverenceLevel)
 
   return (
-    <div className={`mc-statue-card${locked ? ' mc-statue-card--locked' : ''}`}>
+    <div className={`mc-statue-flip${flipped ? ' mc-statue-flip--flipped' : ''}`}>
+    <div className={`mc-statue-card mc-statue-face${locked ? ' mc-statue-card--locked' : ''}`} aria-hidden={flipped}>
       <div className="mc-statue-top">
         <img src={`images/${imageFolder}/${statue.marble}.png`} alt={name} className="mc-item-img" />
         <div className="mc-statue-title">
@@ -471,6 +474,76 @@ function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFol
           </div>
         </div>
       )}
+      <button className="mc-statue-flip-btn" onClick={() => setFlipped(true)}>
+        Statue Flair ↻
+      </button>
+    </div>
+
+    {/* ── Back: Statue Flair for every statue this marble upgrades ── */}
+    <div className="mc-statue-card mc-statue-face mc-statue-face--back" aria-hidden={!flipped}>
+      <StatueFlairBack statue={statue} name={name} marbles={marbles} imageFolder={imageFolder} rg={rg} />
+      <button className="mc-statue-flip-btn" onClick={() => setFlipped(false)}>
+        ↺ Back to statue
+      </button>
+    </div>
+    </div>
+  )
+}
+
+// Back of a marble card: the regular statues this marble flairs, their EXP multi, and next cost
+function StatueFlairBack({ statue, name, marbles, imageFolder, rg }) {
+  const maxLevel = rg?.flairMaxLevel ?? 3
+  const statueIds = STATUE_FLAIR_MARBLE
+    .map((marbleIndex, statueId) => (marbleIndex === statue.index ? statueId : null))
+    .filter(id => id !== null)
+  const rows = statueIds.map(id => {
+    const level = rg?.flairLevels?.[id] ?? 0
+    return {
+      id,
+      level,
+      multi: statueFlairExpMulti(level),
+      cost: level < maxLevel ? statueFlairCost(id, level) : null,
+      maxed: level >= maxLevel,
+    }
+  })
+  const totalNext = rows.reduce((sum, r) => sum + (r.cost ?? 0), 0)
+
+  return (
+    <div className="mc-flair">
+      <div className="mc-statue-top">
+        <img src={`images/${imageFolder}/${statue.marble}.png`} alt={name} className="mc-item-img" />
+        <div className="mc-statue-title">
+          <span className="mc-item-name">Statue Flair</span>
+          <span className="mc-statue-owned">{name}s owned: {marbles.toLocaleString()}</span>
+        </div>
+      </div>
+
+      {rg && !rg.flairUnlocked && (
+        <p className="mc-statue-note">Statue Flair isn't unlocked yet (Armory).</p>
+      )}
+
+      <div className="mc-flair-head">
+        <span>Statue</span>
+        <span>EXP</span>
+        <span>Next level</span>
+      </div>
+      {rows.map(r => (
+        <div key={r.id} className={`mc-flair-row${r.maxed ? ' mc-flair-row--maxed' : ''}`}>
+          <span className="mc-flair-name">
+            {statueMap[r.id] ?? `Statue ${r.id + 1}`}
+            <span className="mc-flair-level">{r.level}/{maxLevel}</span>
+          </span>
+          <span className="mc-flair-multi">{r.multi}x</span>
+          <span className={`mc-flair-cost${r.cost !== null && r.cost <= marbles ? ' mc-flair-cost--affordable' : ''}`}>
+            {r.maxed ? '★ Maxed' : r.cost.toLocaleString()}
+          </span>
+        </div>
+      ))}
+      {totalNext > 0 && (
+        <div className="mc-flair-total">
+          All next levels: <strong>{totalNext.toLocaleString()}</strong>
+        </div>
+      )}
     </div>
   )
 }
@@ -505,6 +578,7 @@ function RoyalStatues({ snapshot, imageFolder }) {
             royalReverenceLevel={rg?.royalReverenceLevel ?? 0}
             marbles={accountItemTotal(snapshot, statue.marble)}
             imageFolder={imageFolder}
+            rg={rg}
           />
         ))}
       </div>

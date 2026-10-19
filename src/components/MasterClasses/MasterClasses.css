@@ -576,6 +576,7 @@
 .mc-statue-owned {
   color: #9ca3af;
   font-size: 11px;
+  white-space: nowrap;
 }
 
 .mc-statue-body {
@@ -613,4 +614,134 @@
   color: #6b7280;
   font-size: 12px;
   font-style: italic;
+}
+
+/* ── Flip card: both faces share one grid cell, so the card is as tall as its taller side ── */
+.mc-statue-flip {
+  display: grid;
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+
+.mc-statue-flip--flipped {
+  transform: rotateY(180deg);
+}
+
+.mc-statue-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+}
+
+.mc-statue-face--back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-statue-flip {
+    transition: none;
+  }
+}
+
+.mc-statue-flip-btn {
+  margin-top: auto;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mc-statue-flip-btn:hover {
+  border-color: var(--class-color);
+  color: var(--class-color);
+}
+
+/* ── Statue Flair (card back) ── */
+.mc-flair {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mc-flair-head,
+.mc-flair-row {
+  display: grid;
+  text-align: left;
+  grid-template-columns: 1fr 48px 72px;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.mc-flair-head {
+  color: #6b7280;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mc-flair-head span:not(:first-child),
+.mc-flair-row span:not(:first-child) {
+  text-align: right;
+}
+
+.mc-flair-name {
+  color: #e5e7eb;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.mc-flair-level {
+  margin-left: 6px;
+  color: #6b7280;
+  font-size: 10px;
+}
+
+.mc-flair-multi {
+  color: var(--class-color);
+  font-weight: 700;
+}
+
+.mc-flair-cost {
+  color: #d1d5db;
+}
+
+.mc-flair-cost--affordable {
+  color: #4ade80;
+}
+
+.mc-flair-total {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: #9ca3af;
+  font-size: 11px;
+  text-align: right;
+}
+
+/* Maxed flair: tinted row in the class color with a gold "★ Maxed" (based on the current max,
+   so 3/3 counts as maxed until the Menagerie unlock raises it to 4) */
+.mc-flair-row--maxed {
+  margin: 0 -6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--class-color) 12%, transparent);
+}
+
+.mc-flair-row--maxed .mc-flair-name {
+  color: var(--class-color);
+  font-weight: 700;
+}
+
+.mc-flair-row--maxed .mc-flair-level {
+  color: var(--class-color);
+}
+
+.mc-flair-row--maxed .mc-flair-cost {
+  color: var(--class-color);
+  font-weight: 700;
 }
