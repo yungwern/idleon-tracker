@@ -23,14 +23,14 @@ export default function TalentsTab({ character }) {
     return (
       <div className="no-save">
         <span className="no-save-icon">📂</span>
-        <p>Import your save to see equipped premium gear.</p>
+        <p>Import your save to see super talents.</p>
       </div>
     )
   }
 
   const presets = character.superTalentPresets ?? [
-    { label: 'Fighting', superedTalents: [] },
-    { label: 'Skilling', superedTalents: [] },
+    { label: 'Tab 1', superedTalents: [] },
+    { label: 'Tab 2', superedTalents: [] },
   ]
 
   const preset = presets[activePreset]
@@ -47,7 +47,8 @@ export default function TalentsTab({ character }) {
               className={`preset-btn ${activePreset === i ? 'active' : ''}`}
               onClick={() => setActivePreset(i)}
             >
-              {p.label}
+              {/* Presets are just the game's two talent tabs; players use them differently */}
+              {`Tab ${i + 1}`}
             </button>
           ))}
         </div>

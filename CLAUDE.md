@@ -27,13 +27,14 @@ src/
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
-└── utils/              # appUtils.js (toClassSlug, classColor, statueLevelColor, shrineLevelColor)
+└── utils/              # appUtils.js (toClassSlug, statueLevelColor, shrineLevelColor)
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
-IdleOn Resources/       # Outside src/ — save data copy + website-data.json
-                        # website-data.json is a large game data mapping file from IdleOn Toolbox GitHub
-                        # Reference for working out data mappings for new components
-                        # Ask Eli to parse out the relevant section rather than loading the whole file
+IdleOn Resources/       # Outside src/ — not shipped with the site
+                        # raw-save.json — Eli's latest IdleOn Toolbox export ({ data, charNames, ... })
+                        # items.json — every item (displayName, UQ1txt/UQ1val stats, rawName keys),
+                        #   from the Morta1/IdleonToolbox GitHub repo's split data files
+                        # More Toolbox data files get added here as needed — ask Eli for the one you need
 ```
 
 **File casing**: Windows doesn't care about filename case, but Linux/GitHub builds do — imports must

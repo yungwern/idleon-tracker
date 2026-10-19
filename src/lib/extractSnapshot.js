@@ -97,8 +97,8 @@ const extractors = {
       : json.Spelunk
 
     const presetConfig = [
-      { label: 'Fighting', presetIndex: 0, slKey: `SL_${i}` },
-      { label: 'Skilling', presetIndex: 1, slKey: `SM_${i}` },
+      { label: 'Tab 1', presetIndex: 0, slKey: `SL_${i}` },
+      { label: 'Tab 2', presetIndex: 1, slKey: `SM_${i}` },
     ]
 
     return presetConfig.map(({ label, presetIndex, slKey }) => {

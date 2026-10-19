@@ -33,13 +33,15 @@ function getPremiumGear(snapshot, charIndex) {
         src: equipped ? `images/${base}/${folder}/${id}.png` : null,
         label,
         equipped,
+        // Hat bonuses only count from the World 3 Hat Rack, not while worn
+        hatRackOnly: key === 'hat',
       }]
     })
   )
 }
 
 function PremiumGearSlot({ slot }) {
-  const { src, label, equipped, id } = slot
+  const { src, label, equipped, id, hatRackOnly } = slot
   const equipment = premiumGearMap[id] ?? {}
   const formatStat = (val, txt) =>
     `${val}${txt.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`
@@ -50,6 +52,8 @@ function PremiumGearSlot({ slot }) {
   const uq2 = equipment.uq2txt && equipment.uq2val != null
     ? formatStat(equipment.uq2val, equipment.uq2txt)
     : null
+
+  const statClass = hatRackOnly ? 'pg-card-stat pg-card-stat--inactive' : 'pg-card-stat'
 
   return (
     <div className="pg-card">
@@ -70,12 +74,15 @@ function PremiumGearSlot({ slot }) {
           </span>
         )}
       </div>
-      <div className="pg-card-body">
+      <div className={`pg-card-body${hatRackOnly ? ' tooltip-anchor' : ''}`}>
         <span className={`pg-card-name ${equipped ? '' : 'pg-card-name-empty'}`}>
           {equipped ? (premiumGearNames[id] ?? id) : `No ${label}`}
         </span>
-        {equipped && uq1 && <span className="pg-card-stat">{uq1}</span>}
-        {equipped && uq2 && <span className="pg-card-stat">{uq2}</span>}
+        {equipped && uq1 && <span className={statClass}>{uq1}</span>}
+        {equipped && uq2 && <span className={statClass}>{uq2}</span>}
+        {equipped && hatRackOnly && (uq1 || uq2) && (
+          <span className="tooltip">Only active in the Hat Rack</span>
+        )}
       </div>
     </div>
   )

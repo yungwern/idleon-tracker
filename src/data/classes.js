@@ -1,7 +1,7 @@
 // ============================================================
 // CLASSES
 // The save stores each character's class as a number (CharacterClass_0, _1, ...).
-// IDs come from IdleOn Toolbox's class list (IdleOn Resources/website-data.json).
+// IDs come from IdleOn Toolbox's class list (originally IdleOn Toolbox's website-data.json).
 // Missing IDs are unused/filler slots in the game data.
 // ============================================================
 

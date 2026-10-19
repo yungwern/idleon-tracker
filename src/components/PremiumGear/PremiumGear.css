@@ -48,6 +48,7 @@
 
 /* ── Body ── */
 .pg-card-body {
+  position: relative;
   padding: 8px 10px 10px;
   display: flex;
   flex-direction: column;
@@ -91,4 +92,13 @@
   content: '•';
   color: #2dd4bf;
   flex-shrink: 0;
+}
+
+/* Hat bonuses only apply from the Hat Rack (World 3), so they're greyed out while worn */
+.pg-card-stat--inactive {
+  color: #4b5563;
+}
+
+.pg-card-stat--inactive::before {
+  color: #4b5563;
 }
