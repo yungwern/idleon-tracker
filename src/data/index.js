@@ -9,6 +9,7 @@ export { GEAR_BONUSES } from './gearBonuses'
 export { premiumGearNames, premiumGearMap } from './premiumGear'
 export { mobsMap, mapEnemyData } from './mobsMap'
 export { worldMap } from './worldMap'
+export { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier } from './royalGuardianMap'
 export { MINIBOSSES, RANK_THRESHOLDS, getSkullIndex, rankColor, formatKills } from './miniBosses'
 
 // ── World 1 ───────────────────────────────────────────────────────────────────

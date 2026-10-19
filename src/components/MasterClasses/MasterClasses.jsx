@@ -4,6 +4,7 @@ import { stampMap, STAMP_TIERS } from '../../data/'
 import { bubbleMap, BUBBLE_TIERS } from '../../data'
 import TierList from '../TierList/TierList'
 import { mobsMap, mapEnemyData } from '../../data'
+import { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './MasterClasses.css'
@@ -411,6 +412,106 @@ function MapBonusSection({ snapshot }) {
   )
 }
 
+// ── Royal Statues ─────────────────────────────────────────────
+// "1 in 25 (4%)" style chance text
+function formatChance(n) {
+  const pct = 100 / n
+  return `1 in ${n.toLocaleString()} (${pct >= 1 ? pct.toFixed(1) : pct.toFixed(2)}%)`
+}
+
+function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFolder }) {
+  const name = itemMap[statue.marble] ?? statue.marble
+  const released = statue.bonus !== null
+  const locked = level === 0
+  const oddsN = royalStatueOddsN(statue, level)
+  const current = royalStatueBonus(statue, level, royalReverenceLevel)
+  const next = royalStatueBonus(statue, level + 1, royalReverenceLevel)
+
+  return (
+    <div className={`mc-statue-card${locked ? ' mc-statue-card--locked' : ''}`}>
+      <div className="mc-statue-top">
+        <img src={`images/${imageFolder}/${statue.marble}.png`} alt={name} className="mc-item-img" />
+        <div className="mc-statue-title">
+          <span className="mc-item-name">{name}</span>
+          <span className="mc-statue-owned">Owned: {marbles.toLocaleString()}</span>
+        </div>
+      </div>
+
+      {!released ? (
+        <p className="mc-statue-note">Statue not released yet</p>
+      ) : (
+        <div className="mc-statue-body">
+          <div className="mc-statue-row">
+            <span className="mc-statue-label">Statue</span>
+            <span className={`mc-statue-level${locked ? ' mc-statue-level--locked' : ''}`}>
+              {locked ? 'Locked' : `Level ${level}`}
+            </span>
+          </div>
+          <div className="mc-statue-row">
+            <span className="mc-statue-label">{locked ? 'Unlocks' : 'Bonus'}</span>
+            <span className="mc-statue-value">
+              {locked
+                ? `${formatStatueMultiplier(next)} ${statue.bonus}`
+                : `${formatStatueMultiplier(current)} ${statue.bonus}`}
+            </span>
+          </div>
+          {!locked && (
+            <div className="mc-statue-row">
+              <span className="mc-statue-label">Next level</span>
+              <span className="mc-statue-value">{formatStatueMultiplier(next)}</span>
+            </div>
+          )}
+          <div className="mc-statue-row">
+            <span className="mc-statue-label">{locked ? 'Unlock chance' : 'Upgrade chance'}</span>
+            <span className="mc-statue-value">{formatChance(oddsN)}</span>
+          </div>
+          <div className="mc-statue-row">
+            <span className="mc-statue-label">Cost per try</span>
+            <span className="mc-statue-value">{locked ? `1 ${name}` : '1 Parchment'}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RoyalStatues({ snapshot, imageFolder }) {
+  const rg = snapshot?.royalGuardian
+  const parchments = accountItemTotal(snapshot, PARCHMENT_KEY)
+
+  return (
+    <div className="mc-statues">
+      <InfoPanel
+        intro="Each marble restores one Royal Statue. Restoring and upgrading are both a chance per try, not a guarantee."
+        items={[
+          'Locked statues cost 1 of their marble per try to unlock.',
+          'Unlocked statues cost 1 Parchment of Enchantment per try to level up, and the chance drops as the level rises.',
+          'Counts include every character plus storage.',
+        ]}
+      />
+      {snapshot && !rg && (
+        <p>Re-import your save to see Royal Statue progress.</p>
+      )}
+      <div className="mc-statue-parchments">
+        <img src={`images/${imageFolder}/${PARCHMENT_KEY}.png`} alt="Parchment of Enchantment" className="mc-statue-parchment-img" />
+        <span>Parchments of Enchantment: <strong>{parchments.toLocaleString()}</strong></span>
+      </div>
+      <div className="mc-statue-grid">
+        {ROYAL_STATUES.map(statue => (
+          <RoyalStatueCard
+            key={statue.index}
+            statue={statue}
+            level={rg?.statueLevels?.[statue.index] ?? 0}
+            royalReverenceLevel={rg?.royalReverenceLevel ?? 0}
+            marbles={accountItemTotal(snapshot, statue.marble)}
+            imageFolder={imageFolder}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // imageFolder: the masterclass's image folder; a section can override it with its own imageFolder
 function SectionContent({ section, snapshot, charIndexes, imageFolder }) {
 
@@ -428,6 +529,15 @@ function SectionContent({ section, snapshot, charIndexes, imageFolder }) {
     return (
       <div className="mc-section-body">
         <ExaltedStampTierList snapshot={snapshot} />
+      </div>
+    )
+  }
+
+  // ── Royal Guardian statues (one per marble) ──
+  if (section.sectionType === 'royal-statues') {
+    return (
+      <div className="mc-section-body">
+        <RoyalStatues snapshot={snapshot} imageFolder={imageFolder} />
       </div>
     )
   }

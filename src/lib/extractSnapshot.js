@@ -521,6 +521,18 @@ function parseLegendTalents(json) {
   return levels
 }
 
+// ── Royal Guardian ────────────────────────────────────────────────────────────
+// RoyalG[0] = Royal Statue levels, RoyalG[2] = armory upgrade levels (45 = Royal Reverence)
+function parseRoyalGuardian(json) {
+  const raw = typeof json['RoyalG'] === 'string'
+    ? JSON.parse(json['RoyalG'])
+    : (json['RoyalG'] ?? [])
+  return {
+    statueLevels: raw[0] ?? [],
+    royalReverenceLevel: raw[2]?.[45] ?? 0,
+  }
+}
+
 // ── Main Export ───────────────────────────────────────────────────────────────
 // Accepts a flat save, or a wrapped export like IdleOn Toolbox's { data: {...}, charNames: [...] }
 function unwrapSave(json) {
@@ -573,5 +585,6 @@ export function extractSnapshot(rawJson) {
     breeding: parseBreeding(json),
     farming: parseFarming(json),
     legendTalents: parseLegendTalents(json),
+    royalGuardian: parseRoyalGuardian(json),
   }
 }

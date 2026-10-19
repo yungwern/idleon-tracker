@@ -36,6 +36,8 @@ IdleOn Resources/       # Outside src/ — not shipped with the site
                         # items.json — every item (displayName, UQ1txt/UQ1val stats, rawName keys),
                         #   from the Morta1/IdleonToolbox GitHub repo's split data files
                         # More Toolbox data files get added here as needed — ask Eli for the one you need
+                        # Game formulas (odds, bonuses) live in Toolbox's parsers/ folder on GitHub
+                        #   (Morta1/IdleonToolbox), e.g. parsers/class-specific/royalGuardian.ts
 ```
 
 **File casing**: Windows doesn't care about filename case, but Linux/GitHub builds do — imports must

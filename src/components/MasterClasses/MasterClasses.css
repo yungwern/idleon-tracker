@@ -516,3 +516,101 @@
   font-size: 13px;
   font-weight: 700;
 }
+
+/* ── Royal Statues (Royal Guardian marbles) ── */
+.mc-statues {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mc-statue-parchments {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #d1d5db;
+  font-size: 13px;
+}
+
+.mc-statue-parchment-img {
+  width: 28px;
+  height: 28px;
+  image-rendering: pixelated;
+}
+
+.mc-statue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.mc-statue-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 2px solid var(--class-color);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mc-statue-card--locked {
+  border-top-color: #4b5563;
+}
+
+.mc-statue-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mc-statue-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.mc-statue-owned {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.mc-statue-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mc-statue-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.mc-statue-label {
+  color: #6b7280;
+}
+
+.mc-statue-value {
+  color: #e5e7eb;
+  text-align: right;
+}
+
+.mc-statue-level {
+  color: var(--class-color);
+  font-weight: 700;
+}
+
+.mc-statue-level--locked {
+  color: #9ca3af;
+}
+
+.mc-statue-note {
+  color: #6b7280;
+  font-size: 12px;
+  font-style: italic;
+}

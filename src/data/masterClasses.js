@@ -1,4 +1,4 @@
-import { DB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION, RG_MOB_PROGRESSION } from './mobsMap'
+import { DB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION } from './mobsMap'
 
 // ============================================================
 // MASTER CLASSES
@@ -95,19 +95,17 @@ export const MASTERCLASSES = [
       {
         id: 'marbles',
         title: 'Marbles',
-        inventoryKey: ['RGshard0', 'RGshard1', 'RGshard2', 'RGshard3', 'RGshard4', 'RGshard5', 'RGshard6'],
-        accountWide: true,
+        sectionType: 'royal-statues',
       },
       {
-        id: 'weapons',
-        title: 'Weapons & Gear',
-        text: 'Coming soon.', // TODO: add Royal Guardian weapon/ring keys + variant: 'weapon'
+        id: 'outposts',
+        title: 'Outposts',
+        text: 'Coming soon.', // TODO: Royal Guardian outposts
       },
       {
-        id: 'mob-progression',
-        title: 'Mob Progression',
-        sectionType: 'mob-progression',
-        rows: RG_MOB_PROGRESSION,
+        id: 'resources',
+        title: 'Resources',
+        text: 'Coming soon.', // TODO: Royal Guardian resources (RGres images are ready)
       },
     ],
   },

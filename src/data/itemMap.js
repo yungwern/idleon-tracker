@@ -6,6 +6,7 @@ export const itemMap = {
 // ── Equipment ──
   // Royal Guardian
   Orblet: 'Orblet',
+  RGenh: 'Parchment of Enchantment',
   RGshard0: 'Leafy Marble',
   RGshard1: 'Sandy Marble',
   RGshard2: 'Frosty Marble',

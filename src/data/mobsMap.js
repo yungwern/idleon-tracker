@@ -865,7 +865,3 @@ export const AC_MOB_PROGRESSION = [
     ],
   },
 ];
-
-// ── Royal Guardian Mob Progression ──
-// TODO: fill in currency + best mobs, same shape as the lists above
-export const RG_MOB_PROGRESSION = [];
