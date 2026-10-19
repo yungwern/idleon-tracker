@@ -21,13 +21,14 @@ src/
 │   ├── Section pages:  Anvil, Breeding, Construction, Cooking, Farming, GearOptimizer,
 │   │                   MasterClasses, Minibosses, Obols, Shrines, Statues, Worship
 │   └── Shared/sub:     CharacterCard, CogBoardMap, ImportModal, InfoPanel,
-│                       ObolBoard (in Obols/), PremiumGear, TalentsTab, TierList
+│                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
-└── utils/              # appUtils.js (toClassSlug, statueLevelColor, shrineLevelColor)
+└── utils/              # appUtils.js (toClassSlug, statueLevelColor, shrineLevelColor),
+                        # talentUtils.js (super talent points for Overview notifications)
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
 IdleOn Resources/       # Outside src/ — not shipped with the site

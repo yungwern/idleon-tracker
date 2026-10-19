@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { superTalentPoints } from './talentUtils.js'
 import './TalentsTab.css'
 
 function TalentCard({ talent }) {
@@ -34,7 +35,7 @@ export default function TalentsTab({ character }) {
   ]
 
   const preset = presets[activePreset]
-  const totalPoints = Math.max(0, Math.floor(((character.level ?? 0) - 400) / 100) + 1)
+  const totalPoints = superTalentPoints(character.level ?? 0)
   const unspent = totalPoints - preset.superedTalents.length
 
   return (
@@ -54,7 +55,7 @@ export default function TalentsTab({ character }) {
         </div>
         {unspent > 0 && (
           <span className="talents-total talents-total--unspent">
-            {unspent} Point Unspent
+            {unspent} {unspent === 1 ? 'Point' : 'Points'} Unspent
           </span>
         )}
       </div>

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
-import TalentsTab from '../TalentsTab/TalentsTab.jsx'
 import { CharacterBoard } from '../Obols/ObolBoard.jsx'
 import { getObolNotices } from '../Obols/ObolUtils.js'
+import { getUnspentSuperTalents } from '../../utils/talentUtils.js'
 import { prayerMap } from '../../data/prayerMap'
 import { obolByRawName } from '../../data'
 import './CharacterCard.css'
@@ -52,7 +52,9 @@ function CharacterNotices({ character, charIndex, snapshot, onViewObols }) {
   const obols = snapshot?.characters?.[charIndex]?.obols ?? []
   const { noBonus, emptySlots } = getObolNotices(obols, character.level ?? 0)
   const noBonusTotal = noBonus.reduce((sum, o) => sum + o.count, 0)
-  const hasNotices = noBonusTotal > 0 || emptySlots > 0
+  const unspentTalents = getUnspentSuperTalents(character.superTalentPresets, character.level ?? 0)
+  const unspentTotal = unspentTalents.reduce((sum, t) => sum + t.unspent, 0)
+  const hasNotices = noBonusTotal > 0 || emptySlots > 0 || unspentTotal > 0
 
   if (!snapshot) return null
 
@@ -85,6 +87,23 @@ function CharacterNotices({ character, charIndex, snapshot, onViewObols }) {
                 {count > 1 && <span className="char-notice-item-count">×{count}</span>}
                 <span className="tooltip">{obolByRawName[rawName]?.name ?? rawName}</span>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {unspentTotal > 0 && (
+        <div className="char-notice">
+          <div className="char-notice-header">
+            <span className="char-notice-title">
+              ⚠ {unspentTotal} unspent super talent {unspentTotal === 1 ? 'point' : 'points'}
+            </span>
+          </div>
+          <div className="char-notice-items">
+            {unspentTalents.map(({ tab, unspent }) => (
+              <span key={tab} className="char-notice-chip">
+                Tab {tab}: {unspent} {unspent === 1 ? 'point' : 'points'}
+              </span>
             ))}
           </div>
         </div>
@@ -169,8 +188,8 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
       )}
 
       {/* ── Tab Navigation ── */}
-      <div className="card-tabs" style={{ '--tab-count': 3 }}>
-        {['overview', 'super talents', 'obols'].map(tab => (
+      <div className="card-tabs" style={{ '--tab-count': 2 }}>
+        {['overview', 'obols'].map(tab => (
           <button
             key={tab}
             className={activeTab === tab ? 'active' : ''}
@@ -197,10 +216,6 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
               <PremiumGearTab charIndex={charIndex} snapshot={snapshot} />
             </section>
           </div>
-        )}
-
-        {activeTab === 'super talents' && (
-          <TalentsTab character={character} />
         )}
 
         {activeTab === 'obols' && (
