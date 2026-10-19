@@ -596,6 +596,10 @@ function parseOutposts(json, raw) {
     orbletLevels: (raw[23] ?? []).map(Number),
     deployments,
     jellyObstructions: Number(research?.[7]?.[9] ?? 0),
+    // Resources: amount banked per resource (RGres#), and per node its level and what's been pulled out (-1 = drained)
+    resourceStorage: (raw[1] ?? []).map(Number),
+    nodeLevels: (raw[5] ?? []).map(Number),
+    nodeCollected: (raw[4] ?? []).map(Number),
   }
 }
 

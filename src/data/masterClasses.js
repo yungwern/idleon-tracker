@@ -105,7 +105,7 @@ export const MASTERCLASSES = [
       {
         id: 'resources',
         title: 'Resources',
-        text: 'Coming soon.', // TODO: Royal Guardian resources (RGres images are ready)
+        sectionType: 'royal-resources',
       },
     ],
   },

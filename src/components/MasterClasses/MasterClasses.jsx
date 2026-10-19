@@ -8,6 +8,7 @@ import { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, forma
 import { STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti, statueMap } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import RoyalOutposts from './RoyalOutposts'
+import RoyalResources from './RoyalResources'
 
 import './MasterClasses.css'
 
@@ -624,6 +625,15 @@ function SectionContent({ section, snapshot, charIndexes, imageFolder }) {
     return (
       <div className="mc-section-body">
         <RoyalOutposts snapshot={snapshot} />
+      </div>
+    )
+  }
+
+  // ── Royal Guardian resources ──
+  if (section.sectionType === 'royal-resources') {
+    return (
+      <div className="mc-section-body">
+        <RoyalResources snapshot={snapshot} imageFolder={imageFolder} />
       </div>
     )
   }
