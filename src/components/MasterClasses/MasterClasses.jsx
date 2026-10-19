@@ -426,6 +426,8 @@ function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFol
   const released = statue.bonus !== null
   const locked = level === 0
   const oddsN = royalStatueOddsN(statue, level)
+  // Once the statue is unlocked (upgrades now use Parchment), show the statue instead of its marble
+  const frontImg = released && !locked ? `RoyalStatue${statue.index}` : statue.marble
   const current = royalStatueBonus(statue, level, royalReverenceLevel)
   const next = royalStatueBonus(statue, level + 1, royalReverenceLevel)
 
@@ -433,7 +435,7 @@ function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFol
     <div className={`mc-statue-flip${flipped ? ' mc-statue-flip--flipped' : ''}`}>
     <div className={`mc-statue-card mc-statue-face${locked ? ' mc-statue-card--locked' : ''}`} aria-hidden={flipped}>
       <div className="mc-statue-top">
-        <img src={`images/${imageFolder}/${statue.marble}.png`} alt={name} className="mc-item-img" />
+        <img src={`images/${imageFolder}/${frontImg}.png`} alt={name} className="mc-item-img" />
         <div className="mc-statue-title">
           <span className="mc-item-name">{name}</span>
           <span className="mc-statue-owned">Owned: {marbles.toLocaleString()}</span>
