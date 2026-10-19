@@ -100,7 +100,7 @@ export const MASTERCLASSES = [
       {
         id: 'outposts',
         title: 'Outposts',
-        text: 'Coming soon.', // TODO: Royal Guardian outposts
+        sectionType: 'royal-outposts',
       },
       {
         id: 'resources',

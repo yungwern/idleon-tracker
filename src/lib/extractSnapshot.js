@@ -4,6 +4,7 @@ import { anvilMapById } from '../data/anvilMap'
 import { getClassName } from '../data/classes'
 import { worshipMap } from '../data'
 import { seedInfo } from '../data/farmingMap'
+import { RANK_BAR_UNLOCK_ARMORY, KINGDOM_EXPANSION_ARMORY, COMPOUNDING_OUTPOSTING_ARMORY, GLORIFICATION_ORBLET, KINGDOM_SOVEREIGNTY_ARMORY } from '../data/royalOutposts'
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 function parseStorage(json) {
@@ -538,6 +539,63 @@ function parseRoyalGuardian(json) {
     flairUnlocked: (raw[2]?.[78] ?? 0) >= 1,
     flairLevels: raw[22] ?? [],
     flairMaxLevel: 3 + ((menagerie[2]?.[17] ?? 0) >= 1 ? 1 : 0),
+    ...parseOutposts(json, raw),
+  }
+}
+
+// Royal Guardian outposts: RoyalMaps[mapIndex] with 3+ entries is a built outpost.
+// Unlock flags come from the Armory (RoyalG[2]) and the Orblet Market (RoyalG[23]).
+function parseOutposts(json, raw) {
+  const maps = typeof json['RoyalMaps'] === 'string'
+    ? JSON.parse(json['RoyalMaps'])
+    : (json['RoyalMaps'] ?? [])
+  const armory = raw[2] ?? []
+  const level = id => Number(armory[id] ?? 0)
+
+  const outposts = []
+  ;(Array.isArray(maps) ? maps : []).forEach((m, mapIndex) => {
+    if (!Array.isArray(m) || m.length < 3) return
+    outposts.push({
+      mapIndex,
+      upgrades: [0, 1, 2].map(i => Number(m[i] ?? 0)),
+      rankExp: [3, 4, 5, 6, 7].map(i => Number(m[i] ?? 0)),
+      links: [Number(m[8] ?? -1), Number(m[9] ?? -1)],
+      mode: Number(m[10] ?? 0),
+      // One digit per unit slot: 1 = empty, otherwise 2 + unit type (Worker, Trader, Guard, Surveyor)
+      units: String(m[11] ?? ''),
+      glorified: Number(m[12] ?? 0) >= 1,
+    })
+  })
+
+  // Movable units, per world: RoyalG[6 + 2w] = each unit's job, RoyalG[7 + 2w] = the map it's posted at
+  const deployments = []
+  for (let w = 0; w < 8; w++) {
+    const jobs = raw[6 + 2 * w]
+    const targets = raw[7 + 2 * w]
+    if (!Array.isArray(jobs)) continue
+    jobs.forEach((job, slot) => {
+      deployments.push({ world: w + 1, job: Number(job), mapIndex: Number(targets?.[slot] ?? -1) })
+    })
+  }
+
+  // Jelly Operator (World 7): obstructions defeated unlock its bonuses, some of which add outpost PTS
+  const research = typeof json['Research'] === 'string'
+    ? JSON.parse(json['Research'])
+    : (json['Research'] ?? [])
+
+  return {
+    outposts,
+    outpostBarsUnlocked: RANK_BAR_UNLOCK_ARMORY.map(id => level(id) >= 1),
+    worldsUnlocked: 1 + KINGDOM_EXPANSION_ARMORY.reduce((sum, id) => sum + Math.min(1, level(id)), 0),
+    compoundingUnlocked: level(COMPOUNDING_OUTPOSTING_ARMORY) >= 1,
+    compoundingIndex: Math.round(Number(raw[3]?.[2] ?? 0)),
+    recruitLevel: level(KINGDOM_SOVEREIGNTY_ARMORY),
+    glorifyUnlocked: Number(raw[23]?.[GLORIFICATION_ORBLET] ?? 0) >= 1,
+    // Inputs for the outpost optimizer (utils/outpostOptimizer.js)
+    armory: armory.map(Number),
+    orbletLevels: (raw[23] ?? []).map(Number),
+    deployments,
+    jellyObstructions: Number(research?.[7]?.[9] ?? 0),
   }
 }
 

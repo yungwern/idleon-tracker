@@ -7,6 +7,7 @@ import { mobsMap, mapEnemyData } from '../../data'
 import { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier } from '../../data'
 import { STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti, statueMap } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
+import RoyalOutposts from './RoyalOutposts'
 
 import './MasterClasses.css'
 
@@ -614,6 +615,15 @@ function SectionContent({ section, snapshot, charIndexes, imageFolder }) {
     return (
       <div className="mc-section-body">
         <RoyalStatues snapshot={snapshot} imageFolder={imageFolder} />
+      </div>
+    )
+  }
+
+  // ── Royal Guardian outposts ──
+  if (section.sectionType === 'royal-outposts') {
+    return (
+      <div className="mc-section-body">
+        <RoyalOutposts snapshot={snapshot} />
       </div>
     )
   }

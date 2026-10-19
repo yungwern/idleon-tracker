@@ -1,0 +1,437 @@
+/* ── Royal Guardian Outposts ── */
+.mc-outposts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Summary strip ── */
+.mc-outpost-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 20px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mc-outpost-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.mc-outpost-stat-label {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.mc-outpost-stat-value {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ── Compounding Outposting: every choice, active one highlighted ── */
+.mc-outpost-compounding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mc-outpost-compounding-title {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.mc-outpost-compounding-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mc-outpost-compounding-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.mc-outpost-compounding-option strong {
+  color: #9ca3af;
+}
+
+.mc-outpost-compounding-option--active {
+  border-color: var(--class-color);
+  background: color-mix(in srgb, var(--class-color) 10%, transparent);
+  color: #e5e7eb;
+}
+
+.mc-outpost-compounding-option--active strong {
+  color: var(--class-color);
+}
+
+.mc-outpost-compounding-badge {
+  padding: 0 5px;
+  border-radius: 3px;
+  background: var(--class-color);
+  color: #111827;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── World groups (collapsible), tinted with the shared world colors ── */
+.mc-outpost-world {
+  --world-color: #9ca3af;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--world-color);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.mc-outpost-world--w1 { --world-color: var(--world-1-color); }
+.mc-outpost-world--w2 { --world-color: var(--world-2-color); }
+.mc-outpost-world--w3 { --world-color: var(--world-3-color); }
+.mc-outpost-world--w4 { --world-color: var(--world-4-color); }
+.mc-outpost-world--w5 { --world-color: var(--world-5-color); }
+.mc-outpost-world--w6 { --world-color: var(--world-6-color); }
+.mc-outpost-world--w7 { --world-color: var(--world-7-color); }
+
+.mc-outpost-world-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.mc-outpost-world-head::-webkit-details-marker {
+  display: none;
+}
+
+.mc-outpost-world-head::before {
+  content: '▸';
+  color: var(--world-color);
+  font-size: 12px;
+  transition: transform 0.15s;
+}
+
+.mc-outpost-world[open] > .mc-outpost-world-head::before {
+  transform: rotate(90deg);
+}
+
+.mc-outpost-world-head:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mc-outpost-world-title {
+  color: var(--world-color);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mc-outpost-world-stat {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.mc-outpost-world-chips {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.mc-outpost-world-chip {
+  padding: 1px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: #d1d5db;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.mc-outpost-world-chip--notice {
+  border-color: rgba(251, 146, 60, 0.4);
+  color: #fb923c;
+}
+
+.mc-outpost-world-chip.tooltip-anchor {
+  position: relative;
+}
+
+/* Opens below and to the left so it stays on screen at the right edge */
+.mc-outpost-world-chip .mc-outpost-world-tip {
+  top: calc(100% + 6px);
+  right: 0;
+  bottom: auto;
+  left: auto;
+  width: 260px;
+  transform: none;
+  white-space: normal;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.mc-outpost-empty {
+  padding: 0 14px 12px;
+}
+
+.mc-outpost-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 4px 14px 14px;
+}
+
+/* ── Outpost card ── */
+.mc-outpost-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 2px solid var(--world-color);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mc-outpost-card--notice {
+  border-top-color: #fb923c;
+}
+
+.mc-outpost-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.mc-outpost-name {
+  color: #f3f4f6;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.mc-outpost-glorified {
+  position: relative;
+  margin-right: 5px;
+  color: var(--class-color);
+}
+
+.mc-outpost-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.mc-outpost-tag {
+  padding: 0 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: #d1d5db;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.mc-outpost-tag--support {
+  border-color: #60a5fa;
+  color: #93c5fd;
+}
+
+.mc-outpost-tag--savage {
+  border-color: #f87171;
+  color: #fca5a5;
+}
+
+.mc-outpost-tag--purified {
+  border-color: #a78bfa;
+  color: #c4b5fd;
+}
+
+.mc-outpost-tag--notice {
+  border-color: rgba(251, 146, 60, 0.5);
+  color: #fb923c;
+}
+
+/* ── Rank bars ──
+   Colors match the in-game outpost rank bars: a solid fill with a bright 1px edge top and bottom */
+.mc-outpost-ranks {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mc-outpost-rank {
+  --rank-fill: #e5e7eb;
+  --rank-edge: #ffffff;
+  position: relative;
+  display: grid;
+  grid-template-columns: 58px 1fr 24px;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.mc-outpost-rank--trade {
+  --rank-fill: #12ac49;
+  --rank-edge: #00ff44;
+}
+
+.mc-outpost-rank--intel {
+  --rank-fill: #9d4bb1;
+  --rank-edge: #ff9584;
+}
+
+.mc-outpost-rank--command {
+  --rank-fill: #4fa6c8;
+  --rank-edge: #ffe858;
+}
+
+.mc-outpost-rank--military {
+  --rank-fill: #ad8d88;
+  --rank-edge: #9ee9e8;
+}
+
+.mc-outpost-rank--purity {
+  --rank-fill: #e5e7eb;
+  --rank-edge: #ffffff;
+}
+
+.mc-outpost-rank-name {
+  color: #9ca3af;
+}
+
+.mc-outpost-rank-bar {
+  width: 100%;
+  height: 8px;
+  border: none;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  appearance: none;
+}
+
+.mc-outpost-rank-bar::-webkit-progress-bar {
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mc-outpost-rank-bar::-webkit-progress-value {
+  border-radius: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--rank-edge) 0,
+    var(--rank-edge) 1px,
+    var(--rank-fill) 1px,
+    var(--rank-fill) calc(100% - 1px),
+    var(--rank-edge) calc(100% - 1px)
+  );
+}
+
+.mc-outpost-rank-bar::-moz-progress-bar {
+  border-radius: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--rank-edge) 0,
+    var(--rank-edge) 1px,
+    var(--rank-fill) 1px,
+    var(--rank-fill) calc(100% - 1px),
+    var(--rank-edge) calc(100% - 1px)
+  );
+}
+
+.mc-outpost-rank-level {
+  color: #e5e7eb;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ── Upgrade levels: one quiet line ── */
+.mc-section-body .mc-outpost-upgrades {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.mc-outpost-upgrade strong {
+  color: #d1d5db;
+}
+
+/* ── Support Camp links ── */
+.mc-section-body .mc-outpost-link {
+  color: #93c5fd;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.mc-outpost-link strong {
+  color: #dbeafe;
+  font-weight: 600;
+}
+
+/* ── Suggestions (only shown when there's something to do) ── */
+.mc-outpost-advice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.mc-outpost-advice:empty {
+  display: none;
+}
+
+.mc-section-body .mc-outpost-advice-line {
+  position: relative;
+  color: #9ca3af;
+  font-size: 11px;
+  line-height: 1.5;
+  cursor: default;
+}
+
+.mc-section-body .mc-outpost-advice-line--change {
+  color: #fb923c;
+  font-weight: 600;
+}
+
+.mc-section-body .mc-outpost-advice-line--settled {
+  color: #4fa6c8;
+  font-weight: 600;
+}
+
+.mc-section-body .mc-outpost-advice-line--best {
+  color: var(--class-color);
+  font-weight: 600;
+}
+
+/* Doubled-up selector so this beats the global .tooltip's nowrap, which loads later */
+.mc-outpost-advice-line .mc-outpost-advice-tip {
+  width: 240px;
+  white-space: normal;
+  line-height: 1.5;
+  font-weight: 400;
+  text-align: left;
+}

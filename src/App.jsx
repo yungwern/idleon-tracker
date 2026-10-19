@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { toClassSlug } from './utils/appUtils.js'
 import { getCharacterNotices } from './utils/characterNotices.js'
+import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
 import { sections, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
@@ -52,6 +53,8 @@ export default function App() {
   const charIndex = mergedCharacters.findIndex(c => c.name === current)
   const character = charIndex >= 0 ? mergedCharacters[charIndex] : null
   const sectionItems = Object.values(sections).flat()
+  // Notification badges for section buttons (same style as the character badges)
+  const sectionNotices = { MasterClasses: getMasterclassNoticeCount(snapshot) }
 
   function handleClearSave() {
     clearSnapshot()
@@ -158,6 +161,14 @@ export default function App() {
                 onClick={() => setSelected(item)}
               >
                 {item}
+                {sectionNotices[item] > 0 && (
+                  <span
+                    className="sidebar-notice-badge"
+                    title={`${sectionNotices[item]} ${sectionNotices[item] === 1 ? 'notification' : 'notifications'}`}
+                  >
+                    {sectionNotices[item]}
+                  </span>
+                )}
               </button>
             ))}
           </div>
