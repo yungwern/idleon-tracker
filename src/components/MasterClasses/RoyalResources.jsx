@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { buildOutpostSummary } from '../../data'
-import { getResourceTotals, planOvernightSetup, formatBig } from '../../utils/resourcePlanner'
+import { getResourceTotals, planOvernightSetup, formatBig, isWorldComplete } from '../../utils/resourcePlanner'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './RoyalResources.css'
@@ -44,7 +44,7 @@ function Stockpile({ totals, imageFolder }) {
   )
 }
 
-function OvernightWorld({ plan, imageFolder }) {
+function OvernightWorld({ plan, imageFolder, complete }) {
   const changed = plan.rows.filter(r => r.changed)
   const setCount = plan.rows.filter(r => !r.changed && !r.spare).length
   const spareCount = plan.rows.filter(r => r.spare).length
@@ -61,9 +61,16 @@ function OvernightWorld({ plan, imageFolder }) {
           </span>
         </span>
         <span className="mc-res-world-chips">
-          {changed.length > 0
-            ? <span className="mc-res-chip mc-res-chip--change">{changed.length} to reconnect</span>
-            : <span className="mc-res-chip mc-res-chip--ok">✓ Best setup</span>}
+          {changed.length > 0 && complete && (
+            <span className="mc-res-chip mc-res-chip--change">{changed.length} to reconnect</span>
+          )}
+          {changed.length > 0 && !complete && (
+            <span className="mc-res-chip mc-res-chip--pending tooltip-anchor">
+              {changed.length} to reconnect
+              <span className="tooltip">Not counted in notifications until every outpost in this world is unlocked</span>
+            </span>
+          )}
+          {changed.length === 0 && <span className="mc-res-chip mc-res-chip--ok">✓ Best setup</span>}
         </span>
       </summary>
 
@@ -121,7 +128,12 @@ export default function RoyalResources({ snapshot, imageFolder }) {
         <p className="mc-res-note">Resource Replenish (Armory) isn&apos;t bought yet, so drained nodes won&apos;t refill.</p>
       )}
       {overnight.worlds.map(plan => (
-        <OvernightWorld key={plan.world} plan={plan} imageFolder={imageFolder} />
+        <OvernightWorld
+          key={plan.world}
+          plan={plan}
+          imageFolder={imageFolder}
+          complete={isWorldComplete(summary, plan.world)}
+        />
       ))}
     </div>
   )

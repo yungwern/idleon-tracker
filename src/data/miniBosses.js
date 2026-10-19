@@ -44,7 +44,8 @@ export const MINIBOSSES = [
     world: 'World 3', 
     worldColor: 'var(--world-3-color)', 
     index: 5, location: 'Bloque', 
-    spawnItem: { displayName: 'Bucket of Slush', imageKey: 'Quest68' } 
+    spawnItem: { displayName: 'Bucket of Slush', imageKey: 'Quest68' },
+    spawnTimer: { exponent: 0.55, max: 10 }
   },
   { rawName: 'mini4a',    
     displayName: 'Mutated Mush',        
@@ -52,7 +53,8 @@ export const MINIBOSSES = [
     worldColor: 'var(--world-4-color)', 
     index: 6, 
     location: 'Purp Mushroom', 
-    spawnItem: { displayName: 'Toxic Sludge', imageKey: 'OilBarrel2' } 
+    spawnItem: { displayName: 'Toxic Sludge', imageKey: 'OilBarrel2' },
+    spawnTimer: { exponent: 0.5, max: 8 }
   },
   { rawName: 'mini5a',    
     displayName: 'Domeo Magmus',        
@@ -60,7 +62,8 @@ export const MINIBOSSES = [
     worldColor: 'var(--world-5-color)', 
     index: 7, 
     location: 'Mister Brightside', 
-    spawnItem: null 
+    spawnItem: null,
+    spawnTimer: { exponent: 0.5, max: 6 }
   },
   { rawName: 'mini6a',    
     displayName: 'Demented Spiritlord', 
@@ -68,9 +71,32 @@ export const MINIBOSSES = [
     worldColor: 'var(--world-6-color)', 
     index: 8, 
     location: 'Mama Troll', 
-    spawnItem: null 
+    spawnItem: null,
+    spawnTimer: { exponent: 0.5, max: 6 }
   },
 ]
+
+// Spawned minibosses (W3–W6) stack kills from the days since you last spawned them.
+// Game formula: min(max, floor((days - 3) ^ exponent)), nothing before day 4.
+export function getAvailableKills(timer, days) {
+  return Math.min(timer.max, Math.floor(Math.pow(Math.max(days, 3) - 3, timer.exponent)))
+}
+
+export function getDaysForKills(timer, kills) {
+  let days = 0
+  while (getAvailableKills(timer, days) < kills) days++
+  return days
+}
+
+// Stack size with the best kills-per-day. Waiting past it means the next stack takes longer than
+// it is worth, so you get fewer kills over time.
+export function getOptimalKills(timer) {
+  let best = 1
+  for (let n = 2; n <= timer.max; n++) {
+    if (n / getDaysForKills(timer, n) > best / getDaysForKills(timer, best)) best = n
+  }
+  return best
+}
 
 export const RANK_THRESHOLDS = [
   { kills: 100     },
@@ -82,15 +108,9 @@ export const RANK_THRESHOLDS = [
   { kills: 1000000 },
 ]
 
+// Skull index = how many rank thresholds you've passed (0 = none, 7 = max)
 export function getSkullIndex(kills) {
-  if (kills < 100)    return 0
-  if (kills < 250)    return 1
-  if (kills < 1000)   return 2
-  if (kills < 5000)   return 3
-  if (kills < 25000)  return 4
-  if (kills < 100000) return 5
-  if (kills < 1000000) return 6
-  return 7
+  return RANK_THRESHOLDS.filter(t => kills >= t.kills).length
 }
 
 export function rankColor(skullIndex) {
@@ -101,7 +121,7 @@ export function rankColor(skullIndex) {
     case 3:  return '#94a3b8'
     case 4:  return '#fbbf24'
     case 5:  return '#37c7f9'
-    case 6:  return '#f43f5e'
+    case 6:  return '#aa37d8'
     case 7:  return '#f43f5e'
   }
 }

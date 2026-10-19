@@ -196,6 +196,18 @@ function parseMiniBosses(json) {
   return kills.slice(0, 9)
 }
 
+// Days since each spawned miniboss was last spawned (OptLacc = account options list)
+function parseMiniBossDays(json) {
+  const raw = json['OptLacc']
+  const opts = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  return {
+    mini3a: Number(opts[96] ?? 0),
+    mini4a: Number(opts[98] ?? 0),
+    mini5a: Number(opts[225] ?? 0),
+    mini6a: Number(opts[226] ?? 0),
+  }
+}
+
 // ── Gear Optimizer ─────────────────────────────────────────────────────────
 function parseArmorSmithySets(json) {
   try {
@@ -647,6 +659,7 @@ export function extractSnapshot(rawJson) {
     towerLevels: parseTowerLevels(json),
     armorSmithySets: parseArmorSmithySets(json),
     miniBossesKills: parseMiniBosses(json),
+    miniBossDays: parseMiniBossDays(json),
     exaltedStamps: parseExaltedStamps(json),
     prismaBubbles: parsePrismaBubbles(json),
     mapBonuses: parseMapBonuses(json),

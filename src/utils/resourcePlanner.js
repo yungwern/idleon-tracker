@@ -238,6 +238,11 @@ export function planOvernightSetup(rg, outposts) {
   }
 }
 
+// True once every outpost in the world has been unlocked (nothing left to clear)
+export function isWorldComplete(summary, world) {
+  return summary.worlds.find(w => w.world === world)?.toClear === 0
+}
+
 // 1,234 / 12.3K / 4.5M / 6.7B / 8.9T / 1.2Q (quadrillion) / 3.4QQ (quintillion)
 export function formatBig(n) {
   const units = [[1e18, 'QQ'], [1e15, 'Q'], [1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e4, 'K']]

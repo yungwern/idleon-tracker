@@ -11,7 +11,16 @@ export { mobsMap, mapEnemyData } from './mobsMap'
 export { worldMap } from './worldMap'
 export { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier, STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti } from './royalGuardianMap'
 export { buildOutpostSummary, OUTPOST_UPGRADES, OUTPOST_MODES, SUPPORT_CAMP_MODE, SAVAGE_STRONGHOLD_MODE, PURITY_RANK, formatOutpostExp } from './royalOutposts'
-export { MINIBOSSES, RANK_THRESHOLDS, getSkullIndex, rankColor, formatKills } from './miniBosses'
+export {
+  MINIBOSSES,
+  RANK_THRESHOLDS,
+  getSkullIndex,
+  rankColor,
+  formatKills,
+  getAvailableKills,
+  getDaysForKills,
+  getOptimalKills,
+} from './miniBosses'
 
 // ── World 1 ───────────────────────────────────────────────────────────────────
 export { statueMap, statueWorlds } from './statueMap'

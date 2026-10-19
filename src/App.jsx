@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { toClassSlug } from './utils/appUtils.js'
 import { getCharacterNotices } from './utils/characterNotices.js'
 import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
+import { getMinibossNoticeCount } from './utils/minibossNotices.js'
 import { sections, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
@@ -54,7 +55,10 @@ export default function App() {
   const character = charIndex >= 0 ? mergedCharacters[charIndex] : null
   const sectionItems = Object.values(sections).flat()
   // Notification badges for section buttons (same style as the character badges)
-  const sectionNotices = { MasterClasses: getMasterclassNoticeCount(snapshot) }
+  const sectionNotices = useMemo(() => ({
+    MasterClasses: getMasterclassNoticeCount(snapshot),
+    Minibosses: getMinibossNoticeCount(snapshot),
+  }), [snapshot])
 
   function handleClearSave() {
     clearSnapshot()

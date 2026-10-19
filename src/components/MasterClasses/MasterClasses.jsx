@@ -9,6 +9,7 @@ import { STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti, statueMap } 
 import InfoPanel from '../InfoPanel/InfoPanel'
 import RoyalOutposts from './RoyalOutposts'
 import RoyalResources from './RoyalResources'
+import { getMasterclassNotices, countNotices } from '../../utils/masterclassNotices'
 
 import './MasterClasses.css'
 
@@ -590,6 +591,19 @@ function RoyalStatues({ snapshot, imageFolder }) {
   )
 }
 
+// Small count badge for the masterclass and section navs (matches the sidebar badge)
+function NoticeBadge({ count }) {
+  if (!count) return null
+  return (
+    <span
+      className="notice-badge"
+      title={`${count} ${count === 1 ? 'notification' : 'notifications'}`}
+    >
+      {count}
+    </span>
+  )
+}
+
 // imageFolder: the masterclass's image folder; a section can override it with its own imageFolder
 function SectionContent({ section, snapshot, charIndexes, imageFolder }) {
 
@@ -702,6 +716,7 @@ export default function MasterClasses({ snapshot }) {
     setActiveSectionId(mc.sections[0].id)
   }
 
+  const notices = useMemo(() => getMasterclassNotices(snapshot), [snapshot])
   const activeMc = MASTERCLASSES.find(mc => mc.id === activeId)
   const activeSection = activeMc?.sections.find(s => s.id === activeSectionId)
 
@@ -729,6 +744,7 @@ export default function MasterClasses({ snapshot }) {
             style={{ '--class-color': mc.color }}
           >
             {mc.name}
+            <NoticeBadge count={countNotices(notices[mc.id])} />
           </button>
         ))}
       </div>
@@ -749,6 +765,7 @@ export default function MasterClasses({ snapshot }) {
                 onClick={() => setActiveSectionId(section.id)}
               >
                 {section.title}
+                <NoticeBadge count={notices[activeMc.id]?.[section.id] ?? 0} />
               </button>
             ))}
           </div>
