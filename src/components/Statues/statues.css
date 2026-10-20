@@ -2,20 +2,21 @@
 
 .statue-worlds {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
 /* ─── World Card ───────────────────────────────────────────────── */
 
 .statue-world-card {
+  flex: 1 1 auto;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 8px;
-  overflow: hidden;
   background: rgba(255, 255, 255, 0.02);
 }
 
 .statue-world-header {
+  border-radius: 8px 8px 0 0;
   padding: 4px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   background: rgba(0, 0, 0, 0.2);
@@ -29,21 +30,24 @@
   letter-spacing: 0.12em;
 }
 
-/* ─── Mob Rows ─────────────────────────────────────────────────── */
+/* ─── Mob Groups ───────────────────────────────────────────────── */
 
-.statue-mob-rows {
+/* Tiles wrap side by side so single-statue mobs don't each take a full row */
+.statue-mob-groups {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
 }
 
-.statue-mob-row {
+.statue-mob-group {
   display: flex;
   align-items: stretch;
-  height: 80px;
-}
-
-.statue-mob-row + .statue-mob-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: 80px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.015);
 }
 
 /* Left: mob image + name */
@@ -57,6 +61,7 @@
   padding: 6px 4px;
   gap: 2px;
   border-right: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 5px 0 0 5px;
   background: rgba(0, 0, 0, 0.15);
 }
 
@@ -115,7 +120,6 @@
   justify-content: flex-start;
   gap: 6px;
   padding: 0 10px;
-  flex: 1;
 }
 
 /* ─── Statue Item ──────────────────────────────────────────────── */
@@ -163,17 +167,11 @@
   padding: 0;
 }
 
-/* ─── Time Candy ───────────────────────────────────────────────── */
-
-.statue-candy-label {
-  color: #f9a8d4;
-}
 
 /* ─── AFK Tag ──────────────────────────────────────────────────── */
 
 .statue-afk-tag {
   position: relative;
-  margin-left: auto;
   padding: 2px 8px;
   border: 1px solid rgba(96, 165, 250, 0.4);
   border-radius: 999px;

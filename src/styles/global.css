@@ -250,3 +250,49 @@ body {
   letter-spacing: 0;
   vertical-align: middle;
 }
+
+/* ============================================================
+   PAGE TABS
+   Underline tabs for switching views inside a page.
+   Set --tab-color on .page-tabs to change the accent.
+   ============================================================ */
+
+.page-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.page-tab-btn {
+  position: relative;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.page-tab-btn:hover {
+  color: #d1d5db;
+}
+
+.page-tab-btn--active {
+  color: var(--tab-color, #a0c4ff);
+}
+
+.page-tab-btn--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--tab-color, #a0c4ff);
+}

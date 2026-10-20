@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { statueMap, statueWorlds, statueCandyMobs } from '../../data'
 import { mapEnemyData } from '../../data/mobsMap'
 import { statueLevelColor } from '../../utils/appUtils.js'
-import { getCappedMapMulti, getMapBonusCap } from '../../utils/mapBonusUtils.js'
+import { getCappedMapMulti } from '../../utils/mapBonusUtils.js'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './statues.css'
@@ -108,25 +109,26 @@ function MobCol({ mob, special = false, mapBonuses, mapBonusCap, bonusType = 'dr
   )
 }
 
-function StatueRow({ row, statueById, mapBonuses, mapBonusCap }) {
+// One mob with the statues it's best for, shown as a compact tile
+function StatueGroup({ group, statueById, mapBonuses, mapBonusCap }) {
   return (
-    <div className="statue-mob-row">
+    <div className="statue-mob-group">
       <MobCol
-        mob={row.mob}
-        special={row.special}
+        mob={group.mob}
+        special={group.special}
         mapBonuses={mapBonuses}
         mapBonusCap={mapBonusCap}
-        bonusType={row.bonusType ?? (row.afk ? 'afk' : 'dr')}
+        bonusType={group.bonusType ?? (group.afk ? 'afk' : 'dr')}
       />
       <div className="statue-items-col">
-        {row.ids.map(id => {
+        {group.ids.map(id => {
           const s = statueById[id]
           return s ? <StatueItem key={id} id={id} level={s.level} /> : null
         })}
-        {row.extras?.map(extra => (
+        {group.extras?.map(extra => (
           <ExtraItem key={extra.name} name={extra.name} image={extra.image} />
         ))}
-        {row.afk && (
+        {group.afk && (
           <span className="statue-afk-tag tooltip-anchor">
             AFK
             <span className="tooltip">Best farmed while AFK instead of active</span>
@@ -137,9 +139,57 @@ function StatueRow({ row, statueById, mapBonuses, mapBonusCap }) {
   )
 }
 
+// Turn a statueWorlds entry into mob groups (shared statues, per-statue mobs, specials)
+function getWorldGroups({ statueIds, extras, afk, mobs, individual, special }) {
+  const groups = []
+
+  // World-wide shared statues: one group using the world's best mob
+  if (statueIds?.length > 0) {
+    groups.push({
+      mob: mobs?.[0] ?? null,
+      ids: statueIds,
+      extras,
+      afk,
+      special: false,
+    })
+  }
+
+  // Per-statue entries grouped by their best mob
+  if (individual?.length > 0) {
+    const grouped = {}
+    for (const { statueId, afk: indAfk, mobs: indMobs } of individual) {
+      const bestMob = indMobs?.[0] ?? null
+      const key = bestMob?.name ?? '__none__'
+      if (!grouped[key]) grouped[key] = { mob: bestMob, ids: [], special: false }
+      grouped[key].ids.push(statueId)
+      if (indAfk) grouped[key].afk = true
+    }
+    groups.push(...Object.values(grouped))
+  }
+
+  // Special entries — flagged so MobCol uses the smaller image size
+  if (special?.length > 0) {
+    for (const { statueId, image, name, note } of special) {
+      groups.push({
+        mob: { image, name: note ?? name },
+        ids: [statueId],
+        special: true,
+      })
+    }
+  }
+
+  return groups
+}
+
+const TABS = [
+  { id: 'farming', label: 'Farming' },
+  { id: 'candy', label: 'Time Candy' },
+]
+
 // ── Page ──────────────────────────────────────────────────────────
 
 export default function Statues({ snapshot }) {
+  const [activeTab, setActiveTab] = useState('farming')
   const statues = snapshot?.statues
   const mapBonuses = snapshot?.mapBonuses
   const mapBonusCap = snapshot?.mapBonusCap
@@ -154,9 +204,7 @@ export default function Statues({ snapshot }) {
   }
 
   const statueById = Object.fromEntries(statues.map(s => [s.id, s]))
-  const capNote = mapBonusCap
-    ? [`Map bonuses are capped at ${(1 + getMapBonusCap(mapBonusCap) / 100).toFixed(3)}x (Overwhelming Energy Lv ${mapBonusCap.overwhelmingEnergy}, Beyond All Limits Lv ${mapBonusCap.beyondAllLimits}). Added talent levels aren't counted, so the in-game cap may be slightly higher.`]
-    : []
+  const groupProps = { statueById, mapBonuses, mapBonusCap }
 
   return (
     <div className="page">
@@ -169,75 +217,54 @@ export default function Statues({ snapshot }) {
         'The Time Candy section shows the best mob to be at when popping Time Candy for each statue. It\'s best to be on a DB with an AFK Fighting setup. Remember to craft lower tier time candies into 12 hour candies for optimal candy usage.',
         'Rows tagged AFK are best farmed while AFK instead of active, so they show the AFK Map Bonus instead of DR.',
         'Any statue that is best farmed active should be done on a DK/RG with high drop rate. This even includes the World 3 statues that were previously best farmed with an ES.',
-        ...capNote,
       ]}
       />
-      <div className="statue-worlds">
-        {statueWorlds.map(({ world, statueIds, extras, afk, mobs, individual, special }) => {
-        const worldColor = `var(--world-${world.replace('World ', '')}-color)`
+      <div className="page-tabs">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            className={`page-tab-btn${activeTab === tab.id ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-          const rows = []
-
-          // World-wide shared statues: one row using the world's best mob
-          if (statueIds?.length > 0) {
-            const bestMob = mobs?.[0] ?? null
-            rows.push({ mob: bestMob, ids: statueIds, extras, afk, special: false })
-          }
-
-          // Per-statue entries grouped by their best mob
-          if (individual?.length > 0) {
-            const grouped = {}
-            for (const { statueId, afk: indAfk, mobs: indMobs } of individual) {
-              const bestMob = indMobs?.[0] ?? null
-              const key = bestMob?.name ?? '__none__'
-              if (!grouped[key]) grouped[key] = { mob: bestMob, ids: [], special: false }
-              grouped[key].ids.push(statueId)
-              if (indAfk) grouped[key].afk = true
-            }
-            rows.push(...Object.values(grouped))
-          }
-
-          // Special entries — flagged so MobCol uses the smaller image size
-          if (special?.length > 0) {
-            for (const { statueId, image, name, note } of special) {
-              rows.push({
-                mob: { image, name: note ?? name },
-                ids: [statueId],
-                special: true,
-              })
-            }
-          }
-
-          return (
-            <div key={world} className="statue-world-card">
-              <div className="statue-world-header">
-                <span className="statue-world-label" style={{ color: worldColor }}>{world}</span>
+      {activeTab === 'farming' && (
+        <div className="statue-worlds">
+          {statueWorlds.map(worldEntry => {
+            const { world } = worldEntry
+            const worldColor = `var(--world-${world.replace('World ', '')}-color)`
+            return (
+              <div key={world} className="statue-world-card">
+                <div className="statue-world-header">
+                  <span className="statue-world-label" style={{ color: worldColor }}>{world}</span>
+                </div>
+                <div className="statue-mob-groups">
+                  {getWorldGroups(worldEntry).map((group, i) => (
+                    <StatueGroup key={i} group={group} {...groupProps} />
+                  ))}
+                </div>
               </div>
-              <div className="statue-mob-rows">
-                {rows.map((row, i) => (
-                  <StatueRow key={i} row={row} statueById={statueById} mapBonuses={mapBonuses} mapBonusCap={mapBonusCap} />
-                ))}
-              </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
+      )}
+
+      {activeTab === 'candy' && (
         <div className="statue-world-card">
-          <div className="statue-world-header">
-            <span className="statue-world-label statue-candy-label">Time Candy</span>
-          </div>
-          <div className="statue-mob-rows">
+          <div className="statue-mob-groups">
             {statueCandyMobs.map(({ mob, statueIds }) => (
-              <StatueRow
+              <StatueGroup
                 key={mob.name}
-                row={{ mob, ids: statueIds, bonusType: 'afk' }}
-                statueById={statueById}
-                mapBonuses={mapBonuses}
-                mapBonusCap={mapBonusCap}
+                group={{ mob, ids: statueIds, bonusType: 'afk' }}
+                {...groupProps}
               />
             ))}
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
