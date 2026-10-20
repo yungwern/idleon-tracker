@@ -67,6 +67,24 @@ export const equipmentMap = {
     uq2txt: '% DROP RATE',
     uq2val: 20,
   },
+  EquipmentWands14: {
+    uq1txt: '% DAMAGE BONUS',
+    uq1val: 30,
+    uq2txt: '% CLASS EXP MULTI',
+    uq2val: 25,
+  },
+  EquipmentBows15: {
+    uq1txt: '% DAMAGE BONUS',
+    uq1val: 30,
+    uq2txt: '% CLASS EXP MULTI',
+    uq2val: 25,
+  },
+  EquipmentPunching11: {
+    uq1txt: '% TOTAL DAMAGE',
+    uq1val: 120,
+    uq2txt: '% DROP RATE',
+    uq2val: 40,
+  },
   EquipmentSword10: {
     uq1txt: '% DAMAGE BONUS',
     uq1val: 30,
@@ -75,6 +93,36 @@ export const equipmentMap = {
   },
 
   // ── Rings / Pendants ──
+  EquipmentPendant6: {
+    uq1txt: '% AFK GAINS MULTI',
+    uq1val: 8,
+  },
+  EquipmentRings7: {
+    uq1txt: '% BOSS DAMAGE',
+    uq1val: 20,
+  },
+  EquipmentRings38: {
+    uq1txt: '% CLASS EXP MULTI',
+    uq1val: 7,
+  },
+  EquipmentRings30: {
+    uq1txt: '% LAB EXP',
+    uq1val: 25,
+    uq2txt: '% LAB EFFICIENCY',
+    uq2val: 35,
+  },
+  EquipmentRingsFishing1: {
+    uq1txt: ' YELLOW DEPTH',
+    uq1val: 20,
+  },
+  EquipmentRingsFishing2: {
+    uq1txt: ' RED DEPTH',
+    uq1val: 30,
+  },
+  EquipmentRingsFishing3: {
+    uq1txt: ' PURPLE DEPTH',
+    uq1val: 40,
+  },
   EquipmentRings35: {
     uq1txt: '% ALL AFK GAIN',
     uq1val: 4,

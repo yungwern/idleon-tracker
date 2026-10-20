@@ -69,7 +69,7 @@ export default function App() {
     if (character) return <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
     if (current === 'MasterClasses')  return <MasterClasses snapshot={snapshot} />
     if (current === 'Minibosses')     return <Minibosses snapshot={snapshot} />
-    if (current === 'BiS Setups')     return <GearOptimizer />
+    if (current === 'BiS Setups')     return <GearOptimizer snapshot={snapshot} />
     if (current === 'Statues')        return <Statues snapshot={snapshot} />
     if (current === 'Anvil') return <Anvil snapshot={snapshot} />
     if (current === 'Obols') return <Obols snapshot={snapshot} />
@@ -185,4 +185,4 @@ export default function App() {
       </div>
     </div>
   )
-}
+}

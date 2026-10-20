@@ -198,17 +198,24 @@ export const itemMap = {
   EquipmentShoes40: 'Emperor Geta',
   EquipmentShoes41: 'Prehistoric Bracers',
   // Pendants
-  EquipmentPendant6: 'Blueberry Icecream',
+  EquipmentPendant6: 'Blubbery Icecream',
   EquipmentPendant17: 'Chaotic Amarok Pendant',
   EquipmentPendant30: 'The Divine Scarf',
   EquipmentPendant31: 'Deathbloom Flower Pendant',
   EquipmentPendant33: 'Emerald Bling Pendant',
   EquipmentPendant35: 'Bramble of the Emperor',
   // Rings
+  EquipmentRings7: 'Pugilist Demise',
   EquipmentRings25: 'Chef Ring',
   EquipmentRings26: 'Serrated Rex Ring',
+  EquipmentRings30: 'Souped Lab Ring',
   EquipmentRings35: 'Zero Point Stopwatch',
   EquipmentRings36: 'Demented Opal Ring',
+  EquipmentRings38: 'Starstrut Ring',
+  // Fishing rings (images in images/fishing/)
+  EquipmentRingsFishing1: 'Shallow Watering',
+  EquipmentRingsFishing2: 'Oceanic Ring',
+  EquipmentRingsFishing3: 'Deepwater Trench Ring',
   // Keychains (stats in equipmentMap.js)
   EquipmentKeychain0: 'Simple Key Chain',
   EquipmentKeychain1: 'Leafy Chain',

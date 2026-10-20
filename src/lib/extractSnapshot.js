@@ -525,6 +525,45 @@ function parseFarming(json) {
   }
 }
 
+// ── Cards ─────────────────────────────────────────────────────────────────────────
+// Cards0 = card counts by monster rawName (star math lives in utils/cardUtils.js)
+// Max stars: 4, +1 at Rift 45, +1 once Spelunking lore boss 3 is beaten (Spelunk[0][2])
+// OptLacc[155] / [603] = cards raised to at least 5 / 6 stars (0-indexed, same as borders)
+function parseCards(json) {
+  const parse = raw => (typeof raw === 'string' ? JSON.parse(raw) : raw)
+  const counts = parse(json['Cards0']) ?? {}
+  const rift = parse(json['Rift']) ?? []
+  const spelunk = parse(json['Spelunk']) ?? []
+  const optLacc = parse(json['OptLacc']) ?? []
+  const toList = raw => (raw ? String(raw).split(',') : [])
+  const riftStar = (rift[0] ?? 0) >= 45 ? 1 : 0
+  const spelunkStar = (spelunk[0]?.[2] ?? 0) > 0 ? 1 : 0
+  return {
+    counts,
+    maxStars: 4 + riftStar + spelunkStar,
+    starFloor5: toList(optLacc[155]),
+    starFloor6: toList(optLacc[603]),
+  }
+}
+
+// ── Lab Chips ─────────────────────────────────────────────────────────────────────
+// Lab[1 + i] = chip slots for character i (chip index, -1 = empty)
+// Lab[15] = total owned per chip index (equipped + in storage)
+// → { characters: [['ConsoleChip20', ...], ...], owned: ['ConsoleChip20', ...] }
+function parseLabChips(json, charCount) {
+  const lab = typeof json['Lab'] === 'string' ? JSON.parse(json['Lab']) : (json['Lab'] ?? [])
+  const characters = Array.from({ length: charCount }, (_, i) => (lab[i + 1] ?? [])
+    .filter(chip => chip >= 0)
+    .map(chip => `ConsoleChip${chip}`))
+  const inStorage = (lab[15] ?? [])
+    .map((count, chip) => (count > 0 ? `ConsoleChip${chip}` : null))
+    .filter(Boolean)
+  return {
+    characters,
+    owned: [...new Set([...inStorage, ...characters.flat()])],
+  }
+}
+
 // ── Legend Talents ────────────────────────────────────────────────────────────────
 function parseLegendTalents(json) {
   const spelunk = typeof json['Spelunk'] === 'string'
@@ -668,6 +707,8 @@ export function extractSnapshot(rawJson) {
     breeding: parseBreeding(json),
     farming: parseFarming(json),
     legendTalents: parseLegendTalents(json),
+    cards: parseCards(json),
+    labChips: parseLabChips(json, charList.length),
     royalGuardian: parseRoyalGuardian(json),
   }
-}
+}

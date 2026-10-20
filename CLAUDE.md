@@ -25,8 +25,13 @@ src/
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js
 │                       # Item names → itemMap.js; fixed UQ stats (keychains, etc.) → equipmentMap.js
-│                       # cardMap.js (all cards + cardSetMap), labChipMap.js, foodMap.js share one
-│                       #   entry shape: { name, img, effect }. bisSetups.js only holds ids.
+│                       # labChipMap.js, foodMap.js (golden/boost/potion/health): { name, img, effect }.
+│                       # fishingMap.js: toolkit weights + lines (depth/exp/speed/power) and fish.
+│                       # cardMap.js (all cards + cardSetMap) adds bonus/perTier/set; effect has { for
+│                       #   the value. Card stars from the save (snapshot.cards) → utils/cardUtils.js.
+│                       # bisSetups.js only holds ids.
+│                       # legendTalentMap.js: W7 legend talents by save index (Spelunk[18]); math and
+│                       #   { } $ text placeholders → utils/legendTalentUtils.js
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components

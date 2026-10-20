@@ -9,6 +9,7 @@ import {
   getSeedByCropId,
 } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
+import { getLegendTalentLevel, getLegendTalentMulti } from '../../utils/legendTalentUtils'
 import './Farming.css'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -78,12 +79,15 @@ function getNextLevelCost(upgrade, currentLevel) {
   return upgrade.cost * Math.pow(upgrade.costExponent, currentLevel - Math.floor(currentLevel / divisor))
 }
 
+// Legend talent "Buy One Get One Free": }x more LVs when buying Exotic Market upgrades
+const BUY_ONE_GET_ONE_TALENT = 8
+
 // Given a crop quantity, returns how many exotic levels that quantity would buy.
-// Accounts for Better Exotic upgrade (index 38) and Legend Talent Brown 10 (Spelunk[18][29]).
+// Accounts for Better Exotic upgrade (index 38) and the Buy One Get One Free legend talent.
 function calcExoticLevelsFromCrops(cropQty, betterExoticLevel, legendTalentLevel) {
   const betterExoticBonus = 70 * (betterExoticLevel / (1000 + betterExoticLevel))
-  const legendBonus       = legendTalentLevel * 100
-  const totalMulti        = (1 + betterExoticBonus / 100) * (1 + legendBonus / 100)
+  const legendMulti       = getLegendTalentMulti(BUY_ONE_GET_ONE_TALENT, legendTalentLevel)
+  const totalMulti        = (1 + betterExoticBonus / 100) * legendMulti
   const baseQty           = cropQty / totalMulti
   if (baseQty <= 1) return 0
   return Math.max(0, Math.floor(Math.log10(baseQty) * 10.36 + 1))
@@ -889,7 +893,7 @@ function ExoticMarketTab({ farming, snapshot }) {
   const globalTime          = farming?.globalTime   ?? null
   const rotationIndices     = globalTime ? getExoticRotationIndices(globalTime) : []
   const betterExoticLevel   = exoticLevels[38]              ?? 0
-  const legendTalentBrown10 = snapshot?.legendTalents?.[29] ?? 0
+  const buyOneGetOneLevel = getLegendTalentLevel(snapshot?.legendTalents, BUY_ONE_GET_ONE_TALENT)
   const [breakpoint, setBreakpoint] = useState('')
 
   const realUpgrades = exoticMarketMap
@@ -913,7 +917,7 @@ function ExoticMarketTab({ farming, snapshot }) {
       const depotEntry    = cropDepot[String(cid)]
       const haveQty       = depotEntry?.qty ?? 0
       const levelsGainable = breakpointVal > 0
-        ? calcExoticLevelsFromCrops(haveQty, betterExoticLevel, legendTalentBrown10)
+        ? calcExoticLevelsFromCrops(haveQty, betterExoticLevel, buyOneGetOneLevel)
         : 0
       const isDone = breakpointVal > 0 ? levelsGainable >= breakpointVal : upgrade.level > 0
 
@@ -929,7 +933,7 @@ function ExoticMarketTab({ farming, snapshot }) {
 
     items.sort((a, b) => a.cropId - b.cropId)
     return items
-  }, [rotationUpgrades, cropDepot, breakpointVal, betterExoticLevel, legendTalentBrown10])
+  }, [rotationUpgrades, cropDepot, breakpointVal, betterExoticLevel, buyOneGetOneLevel])
 
   return (
     <div className="exotic-tab">
@@ -1080,4 +1084,4 @@ export default function Farming({ snapshot }) {
       {activeTab === 'exotic'    && <ExoticMarketTab farming={farming} snapshot={snapshot} />}
     </div>
   )
-}
+}

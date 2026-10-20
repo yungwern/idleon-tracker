@@ -8,8 +8,9 @@ export { equipmentMap, GEAR_SETS, GEAR_SET_PIECES } from './equipmentMap'
 export { GEAR_BONUSES } from './gearBonuses'
 export { premiumGearNames, premiumGearMap } from './premiumGear'
 export { foodMap } from './foodMap'
+export { fishingWeightMap, fishingLineMap, fishMap } from './fishingMap'
 export { cardMap, cardSetMap } from './cardMap'
-export { BIS_SETUPS } from './bisSetups'
+export { BIS_SETUPS, BIS_CATEGORIES } from './bisSetups'
 export { mobsMap, mapEnemyData } from './mobsMap'
 export { worldMap } from './worldMap'
 export { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier, STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti } from './royalGuardianMap'
@@ -55,4 +56,5 @@ export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORD
 // ── World 6 ───────────────────────────────────────────────────────────────────
 export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, landRankMap, landRankStatGroups, calcRankBonus } from './farmingMap'
 
-// ── World 7 ───────────────────────────────────────────────────────────────────
+// ── World 7 ───────────────────────────────────────────────────────────────────
+export { legendTalentMap, LEGEND_TALENT_ORDER } from './legendTalentMap'

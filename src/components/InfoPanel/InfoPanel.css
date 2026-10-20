@@ -25,3 +25,12 @@
   color: #6b7280;
   line-height: 1.5;
 }
+
+.info-panel-list a {
+  color: #a0c4ff;
+  text-decoration: underline;
+}
+
+.info-panel-list a:hover {
+  color: #c7dbff;
+}
