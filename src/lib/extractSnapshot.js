@@ -188,6 +188,26 @@ function parseMapBonuses(json) {
   })
 }
 
+// ── Map Bonus Cap (Arcane Cultist) ────────────────────────────────────────────
+// Cap = 100 * (Overwhelming Energy bonus - 1) + min(10, Beyond All Limits)
+// Overwhelming Energy = talent 589, highest base level across characters (SL_i, live talents).
+//   Added talent levels are NOT included, so the cap can read slightly low.
+// Beyond All Limits = Tesseract upgrade 58 (Arcane[58]), +1 per level.
+function parseMapBonusCap(json, charCount) {
+  let overwhelmingEnergy = 0
+  for (let i = 0; i < charCount; i++) {
+    const raw = json[`SL_${i}`]
+    const levels = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {})
+    overwhelmingEnergy = Math.max(overwhelmingEnergy, Number(levels['589'] ?? 0))
+  }
+  const rawArcane = json['Arcane']
+  const arcane = typeof rawArcane === 'string' ? JSON.parse(rawArcane) : (rawArcane ?? [])
+  return {
+    overwhelmingEnergy,
+    beyondAllLimits: Number(arcane[58] ?? 0),
+  }
+}
+
 // ── Minibosses ───────────────────────────────────────────────────────────────
 function parseMiniBosses(json) {
   const rawSneaking = json['Ninja']
@@ -702,6 +722,7 @@ export function extractSnapshot(rawJson) {
     exaltedStamps: parseExaltedStamps(json),
     prismaBubbles: parsePrismaBubbles(json),
     mapBonuses: parseMapBonuses(json),
+    mapBonusCap: parseMapBonusCap(json, charList.length),
     construction: parseConstruction(json),
     cooking: parseCooking(json),
     breeding: parseBreeding(json),

@@ -162,3 +162,30 @@
   margin: 0;
   padding: 0;
 }
+
+/* ─── Time Candy ───────────────────────────────────────────────── */
+
+.statue-candy-label {
+  color: #f9a8d4;
+}
+
+/* ─── AFK Tag ──────────────────────────────────────────────────── */
+
+.statue-afk-tag {
+  position: relative;
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  border-radius: 999px;
+  background: rgba(96, 165, 250, 0.12);
+  color: #93c5fd;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: default;
+}
+
+.statue-afk-tag .tooltip {
+  font-weight: 400;
+  letter-spacing: normal;
+}

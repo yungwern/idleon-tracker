@@ -30,7 +30,7 @@ export {
 } from './miniBosses'
 
 // ── World 1 ───────────────────────────────────────────────────────────────────
-export { statueMap, statueWorlds } from './statueMap'
+export { statueMap, statueWorlds, statueCandyMobs } from './statueMap'
 export { anvilMap, anvilMapById } from './anvilMap'
 
 // ── World 2 ───────────────────────────────────────────────────────────────────

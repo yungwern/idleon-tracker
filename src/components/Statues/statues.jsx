@@ -1,36 +1,32 @@
-import { statueMap, statueWorlds } from '../../data'
+import { statueMap, statueWorlds, statueCandyMobs } from '../../data'
 import { mapEnemyData } from '../../data/mobsMap'
 import { statueLevelColor } from '../../utils/appUtils.js'
+import { getCappedMapMulti, getMapBonusCap } from '../../utils/mapBonusUtils.js'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './statues.css'
 
 // ── Map Bonus Helpers ─────────────────────────────────────────────
-const lavaLog = (num) => Math.log(Math.max(num, 1)) / 2.30259
-const lavaLog2 = (num) => Math.log(Math.max(num, 1)) / Math.log(2)
-
-function getMapMulti(kills) {
-  return (
-    (2 * Math.max(0, lavaLog(kills) - 3.5) + Math.max(0, lavaLog2(kills) - 12)) *
-    (lavaLog(kills) / 2.5) +
-    (Math.min(2, kills / 1e3) + Math.max(5 * (lavaLog(kills) - 5), 0))
-  )
-}
-
 // Convert mob display name to mobKey format (e.g. 'Bored Bean' → 'Bored_Bean')
 function nameToMobKey(name) {
   return name.replace(/ /g, '_')
 }
 
-// Look up DR kills for a mob name from the snapshot's mapBonuses
-function getDRKills(mobName, mapBonuses) {
+// Arcane Cultist map bonus types: key in snapshot.mapBonuses + icon (StatusArc{index})
+const MAP_BONUS_TYPES = {
+  dr: { label: 'Drop Rate', icon: 'images/masterclass/arcane cultist/StatusArc0.png' },
+  afk: { label: 'AFK Gains', icon: 'images/masterclass/arcane cultist/StatusArc2.png' },
+}
+
+// Look up kills for one map bonus type (dr / exp / afk) for a mob name
+function getMapBonusKills(mobName, mapBonuses, type) {
   if (!mapBonuses) return null
   const mobKey = nameToMobKey(mobName)
   const entry = mapEnemyData.find(e => e.mobKey === mobKey)
   if (!entry) return null
   const bonus = mapBonuses[entry.mapIndex]
   if (!bonus) return 0
-  return bonus.dr ?? 0
+  return bonus[type] ?? 0
 }
 
 function formatMulti(value) {
@@ -39,16 +35,17 @@ function formatMulti(value) {
 
 // ── Components ────────────────────────────────────────────────────
 
-function DRBonus({ mobName, mapBonuses }) {
-  const kills = getDRKills(mobName, mapBonuses)
+function MapBonus({ mobName, mapBonuses, mapBonusCap, type }) {
+  const kills = getMapBonusKills(mobName, mapBonuses, type)
   if (kills === null) return null
-  const multi = 1 + getMapMulti(kills) / 100
+  const multi = 1 + getCappedMapMulti(kills, mapBonusCap) / 100
+  const { label, icon } = MAP_BONUS_TYPES[type]
 
   return (
     <div className="statue-dr-bonus">
       <img
-        src="images/masterclass/arcane cultist/StatusArc0.png"
-        alt="Drop Rate"
+        src={icon}
+        alt={label}
         className="statue-dr-icon"
       />
       <span className="statue-dr-value">{formatMulti(multi)}</span>
@@ -63,7 +60,7 @@ function StatueItem({ id, level }) {
       <div className="tooltip">{name}</div>
       <div className="statue-icon-wrap">
         <img
-          src={`images/statues/StatueZ${id + 1}.png`}
+          src={`images/statues/EquipmentStatues${id + 1}.png`}
           alt={name}
           className="statue-preview-icon"
         />
@@ -75,12 +72,28 @@ function StatueItem({ id, level }) {
   )
 }
 
-function MobCol({ mob, special = false, mapBonuses }) {
+function ExtraItem({ name, image }) {
+  return (
+    <div className="statue-preview-item tooltip-anchor" style={{ position: 'relative' }}>
+      <div className="tooltip">{name}</div>
+      <div className="statue-icon-wrap">
+        <img
+          src={image}
+          alt={name}
+          className="statue-preview-icon"
+        />
+      </div>
+      <span className="statue-preview-level">&nbsp;</span>
+    </div>
+  )
+}
+
+function MobCol({ mob, special = false, mapBonuses, mapBonusCap, bonusType = 'dr' }) {
   return (
     <div className="statue-mob-col">
       {mob ? (
         <>
-          <DRBonus mobName={mob.name} mapBonuses={mapBonuses} />
+          <MapBonus mobName={mob.name} mapBonuses={mapBonuses} mapBonusCap={mapBonusCap} type={bonusType} />
           <img
             src={mob.image}
             alt={mob.name}
@@ -95,8 +108,33 @@ function MobCol({ mob, special = false, mapBonuses }) {
   )
 }
 
-function isCrystal(mob) {
-  return mob.name.toLowerCase().includes('crystal')
+function StatueRow({ row, statueById, mapBonuses, mapBonusCap }) {
+  return (
+    <div className="statue-mob-row">
+      <MobCol
+        mob={row.mob}
+        special={row.special}
+        mapBonuses={mapBonuses}
+        mapBonusCap={mapBonusCap}
+        bonusType={row.bonusType ?? (row.afk ? 'afk' : 'dr')}
+      />
+      <div className="statue-items-col">
+        {row.ids.map(id => {
+          const s = statueById[id]
+          return s ? <StatueItem key={id} id={id} level={s.level} /> : null
+        })}
+        {row.extras?.map(extra => (
+          <ExtraItem key={extra.name} name={extra.name} image={extra.image} />
+        ))}
+        {row.afk && (
+          <span className="statue-afk-tag tooltip-anchor">
+            AFK
+            <span className="tooltip">Best farmed while AFK instead of active</span>
+          </span>
+        )}
+      </div>
+    </div>
+  )
 }
 
 // ── Page ──────────────────────────────────────────────────────────
@@ -104,6 +142,7 @@ function isCrystal(mob) {
 export default function Statues({ snapshot }) {
   const statues = snapshot?.statues
   const mapBonuses = snapshot?.mapBonuses
+  const mapBonusCap = snapshot?.mapBonusCap
 
   if (!statues || statues.length === 0) {
     return (
@@ -115,6 +154,9 @@ export default function Statues({ snapshot }) {
   }
 
   const statueById = Object.fromEntries(statues.map(s => [s.id, s]))
+  const capNote = mapBonusCap
+    ? [`Map bonuses are capped at ${(1 + getMapBonusCap(mapBonusCap) / 100).toFixed(3)}x (Overwhelming Energy Lv ${mapBonusCap.overwhelmingEnergy}, Beyond All Limits Lv ${mapBonusCap.beyondAllLimits}). Added talent levels aren't counted, so the in-game cap may be slightly higher.`]
+    : []
 
   return (
     <div className="page">
@@ -122,32 +164,35 @@ export default function Statues({ snapshot }) {
       <InfoPanel
       intro="This page shows the best mob to farm in each world for each statue type."
       items={[
-        'The bonus shown above each mob is your current Arcane Cultist DR Map Bonus.',
-        'World 3 mobs (except Dedotated Ram) are best farmed with Elemental Sorcerer or AFK.',
+        'The bonus shown above each mob is your current Arcane Cultist DR Map Bonus. The time candy section shows the AFK Map Bonus instead.',
         'World 5 mobs from "The Hole" are not compatible with Arcane Cultist, so no bonus is displayed.',
-        'World 7 does not yet have a clearly defined best mob, though Eamsy Earl has a solid layout if you can consistently kill crystal mobs.'
+        'The Time Candy section shows the best mob to be at when popping Time Candy for each statue. It\'s best to be on a DB with an AFK Fighting setup. Remember to craft lower tier time candies into 12 hour candies for optimal candy usage.',
+        'Rows tagged AFK are best farmed while AFK instead of active, so they show the AFK Map Bonus instead of DR.',
+        'Any statue that is best farmed active should be done on a DK/RG with high drop rate. This even includes the World 3 statues that were previously best farmed with an ES.',
+        ...capNote,
       ]}
       />
       <div className="statue-worlds">
-        {statueWorlds.map(({ world, statueIds, mobs, individual, special }) => {
+        {statueWorlds.map(({ world, statueIds, extras, afk, mobs, individual, special }) => {
         const worldColor = `var(--world-${world.replace('World ', '')}-color)`
 
           const rows = []
 
           // World-wide shared statues: one row using the world's best mob
           if (statueIds?.length > 0) {
-            const bestMob = mobs?.find(m => !isCrystal(m)) ?? null
-            rows.push({ mob: bestMob, ids: statueIds, special: false })
+            const bestMob = mobs?.[0] ?? null
+            rows.push({ mob: bestMob, ids: statueIds, extras, afk, special: false })
           }
 
           // Per-statue entries grouped by their best mob
           if (individual?.length > 0) {
             const grouped = {}
-            for (const { statueId, mobs: indMobs } of individual) {
-              const bestMob = indMobs?.find(m => !isCrystal(m)) ?? null
+            for (const { statueId, afk: indAfk, mobs: indMobs } of individual) {
+              const bestMob = indMobs?.[0] ?? null
               const key = bestMob?.name ?? '__none__'
               if (!grouped[key]) grouped[key] = { mob: bestMob, ids: [], special: false }
               grouped[key].ids.push(statueId)
+              if (indAfk) grouped[key].afk = true
             }
             rows.push(...Object.values(grouped))
           }
@@ -170,20 +215,28 @@ export default function Statues({ snapshot }) {
               </div>
               <div className="statue-mob-rows">
                 {rows.map((row, i) => (
-                  <div key={i} className="statue-mob-row">
-                    <MobCol mob={row.mob} special={row.special} mapBonuses={mapBonuses} />
-                    <div className="statue-items-col">
-                      {row.ids.map(id => {
-                        const s = statueById[id]
-                        return s ? <StatueItem key={id} id={id} level={s.level} /> : null
-                      })}
-                    </div>
-                  </div>
+                  <StatueRow key={i} row={row} statueById={statueById} mapBonuses={mapBonuses} mapBonusCap={mapBonusCap} />
                 ))}
               </div>
             </div>
           )
         })}
+        <div className="statue-world-card">
+          <div className="statue-world-header">
+            <span className="statue-world-label statue-candy-label">Time Candy</span>
+          </div>
+          <div className="statue-mob-rows">
+            {statueCandyMobs.map(({ mob, statueIds }) => (
+              <StatueRow
+                key={mob.name}
+                row={{ mob, ids: statueIds, bonusType: 'afk' }}
+                statueById={statueById}
+                mapBonuses={mapBonuses}
+                mapBonusCap={mapBonusCap}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
