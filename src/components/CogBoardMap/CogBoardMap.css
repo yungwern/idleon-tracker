@@ -26,9 +26,20 @@
   margin-bottom: 20px;
 }
 
+/* ── Title ── */
+.board-map-title {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
 /* ── Grid ── */
 .board-grid {
   display: grid;
+  grid-template-columns: repeat(12, 1fr);
   gap: 3px;
   width: 100%;
 }
@@ -61,6 +72,126 @@
   image-rendering: pixelated;
 }
 
+/* ── Border Groups (match COG_BORDER_CLASS in constructionMap.js) ── */
+.board-cell.border-green,
+.legend-swatch.border-green {
+  border-color: #4ade80;
+}
+
+.board-cell.border-garnet,
+.legend-swatch.border-garnet {
+  border-color: #fb923c;
+}
+
+.board-cell.border-purple,
+.legend-swatch.border-purple {
+  border-color: #b253c5;
+}
+
+.board-cell.border-gemshop,
+.legend-swatch.border-gemshop {
+  border-color: #46b6f7;
+}
+
+.board-cell.border-white,
+.legend-swatch.border-white {
+  border-color: #ffffff;
+}
+
+/* ── User Board: EXP label + tooltip ── */
+.board-cell-anchor {
+  position: relative;
+}
+
+.board-cell-anchor:hover {
+  z-index: 20;
+}
+
+.board-cell-anchor:hover .board-cell {
+  filter: brightness(1.25);
+}
+
+.board-cell-exp {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(10, 10, 15, 0.8);
+  color: #fde68a;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.board-cell-exp-player {
+  color: #a5f3fc;
+}
+
+/* .tooltip.* so these beat global.css's centred .tooltip regardless of load order */
+.tooltip.board-tooltip-left {
+  left: 0;
+  transform: none;
+}
+
+.tooltip.board-tooltip-right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.board-tooltip-name {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.board-tooltip-muted {
+  color: #9ca3af;
+}
+
+/* ── Compare Tool Highlights (outline sits over the border-group colour) ── */
+.board-cell-highlight-replace,
+.board-cell-highlight-cant-beat,
+.board-cell-highlight-new {
+  outline: 3px solid transparent;
+  outline-offset: 1px;
+}
+
+.board-cell-highlight-replace {
+  outline-color: #f87171;
+  box-shadow: 0 0 10px #f87171;
+  animation: board-highlight-pulse 1.2s ease-in-out infinite;
+}
+
+.board-cell-highlight-cant-beat {
+  outline-color: #f87171;
+  box-shadow: 0 0 10px #f87171;
+}
+
+.board-cell-highlight-new {
+  outline-color: #bbf7d0;
+  box-shadow: 0 0 10px #4ade80;
+}
+
+@keyframes board-highlight-pulse {
+  50% {
+    outline-color: rgba(248, 113, 113, 0.25);
+    box-shadow: 0 0 2px rgba(248, 113, 113, 0.25);
+  }
+}
+
+.board-tooltip-note-replace,
+.board-tooltip-note-cant-beat {
+  color: #f87171;
+}
+
+.board-tooltip-note-new {
+  color: #4ade80;
+}
+
 /* ── Legend ── */
 .board-legend {
   display: flex;
@@ -89,4 +220,4 @@
 .legend-label {
   font-size: 11px;
   color: #9ca3af;
-}
+}

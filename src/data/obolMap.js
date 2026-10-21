@@ -238,6 +238,17 @@ export const obolFarmMap = {
   hyper2:  { farmRawName: 'ObolHyper2',   mobKey: 'PremiumGem',    notes: 'Limited time gem shop purchase only' },
   hyper3:  { farmRawName: 'ObolHyper3',   mobKey: 'PremiumGem',    notes: 'Limited time gem shop purchase only' } }
 
+// Farm sources that are shops, not mobs: label shown on the farm card.
+// Every mobKey above needs a thumbnail in public/images/obols/farm/<mobKey>.png
+export const obolFarmSources = {
+  PremiumGem: {
+    label: 'Gem Shop',
+  },
+  Liquid1_x1: {
+    label: 'Alchemy Shop',
+  },
+}
+
 // ── Tier Lists ────────────────────────────────────────────────────────────────
 const TIER_SUBLABELS = {
   s: 'Best',

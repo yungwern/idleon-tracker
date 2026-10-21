@@ -1,0 +1,81 @@
+/* ── Grid ── */
+.anvil-prod-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+}
+
+/* ── Card (sized to match the Premium Gear cards above it) ── */
+.anvil-prod-card {
+  width: 130px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.anvil-prod-card:hover {
+  border-color: rgba(160, 196, 255, 0.2);
+  background: rgba(160, 196, 255, 0.04);
+}
+
+.anvil-prod-card-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px 10px 0 0;
+  min-height: 60px;
+}
+
+.anvil-prod-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* ── Body ── */
+.anvil-prod-card-body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.anvil-prod-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e5e7eb;
+  border-bottom: 1px solid #2dd4bf;
+  padding-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+}
+
+/* Hammer count in the top-right corner of the image area */
+.anvil-prod-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2dd4bf;
+}
+
+.anvil-prod-empty {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+  margin: 0;
+}

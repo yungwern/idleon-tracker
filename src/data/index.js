@@ -34,7 +34,7 @@ export { statueMap, statueWorlds, statueCandyMobs } from './statueMap'
 export { anvilMap, anvilMapById } from './anvilMap'
 
 // ── World 2 ───────────────────────────────────────────────────────────────────
-export { obolMap, obolByRawName, obolFarmMap, circleTiers, squareTiers, hexagonTiers, sparkleTiers, idealAccountBoard, endgameAccountBoard, characterBoards } from './obolMap'
+export { obolMap, obolByRawName, obolFarmMap, obolFarmSources, circleTiers, squareTiers, hexagonTiers, sparkleTiers, idealAccountBoard, endgameAccountBoard, characterBoards } from './obolMap'
 export { stampMap } from './stampsMap'
 export { STAMP_TIERS } from './stampsMap'
 export { bubbleMap } from './bubblesMap'
@@ -42,7 +42,7 @@ export { BUBBLE_TIERS } from './bubblesMap'
 
 // ── World 3 ───────────────────────────────────────────────────────────────────
 export { cogMap, BOARD_ROWS, BOARD_COLS, COG_BORDER_CLASS, COG_PLACEMENTS, saltMap } from './constructionMap'
-export { shrineMap } from './shrineMap'
+export { shrineMap, shrineBuffMap } from './shrineMap'
 export { worshipMap, soulsMap, towerMap } from './worshipMap'
 export { prayerMap } from './prayerMap'
 

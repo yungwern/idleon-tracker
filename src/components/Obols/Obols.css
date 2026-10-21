@@ -2,52 +2,7 @@
    OBOLS
    ============================================================ */
 
-.obols-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* ── Nav ── */
-.obols-nav {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.obols-nav-btn {
-  position: relative;
-  padding: 10px 4px;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  border: none;
-  background: none;
-  color: #6b7280;
-  cursor: pointer;
-  transition: color 0.15s;
-}
-
-.obols-nav-btn:hover {
-  color: #d1d5db;
-}
-
-.obols-nav-btn--active {
-  color: #a0c4ff;
-}
-
-.obols-nav-btn--active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: #a0c4ff;
-}
+/* Tabs use the shared .page-tabs in global.css */
 
 /* ── Section Label ── */
 .obols-section-label {
@@ -86,13 +41,6 @@
   width: 1px;
   background: rgba(255, 255, 255, 0.06);
   align-self: stretch;
-}
-
-.obols-empty-state {
-  font-size: 12px;
-  color: #4b5563;
-  text-align: center;
-  padding: 24px 0;
 }
 
 .obols-char-boards-row {
@@ -134,7 +82,10 @@
   flex-direction: column;
 }
 
-/* ── Farm Grid ── */
+/* ── Farm Grid ──
+   Obols are shown at 54px like the big board slots (smooth-scaled from the
+   144px files, see ObolBoard.css). Mob thumbnails in images/obols/farm/ are made at display size, so
+   they're shown at their natural size with no scaling. */
 .obols-farm-grid {
   display: flex;
   flex-wrap: wrap;
@@ -169,30 +120,16 @@
 }
 
 .obols-farm-card-obol-img {
-  width: 46px;
-  height: 46px;
+  width: 54px;
+  height: 54px;
   object-fit: contain;
-  image-rendering: pixelated;
 }
 
 .obols-farm-card-mob-img {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 34px;
-  height: 34px;
-  object-fit: cover;
-  object-position: center;
+  top: 4px;
+  right: 4px;
   image-rendering: pixelated;
-}
-
-.obols-farm-card-top .obols-farm-card-mob-img--scaled {
-  width: 40px;
-  height: 40px;
-  top: 2px;
-  right: 2px;
-  object-fit: contain;
-  object-position: center;
 }
 
 .obols-farm-card-body {
@@ -211,12 +148,6 @@
 }
 
 .obols-farm-card-map {
-  font-size: 10px;
-  color: #6b7280;
-  line-height: 1.3;
-}
-
-.obols-farm-card-notes {
   font-size: 10px;
   color: #6b7280;
   line-height: 1.3;

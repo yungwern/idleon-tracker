@@ -182,7 +182,7 @@ ConTower15: {
     },
     setup: ['BAAAA'],
     setupDesc: [
-        'Leads with an extra underling, then stacks additional pushback for sustained crowd control.',
+        'Leads with extra pushback, then stacks additional underlings for sustained crowd control.',
     ],
 },
 ConTower16: {

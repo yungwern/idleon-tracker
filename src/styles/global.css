@@ -90,7 +90,7 @@ body {
 /* ============================================================
    CLASS THEMES / ICONS
    Applies to anything with data-class="<class-slug>" (character cards,
-   sidebar buttons, Anvil labels). Icons: public/images/class icons/<family>/
+   sidebar buttons). Icons: public/images/class icons/<family>/
    ============================================================ */
 
 /* Fallback for classes without a theme below */
@@ -295,4 +295,145 @@ body {
   bottom: -1px;
   height: 2px;
   background: var(--tab-color, #a0c4ff);
+}
+
+/* ============================================================
+   BUFFS PANEL
+   Centered strip of account-wide buffs (components/BuffsPanel).
+   Used by BiS Setups (Card Buffs) and Shrines.
+   ============================================================ */
+
+.buffs-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 20px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.buffs-panel-title {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.buffs-panel-slots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.buff-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: default;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.buff-slot:hover {
+  background: rgba(160, 196, 255, 0.06);
+}
+
+.buff-slot--active {
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+.buff-slot--missing {
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.buff-slot-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.buff-slot--missing .buff-slot-img,
+.buff-slot--unknown .buff-slot-img {
+  opacity: 0.4;
+}
+
+/* Status badge in the slot's corner */
+.buff-slot-check {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  color: #111827;
+  background: #6b7280;
+}
+
+.buff-slot--active .buff-slot-check {
+  background: #4ade80;
+}
+
+.buff-slot--missing .buff-slot-check {
+  background: #f87171;
+}
+
+/* Tooltip content (positioning comes from .tooltip) */
+.buff-tooltip {
+  text-align: left;
+}
+
+.buff-tooltip-name {
+  display: block;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.buff-tooltip-source {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.buff-tooltip-line {
+  display: block;
+  color: #9ca3af;
+}
+
+.buff-tooltip-status {
+  display: block;
+  color: #9ca3af;
+}
+
+.buff-tooltip-status--active {
+  color: #4ade80;
+}
+
+.buff-tooltip-status--missing {
+  color: #f87171;
+}
+
+.buff-tooltip-warning {
+  display: block;
+  color: #fbbf24;
 }

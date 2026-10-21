@@ -13,17 +13,10 @@ function formatUQ(txt, val) {
   return hasPercent ? `${label}: +${val}%` : `${label}: +${val}`
 }
 
-// Stat color map
-const STAT_COLORS = {
-  STR: '#f87171',
-  AGI: '#4ade80',
-  WIS: '#c084fc',
-  LUK: '#fbbf24',
-}
-
+// Stat colors live in ObolBoard.css (obol-tooltip-stat-chip--str, etc.)
 function StatChip({ label, value }) {
   return (
-    <span className="obol-tooltip-stat-chip" style={{ color: STAT_COLORS[label] ?? '#a1a1aa' }}>
+    <span className={`obol-tooltip-stat-chip obol-tooltip-stat-chip--${label.toLowerCase()}`}>
       {label} +{value}
     </span>
   )

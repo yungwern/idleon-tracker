@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
+import AnvilProduction from '../AnvilProduction/AnvilProduction.jsx'
 import { CharacterBoard } from '../Obols/ObolBoard.jsx'
 import { getCharacterNotices } from '../../utils/characterNotices.js'
 import { prayerMap } from '../../data/prayerMap'
@@ -25,7 +26,7 @@ function CharacterObolsTab({ charIndex, snapshot }) {
   const obols = snapshot?.characters?.[charIndex]?.obols ?? []
 
   if (!obols.length) {
-    return <div className="obols-empty-state">No obol data available — import a save to see equipped obols.</div>
+    return <div className="char-obols-empty">No obol data available — import a save to see equipped obols.</div>
   }
 
   // Remap from save order to visual order
@@ -216,6 +217,12 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
               <h3 className="char-overview-heading">Premium Gear</h3>
               <PremiumGearTab charIndex={charIndex} snapshot={snapshot} />
             </section>
+            {snapshot?.anvil && (
+              <section className="char-overview-section">
+                <h3 className="char-overview-heading">Anvil</h3>
+                <AnvilProduction charIndex={charIndex} snapshot={snapshot} />
+              </section>
+            )}
           </div>
         )}
 

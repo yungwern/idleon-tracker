@@ -169,7 +169,7 @@ function CompareTool({ cogs, onClose, onResult, onReplace }) {
           <div className={`compare-result-banner ${isUpgrade ? 'upgrade' : 'no-upgrade'}`}>
             <span className="compare-result-label">{isUpgrade ? '✓ Upgrade' : '✗ Not an upgrade'}</span>
             <span className="compare-result-detail">New cog total: <strong>+{total}%</strong></span>
-            <span className="compare-result-detail">Lowest {pattern} cog: <strong>+{lowestEquipped}%</strong></span>
+            <span className="compare-result-detail">Lowest {pattern} cog: <strong>+{lowestEquipped}%</strong> (highlighted on the board)</span>
           </div>
           <CogCard
             cog={{
@@ -208,9 +208,7 @@ function CogCard({ cog, highlight }) {
     <div
       className={`cog-card ${
         highlight === 'upgrade'    ? 'highlight-upgrade' :
-        highlight === 'no-upgrade' ? 'highlight-no-upgrade' :
-        highlight === 'replace'    ? 'highlight-replace' :
-        highlight === 'cant-beat'  ? 'highlight-cant-beat' : ''
+        highlight === 'no-upgrade' ? 'highlight-no-upgrade' : ''
       }`}
       style={{ '--cog-color': cogColor }}
     >
@@ -243,65 +241,80 @@ function CogCard({ cog, highlight }) {
 // MAIN COMPONENT
 // ============================================================
 
+// The 12 Row/Column booster slots from the Optimal Cog Layout. First 6 are the Row slots.
+const ROW_SLOT_COUNT = 6
+const PATTERN_LABELS = {
+  row: 'Boosts entire Row',
+  column: 'Boosts entire Column',
+}
+
 export default function Construction({ snapshot }) {
-  const { cogs = [], totalExpRate = 0 } = snapshot?.construction ?? {}
+  const { cogs = [], board = null } = snapshot?.construction ?? {}
   const [showCompare, setShowCompare] = useState(false)
   const [showBoard, setShowBoard] = useState(false)
   const [compareResult, setCompareResult] = useState(null)
-  const [overrides, setOverrides] = useState([])
+  // { boardIndex: cell } — cogs swapped in by the compare tool, on top of the real board
+  const [overrides, setOverrides] = useState({})
 
-  const displayCogs = overrides.length > 0 ? overrides : cogs
+  const displayBoard = board?.map(cell => overrides[cell.index] ?? cell) ?? null
 
-  function applyReplacement(newCog) {
-    const base = overrides.length > 0 ? overrides : cogs
-    const patternLabel = newCog.patternLabel
-    const matching = base.filter(c => c.patternLabel === patternLabel)
+  // Booster slots, with their role set by position on the board (not by whatever cog sits there)
+  const boosterSlots = displayBoard
+    ? cogs.map(({ index }, i) => {
+        const cell = displayBoard[index]
+        const role = i < ROW_SLOT_COUNT ? 'row' : 'column'
+        return {
+          index,
+          role,
+          total: cell.bonusConstructExp + cell.playerConstructExp,
+          patternLabel: PATTERN_LABELS[role],
+        }
+      })
+    : []
 
-    // Find and remove the lowest
-    const lowestTotal = Math.min(...matching.map(c => c.total))
-    const lowestIndex = base.findIndex(c => c.patternLabel === patternLabel && c.total === lowestTotal)
-
-    // Find insert position (highest cog the new one beats)
-    const beatable = matching.filter(c => newCog.total > c.total)
-    const highestBeatable = Math.max(...beatable.map(c => c.total))
-    const insertIndex = base.findIndex(c => c.patternLabel === patternLabel && c.total === highestBeatable)
-
-    const updated = [...base]
-    updated.splice(lowestIndex, 1)
-    updated.splice(insertIndex, 0, newCog)
-    setOverrides(updated)
+  function lowestSlot(role) {
+    return boosterSlots
+      .filter(slot => slot.role === role)
+      .reduce((low, slot) => (!low || slot.total < low.total ? slot : low), null)
   }
 
-  // Work out which cog to highlight after a comparison
-  function getHighlight(cog, compareResult) {
-    if (!compareResult) return null
-    const { pattern, total, isUpgrade } = compareResult
-    const patternLabel = pattern === 'row' ? 'Boosts entire Row' : 'Boosts entire Column'
-    if (cog.patternLabel !== patternLabel) return null
-    if (!isUpgrade) {
-      const matchingCogs = displayCogs.filter(c => c.patternLabel === patternLabel)
-      const lowestTotal = Math.min(...matchingCogs.map(c => c.total))
-      return cog.total === lowestTotal ? 'cant-beat' : null
-    }
-    const beatable = displayCogs
-      .filter(c => c.patternLabel === patternLabel && total > c.total)
-      .map(c => c.total)
-    if (beatable.length === 0) return null
-    const highestBeatable = Math.max(...beatable)
-    return cog.total === highestBeatable ? 'replace' : null
+  // Swap the new cog into the weakest slot of its type
+  function applyReplacement(newCog) {
+    const role = newCog.patternLabel === PATTERN_LABELS.row ? 'row' : 'column'
+    const target = lowestSlot(role)
+    if (!target) return
+    setOverrides(prev => ({
+      ...prev,
+      [target.index]: {
+        ...displayBoard[target.index],
+        name: newCog.name,
+        pattern: role,
+        bonusConstructExp: newCog.bonusConstructExp,
+        playerConstructExp: newCog.playerConstructExp,
+        isNew: true,
+      },
+    }))
+  }
+
+  // Board highlights: swapped-in cogs, plus the slot the current comparison is measured against
+  const highlights = {}
+  for (const index of Object.keys(overrides)) highlights[index] = 'new'
+  if (compareResult) {
+    const target = lowestSlot(compareResult.pattern)
+    if (target) highlights[target.index] = compareResult.isUpgrade ? 'replace' : 'cant-beat'
   }
 
   return (
     <div className="page construction-page">
       <h2 className="page-title">Construction</h2>
       <InfoPanel
-      intro="This page helps you optimize the Row and Column Boosters on your Construction Board. If you're unfamiliar with how the board works, check out the Optimal Cog Layout. A few things to keep in mind:"
+      intro="This page shows your Construction Board as it is in your save and helps you upgrade its Row and Column Boosters. If you're unfamiliar with how the board works, check out the Optimal Cog Layout. A few things to keep in mind:"
       items={[
-        'Click "+ Compare New Cog" to get started.',
-        'You\'ll be prompted to select the cog\'s color, whether it boosts a Row or Column, and its EXP values.',
-        'The tool will then tell you whether the cog is an upgrade over what you currently have equipped.',
-        'If it is an upgrade, clicking "Compare Another" will automatically update the cog list to reflect the replacement.',
-        'The order of cogs in the list doesn\'t matter — what\'s important is that all 6 Row and Column slots on your board match the Optimal Cog Layout.',
+        'Each cog shows its total EXP. Hover a cog for the full breakdown.',
+        'Click "+ Compare New Cog" and enter the cog\'s color, whether it boosts a Row or Column, and its EXP values.',
+        'The tool compares it against your weakest Row or Column Booster slot, which gets highlighted on the board.',
+        'If it is an upgrade, clicking "Compare Another" swaps it onto the board in that slot. "Reset to Real Data" undoes all swaps.',
+        'Only the 6 Row and 6 Column slots from the Optimal Cog Layout are compared — which slot each cog sits in doesn\'t matter.',
       ]}
       />
 
@@ -310,40 +323,29 @@ export default function Construction({ snapshot }) {
           {showCompare ? 'Hide Compare' : '+ Compare New Cog'}
         </button>
         <button className="compare-open-btn" onClick={() => setShowBoard(v => !v)}>
-          {showBoard ? 'Hide Cog Board' : 'View Optimal Cog Layout'}
+          {showBoard ? 'Hide Optimal Layout' : 'View Optimal Cog Layout'}
         </button>
-        {overrides.length > 0 && (
-          <button className="compare-open-btn" onClick={() => setOverrides([])}>
+        {Object.keys(overrides).length > 0 && (
+          <button className="compare-open-btn" onClick={() => setOverrides({})}>
             Reset to Real Data
           </button>
         )}
       </div>
 
-      {showCompare && (
+      {showCompare && displayBoard && (
         <CompareTool
-          cogs={displayCogs}
+          cogs={boosterSlots}
           onClose={() => { setShowCompare(false); setCompareResult(null) }}
           onResult={setCompareResult}
           onReplace={applyReplacement}
         />
       )}
 
-      {showBoard && <CogBoardMap />}
+      {showBoard && <CogBoardMap title="Optimal Cog Layout" />}
 
-      <div className="cog-grid">
-        <div className="cog-grid-label">
-          <span>Row Boosters</span>
-        </div>
-        {displayCogs.slice(0, 6).map(cog => (
-          <CogCard key={cog.index} cog={cog} highlight={getHighlight(cog, compareResult)} />
-        ))}
-        <div className="cog-grid-label">
-          <span>Column Boosters</span>
-        </div>
-        {displayCogs.slice(6).map(cog => (
-          <CogCard key={cog.index} cog={cog} highlight={getHighlight(cog, compareResult)} />
-        ))}
-      </div>
+      {displayBoard
+        ? <CogBoardMap board={displayBoard} highlights={highlights} title="My Cog Board" />
+        : <p className="construction-board-empty">Re-import your save to see your cog board.</p>}
     </div>
   )
 }

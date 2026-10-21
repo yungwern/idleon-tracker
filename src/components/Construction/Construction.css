@@ -46,25 +46,11 @@
   line-height: 1.5;
 }
 
-/* ── Cog Grid ── */
-.cog-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.cog-grid-label {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: #6b7280;
+/* ── My Cog Board (no board data in older snapshots) ── */
+.construction-board-empty {
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #9ca3af;
 }
 
 /* ── Cog Card ── */
@@ -471,12 +457,3 @@
   background: rgba(248, 113, 113, 0.06); 
 }
 
-.cog-card.highlight-replace { 
-  border-color: rgba(248, 113, 113, 0.6); 
-  background: rgba(248, 113, 113, 0.06); 
-}
-
-.cog-card.highlight-cant-beat { 
-  border-color: rgba(248, 113, 113, 0.6); 
-  background: rgba(248, 113, 113, 0.06); 
-}

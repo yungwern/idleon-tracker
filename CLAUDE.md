@@ -18,9 +18,9 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 ```
 src/
 ├── components/         # One folder per feature (see casing note below)
-│   ├── Section pages:  Anvil, Breeding, Construction, Cooking, Farming, GearOptimizer,
+│   ├── Section pages:  Breeding, Construction, Cooking, Farming, GearOptimizer,
 │   │                   MasterClasses, Minibosses, Obols, Shrines, Statues, Worship
-│   └── Shared/sub:     CharacterCard, CogBoardMap, ImportModal, InfoPanel,
+│   └── Shared/sub:     AnvilProduction (Overview tab; Anvil page removed), BuffsPanel, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js
@@ -37,6 +37,7 @@ src/
 ├── styles/             # global.css — shared layout classes and reusable components
 └── utils/              # appUtils.js (toClassSlug, statueLevelColor, shrineLevelColor),
                         # talentUtils.js (super talent points for Overview notifications),
+                        # cogBoardUtils.js (cog names, board border groups, big-number format),
                         # *Notices.js (notification counts, see Notifications below)
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
@@ -46,6 +47,8 @@ public/images/          # Game sprites — Vite serves public/ at the site root,
                         #   Prefer it over the wiki; clone it shallow when you need data.
 IdleOn Resources/       # Outside src/ — not shipped with the site
                         # raw-save.json — Eli's latest IdleOn Toolbox export ({ data, charNames, ... })
+                        # make_obol_farm_thumbs.py — rebuilds public/images/obols/farm/ (40px farm-card
+                        #   sprites); run `python make_obol_farm_thumbs.py ../public` after adding a farm mob
                         # items.json — every item (displayName, UQ1txt/UQ1val stats, rawName keys),
                         #   from the Morta1/IdleonToolbox GitHub repo's split data files
                         # More Toolbox data files get added here as needed — ask Eli for the one you need
@@ -72,6 +75,10 @@ match the real filename exactly. Three components are lowercase on disk:
 
 **CSS values**: `px` for sizing, hex codes for colors (e.g. `#c084fc`), class-based styling always — no inline styles
 
+**Pixel art sizing**: obol PNGs are 36px art saved at 4x (144px, nearest-neighbor) and shown with normal
+smooth scaling, which keeps pixels even at any size and Windows display scaling. Don't use `pixelated` on
+them (looks blocky), and never smooth-scale a small file up (looks fuzzy). New obol art: upscale to 144px first.
+
 **Image paths**: images live in `public/images/`. In JS/JSX write them **without** a leading slash
 (`images/mobs/Penguin.png`) so they work both locally and under the GitHub Pages subpath. In CSS write
 them **with** one (`url("/images/...")`) so Vite can prefix the base path at build time. Filenames are
@@ -79,6 +86,14 @@ case-sensitive on the live site even though Windows ignores case.
 
 **Deployment**: pushing to `main` deploys to https://yungwern.github.io/idleon-tracker/ via
 `.github/workflows/deploy.yml`. `vite.config.js` sets `base: '/idleon-tracker/'` for builds only.
+
+**Cog board**: `CogBoardMap` with no props = Optimal Cog Layout; pass `board={snapshot.construction.board}`
+(96 slots, CogO/CogM 0-95, row-major) for the player's real board. Cog stat keys come from Toolbox `cogKeyMap`:
+d = % Bonus Construct EXP, f = % Player Construct XP, b = player Construct EXP/hr, h = boost pattern.
+
+**Buffs panel**: `BuffsPanel` (styles in global.css) is the centered unlocked/missing/unknown icon strip under the
+InfoPanel — BiS Setups (Card Buffs) and Shrines use it. Pass `active: null` when the save can't tell.
+Shrine building levels (Tower[18..26]) give the W7 Dancing Coral bonus past Lv 200 (`coral` in shrineMap.js).
 
 **Adding new pages**: register the section in `data/sections.js` and wire up the component in `App.jsx`
 

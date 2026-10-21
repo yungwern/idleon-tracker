@@ -16,7 +16,8 @@
   flex-shrink: 0;
 }
 
-.obol-slot--md {
+.obol-slot--md,
+.obol-slot--sm {
   width: 44px;
   height: 44px;
 }
@@ -26,32 +27,22 @@
   height: 62px;
 }
 
-.obol-slot--sm {
-  width: 44px;
-  height: 44px;
-}
-
 .obol-slot--empty {
   opacity: 0.2;
 }
 
-/* Obol art is 36px pixel art saved at 2x (72px files) — only whole-pixel
-   sizes (36px / 72px) stay sharp, so images use fixed sizes, not percentages */
+/* Obol art is 36px pixel art saved at 4x (144px files). The browser smoothly
+   shrinks the big sharp file, so pixels stay even at any size or display
+   scaling. Don't add image-rendering: pixelated here (that makes them blocky). */
 .obol-slot-img {
   width: 36px;
   height: 36px;
   object-fit: contain;
-  image-rendering: pixelated;
 }
 
 .obol-slot--lg .obol-slot-img {
   width: 54px;
   height: 54px;
-}
-
-.obol-slot--sm .obol-slot-img {
-  width: 36px;
-  height: 36px;
 }
 
 .obol-slot--upgraded .obol-slot-img {
@@ -172,6 +163,23 @@
   font-size: 11px;
   font-weight: 600;
   line-height: 1.4;
+  color: #a1a1aa;
+}
+
+.obol-tooltip-stat-chip--str {
+  color: #f87171;
+}
+
+.obol-tooltip-stat-chip--agi {
+  color: #4ade80;
+}
+
+.obol-tooltip-stat-chip--wis {
+  color: #c084fc;
+}
+
+.obol-tooltip-stat-chip--luk {
+  color: #fbbf24;
 }
 
 .obol-tooltip-reroll {

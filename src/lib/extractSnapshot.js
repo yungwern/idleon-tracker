@@ -312,6 +312,8 @@ function parseAccountObols(json) {
 
 // ── Construction ──────────────────────────────────────────────────────────────
 const CONSTRUCTION_COG_INDICES = [30, 31, 32, 33, 34, 35, 62, 63, 74, 75, 86, 87]
+const CONSTRUCTION_BOARD_COLS = 12
+const CONSTRUCTION_BOARD_SIZE = 96
 
 const CONSTRUCTION_PATTERN_LABELS = {
   row: 'Boosts entire Row',
@@ -341,7 +343,23 @@ function parseConstruction(json) {
     }
   })
 
-  return { cogs, totalExpRate }
+  // Full 8x12 board — CogO/CogM indices 0-95, row-major from the top-left
+  const board = Array.from({ length: CONSTRUCTION_BOARD_SIZE }, (_, index) => {
+    const cog = cogMap[index] ?? {}
+    return {
+      index,
+      row: Math.floor(index / CONSTRUCTION_BOARD_COLS),
+      col: index % CONSTRUCTION_BOARD_COLS,
+      name: cogOrder[index] ?? 'Blank',
+      pattern: cog.h ?? null,
+      bonusConstructExp: cog.d ?? 0,
+      playerConstructExp: cog.f ?? 0,
+      buildRate: cog.a ?? 0,
+      expPerHour: cog.b ?? 0,
+    }
+  })
+
+  return { cogs, totalExpRate, board }
 }
 
 function parseTowerLevels(json) {
@@ -373,6 +391,31 @@ function parseShrines(json) {
       constructionLevel,
     }
   })
+}
+
+// ── Shrine buffs ─────────────────────────────────────────────────────────────
+// Account unlocks shown in the Shrines buffs panel (legend talent 38 comes from legendTalents).
+//   Star talent 639 (Shrine Architect) = level in SL_N on any character
+//   Sailing[3][0] = Moai Head artifact grade (0 = not found)
+//   Ninja[102][9] = Jade Emporium unlock letters; upgrade 19 (Collective Bargaining) = 's'
+//   Lv0_N[12] = Lab skill level. Shrine World Tour is a mainframe node with no unlock flag and the
+//   save doesn't store lab connections, so Lab unlocked on any character stands in for it.
+function parseShrineBuffs(json, charCount) {
+  const parse = raw => (typeof raw === 'string' ? JSON.parse(raw) : raw)
+  const architect = Array.from({ length: charCount }, (_, i) => parse(json[`SL_${i}`]) ?? {})
+    .some(levels => Number(levels['639']) > 0)
+  const labUnlocked = Array.from({ length: charCount }, (_, i) => parse(json[`Lv0_${i}`]) ?? [])
+    .some(skills => Number(skills[12]) > 0)
+  const sailing = parse(json['Sailing']) ?? []
+  const ninja = parse(json['Ninja']) ?? []
+  const jadeUnlocks = ninja[102]?.[9]
+
+  return {
+    architect,
+    labUnlocked,
+    moaiHead: Number(sailing[3]?.[0]) > 0,
+    bargaining: typeof jadeUnlocks === 'string' ? jadeUnlocks.includes('s') : false,
+  }
 }
 
 // ── Worship ─────────────────────────────────────────────────────────
@@ -714,6 +757,7 @@ export function extractSnapshot(rawJson) {
     anvil: parseAnvil(json, charList),
     accountObols: parseAccountObols(json),
     shrines: parseShrines(json),
+    shrineBuffs: parseShrineBuffs(json, charList.length),
     worship: parseWorship(json),
     towerLevels: parseTowerLevels(json),
     armorSmithySets: parseArmorSmithySets(json),

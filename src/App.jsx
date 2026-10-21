@@ -11,7 +11,6 @@ import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
 import Minibosses from './components/Minibosses/minibosses.jsx'
 import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
 import Statues from './components/Statues/statues.jsx'
-import Anvil from './components/Anvil/Anvil.jsx'
 import Obols from './components/Obols/Obols.jsx'
 import Construction from './components/Construction/Construction.jsx'
 import Shrines from './components/Shrines/shrines.jsx'
@@ -71,7 +70,6 @@ export default function App() {
     if (current === 'Minibosses')     return <Minibosses snapshot={snapshot} />
     if (current === 'BiS Setups')     return <GearOptimizer snapshot={snapshot} />
     if (current === 'Statues')        return <Statues snapshot={snapshot} />
-    if (current === 'Anvil') return <Anvil snapshot={snapshot} />
     if (current === 'Obols') return <Obols snapshot={snapshot} />
     if (current === 'Construction')   return <Construction snapshot={snapshot} />
     if (current === 'Shrines')        return <Shrines snapshot={snapshot} />

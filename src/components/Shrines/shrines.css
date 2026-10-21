@@ -25,10 +25,11 @@
 
 /* ── Top image area ── */
 .shrine-card-top {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 8px 8px;
+  padding: 28px 8px 8px;
   background: rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px 10px 0 0;
@@ -69,8 +70,56 @@
   line-height: 1.3;
 }
 
-.shrine-card-bonus2 {
+.shrine-card-coral {
   color: #c084fc;
+}
+
+.shrine-card-coral--locked {
+  color: #4b5563;
+  font-style: italic;
+}
+
+/* ── Construction building level badge ── */
+.shrine-building {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px 1px 3px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  background: rgba(10, 10, 15, 0.7);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  cursor: default;
+}
+
+.shrine-building-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+}
+
+/* Tooltip content (positioning comes from global .tooltip) */
+.shrine-tooltip {
+  left: 0;
+  transform: none;
+  text-align: left;
+  font-weight: 400;
+}
+
+.shrine-tooltip-name {
+  display: block;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.shrine-tooltip-line {
+  display: block;
+  color: #9ca3af;
 }
 
 /* ── Progress bar ── */
@@ -110,4 +159,4 @@
   height: 1px;
   background: rgba(255, 255, 255, 0.08);
   margin: 2px 0;
-}
+}

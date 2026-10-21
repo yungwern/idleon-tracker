@@ -27,6 +27,7 @@ import {
   formatCardEffect,
 } from '../../utils/cardUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
+import BuffsPanel from '../BuffsPanel/BuffsPanel'
 
 import './GearOptimizer.css'
 
@@ -197,45 +198,6 @@ function getSlotMulti(index, count, chips, buffs) {
   if (index === count - 1 && chips.includes(OMEGA_MOTHERBOARD) && buffs.motherboard.active) multi *= 2
   if (buffs.fullHouse.active) multi *= buffs.fullHouse.multi
   return multi
-}
-
-const BUFF_STATUS = {
-  active: 'Unlocked',
-  missing: 'Not unlocked yet',
-  unknown: 'Import (or re-import) your save to check',
-}
-
-function CardBuffs({ buffs }) {
-  return (
-    <div className="go-buffs">
-      <span className="go-row-title">Card Buffs</span>
-      <div className="go-row-slots">
-        {Object.values(buffs).map(buff => {
-          const state = buff.active === null ? 'unknown' : buff.active ? 'active' : 'missing'
-          return (
-            <div
-              key={buff.key}
-              className={`go-slot go-buff go-buff--${state} tooltip-anchor`}
-            >
-              <img
-                src={buff.img}
-                alt={buff.name}
-                className="go-slot-img"
-              />
-              <span className="go-buff-check">
-                {state === 'active' ? '✓' : state === 'missing' ? '✗' : '?'}
-              </span>
-              <span className="tooltip go-tooltip">
-                <span className="go-tooltip-name">{buff.name}</span>
-                <span className="go-tooltip-line">{buff.effect}</span>
-                <span className="go-tooltip-line">{BUFF_STATUS[state]}</span>
-              </span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
 }
 
 // ── Slot (icon + hover tooltip) ──────────────────────────────
@@ -577,7 +539,10 @@ export default function GearOptimizer({ snapshot }) {
         ]}
       />
 
-      <CardBuffs buffs={buffs} />
+      <BuffsPanel
+        title="Card Buffs"
+        buffs={Object.values(buffs)}
+      />
 
       {/* Category tabs */}
       <div className="go-nav">

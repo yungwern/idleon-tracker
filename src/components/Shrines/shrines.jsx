@@ -1,9 +1,15 @@
-import { shrineMap } from '../../data'
+import { shrineMap, shrineBuffMap } from '../../data'
 import { worldMap } from '../../data/worldMap'
 import { shrineLevelColor } from '../../utils/appUtils'
+import { getLegendTalentLevel } from '../../utils/legendTalentUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
+import BuffsPanel from '../BuffsPanel/BuffsPanel'
 
 import './shrines.css'
+
+// Dancing Coral bonuses start once a shrine's building passes this level
+const CORAL_START_LEVEL = 200
+const WORLD_ORDER_TALENT = 38
 
 function compactNumber(n) {
   if (n >= 1e9) return (Math.floor(n / 1e8) / 10).toFixed(1).replace(/\.0$/, '') + 'B'
@@ -13,28 +19,44 @@ function compactNumber(n) {
 }
 
 function formatBonus(value, isMultiplier = false) {
-  if (isMultiplier) return `${value.toFixed(2)}x`
-  return `+${Number.isInteger(value) ? value : value.toFixed(1)}%`
+  if (isMultiplier) return `${(1 + value / 100).toFixed(2)}x`
+  return `+${Number.isInteger(value) ? value.toLocaleString() : value.toFixed(1)}%`
+}
+
+// Buffs panel: save-backed unlocks, null = unknown (older import or not readable from the save)
+function getShrineBuffs(snapshot) {
+  const saved = snapshot?.shrineBuffs
+  const fromSave = key => (saved ? !!saved[key] : null)
+  const active = {
+    architect: fromSave('architect'),
+    worldTour: fromSave('labUnlocked'),
+    moaiHead: fromSave('moaiHead'),
+    bargaining: fromSave('bargaining'),
+    worldOrder: snapshot?.legendTalents
+      ? getLegendTalentLevel(snapshot.legendTalents, WORLD_ORDER_TALENT) > 0
+      : null,
+  }
+  return Object.entries(shrineBuffMap).map(([key, buff]) => ({
+    key,
+    ...buff,
+    active: active[key],
+  }))
 }
 
 function ShrineCard({ id, level, xp, xpRequired, mapIndex, constructionLevel }) {
   const entry = shrineMap[id]
   const name = entry?.name ?? `Shrine ${id}`
   const location = worldMap[mapIndex] ?? `Map ${mapIndex}`
+  const coral = entry?.coral
 
   const currentBonus = entry
     ? entry.baseBonus + (level - 1) * entry.bonusPerLevel
     : null
 
-  let currentBonus2 = null
-  if (entry?.bonus2 && constructionLevel > 200) {
-    const levelsAbove200 = constructionLevel - 200
-    if (id === 21) {
-      currentBonus2 = 1 + (entry.bonusPerLevel2 - 1) * levelsAbove200
-    } else {
-      currentBonus2 = entry.bonusPerLevel2 * levelsAbove200
-    }
-  }
+  const coralUnlocked = coral && constructionLevel > CORAL_START_LEVEL
+  const coralBonus = coralUnlocked
+    ? coral.perLevel * (constructionLevel - CORAL_START_LEVEL)
+    : null
 
   const pct = xpRequired > 0 ? Math.min((xp / xpRequired) * 100, 100) : 0
   const levelColor = shrineLevelColor(level)
@@ -42,6 +64,25 @@ function ShrineCard({ id, level, xp, xpRequired, mapIndex, constructionLevel }) 
   return (
     <div className="shrine-card">
       <div className="shrine-card-top">
+        <span className="shrine-building tooltip-anchor">
+          <img
+            src="images/skills/construction.png"
+            alt="Construction"
+            className="shrine-building-icon"
+          />
+          {constructionLevel}
+          <span className="tooltip shrine-tooltip">
+            <span className="shrine-tooltip-name">Building Lv {constructionLevel}</span>
+            <span className="shrine-tooltip-line">
+              {(1 + constructionLevel / 10).toFixed(1)}x Shrine EXP gain (+10% per level)
+            </span>
+            {coral && (
+              <span className="shrine-tooltip-line">
+                Past Lv {CORAL_START_LEVEL}: {coral.multi ? `+${coral.perLevel / 100}x` : `+${coral.perLevel}%`} {coral.bonus} per level
+              </span>
+            )}
+          </span>
+        </span>
         <img
           src={`images/shrines/ConTowerB${id}.png`}
           alt={name}
@@ -59,12 +100,18 @@ function ShrineCard({ id, level, xp, xpRequired, mapIndex, constructionLevel }) 
             {formatBonus(currentBonus)} {entry.bonus}
           </span>
         )}
-        {currentBonus2 !== null && (
+        {coral && (
           <>
             <div className="shrine-bonus-divider" />
-            <span className="shrine-card-bonus shrine-card-bonus2">
-              {formatBonus(currentBonus2, id === 21)} {entry.bonus2}
-            </span>
+            {coralUnlocked ? (
+              <span className="shrine-card-bonus shrine-card-coral">
+                {formatBonus(coralBonus, coral.multi)} {coral.bonus}
+              </span>
+            ) : (
+              <span className="shrine-card-bonus shrine-card-coral--locked">
+                {coral.bonus} at building Lv {CORAL_START_LEVEL + 1}
+              </span>
+            )}
           </>
         )}
         <div className="shrine-progress-track">
@@ -100,17 +147,17 @@ export default function Shrines({ snapshot }) {
     <div className="page">
       <h2 className="page-title">Shrines</h2>
       <InfoPanel
-      intro="This page covers everything you need to know about Shrines — including Shrine Level, Shrine Bonus, required EXP, and Shrine location."
-      items={[
-        'To place Shrines on a map, you\'ll need the Star Talent "Shrine Architect," which is unlocked by completing the quest "Taking Samples" from Hoggindaz in World 3.',
-        'Shrines grant bonuses to any character on the same map and gain EXP when you collect AFK gains there. Be careful — moving a Shrine to a new map will reset all progress toward its next level.',
-        'Several bonuses across IdleOn make working with Shrines more convenient:',
-        'World 4 – Lab Bonus "Shrine World Tour": Place a Shrine in a town map and it will apply to every map in that entire world!',
-        'World 5 – Sailing Artifact "Moai Head": Receive bonuses from all Shrines regardless of which map you\'re on. Note: you must still be in the same map or world to level them up.',
-        'World 6 – Jade Emporium "Shrine Collective Bargaining Agreement": Shrines no longer lose EXP when moved, so feel free to relocate them without any penalty.',
-        'World 7 – Legend Talent "Shrine World Order Bill": Shrines gain EXP from AFK gains regardless of which world you\'re in!',
-        'With all bonuses active, Shrines can be placed in any world and you\'ll receive all bonuses and level them up no matter where your characters are.',
-      ]}
+        intro="This page covers everything you need to know about Shrines — including Shrine Level, Shrine Bonus, required EXP, building level, and Shrine location."
+        items={[
+          'Shrines grant bonuses to any character on the same map and gain EXP when you collect AFK gains there. Moving a Shrine to a new map resets its progress toward the next level.',
+          'Each Shrine is also a Construction building. Its building level (top corner of each card) multiplies its EXP gain by +10% per level.',
+          'World 7 – Dancing Coral: once a Shrine\'s building passes Lv 200, every extra level adds a second bonus, shown under the divider on its card.',
+          'The buffs below make Shrines much easier to manage. With all of them, Shrines can sit in any world and still level up and apply to every character. Hover each one for details.',
+        ]}
+      />
+      <BuffsPanel
+        title="Shrine Buffs"
+        buffs={getShrineBuffs(snapshot)}
       />
       <div className="shrine-card-grid">
         {shrines.map(({ id, level, xp, xpRequired, mapIndex, constructionLevel }) => (
