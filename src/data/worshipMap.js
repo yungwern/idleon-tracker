@@ -1,9 +1,12 @@
+// setupWave = wave reached in that totem's example setup screenshot
+// (public/images/worship/setups/<totemKey>.webp)
 export const worshipMap = {
     totem_0: {
         name: 'Goblin Gorefest',
         map: 'Forest Outskirts',
         soul: 'Forest Soul',
         chargeReq: 25,
+        setupWave: 120,
         prayers: [
             { name: 'Big Brain Time', wave: 10 },
             { name: 'Skilled Dimwit', wave: 25 },
@@ -17,6 +20,7 @@ export const worshipMap = {
         map: 'Up Up Down Down',
         soul: 'Dune Soul',
         chargeReq: 40,
+        setupWave: 150,
         prayers: [
             { name: 'Tachion of the Titans', wave: 11 },
             { name: 'Balance of Precision', wave: 31 },
@@ -29,6 +33,7 @@ export const worshipMap = {
         map: 'The Roots',
         soul: 'Rooted Soul',
         chargeReq: 60,
+        setupWave: 180,
         prayers: [
             { name: 'The Royal Sampler', wave: 21 },
             { name: 'Antifun Spirit', wave: 41 },
@@ -41,6 +46,7 @@ export const worshipMap = {
         map: "Rollin' Tundra",
         soul: 'Frigid Soul',
         chargeReq: 90,
+        setupWave: 181,
         prayers: [
             { name: 'Fibers of Absence', wave: 21 },
             { name: 'Vascous Tissue', wave: 51 },
@@ -52,6 +58,7 @@ export const worshipMap = {
         map: 'Mountainous Deugh',
         soul: 'Squishy Soul',
         chargeReq: 120,
+        setupWave: 110,
         prayers: [
             { name: 'Balance of Pain', wave: 21 },
             { name: 'Balance of Proficiency', wave: 51 },
@@ -63,18 +70,21 @@ export const worshipMap = {
         map: 'OJ Bay',
         soul: 'Oozie Soul',
         chargeReq: 250,
+        setupWave: 80,
     },
     totem_6: {
         name: 'Breezy Battle',
         map: 'Above the Clouds',
         soul: 'Breezy Soul',
         chargeReq: 500,
+        setupWave: 110,
     },
     totem_7: {
         name: 'Pufferblob Brawl',
         map: 'Puffpuff Overpass',
         soul: 'Deepsea Soul',
         chargeReq: 1000,
+        setupWave: 150,
     },
 }
 
@@ -123,96 +133,96 @@ export const towerMap = {
             b: 'Boulders can hit +2 more enemies',
         },
     },
-ConTower12: {
-    name: 'Frozone Malone',
-    bonus: 'Range',
-    upgReq: 'Refinery2',
-    amount: 7,
-    costInc: [1.5, 1.6],
-    traits: {
-        a: 'Freezing effect slows enemies +15% more',
-        b: 'Monsters stay frozen +2 seconds longer',
+    ConTower12: {
+        name: 'Frozone Malone',
+        bonus: 'Range',
+        upgReq: 'Refinery2',
+        amount: 7,
+        costInc: [1.5, 1.6],
+        traits: {
+            a: 'Freezing effect slows enemies +15% more',
+            b: 'Monsters stay frozen +2 seconds longer',
+        },
+        setup: ['AAAAAA'],
+        setupDesc: [
+            'Maximizes the slow effect on enemies, keeping them in range of your damage towers longer.',
+        ],
     },
-    setup: ['AAAAAA'],
-    setupDesc: [
-        'Maximizes the slow effect on enemies, keeping them in range of your damage towers longer.',
-    ],
-},
-ConTower13: {
-    name: 'Stormcaller',
-    bonus: 'Damage',
-    upgReq: 'Refinery3',
-    amount: 5,
-    costInc: [30, 1.7],
-    traits: {
-        a: '+200% dmg to monsters below 60% HP',
-        b: 'All towers in range gain +20% crit chance',
+    ConTower13: {
+        name: 'Stormcaller',
+        bonus: 'Damage',
+        upgReq: 'Refinery3',
+        amount: 5,
+        costInc: [30, 1.7],
+        traits: {
+            a: '+200% dmg to monsters below 60% HP',
+            b: 'All towers in range gain +20% crit chance',
+        },
+        setup: ['BBBBBA', 'AAAAAA'],
+        setupDesc: [
+            'Boosts crit chance for all nearby towers, amplifying your entire setup\'s damage output.',
+            'Greatly increases damage against weakened enemies, making Stormcaller a powerful finisher.',
+        ],
     },
-    setup: ['BBBBBA', 'AAAAAA'],
-    setupDesc: [
-        'Boosts crit chance for all nearby towers, amplifying your entire setup\'s damage output.',
-        'Greatly increases damage against weakened enemies, making Stormcaller a powerful finisher.',
-    ],
-},
-ConTower14: {
-    name: 'Party Starter',
-    bonus: 'Range',
-    upgReq: 'Refinery3',
-    amount: 9,
-    costInc: [4, 1.7],
-    traits: {
-        a: 'Other towers in range get +25% speed',
-        b: 'All towers in entire map get +15% dmg',
+    ConTower14: {
+        name: 'Party Starter',
+        bonus: 'Range',
+        upgReq: 'Refinery3',
+        amount: 9,
+        costInc: [4, 1.7],
+        traits: {
+            a: 'Other towers in range get +25% speed',
+            b: 'All towers in entire map get +15% dmg',
+        },
+        setup: ['AAABBB', 'BBBBBB'],
+        setupDesc: [
+            'Increases the attack speed of nearby towers while also buffing map-wide damage.',
+            'Maximizes the damage buff across your entire map for the highest possible tower output.',
+        ],
     },
-    setup: ['AAABBB', 'BBBBBB'],
-    setupDesc: [
-        'Increases the attack speed of nearby towers while also buffing map-wide damage.',
-        'Maximizes the damage buff across your entire map for the highest possible tower output.',
-    ],
-},
-ConTower15: {
-    name: 'Kraken Cosplayer',
-    bonus: 'Spawn Rate',
-    upgReq: 'Refinery4',
-    amount: 7,
-    costInc: [3, 1.6],
-    traits: {
-        a: '+1 max underlings from this tower',
-        b: 'Underlings push mobs back +25% farther',
+    ConTower15: {
+        name: 'Kraken Cosplayer',
+        bonus: 'Spawn Rate',
+        upgReq: 'Refinery4',
+        amount: 7,
+        costInc: [3, 1.6],
+        traits: {
+            a: '+1 max underlings from this tower',
+            b: 'Underlings push mobs back +25% farther',
+        },
+        setup: ['BAAAA'],
+        setupDesc: [
+            'Leads with extra pushback, then stacks additional underlings for sustained crowd control.',
+        ],
     },
-    setup: ['BAAAA'],
-    setupDesc: [
-        'Leads with extra pushback, then stacks additional underlings for sustained crowd control.',
-    ],
-},
-ConTower16: {
-    name: 'Poisonic Elder',
-    bonus: 'Damage',
-    upgReq: 'Refinery5',
-    amount: 10,
-    costInc: [15, 1.6],
-    traits: {
-        a: 'Poison cloud lasts +5 seconds longer (base time is 10s)',
-        b: 'Clouds hit monsters +30% more often',
+    ConTower16: {
+        name: 'Poisonic Elder',
+        bonus: 'Damage',
+        upgReq: 'Refinery5',
+        amount: 10,
+        costInc: [15, 1.6],
+        traits: {
+            a: 'Poison cloud lasts +5 seconds longer (base time is 10s)',
+            b: 'Clouds hit monsters +30% more often',
+        },
+        setup: ['ABABBB'],
+        setupDesc: [
+            'Balances longer poison duration with more frequent cloud hits before committing to maximizing hit frequency.',
+        ],
     },
-    setup: ['ABABBB'],
-    setupDesc: [
-        'Balances longer poison duration with more frequent cloud hits before committing to maximizing hit frequency.',
-    ],
-},
-ConTower17: {
-    name: 'Voidinator',
-    bonus: 'Range',
-    upgReq: 'Refinery6',
-    amount: 20,
-    costInc: [0.7, 0.8],
-    traits: {
-        a: '+25% chance on cast for fast cooldown',
-        b: 'All towers in entire map get +20% dmg',
+    ConTower17: {
+        name: 'Voidinator',
+        bonus: 'Range',
+        upgReq: 'Refinery6',
+        amount: 20,
+        costInc: [0.7, 0.8],
+        traits: {
+            a: '+25% chance on cast for fast cooldown',
+            b: 'All towers in entire map get +20% dmg',
+        },
+        setup: ['BBBB'],
+        setupDesc: [
+            'Provides a strong map-wide damage bonus to all towers.',
+        ],
     },
-    setup: ['BBBB'],
-    setupDesc: [
-        'Provides a strong map-wide damage bonus to all towers.',
-    ],
-},
 }
