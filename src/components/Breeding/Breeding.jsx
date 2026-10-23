@@ -1,25 +1,15 @@
 import { useState, useMemo } from 'react'
-import { breedingMap, geneMap, spiceMap, PASSIVE_ORDER, PASSIVE_CATEGORIES, fightingTierList, fightingComps, territoryComps } from '../../data/breedingMap'
+import { breedingMap, geneMap, PASSIVE_ORDER, PASSIVE_CATEGORIES, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL } from '../../data/breedingMap'
 import TierList from '../TierList/TierList'
 import InfoPanel from '../InfoPanel/InfoPanel'
+import BuffsPanel from '../BuffsPanel/BuffsPanel'
+import SpiceOptimizer from './SpiceOptimizer'
 
 import './Breeding.css'
 
 // ============================================================
 // CONSTANTS
 // ============================================================
-
-const FORMATION_LABELS = [
-  'Earlygame',
-  'Midgame',
-  'Current Meta',
-  'Current Meta (NBLB)',
-]
-
-const DEFAULT_FORMATION = 3 // Current Meta (NBLB)
-const FORMATION_3_SPICE = 4
-const FORMATION_1_SPICE = 5
-const MAX_SHINY_LEVEL = 20
 
 // ── Passive group order ───────────────────────────────────────────────────────
 function formatPassiveLabel(passive) {
@@ -69,113 +59,6 @@ function GeneIcon({ geneName }) {
 }
 
 // ============================================================
-// SPICE ROW
-// ============================================================
-
-function SpiceRow({ spiceKey, spice, formationIndex }) {
-  const formation = spice.formations?.[formationIndex] ?? ['', '', '', '']
-
-  return (
-    <div className="breeding-spice-row">
-      <div className="breeding-spice-info">
-        <img
-          src={`images/breeding/${spiceKey}.png`}
-          alt={spice.name}
-          className="breeding-spice-img"
-          onError={e => { e.currentTarget.style.display = 'none' }}
-        />
-        <span className="breeding-spice-name" style={{ color: spice.color }}>
-          {spice.name}
-        </span>
-      </div>
-      <div className="breeding-formation-slots">
-        {formation.map((gene, i) => (
-          <GeneIcon key={i} geneName={gene} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ============================================================
-// SINGLE SPICE GUIDE
-// ============================================================
-
-function SingleSpiceGuide({ spiceEntries }) {
-  const getFormation = (formationIndex) => {
-    const entry = spiceEntries.find(([, spice]) => {
-      const formation = spice.formations?.[formationIndex] ?? []
-      return formation.some(g => g !== '')
-    })
-    return entry ? entry[1].formations[formationIndex] : null
-  }
-
-  const bestFormation = getFormation(FORMATION_1_SPICE)
-  const altFormation = getFormation(FORMATION_3_SPICE)
-
-  if (!bestFormation && !altFormation) return null
-
-  return (
-    <div className="breeding-single-spice-guide">
-      {bestFormation && (
-        <>
-          <p className="breeding-guide-text">Use this formation for the fastest single spice clear.</p>
-          <div className="breeding-formation-slots breeding-formation-slots--static">
-            {bestFormation.map((gene, i) => (
-              <GeneIcon key={i} geneName={gene} />
-            ))}
-          </div>
-        </>
-      )}
-      {altFormation && (
-        <>
-          <p className="breeding-guide-text">If the above formation isn't available, this alternative can fill the gap for your target spice.</p>
-          <div className="breeding-static-formations-list">
-            {spiceEntries
-              .filter(([, spice]) => {
-                const formation = spice.formations?.[FORMATION_3_SPICE] ?? []
-                return formation.some(g => g !== '')
-              })
-              .map(([key, spice]) => {
-                const formation = spice.formations[FORMATION_3_SPICE]
-                return (
-                  <div key={key} className="breeding-formation-slots breeding-formation-slots--static">
-                    {formation.map((gene, i) => (
-                      <GeneIcon key={i} geneName={gene} />
-                    ))}
-                  </div>
-                )
-              })}
-          </div>
-          <p className="breeding-guide-text">Place the spice you want to focus in the middle row.</p>
-        </>
-      )}
-    </div>
-  )
-}
-
-// ============================================================
-// SPICE TABLE
-// ============================================================
-
-function SpiceTable({ title, spiceEntries, formationIndex }) {
-  const filtered = spiceEntries.filter(([, spice]) => {
-    const formation = spice.formations?.[formationIndex] ?? []
-    return formation.some(g => g !== '')
-  })
-
-  if (!filtered.length) return null
-
-  return (
-    <div className="breeding-table">
-      {filtered.map(([key, spice]) => (
-        <SpiceRow key={key} spiceKey={key} spice={spice} formationIndex={formationIndex} />
-      ))}
-    </div>
-  )
-}
-
-// ============================================================
 // SHINY HELPERS
 // ============================================================
 
@@ -183,19 +66,61 @@ function getShinyThreshold(index) {
   return Math.floor((1 + Math.pow(index + 1, 1.6)) * Math.pow(1.7, index + 1))
 }
 
-function getShinyLevel(shinyPetsLevels, worldIndex, petIndex) {
+// Buffs panel: active null = unknown (import from before this was read)
+function getBreedingBuffs(breeding) {
+  return Object.entries(breedingBuffMap).map(([key, buff]) => ({
+    key,
+    ...buff,
+    active: breeding?.[key] ?? null,
+  }))
+}
+
+function getMaxShinyLevel(buffs) {
+  return buffs.reduce((max, buff) => max + (buff.active ? buff.maxShinyBonus : 0), BASE_MAX_SHINY_LEVEL)
+}
+
+// Each Shiny level above the base cap is +1 OverLV, and each OverLV is +10% Mob DMG and Shiny LV Up Rate
+// (game: "Breeding:SpecialzOverLVL"). Counts every pet, not just the ones shown on the page.
+const OVER_LEVEL_BONUS = 10
+
+function getShinyOverLevels(shinyPetsLevels, maxShinyLevel) {
+  return Object.values(breedingMap).reduce((sum, pet) => {
+    const { worldIndex, petIndex } = parseWorldCoords(pet.world)
+    const level = getShinyLevel(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel)
+    return sum + Math.max(0, level - BASE_MAX_SHINY_LEVEL)
+  }, 0)
+}
+
+function OverLevelSummary({ overLevels }) {
+  const multi = 1 + (overLevels * OVER_LEVEL_BONUS) / 100
+  return (
+    <div className="breeding-overlv tooltip-anchor">
+      <span className="breeding-overlv-label">OverLV</span>
+      <span className="breeding-overlv-value">{overLevels}</span>
+      <span className="breeding-overlv-multi">{multi.toFixed(2)}x Mob DMG &amp; Shiny LV Up Rate</span>
+      <span className="tooltip buff-tooltip">
+        <span className="buff-tooltip-name">Shiny OverLV</span>
+        <span className="buff-tooltip-line">
+          Every Shiny level above {BASE_MAX_SHINY_LEVEL} on any pet is +1 OverLV. Each OverLV gives +{OVER_LEVEL_BONUS}% Mob DMG and Shiny LV Up Rate.
+        </span>
+      </span>
+    </div>
+  )
+}
+
+function getShinyLevel(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel) {
   const counter = shinyPetsLevels?.[worldIndex]?.[petIndex]
-  const level = new Array(19).fill(1).reduce((sum, _, index) =>
+  const level = new Array(maxShinyLevel - 1).fill(1).reduce((sum, _, index) =>
     counter > getShinyThreshold(index) ? index + 2 : sum, 0)
   return counter === 0 ? 0 : level === 0 ? 1 : level
 }
 
-function getShinyProgress(shinyPetsLevels, worldIndex, petIndex) {
+function getShinyProgress(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel) {
   const counter = shinyPetsLevels?.[worldIndex]?.[petIndex] ?? 0
-  const level = getShinyLevel(shinyPetsLevels, worldIndex, petIndex)
+  const level = getShinyLevel(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel)
 
   if (counter === 0) return { level: 0, counter, percent: 0, daysLeft: null, maxed: false }
-  if (level >= MAX_SHINY_LEVEL) return { level, counter, percent: 100, daysLeft: null, maxed: true }
+  if (level >= maxShinyLevel) return { level, counter, percent: 100, daysLeft: null, maxed: true }
 
   const nextThreshold = getShinyThreshold(level - 1)
   const prevThreshold = level <= 1 ? 0 : getShinyThreshold(level - 2)
@@ -421,13 +346,16 @@ function CompRow({ comp }) {
 
 export default function Breeding({ snapshot }) {
   const [activeTab, setActiveTab] = useState('shiny')
-  const [activeFormation, setActiveFormation] = useState(DEFAULT_FORMATION)
   const [hideMaxed, setHideMaxed] = useState(false)
   const [bonusFilter, setBonusFilter] = useState('')
 
-  const spiceEntries = Object.entries(spiceMap)
   const shinyPetsLevels = snapshot?.breeding?.shinyPetsLevels ?? []
   const fencePets = snapshot?.breeding?.fencePets ?? {}
+  const breedingBuffs = useMemo(() => getBreedingBuffs(snapshot?.breeding), [snapshot?.breeding])
+  const maxShinyLevel = getMaxShinyLevel(breedingBuffs)
+  const overLevels = useMemo(() =>
+    getShinyOverLevels(shinyPetsLevels, maxShinyLevel)
+  , [shinyPetsLevels, maxShinyLevel])
 
   const geneItemMap = useMemo(() =>
     Object.fromEntries(Object.entries(geneMap).map(([key, v]) => [key, { name: v.name }]))
@@ -438,7 +366,7 @@ export default function Breeding({ snapshot }) {
   const sortedPets = useMemo(() => {
     const allPets = Object.entries(breedingMap).map(([key, pet]) => {
       const { worldIndex: wi, petIndex: pi } = parseWorldCoords(pet.world)
-      const shiny = getShinyProgress(shinyPetsLevels, wi, pi)
+      const shiny = getShinyProgress(shinyPetsLevels, wi, pi, maxShinyLevel)
       const fenceCount = pet.rawName ? (fencePets[pet.rawName] ?? 0) : 0
       return { key, pet, shiny, fenceCount }
     })
@@ -454,7 +382,7 @@ export default function Breeding({ snapshot }) {
         const { worldIndex: wb, petIndex: pb } = parseWorldCoords(b.pet.world)
         return wa !== wb ? wa - wb : pa - pb
       })
-  }, [shinyPetsLevels, fencePets])
+  }, [shinyPetsLevels, fencePets, maxShinyLevel])
 
   const { highlightedPets, otherGroups } = useMemo(() => {
     const groupByPassive = (pets) => {
@@ -502,6 +430,7 @@ export default function Breeding({ snapshot }) {
       intro="This page is used for all things Breeding. Track the levels and bonus of shiny pets, find the best spice formations as well as best comps for completing The Arena. Here are a few things to keep in mind:"
       items={[
         'Shinies are for the most part displayed in order of importance. There are a few exceptions like obtaining all infinite star signs and as always weigh things based on your accounts needs.',
+        'Spice Formations finds the best gene types to run on each territory, using the types you own. It counts a Converter as claiming each batch about twice, since half the time it keeps the spices waiting for another claim. Hover a gene to see what it does.',
         'Pet Fighting Comps are just a general guidance. No guarantees for 100% success rate. If you\'re following the guide and still struggling, pet power can often be a way to brute force through the content.',
       ]}
       />
@@ -530,23 +459,7 @@ export default function Breeding({ snapshot }) {
 
       {/* ── Spice Formations Tab ── */}
       {activeTab === 'spice' && (
-        <>
-          <SingleSpiceGuide spiceEntries={spiceEntries} />
-
-          <div className="breeding-formation-selector">
-            {FORMATION_LABELS.map((label, i) => (
-              <button
-                key={i}
-                className={`breeding-formation-btn ${activeFormation === i ? 'breeding-formation-btn--active' : ''}`}
-                onClick={() => setActiveFormation(i)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <SpiceTable title="Spice" spiceEntries={spiceEntries} formationIndex={activeFormation} />
-        </>
+        <SpiceOptimizer breeding={snapshot?.breeding} />
       )}
 
       {/* ── Shiny Levels Tab ── */}
@@ -556,6 +469,13 @@ export default function Breeding({ snapshot }) {
             <p className="page-empty">No breeding data found. Import your save to get started.</p>
           ) : (
             <>
+              <BuffsPanel
+                title="Shiny Buffs"
+                buffs={breedingBuffs}
+              />
+              {maxShinyLevel > BASE_MAX_SHINY_LEVEL && (
+                <OverLevelSummary overLevels={overLevels} />
+              )}
               <div className="breeding-shiny-controls">
                 <label className="styled-checkbox">
                   <input

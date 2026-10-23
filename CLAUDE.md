@@ -38,7 +38,12 @@ src/
 └── utils/              # appUtils.js (toClassSlug, statueLevelColor, shrineLevelColor),
                         # talentUtils.js (super talent points for Overview notifications),
                         # cogBoardUtils.js (cog names, board border groups, big-number format),
+                        # cookingUtils.js (ribbonMulti/ribbonTierClass from the game formula, max rank 25;
+                        #   masteryNodeMulti for Cooking Mastery yellow nodes = snapshot.cooking.masteryNodes),
                         # *Notices.js (notification counts, see Notifications below)
+                        # spiceOptimizer.js — Breeding > Spice Formations: forage model (Toolbox TotalTrekkingHR/REQ,
+                        #   checked against real saves) + best gene-type formation per territory (owned types,
+                        #   typical power, not specific pets); runs in spiceOptimizer.worker.js.
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
                         # Data source of truth: the IdleonToolbox repo (github.com/Morta1/IdleonToolbox) —
@@ -94,6 +99,13 @@ d = % Bonus Construct EXP, f = % Player Construct XP, b = player Construct EXP/h
 **Buffs panel**: `BuffsPanel` (styles in global.css) is the centered unlocked/missing/unknown icon strip under the
 InfoPanel — BiS Setups (Card Buffs) and Shrines use it. Pass `active: null` when the save can't tell.
 Shrine building levels (Tower[18..26]) give the W7 Dancing Coral bonus past Lv 200 (`coral` in shrineMap.js).
+Breeding uses it too (`breedingBuffMap` in breedingMap.js): W7 Menagerie unlock 11 (Menagerie[2][11]) raises max shiny
+LV from 20 to 30. Menagerie unlock names/tooltips are Toolbox research.json [56]/[62]; icons are MenaIconO<N>.png.
+
+**Spice territories**: Pets[27+4i..] = team on territory i (Pets[0-26] fence, PetsStored = storage), each pet
+[rawName, geneId, power]. Territory[i] = [bar progress, fills, ?, 'CookingSpice{i}' | 'Blank' if locked, spices to claim].
+Territories can unlock out of order (16 open while 14 locked). A Converter keep also keeps the spices to claim, so a
+batch can be claimed again (counted as ~2 claims per batch).
 
 **Adding new pages**: register the section in `data/sections.js` and wire up the component in `App.jsx`
 

@@ -1,41 +1,124 @@
 import { useState } from 'react'
 import { cookingMap, cookingBonusTypes, ribbonData } from '../../data'
+import { ribbonMulti, ribbonTierClass, masteryNodeMulti, RIBBON_MAX_RANK } from '../../utils/cookingUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
-
 import './Cooking.css'
 
+const TABS = [
+  { id: 'meals', label: 'Meal Ribbons' },
+  { id: 'shelf', label: 'Ribbon Shelf' },
+]
 
+const hideBrokenImg = e => {
+  e.currentTarget.style.display = 'none'
+}
+
+const mealIndex = (pngKey) => Number(pngKey.replace('CookingMB', ''))
+const ribbonPriority = (pngKey) => Number(cookingMap[pngKey].ribbonPriority) || 999
+
+// Highest meal index wins ties (newest meal first)
+const newestFirst = (a, b) => mealIndex(b.pngKey) - mealIndex(a.pngKey)
 
 // ============================================================
-// MEAL CARD (unchanged)
+// RIBBON TOOLTIP
 // ============================================================
 
-function MealCard({ pngKey, level, ribbonRank }) {
+const pctGain = (from, to) => `+${Math.round((to / from - 1) * 100)}%`
+
+function RibbonTooltip({ rank }) {
+  if (rank === 0) {
+    return (
+      <span className="tooltip cooking-tooltip">
+        <span className="cooking-tooltip-title cooking-tooltip-title--plain">No Ribbon</span>
+        <span>Rank 1 gives {ribbonMulti(1).toFixed(2)}x</span>
+      </span>
+    )
+  }
+
+  const multi = ribbonMulti(rank)
+  const isMax = rank >= RIBBON_MAX_RANK
+  const nextMulti = ribbonMulti(rank + 1)
+  const breakpoint = Math.min(RIBBON_MAX_RANK, (Math.floor(rank / 5) + 1) * 5)
+  const breakpointMulti = ribbonMulti(breakpoint)
+
+  return (
+    <span className="tooltip cooking-tooltip">
+      <span className="cooking-tooltip-header">
+        <img
+          src={`images/cooking/Ribbon${rank - 1}.png`}
+          alt=""
+          className="cooking-tooltip-ribbon"
+        />
+        <span className={`cooking-tooltip-title ${ribbonTierClass(rank)}`}>Rank {rank} Ribbon</span>
+      </span>
+      <span className="cooking-tooltip-total">Multi: {multi.toFixed(2)}x</span>
+      {isMax ? (
+        <span>Max rank</span>
+      ) : (
+        <>
+          <span>
+            Next rank: {nextMulti.toFixed(2)}x
+            <span className="cooking-tooltip-gain"> ({pctGain(multi, nextMulti)})</span>
+          </span>
+          {breakpoint > rank + 1 && (
+            <span>
+              Rank {breakpoint}: {breakpointMulti.toFixed(2)}x
+              <span className="cooking-tooltip-gain"> ({pctGain(multi, breakpointMulti)})</span>
+            </span>
+          )}
+        </>
+      )}
+    </span>
+  )
+}
+
+// ============================================================
+// MEAL CARD
+// ============================================================
+
+function MealCard({ pngKey, level, ribbonRank, nodeLevel = 0 }) {
   const meal = cookingMap[pngKey]
   if (!meal) return null
+
+  const ribbonX = ribbonMulti(ribbonRank)
+  const nodeX = masteryNodeMulti(nodeLevel)
 
   return (
     <div className="meal-card">
       <div className="meal-card-top">
+        {nodeLevel > 0 && (
+          <div className="meal-node-badge tooltip-anchor">
+            <img
+              src="images/cooking/CookingMasteryGold.png"
+              alt=""
+              className="meal-node-icon"
+            />
+            {nodeLevel}
+            <span className="tooltip cooking-tooltip">
+              <span className="cooking-tooltip-title cooking-tooltip-title--node">Mastery Node Lv {nodeLevel}</span>
+              <span>Node: {nodeX.toFixed(2)}x</span>
+              <span>Ribbon: {ribbonX.toFixed(2)}x</span>
+              <span className="cooking-tooltip-total">Total: {(nodeX * ribbonX).toFixed(2)}x</span>
+            </span>
+          </div>
+        )}
         <img
           src={`images/cooking/${pngKey}.png`}
           alt={meal.name}
           className="meal-img"
-          onError={e => { e.currentTarget.style.display = 'none' }}
+          onError={hideBrokenImg}
         />
         <div className="meal-ribbon-overlay tooltip-anchor">
           <img
             src={`images/cooking/Ribbon${ribbonRank > 0 ? ribbonRank - 1 : 0}.png`}
             alt={`Ribbon ${ribbonRank}`}
             className={`meal-ribbon-img ${ribbonRank === 0 ? 'meal-ribbon-none' : ''}`}
-            onError={e => { e.currentTarget.style.display = 'none' }}
+            onError={hideBrokenImg}
           />
           {ribbonRank > 0 && (
-            <>
-              <span className={`meal-ribbon-rank ${ribbonRank <= 4 ? 'ribbon-white' : ribbonRank <= 9 ? 'ribbon-bronze' : ribbonRank <= 14 ? 'ribbon-silver' : ribbonRank <= 19 ? 'ribbon-gold' : 'ribbon-diamond'}`}>{ribbonRank}</span>
-              <span className="tooltip">Rank {ribbonRank} — {ribbonData[ribbonRank - 1]?.multi ?? '?'}x</span>
-            </>
+            <span className={`meal-ribbon-rank ${ribbonTierClass(ribbonRank)}`}>{ribbonRank}</span>
           )}
+          <RibbonTooltip rank={ribbonRank} />
         </div>
       </div>
       <div className="meal-card-body">
@@ -59,18 +142,22 @@ function RibbonShelfTab({ slots }) {
           <div className="cooking-group-label">Ribbon Shelf</div>
           <div className="ribbon-shelf-grid">
             {slots.map((rank, i) => (
-              <div key={i} className={`ribbon-shelf-slot ${rank === 0 ? 'ribbon-shelf-slot--empty' : ''}`}>
+              <div
+                key={i}
+                className={`ribbon-shelf-slot ${rank > 0 ? 'tooltip-anchor' : 'ribbon-shelf-slot--empty'}`}
+              >
                 {rank > 0 ? (
                   <>
                     <img
                       src={`images/cooking/Ribbon${rank - 1}.png`}
                       alt={`Ribbon ${rank}`}
                       className="ribbon-shelf-img"
-                      onError={e => { e.currentTarget.style.display = 'none' }}
+                      onError={hideBrokenImg}
                     />
-                    <span className={`ribbon-shelf-rank ${rank <= 4 ? 'ribbon-white' : rank <= 9 ? 'ribbon-bronze' : rank <= 14 ? 'ribbon-silver' : rank <= 19 ? 'ribbon-gold' : 'ribbon-diamond'}`}>
+                    <span className={`ribbon-shelf-rank ${ribbonTierClass(rank)}`}>
                       {rank}
                     </span>
+                    <RibbonTooltip rank={rank} />
                   </>
                 ) : (
                   <div className="ribbon-shelf-empty" />
@@ -92,14 +179,14 @@ function RibbonShelfTab({ slots }) {
               </tr>
             </thead>
             <tbody>
-              {ribbonData.map(({ rank, multi, vsLast }) => (
+              {ribbonData.map(({ rank, multi, vsLast, rank1sRequired }) => (
                 <tr key={rank} className={rank % 5 === 0 ? 'ribbon-table-row--milestone' : ''}>
-                  <td className={rank <= 4 ? 'ribbon-white' : rank <= 9 ? 'ribbon-bronze' : rank <= 14 ? 'ribbon-silver' : rank <= 19 ? 'ribbon-gold' : 'ribbon-diamond'}>
+                  <td className={ribbonTierClass(rank)}>
                     {rank}
                   </td>
-                  <td>{multi}x</td>
-                  <td>{vsLast ? `${vsLast}x` : '—'}</td>
-                  <td>{rank === 1 ? 1 : Math.pow(2, rank - 1).toLocaleString()}</td>
+                  <td>{multi.toFixed(2)}x</td>
+                  <td>{vsLast ? `${vsLast.toFixed(2)}x` : '—'}</td>
+                  <td>{rank1sRequired.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -116,14 +203,15 @@ function RibbonShelfTab({ slots }) {
 
 export default function Cooking({ snapshot }) {
   const [activeTab, setActiveTab] = useState('meals')
-  const { mealLevels = [], mealRibbons = [], cabinetSlots = [] } = snapshot?.cooking ?? {}
+  const { mealLevels = [], mealRibbons = [], cabinetSlots = [], masteryNodes = [] } = snapshot?.cooking ?? {}
 
   const allMeals = Object.keys(cookingMap).map((pngKey) => {
-    const index = parseInt(pngKey.replace('CookingMB', ''))
+    const index = mealIndex(pngKey)
     return {
       pngKey,
       level: mealLevels[index] ?? 0,
       ribbonRank: mealRibbons[index] ?? 0,
+      nodeLevel: masteryNodes[index] ?? 0,
       bonus: cookingMap[pngKey].bonus,
     }
   })
@@ -135,11 +223,7 @@ export default function Cooking({ snapshot }) {
     if (!bonuses.length) return
     const meals = allMeals
       .filter(m => bonuses.includes(m.bonus))
-      .sort((a, b) => {
-        const pa = cookingMap[a.pngKey].ribbonPriority || 999
-        const pb = cookingMap[b.pngKey].ribbonPriority || 999
-        return pa - pb
-      })
+      .sort((a, b) => ribbonPriority(a.pngKey) - ribbonPriority(b.pngKey))
     if (meals.length) {
       grouped[groupName] = meals
       meals.forEach(m => categorized.add(m.pngKey))
@@ -152,12 +236,12 @@ export default function Cooking({ snapshot }) {
   const overallLowest = Math.min(...categorizedMeals.map(m => m.ribbonRank))
   const lowestRibbonMeal = categorizedMeals
     .filter(m => m.ribbonRank === overallLowest)
-    .sort((a, b) => parseInt(b.pngKey.replace('CookingMB', '')) - parseInt(a.pngKey.replace('CookingMB', '')))[0]
+    .sort(newestFirst)[0]
 
   const lowestLevel = Math.min(...allMeals.map(m => m.level))
   const nmlbMeal = allMeals
     .filter(m => m.level === lowestLevel)
-    .sort((a, b) => parseInt(b.pngKey.replace('CookingMB', '')) - parseInt(a.pngKey.replace('CookingMB', '')))[0]
+    .sort(newestFirst)[0]
 
   return (
     <div className="page cooking-page">
@@ -166,29 +250,26 @@ export default function Cooking({ snapshot }) {
       <InfoPanel
         intro="This page is used to track ribbon levels on each meal. A few things to keep in mind when using this page:"
         items={[
-          'Meals are sorted into categories by bonus types.',
-          'Each category is sorted in priority of which meal to ribbon first.',
+          'Meals are sorted into categories by bonus types and each category is sorted in priority of which meal to ribbon first.',
           'Categories are not ordered in priority — use your best judgement to prioritize categories based on account needs.',
           'The category "NRLB / NMLB" is used to easily identify which tier ribbons are no longer needed. For example, if a meal is shown in this category with a level 5 ribbon, then you know that any ribbons below level 5 can be instantly upgraded in your ribbon shelf. This section is NOT intended to be used as a "which ribbon to upgrade next section," although it can be used that way if you want to evenly upgrade ribbon tiers across all your meals.',
-          'In general it\'s best to reach ribbon breakpoints of 5, 10, 15, and 20. Reaching these breakpoints provides the highest multi increases.',
+          'In general it\'s best to reach ribbon breakpoints of 5, 10, 15, 20, and 25. Reaching these breakpoints provides the highest multi increases.',
+          'The gold ladle badge is the meal\'s Cooking Mastery level. Hover it to see the combined multiplier. Each mastery point is worth less than the last (the 1st point is +17%, the 10th only about +1.5%).',
           'Remember that you can upgrade ribbons on existing meals by dragging a ribbon of the same tier on top of it, the same way you upgrade in the ribbon shelf.',
         ]}
       />
 
-      {/* ── Nav Bar ── */}
-      <div className="cooking-nav">
-        <button
-          className={`cooking-nav-btn${activeTab === 'meals' ? ' cooking-nav-btn--active' : ''}`}
-          onClick={() => setActiveTab('meals')}
-        >
-          Meal Ribbons
-        </button>
-        <button
-          className={`cooking-nav-btn${activeTab === 'shelf' ? ' cooking-nav-btn--active' : ''}`}
-          onClick={() => setActiveTab('shelf')}
-        >
-          Ribbon Shelf
-        </button>
+      <div className="page-tabs">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`page-tab-btn${activeTab === tab.id ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* ── Ribbon Shelf Tab ── */}
@@ -203,7 +284,12 @@ export default function Cooking({ snapshot }) {
               <div className="cooking-group-label">No Ribbon Left Behind (NRLB)</div>
               <div className="meal-grid meal-grid--centered">
                 {lowestRibbonMeal && (
-                  <MealCard pngKey={lowestRibbonMeal.pngKey} level={lowestRibbonMeal.level} ribbonRank={lowestRibbonMeal.ribbonRank} />
+                  <MealCard
+                    pngKey={lowestRibbonMeal.pngKey}
+                    level={lowestRibbonMeal.level}
+                    ribbonRank={lowestRibbonMeal.ribbonRank}
+                    nodeLevel={lowestRibbonMeal.nodeLevel}
+                  />
                 )}
               </div>
             </div>
@@ -212,7 +298,12 @@ export default function Cooking({ snapshot }) {
               <div className="cooking-group-label">No Meal Left Behind (NMLB)</div>
               <div className="meal-grid meal-grid--centered">
                 {nmlbMeal && (
-                  <MealCard pngKey={nmlbMeal.pngKey} level={nmlbMeal.level} ribbonRank={nmlbMeal.ribbonRank} />
+                  <MealCard
+                    pngKey={nmlbMeal.pngKey}
+                    level={nmlbMeal.level}
+                    ribbonRank={nmlbMeal.ribbonRank}
+                    nodeLevel={nmlbMeal.nodeLevel}
+                  />
                 )}
               </div>
             </div>
@@ -223,8 +314,14 @@ export default function Cooking({ snapshot }) {
             <div key={title} className="cooking-meal-group">
               <div className="cooking-group-label">{title}</div>
               <div className="meal-grid">
-                {meals.map(({ pngKey, level, ribbonRank }) => (
-                  <MealCard key={pngKey} pngKey={pngKey} level={level} ribbonRank={ribbonRank} />
+                {meals.map(({ pngKey, level, ribbonRank, nodeLevel }) => (
+                  <MealCard
+                    key={pngKey}
+                    pngKey={pngKey}
+                    level={level}
+                    ribbonRank={ribbonRank}
+                    nodeLevel={nodeLevel}
+                  />
                 ))}
               </div>
             </div>
@@ -234,8 +331,14 @@ export default function Cooking({ snapshot }) {
             <div className="cooking-meal-group">
               <div className="cooking-group-label">Uncategorized</div>
               <div className="meal-grid">
-                {uncategorized.map(({ pngKey, level, ribbonRank }) => (
-                  <MealCard key={pngKey} pngKey={pngKey} level={level} ribbonRank={ribbonRank} />
+                {uncategorized.map(({ pngKey, level, ribbonRank, nodeLevel }) => (
+                  <MealCard
+                    key={pngKey}
+                    pngKey={pngKey}
+                    level={level}
+                    ribbonRank={ribbonRank}
+                    nodeLevel={nodeLevel}
+                  />
                 ))}
               </div>
             </div>

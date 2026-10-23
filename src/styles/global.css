@@ -397,6 +397,9 @@ body {
 
 /* Tooltip content (positioning comes from .tooltip) */
 .buff-tooltip {
+  width: max-content;
+  max-width: min(300px, calc(100vw - 32px));
+  white-space: normal;
   text-align: left;
 }
 

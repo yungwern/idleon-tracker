@@ -6,47 +6,6 @@
   max-width: 900px;
 }
 
-/* ── Nav Bar (matches .breeding-nav exactly) ── */
-.cooking-nav {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.cooking-nav-btn {
-  position: relative;
-  padding: 10px 4px;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  border: none;
-  background: none;
-  color: #6b7280;
-  cursor: pointer;
-  transition: color 0.15s;
-}
-
-.cooking-nav-btn:hover {
-  color: #d1d5db;
-}
-
-.cooking-nav-btn--active {
-  color: #a0c4ff;
-}
-
-.cooking-nav-btn--active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: #a0c4ff;
-}
-
 /* ── Group Label (matches .breeding-passive-label exactly) ── */
 .cooking-group-label {
   font-size: 10px;
@@ -168,6 +127,31 @@
      0    2px 0 #000;
 }
 
+/* ── Cooking Mastery Node Badge ── */
+.meal-node-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px 1px 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  cursor: default;
+}
+
+.meal-node-icon {
+  width: 20px;
+  height: 16px;
+  object-fit: contain;
+}
+
 /* ── Card Body ── */
 .meal-card-body {
   padding: 8px 10px;
@@ -197,12 +181,90 @@
   margin-top: 2px;
 }
 
-/* ── Ribbon Rank Colors ── */
-.ribbon-white   { color: #ffffff;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000; }
-.ribbon-bronze  { color: #cd7f32;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(205, 127, 50, 0.9); }
-.ribbon-silver  { color: #c0c0c0;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(192, 192, 192, 0.9); }
-.ribbon-gold    { color: #ffd700;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(255, 215, 0, 0.9); }
-.ribbon-diamond { color: #b9f2ff;  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, -2px 0 0 #000, 2px 0 0 #000, 0 -2px 0 #000, 0 2px 0 #000, 0 0 6px rgba(185, 242, 255, 0.9); }
+/* ── Ribbon Rank Colors ──
+   Picked by ribbonTierClass() in utils/cookingUtils.js ── */
+.ribbon-white {
+  color: #ffffff;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    -2px 0 0 #000,
+    2px 0 0 #000,
+    0 -2px 0 #000,
+    0 2px 0 #000;
+}
+
+.ribbon-bronze {
+  color: #cd7f32;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    -2px 0 0 #000,
+    2px 0 0 #000,
+    0 -2px 0 #000,
+    0 2px 0 #000,
+    0 0 6px rgba(205, 127, 50, 0.9);
+}
+
+.ribbon-silver {
+  color: #c0c0c0;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    -2px 0 0 #000,
+    2px 0 0 #000,
+    0 -2px 0 #000,
+    0 2px 0 #000,
+    0 0 6px rgba(192, 192, 192, 0.9);
+}
+
+.ribbon-gold {
+  color: #ffd700;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    -2px 0 0 #000,
+    2px 0 0 #000,
+    0 -2px 0 #000,
+    0 2px 0 #000,
+    0 0 6px rgba(255, 215, 0, 0.9);
+}
+
+.ribbon-diamond {
+  color: #b9f2ff;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    -2px 0 0 #000,
+    2px 0 0 #000,
+    0 -2px 0 #000,
+    0 2px 0 #000,
+    0 0 6px rgba(185, 242, 255, 0.9);
+}
+
+.ribbon-prismatic {
+  color: #f0abfc;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    -2px 0 0 #000,
+    2px 0 0 #000,
+    0 -2px 0 #000,
+    0 2px 0 #000,
+    0 0 6px rgba(240, 171, 252, 0.9);
+}
 
 /* ── Ribbon Shelf side-by-side layout ── */
 .ribbon-shelf-row {
@@ -323,4 +385,60 @@
 
 .ribbon-table-row--milestone td:nth-child(2) {
   color: #e5e7eb;
+}
+
+/* ── Tooltips (ribbon + mastery node) ──
+   Positioning comes from .tooltip in global.css */
+.cooking-tooltip {
+  text-align: left;
+  font-weight: 400;
+  color: #9ca3af;
+  padding: 6px 10px;
+}
+
+.cooking-tooltip > span {
+  display: block;
+}
+
+.cooking-tooltip > .cooking-tooltip-header {
+  display: flex;
+}
+
+.cooking-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #374151;
+}
+
+.cooking-tooltip-ribbon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Tier colors without the heavy outline used on the card numbers */
+.cooking-tooltip-title {
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.cooking-tooltip-title--plain {
+  color: #e5e7eb;
+}
+
+.cooking-tooltip-title--node {
+  color: #fbbf24;
+}
+
+.cooking-tooltip-total {
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.cooking-tooltip-gain {
+  color: #4ade80;
 }

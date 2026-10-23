@@ -1,3 +1,5 @@
+import { RIBBON_MAX_RANK, ribbonMulti } from '../utils/cookingUtils'
+
 export const cookingMap = {
 
   // ── Good Meals to Ribbon ──────────────────────────────────────────────────
@@ -252,39 +254,39 @@ export const cookingMap = {
   CookingMB67: {
     name: 'Tempura Shrimp',
     bonus: 'Spelunking EXP',
-    ribbonPriority: '4',
+    ribbonPriority: 4,
   },
   CookingMB68: {
     name: 'Woahtermelon',
     bonus: 'Cheaper Spelunking Upgrades',
-    ribbonPriority: '3',
+    ribbonPriority: 3,
   },
   CookingMB69: {
     name: 'Cookies',
     bonus: 'Total Spelunking POW',
-    ribbonPriority: '1',
+    ribbonPriority: 1,
   },
   CookingMB70: {
     name: 'Singing Seed',
     bonus: 'Amber Gain from Spelunking',
-    ribbonPriority: '2',
+    ribbonPriority: 2,
   },
 
   // ── Research ──────────────────────────────────────────────────────────────
   CookingMB71: {
     name: 'Tasty Treat',
     bonus: 'Polymer Refinery Speed',
-    ribbonPriority: '2',
+    ribbonPriority: 2,
   },
   CookingMB72: {
     name: 'Giga Chip',
     bonus: 'Research EXP Gains',
-    ribbonPriority: '1',
+    ribbonPriority: 1,
   },
   CookingMB73: {
     name: '2nd Wedding Cake',
     bonus: 'Minehead Mine Currency Gain',
-    ribbonPriority: '3',
+    ribbonPriority: 3,
   },
 
   // ── Uncategorized ─────────────────────────────────────────────────────────
@@ -432,28 +434,17 @@ export const cookingBonusTypes = {
 };
 
 // ── Ribbon Data ───────────────────────────────────────────────────────────────
+// One row per rank, built from the game formula (utils/cookingUtils.js)
 // multi: base multiplier for that ribbon rank
-// vsLast: multiplier increase compared to the previous rank
+// vsLast: multiplier increase compared to the previous rank (rounded down)
 // rank1sRequired: number of rank 1 ribbons needed to reach this rank
-export const ribbonData = [
-  { rank: 1,  multi: 1.05, vsLast: null, rank1sRequired: 1           },
-  { rank: 2,  multi: 1.14, vsLast: 1.08, rank1sRequired: 2           },
-  { rank: 3,  multi: 1.19, vsLast: 1.04, rank1sRequired: 4           },
-  { rank: 4,  multi: 1.28, vsLast: 1.07, rank1sRequired: 8           },
-  { rank: 5,  multi: 1.46, vsLast: 1.14, rank1sRequired: 16          },
-  { rank: 6,  multi: 1.61, vsLast: 1.10, rank1sRequired: 32          },
-  { rank: 7,  multi: 1.66, vsLast: 1.03, rank1sRequired: 64          },
-  { rank: 8,  multi: 1.82, vsLast: 1.09, rank1sRequired: 128         },
-  { rank: 9,  multi: 1.87, vsLast: 1.02, rank1sRequired: 256         },
-  { rank: 10, multi: 2.35, vsLast: 1.25, rank1sRequired: 512         },
-  { rank: 11, multi: 2.40, vsLast: 1.02, rank1sRequired: 1024        },
-  { rank: 12, multi: 2.62, vsLast: 1.09, rank1sRequired: 2048        },
-  { rank: 13, multi: 2.67, vsLast: 1.01, rank1sRequired: 4096        },
-  { rank: 14, multi: 2.89, vsLast: 1.08, rank1sRequired: 8192        },
-  { rank: 15, multi: 3.39, vsLast: 1.17, rank1sRequired: 16384       },
-  { rank: 16, multi: 3.68, vsLast: 1.08, rank1sRequired: 32768       },
-  { rank: 17, multi: 3.73, vsLast: 1.01, rank1sRequired: 65536       },
-  { rank: 18, multi: 4.01, vsLast: 1.07, rank1sRequired: 131072      },
-  { rank: 19, multi: 4.06, vsLast: 1.01, rank1sRequired: 262144      },
-  { rank: 20, multi: 5.00, vsLast: 1.23, rank1sRequired: 524288      },
-];
+export const ribbonData = Array.from({ length: RIBBON_MAX_RANK }, (_, i) => {
+  const rank = i + 1
+  const multi = ribbonMulti(rank)
+  return {
+    rank,
+    multi,
+    vsLast: rank === 1 ? null : Math.floor((multi / ribbonMulti(rank - 1)) * 100 + 1e-9) / 100,
+    rank1sRequired: Math.pow(2, rank - 1),
+  }
+})

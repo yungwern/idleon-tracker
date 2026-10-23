@@ -571,292 +571,158 @@ export const spiceMap = {
   CookingSpice0: {
     name: 'Grasslands',
     color: '#A8D870',
-    formations: [
-      ['opticular', 'miasma', 'forager', 'fleeter'],
-      ['opticular', 'miasma', 'forager', 'fleeter'],
-      ['alchemic', 'alchemic', 'alchemic', 'converter'],
-      ['alchemic', 'alchemic', 'alchemic', 'converter'],
-      ['forager', 'tsar', 'tsar', 'tsar'],
-      ['borger', 'miasma', 'flashy', 'fleeter'],
-    ],
   },
   CookingSpice1: {
     name: 'Jungle',
     color: '#4AE832',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'badumdum', 'badumdum', 'badumdum'],
-      ['alchemic', 'alchemic', 'alchemic', 'converter'],
-      ['alchemic', 'alchemic', 'alchemic', 'converter'],
-      ['borger', 'borger', 'borger', 'borger'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice2: {
     name: 'Encroaching Forest',
     color: '#3AEDB5',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['alchemic', 'alchemic', 'alchemic', 'converter'],
-      ['alchemic', 'alchemic', 'alchemic', 'converter'],
-      ['tsar', 'tsar', 'tsar', 'tsar'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice3: {
     name: 'Tree Interior',
     color: '#F5C842',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'badumdum', 'badumdum', 'badumdum'],
-      ['alchemic', 'alchemic', 'alchemic', 'converter'],
-      ['alchemic', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice4: {
     name: 'Stinky Sewers',
     color: '#A8C898',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['alchemic', 'alchemic', 'alchemic', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice5: {
     name: 'Desert Oasis',
     color: '#F5B832',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'badumdum', 'badumdum', 'badumdum'],
-      ['forager', 'badumdum', 'badumdum', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice6: {
     name: 'Beach Docks',
     color: '#42C8F5',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'alchemic', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice7: {
     name: 'Coarse Mountains',
     color: '#F57D52',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'badumdum', 'badumdum', 'badumdum'],
-      ['forager', 'badumdum', 'badumdum', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice8: {
     name: 'Twilight Desert',
     color: '#F5A052',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'alchemic', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice9: {
     name: 'The Crypt',
     color: '#A98FBB',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'badumdum', 'badumdum', 'badumdum'],
-      ['forager', 'miasma', 'alchemic', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice10: {
     name: 'Frosty Peaks',
     color: '#8FC8E8',
-    formations: [
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'alchemic', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice11: {
     name: 'Tundra Outback',
     color: '#B8E0F5',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['forager', 'miasma', 'alchemic', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice12: {
     name: 'Crystal Caverns',
     color: '#00BFFF',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice13: {
     name: 'Pristalle Lake',
     color: '#00E8D4',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice14: {
     name: 'Nebulon Mantle',
     color: '#C078F0',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice15: {
     name: 'Starfield Skies',
     color: '#D4A0F5',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice16: {
     name: 'Shores of Eternity',
     color: '#F0A8D0',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice17: {
     name: 'Molten Bay',
     color: '#F07898',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice18: {
     name: 'Smokey Lake',
     color: '#F0A090',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice19: {
     name: 'Wurm Catacombs',
     color: '#E8A8A8',
-    formations: [
-      ['', '', '', ''],
-      ['targeter', 'miasma', 'forager', 'fleeter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice20: {
     name: 'Spirit Fields',
     color: '#B8D464',
-    formations: [
-      ['', '', '', ''],
-      ['', '', '', ''],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice21: {
     name: 'Bamboo Forest',
     color: '#00F050',
-    formations: [
-      ['', '', '', ''],
-      ['', '', '', ''],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice22: {
     name: 'Lullaby Airways',
     color: '#F0C8E0',
-    formations: [
-      ['', '', '', ''],
-      ['', '', '', ''],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice23: {
     name: 'Dharma Mesa',
     color: '#C8A878',
-    formations: [
-      ['', '', '', ''],
-      ['', '', '', ''],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice24: {
     name: 'Shallow Shoals',
     color: '#A8D8E8',
-    formations: [
-      ['', '', '', ''],
-      ['', '', '', ''],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['', '', '', ''],
-    ],
   },
   CookingSpice25: {
     name: 'Murky Trenches',
     color: '#7898B8',
-    formations: [
-      ['', '', '', ''],
-      ['', '', '', ''],
-      ['borger', 'miasma', 'forager', 'converter'],
-      ['borger', 'miasma', 'flashy', 'converter'],
-      ['', '', '', ''],
-    ],
   },
+}
+
+// ── Spice foraging (Spice Optimizer) ─────────────────────────────────────────
+// Base requirement to fill territory i's reward bar (Toolbox territory[i].powerReq). Fill n of a run
+// needs (powerReq + n) * 1.02^n progress (Monolithic lowers the 1.02).
+export const TERRITORY_POWER_REQ = [
+  5, 20, 100, 250, 1000, 2000,
+  5000, 10000, 20000, 30000, 50000, 100000,
+  250000, 500000, 800000, 1250000, 1500000, 3000000,
+  5000000, 10000000, 15000000, 50000000, 100000000, 300000000,
+  500000000, 1000000000,
+]
+
+// Gene ids by ability type (Toolbox petGenes). Foraging genes add their power to forage speed; combat genes
+// add nothing to it but turn off Flashy / turn on Fastidious. Breeder (4) and Shiny (5) do neither.
+export const FORAGE_GENE_IDS = [2, 3, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 25, 26, 27, 33]
+export const COMBAT_GENE_IDS = [0, 1, 6, 7, 8, 9, 10, 11, 12, 19, 24, 28, 29, 30, 31, 32]
+
+// Foraging effect of each gene, shown in the Spice Formations tooltips (Toolbox petGenes bonusAbility)
+export const FORAGE_GENE_EFFECTS = {
+  2: 'When foraging, this Mob contributes 2x Foraging Speed',
+  3: 'When foraging, all Mobs contribute 1.30x more Foraging Speed',
+  13: 'When foraging, all Mobs contribute 1.50x more Foraging Speed if there is at least 1 Combat Pet in team',
+  14: 'When foraging, all Mobs contribute 1.50x more Foraging Speed if there are no Combat Pets in team',
+  15: 'When foraging, this Mob contributes 3x Foraging Speed if it has the largest Number on the team',
+  16: 'When foraging, the requirement to fill the reward bar goes up less every time it is filled',
+  17: 'When foraging, there is a 50% chance for 2 spices when filling the reward bar',
+  18: 'When foraging, the Mobs in the territory above and below contribute 1.20x Foraging Speed',
+  20: 'When foraging, this Mob contributes 5x Foraging Speed if the Mob above this one is also a Targeter',
+  21: 'When foraging, there is a small chance to find extra spices when filling the reward bar many times before claiming',
+  22: 'Adds its power to foraging speed (no foraging bonus)',
+  23: 'Adds its power to foraging speed (no foraging bonus)',
+  25: 'Adds its power to foraging speed (no foraging bonus)',
+  26: 'When foraging, all Mobs on the team contribute 4.00x more Foraging Speed if there aren\'t two Mobs of the same type.',
+  27: 'When foraging, there is a 50% chance to not reset trekking progress when claiming, essentially giving you FREE SPICE! Multiple converter Mobs won\'t stack.',
+  33: 'When foraging, this Mob contributes 10x more foraging speed if the territory above has at least one Forager type (the Green Leaf type) Mob.',
+}
+
+export const GENE = {
+  FORAGER: 2,
+  FLEETER: 3,
+  FASTIDIOUS: 13,
+  FLASHY: 14,
+  OPTICULAR: 15,
+  MONOLITHIC: 16,
+  ALCHEMIC: 17,
+  BADUMDUM: 18,
+  TARGETER: 20,
+  MIASMA: 26,
+  CONVERTER: 27,
+  BORGER: 33,
 }
 
 export const geneMap = {
@@ -922,6 +788,19 @@ export const PASSIVE_ORDER = [
   '+{_Tab_4_Talent_Pts',
   '+{_Star_Talent_Pts',
 ]
+
+// Breeding buffs panel. Each one raises the shiny level cap by maxShinyBonus.
+export const BASE_MAX_SHINY_LEVEL = 20
+
+export const breedingBuffMap = {
+  menagerieShinyCap: {
+    name: '+10 Max Shiny LV in Breeding',
+    source: 'World 7 · Luminous Menagerie Unlock',
+    img: 'images/menagerie/MenaIconO11.png',
+    effect: 'Raises the max Shiny level from 20 to 30. Each Shiny level above 20 is +1 OverLV, which multiplies Mob DMG and Shiny LV Up Rate',
+    maxShinyBonus: 10,
+  },
+}
 
 // Maps individual passives to a shared category label
 export const PASSIVE_CATEGORIES = {

@@ -440,23 +440,38 @@ function parseWorship(json) {
 function parseCooking(json) {
   const meals = typeof json.Meals === 'string' ? JSON.parse(json.Meals) : (json.Meals ?? [])
   const ribbon = typeof json.Ribbon === 'string' ? JSON.parse(json.Ribbon) : (json.Ribbon ?? [])
+  const cookMaster = typeof json.CookMaster === 'string' ? JSON.parse(json.CookMaster) : (json.CookMaster ?? [])
 
   const mealLevels = meals[0] ?? []
   const cabinetSlots = ribbon.slice(0, 28)
   const mealRibbons = ribbon.slice(28)
+  // Cooking Mastery yellow nodes, one level per meal index (CookMaster[0])
+  const masteryNodes = cookMaster[0] ?? []
 
   return {
     mealLevels,
     cabinetSlots,
     mealRibbons,
+    masteryNodes,
   }
 }
 
 // ── Breeding ──────────────────────────────────────────────────────────────────
+// Menagerie[2] = W7 Luminous Menagerie unlocks (1 = owned). Unlock 11 = +10 Max Shiny LV in Breeding.
+// No Menagerie key = save from before W7, so the unlock can't be owned.
+const MENAGERIE_UNLOCKS = 2
+const MENAGERIE_SHINY_UNLOCK = 11
+// Pets: slots 0-26 = fence yard, 27+ = territory teams (4 per territory, row i = spice i).
+// Each pet is [rawName, geneId, power, x]. PetsStored = pet storage, same shape.
+// Territory[i] = [barProgress, fills since last claim, ?, 'CookingSpice{i}' or 'Blank' if locked, spices to claim, ...]
+const TERRITORY_TEAM_START = 27
+const TERRITORY_TEAM_SIZE = 4
+
 function parseBreeding(json) {
   const raw = json['Breeding']
   const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
   const petsRaw = typeof json['Pets'] === 'string' ? JSON.parse(json['Pets']) : (json['Pets'] ?? [])
+  const menagerie = typeof json['Menagerie'] === 'string' ? JSON.parse(json['Menagerie']) : (json['Menagerie'] ?? [])
 
   const shinyPetsLevels = arr.slice(22, 26)
 
@@ -466,7 +481,52 @@ function parseBreeding(json) {
     return acc
   }, {})
 
-  return { shinyPetsLevels, fencePets }
+  const menagerieShinyCap = Number(menagerie?.[MENAGERIE_UNLOCKS]?.[MENAGERIE_SHINY_UNLOCK]) >= 1
+
+  return {
+    shinyPetsLevels,
+    fencePets,
+    menagerieShinyCap,
+    ...parseTerritories(json, petsRaw),
+  }
+}
+
+// Spice foraging: unlocked territories, the team on each, and every pet the account owns
+// (Spice Formations uses the owned pets for which gene types are available and their typical power)
+function parseTerritories(json, petsRaw) {
+  const parse = raw => (typeof raw === 'string' ? JSON.parse(raw) : (raw ?? []))
+  const territoryRaw = parse(json['Territory'])
+  const storedRaw = parse(json['PetsStored'])
+  const toPet = entry => ({
+    rawName: entry[0],
+    geneId: Number(entry[1]),
+    power: Number(entry[2]) || 0,
+  })
+
+  // A locked territory has 'Blank' instead of its spice name. They don't always unlock in order
+  // (e.g. 16 can be open while 14 isn't), so keep every row up to the last unlocked one.
+  const isUnlocked = (row, i) => row?.[3] === `CookingSpice${i}`
+  const lastUnlocked = territoryRaw.reduce((last, row, i) => (isUnlocked(row, i) ? i : last), -1)
+
+  const territories = territoryRaw.slice(0, lastUnlocked + 1).map((row, i) => {
+    const start = TERRITORY_TEAM_START + i * TERRITORY_TEAM_SIZE
+    return {
+      unlocked: isUnlocked(row, i),
+      progress: Number(row[0]) || 0,
+      fills: Number(row[1]) || 0,
+      toClaim: Number(row[4]) || 0,
+      team: petsRaw
+        .slice(start, start + TERRITORY_TEAM_SIZE)
+        .map(entry => (entry?.[0] && entry[0] !== 'none' ? toPet(entry) : null)),
+    }
+  })
+
+  // Fence yard, territory teams and storage
+  const owned = [...petsRaw, ...storedRaw]
+    .filter(entry => entry?.[0] && entry[0] !== 'none')
+    .map(toPet)
+
+  return { territories, ownedPets: owned }
 }
 
 // ── Farming ───────────────────────────────────────────────────────────────────

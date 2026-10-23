@@ -49,7 +49,7 @@ export { prayerMap } from './prayerMap'
 // ── World 4 ───────────────────────────────────────────────────────────────────
 export { labChipMap } from './labChipMap'
 export { cookingMap, cookingBonusTypes, ribbonData } from './cookingMap'
-export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps } from './breedingMap'
+export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
 
 // ── World 5 ───────────────────────────────────────────────────────────────────
 
