@@ -75,7 +75,7 @@ export const exoticMarketMap = [
   { index: 38, name: 'BETTER_EXOTIC',   label: 'Better Exotic',   bonusText: '+{% extra LVs when buying Exotic Upgrades',             cropCostId: 58, baseValue: 70,   type: 1 },
   { index: 39, name: 'FREEXOTIC',       label: 'Freexotic',       bonusText: '+{% chance to save a purchase when buying Exotic',       cropCostId: 60, baseValue: 30,   type: 1 },
   { index: 40, name: 'SCIENTERRIFIC',   label: 'Scienterrific',   bonusText: '+{% higher bonuses from Crop Scientist',                cropCostId: 62, baseValue: 20,   type: 1 },
-  { index: 41, name: 'BRIAR_PATCH',     label: 'Briar Patch',     bonusText: '+{% Total Damage (Not Farming Related)',                 cropCostId: 64, baseValue: 1,    type: 1 },
+  { index: 41, name: 'BRIAR_PATCH',     label: 'Briar Patch',     bonusText: '+{% Total Damage (Not Farming Related)',                 cropCostId: 64, baseValue: 1,    type: 0 },
   { index: 42, name: 'GRAVEL_POUND',    label: 'Gravel Pound',    bonusText: '}x Total Spelunking POW (Not Farming Related)',          cropCostId: 66, baseValue: 300,  type: 1 },
   { index: 43, name: 'SAP_SURGE',       label: 'Sap Surge',       bonusText: '}x Amber found in Spelunking (Not Farming Related)',     cropCostId: 67, baseValue: 500,  type: 1 },
   { index: 44, name: '4_LEAF_CLOVER',   label: '4 Leaf Clover',   bonusText: '+{% Palette Luck in Gaming (Not Farming Related)',       cropCostId: 69, baseValue: 150,  type: 1 },
@@ -111,46 +111,38 @@ export const calcExoticBonus = (upgrade, level) => {
 //   linear (index 4,9,14,19):  bonus = base * upgradeLevel
 //   diminishing (all others):  bonus = (1.7 * base * upgradeLevel) / (upgradeLevel + 80)
 export const landRankMap = [
-  { index: 0,  name: 'Evolution Boost',       description: 'Increases next crop chance by +{% per rank of the land plot',          base: 250,   isLinear: false, statGroup: 0,    unlockAt: 1    },
-  { index: 1,  name: 'Production Boost',      description: 'Boosts value of crops harvested by +{% per rank of the land plot',     base: 5,     isLinear: false, statGroup: 1,    unlockAt: 5    },
-  { index: 2,  name: 'Soil EXP Boost',        description: 'Each land gains +{% extra Rank EXP per rank of the previous land',     base: 25,    isLinear: false, statGroup: 2,    unlockAt: 20   },
-  { index: 3,  name: 'Evolution Megaboost',   description: 'Increases next crop chance by +{% multiplicatively!',                  base: 600,   isLinear: false, statGroup: 0,    unlockAt: 30   },
-  { index: 4,  name: 'Seed of Stealth',       description: 'Increases the Stealth of all Ninja Twins by +{% per Farming LV',       base: 2,     isLinear: true,  statGroup: null, unlockAt: 60   },
-  { index: 5,  name: 'Farmtastic Boost',      description: 'Increases Farming Skill EXP gained by +{%',                           base: 90,    isLinear: false, statGroup: 4,    unlockAt: 80   },
-  { index: 6,  name: 'Soil EXP Megaboost',    description: 'All plots of land gain +{% more Rank EXP',                            base: 200,   isLinear: false, statGroup: 2,    unlockAt: 125  },
-  { index: 7,  name: 'Overgrowth Boost',      description: 'Increases chance for Overgrowth by +{%',                              base: 120,   isLinear: false, statGroup: 3,    unlockAt: 180  },
-  { index: 8,  name: 'Production Megaboost',  description: 'Increases the amount of crops harvested by +{%',                      base: 100,   isLinear: false, statGroup: 1,    unlockAt: 250  },
-  { index: 9,  name: 'Seed of Loot',          description: 'Increases the Drop Rate of all characters by +{%',                    base: 10,    isLinear: true,  statGroup: null, unlockAt: 400  },
-  { index: 10, name: 'Evolution Superboost',  description: 'Increases next crop chance by +{% multiplicatively!',                  base: 3000,  isLinear: false, statGroup: 0,    unlockAt: 500  },
-  { index: 11, name: 'Overgrowth Megaboost',  description: 'Increases chance for Overgrowth by +{%',                              base: 340,   isLinear: false, statGroup: 3,    unlockAt: 600  },
-  { index: 12, name: 'Farmtastic Megaboost',  description: 'Increases Farming Skill EXP gained by +{%',                           base: 110,   isLinear: false, statGroup: 4,    unlockAt: 700  },
-  { index: 13, name: 'Soil EXP Superboost',   description: 'All plots of land gain +{% more Rank EXP',                            base: 520,   isLinear: false, statGroup: 2,    unlockAt: 900  },
-  { index: 14, name: 'Seed of Damage',        description: 'Gives a +{% Total Damage bonus to all characters',                    base: 20,    isLinear: true,  statGroup: null, unlockAt: 1200 },
-  { index: 15, name: 'Evolution Ultraboost',  description: 'Increases next crop chance by +{% multiplicatively!',                  base: 40000, isLinear: false, statGroup: 0,    unlockAt: 1300 },
-  { index: 16, name: 'Farmtastic Superboost', description: 'Increases Farming Skill EXP gained by +{%',                           base: 220,   isLinear: false, statGroup: 4,    unlockAt: 1500 },
-  { index: 17, name: 'Production Superboost', description: 'Increases the amount of crops harvested by +{%',                      base: 600,   isLinear: false, statGroup: 1,    unlockAt: 1750 },
-  { index: 18, name: 'Overgrowth Superboost', description: 'Increases chance for Overgrowth by +{%',                              base: 1500,  isLinear: false, statGroup: 3,    unlockAt: 2000 },
-  { index: 19, name: 'Seed of Stats',         description: 'Gives a +{% All Stat bonus to your characters',                       base: 5,     isLinear: true,  statGroup: null, unlockAt: 3500 },
+  { index: 0,  name: 'Evolution Boost',       description: 'Increases next crop chance by +{% per rank of the land plot',          base: 250,   isLinear: false, unlockAt: 1    },
+  { index: 1,  name: 'Production Boost',      description: 'Boosts value of crops harvested by +{% per rank of the land plot',     base: 5,     isLinear: false, unlockAt: 5    },
+  { index: 2,  name: 'Soil EXP Boost',        description: 'Each land gains +{% extra Rank EXP per rank of the previous land',     base: 25,    isLinear: false, unlockAt: 20   },
+  { index: 3,  name: 'Evolution Megaboost',   description: 'Increases next crop chance by +{% multiplicatively!',                  base: 600,   isLinear: false, unlockAt: 30   },
+  { index: 4,  name: 'Seed of Stealth',       description: 'Increases the Stealth of all Ninja Twins by +{% per Farming LV',       base: 2,     isLinear: true,  unlockAt: 60   },
+  { index: 5,  name: 'Farmtastic Boost',      description: 'Increases Farming Skill EXP gained by +{%',                           base: 90,    isLinear: false, unlockAt: 80   },
+  { index: 6,  name: 'Soil EXP Megaboost',    description: 'All plots of land gain +{% more Rank EXP',                            base: 200,   isLinear: false, unlockAt: 125  },
+  { index: 7,  name: 'Overgrowth Boost',      description: 'Increases chance for Overgrowth by +{%',                              base: 120,   isLinear: false, unlockAt: 180  },
+  { index: 8,  name: 'Production Megaboost',  description: 'Increases the amount of crops harvested by +{%',                      base: 100,   isLinear: false, unlockAt: 250  },
+  { index: 9,  name: 'Seed of Loot',          description: 'Increases the Drop Rate of all characters by +{%',                    base: 10,    isLinear: true,  unlockAt: 400  },
+  { index: 10, name: 'Evolution Superboost',  description: 'Increases next crop chance by +{% multiplicatively!',                  base: 3000,  isLinear: false, unlockAt: 500  },
+  { index: 11, name: 'Overgrowth Megaboost',  description: 'Increases chance for Overgrowth by +{%',                              base: 340,   isLinear: false, unlockAt: 600  },
+  { index: 12, name: 'Farmtastic Megaboost',  description: 'Increases Farming Skill EXP gained by +{%',                           base: 110,   isLinear: false, unlockAt: 700  },
+  { index: 13, name: 'Soil EXP Superboost',   description: 'All plots of land gain +{% more Rank EXP',                            base: 520,   isLinear: false, unlockAt: 900  },
+  { index: 14, name: 'Seed of Damage',        description: 'Gives a +{% Total Damage bonus to all characters',                    base: 20,    isLinear: true,  unlockAt: 1200 },
+  { index: 15, name: 'Evolution Ultraboost',  description: 'Increases next crop chance by +{% multiplicatively!',                  base: 40000, isLinear: false, unlockAt: 1300 },
+  { index: 16, name: 'Farmtastic Superboost', description: 'Increases Farming Skill EXP gained by +{%',                           base: 220,   isLinear: false, unlockAt: 1500 },
+  { index: 17, name: 'Production Superboost', description: 'Increases the amount of crops harvested by +{%',                      base: 600,   isLinear: false, unlockAt: 1750 },
+  { index: 18, name: 'Overgrowth Superboost', description: 'Increases chance for Overgrowth by +{%',                              base: 1500,  isLinear: false, unlockAt: 2000 },
+  { index: 19, name: 'Seed of Stats',         description: 'Gives a +{% All Stat bonus to your characters',                       base: 5,     isLinear: true,  unlockAt: 3500 },
 ]
 
-// The 5 stat group definitions
-export const landRankStatGroups = [
-  { index: 0, label: 'Crop Evolution',  type: 'multiplicative', rankIndices: [0, 3, 10, 15] },
-  { index: 1, label: 'Crop Value',      type: 'additive',       rankIndices: [1, 8, 17]     },
-  { index: 2, label: 'Land Rank EXP',   type: 'additive',       rankIndices: [2, 6, 13]     },
-  { index: 3, label: 'OG Chance',       type: 'additive',       rankIndices: [7, 11, 18]    },
-  { index: 4, label: 'Farming EXP',     type: 'additive',       rankIndices: [5, 12, 16]    },
-]
 
 /**
  * Compute the bonus value for a land rank database upgrade.
  *
  * Formula matches toolbox: combinedMulti * (1.7 * base * level) / (level + 80)
- * where combinedMulti = Math.max(1, apoWow) * exoticMulti
+ * where combinedMulti = Dank Ranks talent * Plump Database (see getRankMulti in utils/farmingUtils.js)
  *
  * @param {object} rankEntry     - entry from landRankMap
  * @param {number} upgradeLevel  - current upgrade level from save data
- * @param {number} combinedMulti - apoWow * exoticMulti combined (default 1)
+ * @param {number} combinedMulti - Dank Ranks * Plump Database multi (default 1)
  */
 export const calcRankBonus = (rankEntry, upgradeLevel, combinedMulti = 1) => {
   if (!rankEntry?.base || !upgradeLevel) return 0
@@ -158,4 +150,4 @@ export const calcRankBonus = (rankEntry, upgradeLevel, combinedMulti = 1) => {
   return rankEntry.isLinear
     ? multi * rankEntry.base * upgradeLevel
     : multi * (1.7 * rankEntry.base * upgradeLevel) / (upgradeLevel + 80)
-}
+}

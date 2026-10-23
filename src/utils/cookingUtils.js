@@ -1,3 +1,6 @@
+import { mealMap } from '../data/mealMap'
+import { getShinyPassiveTotal } from './breedingUtils'
+
 // ── Ribbons ───────────────────────────────────────────────────────────────────
 // Highest ribbon rank in the game (CookingR('RibbonsMaxLV'))
 export const RIBBON_MAX_RANK = 25
@@ -27,4 +30,42 @@ export const ribbonTierClass = (rank) => {
 export const masteryNodeMulti = (level) => {
   const l = level ?? 0
   return 1 + l / (l + 5)
+}
+
+// ── Meal Bonuses ──────────────────────────────────────────────────────────────
+// A meal's bonus as the game applies it (Toolbox getMealBonus):
+// level × baseStat × (1 + (jewel + shiny pets) / 100) × winner bonus × companion × ribbon × mastery node.
+// `snapshot` is the whole save snapshot. Returns { value, missing }.
+const MEAL_SHINY_PASSIVE = '+{%_Bonuses_from_All_Meals'
+
+export function getMealBonus(snapshot, index) {
+  const meal = mealMap[index]
+  const cooking = snapshot?.cooking
+  const level = cooking?.mealLevels?.[index] ?? 0
+  const base = level * (meal?.baseStat ?? 0)
+  if (!base) return { value: 0, missing: [] }
+  const shiny = getShinyPassiveTotal(snapshot?.breeding, MEAL_SHINY_PASSIVE)
+  const ribbon = ribbonMulti(cooking?.mealRibbons?.[index] ?? 0)
+  const node = masteryNodeMulti(cooking?.masteryNodes?.[index] ?? 0)
+  return {
+    value: base * (1 + shiny / 100) * ribbon * node,
+    missing: [
+      'Black Diamond Rhinestone (lab jewel)',
+      'Summoning winner bonus',
+      'Wickerlight Spirit (companion)',
+      'Ribbon: Emperor set, Equinox cloud, Jelly Operator',
+    ],
+  }
+}
+
+// Sum of every meal with the given stat (e.g. 'zCropEvo')
+export function getMealBonusByStat(snapshot, stat) {
+  return mealMap.reduce((total, meal, index) => {
+    if (meal.stat !== stat) return total
+    const { value, missing } = getMealBonus(snapshot, index)
+    return {
+      value: total.value + value,
+      missing: [...new Set([...total.missing, ...missing])],
+    }
+  }, { value: 0, missing: [] })
 }

@@ -1,3 +1,6 @@
+import { talentGrowthMap } from '../data'
+import { growth } from './mathUtils'
+
 // ── Super Talent Utilities ────────────────────────────────────────────────────
 // Used by the Overview notification for unspent super talent points.
 
@@ -16,4 +19,16 @@ export function getUnspentSuperTalents(presets, level = 0) {
       unspent: total - (preset.superedTalents?.length ?? 0),
     }))
     .filter(t => t.unspent > 0)
+}
+
+// ── Talent Bonuses ────────────────────────────────────────────────────────────
+// Uses the best base talent level across characters (snapshot.talents.highestBaseLevels).
+// Added talent levels aren't parsed yet, so bonuses can read a little low.
+export function getHighestTalentLevel(talents, id) {
+  return talents?.highestBaseLevels?.[id] ?? 0
+}
+
+export function getHighestTalentBonus(talents, id) {
+  const stats = talentGrowthMap[id]
+  return stats ? growth(stats.func, getHighestTalentLevel(talents, id), stats.x1, stats.x2) : 0
 }

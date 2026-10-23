@@ -32,6 +32,10 @@ src/
 │                       # bisSetups.js only holds ids.
 │                       # legendTalentMap.js: W7 legend talents by save index (Spelunk[18]); math and
 │                       #   { } $ text placeholders → utils/legendTalentUtils.js
+│                       # Growth-curve data (func/x1/x2, bonus = growth() in utils/mathUtils.js) lives on
+│                       #   bubbleMap + stampMap entries, vialMap.js, talentMap.js talentGrowthMap. Generated
+│                       #   from Toolbox: grimoireMap, upgradeVaultMap, sushiMap, sneakingMap (pristine
+│                       #   charms), mealMap (every meal: baseStat/stat).
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
@@ -44,6 +48,21 @@ src/
                         # spiceOptimizer.js — Breeding > Spice Formations: forage model (Toolbox TotalTrekkingHR/REQ,
                         #   checked against real saves) + best gene-type formation per territory (owned types,
                         #   typical power, not specific pets); runs in spiceOptimizer.worker.js.
+                        # farmingUtils.js — Farming market costs, exotic rotation, land rank totals + optimizer
+                        #   (ported from Toolbox parsers/world-6/farming.ts: per-plot goal scores in log space,
+                        #   greedy over Toolbox's "all" goal; default spends only unspent points and never lowers a level,
+                        #   Full Reset replans every point). Not parsed yet: Emperor cost discount, Dank Ranks added
+                        #   talent levels (Evo Boost % box calibrates).
+                        #   getCropEvolutionBreakdown = every crop evo multi (Toolbox getCropEvolution), each read
+                        #   from its own system's utils; sources marked exact / partial (missing inner boosts) /
+                        #   missing. Still missing: summoning winner bonus, lamp, monument, Crop Chapter (tome
+                        #   points), star sign, button, sticker.
+                        # One util per game system, each returning plain numbers or { value, missing }:
+                        #   alchemyUtils (bubbles, prisma, vials), stampUtils, cookingUtils (meals), breedingUtils
+                        #   (shiny levels/passives), talentUtils (highest base level bonus), grimoireUtils,
+                        #   upgradeVaultUtils, killroyUtils, sushiUtils, sneakingUtils (charms), riftUtils,
+                        #   skillUtils (Lv0_i skill index map, skill rank), achievementUtils, voteUtils, mapUtils.
+                        #   New bonus sources go in their system's util, never in the page that uses them.
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
                         # Data source of truth: the IdleonToolbox repo (github.com/Morta1/IdleonToolbox) —
@@ -109,7 +128,10 @@ batch can be claimed again (counted as ~2 claims per batch).
 
 **Adding new pages**: register the section in `data/sections.js` and wire up the component in `App.jsx`
 
-**Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components
+**Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components.
+Each game system has its own `parseX` in extractSnapshot (talents, alchemy, stamps, sneaking, grimoire, upgradeVault,
+achievements, rift, killroy, sushi, voteBallot from the export's top-level serverVars). Snapshot shape changes only
+show up after re-importing a save.
 
 **Characters come from the save**: names from `playerNames`, classes from `CharacterClass_N` (IDs mapped in
 `data/classes.js`). Character count is whatever the save has, so never hard-code 10 or 11. `snapshot.characters[i]`

@@ -40,6 +40,25 @@ body {
   display: block;
 }
 
+/* Add to a .tooltip for longer text: wraps instead of running off the page,
+   and resets text styles inherited from buttons and labels */
+.tooltip--wrap {
+  width: max-content;
+  max-width: min(260px, calc(100vw - 32px));
+  white-space: normal;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+
+/* Add to a .tooltip near the right edge of the page: opens leftward from the anchor */
+.tooltip--right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 /* ============================================================
    FORM CONTROLS
    ============================================================ */

@@ -4,6 +4,7 @@ import TierList from '../TierList/TierList'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import BuffsPanel from '../BuffsPanel/BuffsPanel'
 import SpiceOptimizer from './SpiceOptimizer'
+import { getShinyThreshold, getShinyLevel, parseWorldCoords } from '../../utils/breedingUtils'
 
 import './Breeding.css'
 
@@ -62,10 +63,6 @@ function GeneIcon({ geneName }) {
 // SHINY HELPERS
 // ============================================================
 
-function getShinyThreshold(index) {
-  return Math.floor((1 + Math.pow(index + 1, 1.6)) * Math.pow(1.7, index + 1))
-}
-
 // Buffs panel: active null = unknown (import from before this was read)
 function getBreedingBuffs(breeding) {
   return Object.entries(breedingBuffMap).map(([key, buff]) => ({
@@ -108,13 +105,6 @@ function OverLevelSummary({ overLevels }) {
   )
 }
 
-function getShinyLevel(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel) {
-  const counter = shinyPetsLevels?.[worldIndex]?.[petIndex]
-  const level = new Array(maxShinyLevel - 1).fill(1).reduce((sum, _, index) =>
-    counter > getShinyThreshold(index) ? index + 2 : sum, 0)
-  return counter === 0 ? 0 : level === 0 ? 1 : level
-}
-
 function getShinyProgress(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel) {
   const counter = shinyPetsLevels?.[worldIndex]?.[petIndex] ?? 0
   const level = getShinyLevel(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel)
@@ -134,11 +124,6 @@ function getShinyProgress(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel) 
     daysLeft: nextThreshold - counter,
     maxed: false,
   }
-}
-
-function parseWorldCoords(worldStr) {
-  const matches = [...worldStr.matchAll(/\[(\d+)\]/g)]
-  return { worldIndex: parseInt(matches[0][1]), petIndex: parseInt(matches[1][1]) }
 }
 
 function formatDays(days) {

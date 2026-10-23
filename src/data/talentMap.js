@@ -442,3 +442,9 @@ export const talentMap = Object.fromEntries(
     formatTalentName(name),
   ])
 )
+// Growth inputs for talents whose bonus the app calculates (from IdleonToolbox talents.json):
+// bonus = growth(func, level, x1, x2), see utils/mathUtils.js. Add entries as needed.
+export const talentGrowthMap = {
+  205: { func: 'decayMulti', x1: 50, x2: 300 }, // Mass Irrigation: }x Crop Evo chance
+  207: { func: 'decayMulti', x1: 2, x2: 200 }, // Dank Ranks: }x Land Rank Database bonuses
+}

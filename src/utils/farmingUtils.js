@@ -1,0 +1,546 @@
+import {
+  landRankMap,
+  exoticMarketMap,
+  calcExoticBonus,
+  calcRankBonus,
+  getSeedByCropId,
+} from '../data'
+import { getLegendTalentMulti, getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
+import { getHighestTalentBonus } from './talentUtils'
+import { getGrimoireBonus } from './grimoireUtils'
+import { getBubbleBonus, getVialBonusByStat } from './alchemyUtils'
+import { getPassiveCardBonus } from './cardUtils'
+import { getUpgradeVaultBonus } from './upgradeVaultUtils'
+import { isAchievementComplete } from './achievementUtils'
+import { getKillroyBonus, KILLROY_CROP_EVO } from './killroyUtils'
+import { getHighestSkillLevel, isSkillMasteryBonusUnlocked } from './skillUtils'
+import { getSushiBonus } from './sushiUtils'
+import { isBallotBonusSelected } from './voteUtils'
+import { getStampBonusByEffect } from './stampUtils'
+import { getMealBonusByStat } from './cookingUtils'
+import { countClearedMaps, WORLD_6_FIRST_MAP, WORLD_6_MAP_COUNT } from './mapUtils'
+
+// Farming math, checked against IdleonToolbox parsers/world-6/farming.ts.
+// `farming` is snapshot.farming (see parseFarming in lib/extractSnapshot.js).
+
+// ── Images & text ─────────────────────────────────────────────────────────────
+
+export const BEAN_IMG = 'images/farming/FarmCropBean.png'
+
+// Medal seeds (seedId 6) all share one sprite
+export function cropImgPath(cropId) {
+  const seed = getSeedByCropId(cropId)
+  if (!seed) return null
+  const imgId = seed.seedId === 6 ? 230 : Math.round(cropId)
+  return `images/farming/FarmCrop${imgId}.png`
+}
+
+// Big multipliers in scientific notation (3.94e10), small ones as normal numbers
+export function formatMulti(value) {
+  if (!(value >= 1e6)) return formatDecimal(value, 3)
+  const exponent = Math.floor(Math.log10(value))
+  return `${(value / 10 ** exponent).toFixed(2)}e${exponent}`
+}
+
+// Rounds to `decimals` places and drops trailing zeros (12.50 → "12.5")
+export function formatDecimal(value, decimals = 1) {
+  return Number((value ?? 0).toFixed(decimals)).toString()
+}
+
+// Fills a bonus text's placeholders: { = value, } = multiplier, $ = rounded-up value
+export function fillBonusText(text, value) {
+  if (!text) return ''
+  return text
+    .replace('{', formatDecimal(value, 2))
+    .replace('}', formatDecimal(1 + value / 100, 2))
+    .replace('$', Math.ceil(value).toString())
+}
+
+const exoticBonus = (exoticLevels, index) =>
+  calcExoticBonus(exoticMarketMap[index], exoticLevels?.[index] ?? 0)
+
+// ── Day / Night Market ────────────────────────────────────────────────────────
+
+// The game floors market costs below this amount
+const MARKET_COST_FLOOR_BELOW = 1e8
+
+export const isNightMarket = upgrade => upgrade.index >= 8
+
+// Better Day I/II (exotic 34/35) and Better Night I/II (36/37) discounts.
+// Toolbox also applies an Emperor bonus, which the snapshot doesn't parse yet.
+export function marketCostMulti(exoticLevels, nightMarket) {
+  const [a, b] = nightMarket ? [36, 37] : [34, 35]
+  return Math.max(0.1, 1 - exoticBonus(exoticLevels, a) / 100)
+    * Math.max(0.1, 1 - exoticBonus(exoticLevels, b) / 100)
+}
+
+// Game: FarmingStuffs("MarketCostQTY")
+export function marketLevelCost(upgrade, level, costMulti = 1) {
+  const value = upgrade.cost * Math.pow(upgrade.costExponent, level) * costMulti
+  return value < MARKET_COST_FLOOR_BELOW ? Math.floor(value) : value
+}
+
+// Which crop a Day Market level costs. Land Plots skips ahead every 3rd/4th level.
+export function marketCropId(upgrade, level) {
+  const { index, cropId, cropIdIncrement } = upgrade
+  const steps = index === 0
+    ? level + 2 * Math.floor(level / 3) + Math.floor(level / 4)
+    : level
+  return Math.floor(cropId + cropIdIncrement * steps)
+}
+
+// Upcoming costs from the current level, as [{ cropId, cost }].
+// Day Market: levels grouped by crop, up to 4 crops (several levels often share one crop).
+// Night Market: the next 4 levels one by one, all paid in magic beans (cropId null).
+export function marketUpcomingCosts(upgrade, level, costMulti = 1) {
+  const costs = []
+
+  if (isNightMarket(upgrade)) {
+    for (let lv = level; lv < upgrade.maxLvl && costs.length < 4; lv++) {
+      costs.push({
+        cropId: null,
+        cost: marketLevelCost(upgrade, lv, costMulti),
+      })
+    }
+    return costs
+  }
+
+  const byCrop = new Map()
+  for (let lv = level; lv < upgrade.maxLvl; lv++) {
+    const cropId = marketCropId(upgrade, lv)
+    if (!byCrop.has(cropId) && byCrop.size === 4) break
+    byCrop.set(cropId, (byCrop.get(cropId) ?? 0) + marketLevelCost(upgrade, lv, costMulti))
+  }
+  byCrop.forEach((cost, cropId) => costs.push({
+    cropId,
+    cost,
+  }))
+  return costs
+}
+
+// ── Exotic Market ─────────────────────────────────────────────────────────────
+
+const WEEK_SECONDS = 604800
+
+// The game's seeded LavaRand
+function lavaHash(e) {
+  let a = 5381
+  e = Math.imul(e, -0x3361d2af)
+  a ^= e = Math.imul((e << 15) | (e >>> 17), 0x1b873593)
+  a = Math.imul((a << 13) | (a >>> 19), 5) + -0x19ab949c | 0
+  a = Math.imul(a ^ (a >> 16), -0x7a143595)
+  return (a = Math.imul(a ^ (a >> 13), -0x3d4d51cb)) ^ (a >> 16)
+}
+
+function lavaRand(seed) {
+  let s1 = seed || 1
+  let s2 = lavaHash(seed) || 1
+  s1 = 36969 * (65535 & s1) + (s1 >> 16)
+  s2 = 18000 * (65535 & s2) + (s2 >> 16)
+  return (1073741823 & (s1 << 16) + s2) % 10007 / 10007
+}
+
+// The 8 exotic upgrade indices (0–59) on sale during the week containing `unixSeconds`
+export function getExoticRotation(unixSeconds) {
+  const seed = Math.round(100 * Math.floor(unixSeconds / WEEK_SECONDS))
+  const selected = []
+  for (let i = 0; i < 8; i++) {
+    let attempts = 0
+    let index
+    do {
+      index = Math.floor(Math.max(0, Math.min(59, 60 * lavaRand(seed + i + attempts * 1000))))
+      attempts++
+    } while (selected.includes(index))
+    selected.push(index)
+  }
+  return selected
+}
+
+export function rotationTimeLeft(unixSeconds) {
+  const secondsLeft = Math.floor(WEEK_SECONDS - (unixSeconds % WEEK_SECONDS))
+  const d = Math.floor(secondsLeft / 86400)
+  const h = Math.floor((secondsLeft % 86400) / 3600)
+  const m = Math.floor((secondsLeft % 3600) / 60)
+  return `${d}d ${h}h ${m}m`
+}
+
+// Legend talent "Buy One Get One Free": }x more LVs when buying Exotic Market upgrades
+export const BUY_ONE_GET_ONE_TALENT = 8
+
+// How many exotic levels a crop stack buys, after Better Exotic (exotic 38)
+// and the Buy One Get One Free legend talent.
+export function exoticLevelsFromCrops(cropQty, exoticLevels, legendTalentLevel) {
+  const betterExotic = exoticBonus(exoticLevels, 38)
+  const totalMulti = (1 + betterExotic / 100) * getLegendTalentMulti(BUY_ONE_GET_ONE_TALENT, legendTalentLevel)
+  const baseQty = cropQty / totalMulti
+  if (baseQty <= 1) return 0
+  return Math.floor(Math.log10(baseQty) * 10.36 + 1)
+}
+
+// ── Land Rank Database ────────────────────────────────────────────────────────
+// Scoring and optimizer ported from Toolbox getLandRankGoalScore /
+// getOptimizedLandRankUpgrades. Not modeled: the vote ballot bonus (vote 29)
+// and the grimoire part of the 5th column max level, which the snapshot doesn't parse.
+
+// Each Overgrowth doubles a crop's value, capped at 1e9x, which OG 30 (2^30) passes
+export const OG_MAX = 30
+
+// 5th column: linear, level-capped, boosts character stats instead of farming
+export const SEED_RANKS = [4, 9, 14, 19]
+
+// 0 and 1 scale with the plot's own rank, 2 with the previous plot's rank
+export const PER_PLOT_RANKS = new Set([0, 1, 2])
+
+// Upgrades grouped by the farming stat they boost
+export const LAND_RANK_GOALS = {
+  evolution: {
+    label: 'Crop Evolution',
+    upgrades: [0, 3, 10, 15],
+  },
+  cropValue: {
+    label: 'Crop Value',
+    upgrades: [1, 8, 17],
+  },
+  rankExp: {
+    label: 'Rank EXP',
+    upgrades: [2, 6, 13],
+  },
+  overgrowth: {
+    label: 'Overgrowth',
+    upgrades: [7, 11, 18],
+  },
+  farmingExp: {
+    label: 'Farming EXP',
+    upgrades: [5, 12, 16],
+  },
+}
+
+const GOAL_OF_UPGRADE = Object.fromEntries(
+  Object.entries(LAND_RANK_GOALS).flatMap(([goal, { upgrades }]) => upgrades.map(i => [i, goal]))
+)
+
+// Multiplier on every Land Rank Database bonus: Dank Ranks (Death Bringer talent 207) ×
+// Plump Database (exotic 14). The save only has Dank Ranks' base level, so the game's
+// Evolution Boost % can be entered to calibrate it exactly (bonus shown ÷ bonus at 1x).
+const DANK_RANKS_TALENT = 207
+
+export function getRankMulti(snapshot, evoBoostInput) {
+  const farming = snapshot?.farming
+  const exoticMulti = 1 + exoticBonus(farming?.exoticLevels, 14) / 100
+  const evoBase = calcRankBonus(landRankMap[0], farming?.upgradesLevels?.[0] ?? 0)
+  const shown = parseFloat(evoBoostInput)
+  if (shown > 0 && evoBase > 0) return Math.max(exoticMulti, shown / evoBase)
+  return Math.max(1, getHighestTalentBonus(snapshot?.talents, DANK_RANKS_TALENT)) * exoticMulti
+}
+
+// 5th column max LV: 1 + grimoire 9 + Datadigging (exotic 15) + Extended Database (legend 3)
+const DATABASE_EXPANSION_GRIMOIRE = 9
+const EXTENDED_DATABASE_TALENT = 3
+
+export function getSeedRankMaxLevel(snapshot) {
+  const farming = snapshot?.farming
+  const max = Math.round(1
+    + getGrimoireBonus(snapshot?.grimoire, DATABASE_EXPANSION_GRIMOIRE)
+    + Math.ceil(exoticBonus(farming?.exoticLevels, 15))
+    + getLegendTalentBonus(EXTENDED_DATABASE_TALENT, getLegendTalentLevel(snapshot?.legendTalents, EXTENDED_DATABASE_TALENT)))
+  const owned = Math.max(0, ...SEED_RANKS.map(i => farming?.upgradesLevels?.[i] ?? 0))
+  return Math.max(max, owned)
+}
+
+// The plots each goal sums over (Toolbox getOptimizedLandRankUpgrades): growing plots,
+// or every plot between harvests. Soil EXP Boost reads the plot physically before each one.
+function getPlotContext(farming) {
+  const ranks = farming?.farmingRanks ?? []
+  const plots = farming?.plots?.length
+    ? farming.plots
+    : ranks.map((_, index) => ({ index, seedType: 0 }))
+  const growing = plots.filter(p => p.seedType !== -1)
+  const scored = growing.length ? growing : plots
+  const { constant, cap } = cropValueParts(farming)
+  return {
+    plotRanks: scored.map(p => ranks[p.index] ?? 0),
+    plotPrevRanks: scored.map(p => ranks[Math.max(0, p.index - 1)] ?? 0),
+    cropValueConstant: constant,
+    cropValueCap: cap,
+  }
+}
+
+// Everything in a plot's crop multiplier that land ranks don't touch (game: CropsBonusValue)
+function cropValueParts(farming) {
+  const market = farming?.marketLevels ?? []
+  const counts = farming?.gmoCropCounts ?? {}
+  const superGmo = 1 + (market[15] ?? 0) * 0.5 * (counts[100000] ?? 0) / 100
+  const valueGmo = superGmo * (1 + (market[14] ?? 0) * 0.02 * (counts[10000] ?? 0) / 100)
+  // Product Doubler (market 5): +3% per level, every full 100% is another 1x
+  const productDoubler = Math.max(1, Math.floor(1 + (market[5] ?? 0) * 3 / 100))
+  const exotics = farming?.exoticLevels
+  return {
+    constant: productDoubler * Math.max(1, valueGmo),
+    cap: 1e4 * (1 + (exoticBonus(exotics, 23) + exoticBonus(exotics, 24) + exoticBonus(exotics, 25)) / 100),
+  }
+}
+
+// A goal's score in log space, so goals can be added together (Toolbox getLandRankGoalScore).
+// `b(i)` = bonus of upgrade i at the levels being scored.
+function goalScore(goal, b, ctx) {
+  const { plotRanks, plotPrevRanks, cropValueConstant, cropValueCap } = ctx
+  const sumPlots = fn => Math.log(plotRanks.reduce((sum, rank, i) => sum + fn(rank, i), 0))
+  if (goal === 'evolution') {
+    if (!plotRanks.length) return 0
+    const shared = (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100)
+    return sumPlots(rank => shared * (1 + b(0) * rank / 100))
+  }
+  if (goal === 'cropValue') {
+    // Past the cap a plot gains nothing, so capped value is what gets scored
+    if (!plotRanks.length) return 0
+    const shared = cropValueConstant * (1 + (b(8) + b(17)) / 100)
+    return sumPlots(rank => Math.min(cropValueCap, shared * (1 + b(1) * rank / 100)))
+  }
+  if (goal === 'rankExp') {
+    if (!plotRanks.length) return 0
+    const shared = 1 + (b(6) + b(13)) / 100
+    return sumPlots((_, i) => shared * (1 + b(2) * plotPrevRanks[i] / 100))
+  }
+  if (goal === 'overgrowth') return Math.log(1 + (b(7) + b(11) + b(18)) / 100)
+  if (goal === 'farmingExp') return Math.log(1 + (b(5) + b(12) + b(16)) / 100)
+  return 0
+}
+
+const bonusesAt = (levels, rankMulti) => i => calcRankBonus(landRankMap[i], levels[i] ?? 0, rankMulti)
+
+// Lowest and highest Overgrowth on your planted plots, from the save
+function getOgRange(farming) {
+  const plots = (farming?.plots ?? []).filter(p => p.seedType !== -1)
+  const ogs = plots.map(p => p.currentOG ?? 0)
+  return {
+    lowestOg: ogs.length ? Math.min(...ogs) : 0,
+    highestOg: ogs.length ? Math.max(...ogs) : 0,
+  }
+}
+
+// Stat chips under the Land Rank Database
+export function getLandRankTotals(farming, rankMulti) {
+  const b = bonusesAt(farming?.upgradesLevels ?? [], rankMulti)
+  const ctx = getPlotContext(farming)
+  const plotCount = ctx.plotRanks.length
+  const shared = ctx.cropValueConstant * (1 + (b(8) + b(17)) / 100)
+  const plotValues = ctx.plotRanks.map(rank => Math.round(shared * (1 + b(1) * rank / 100)))
+  return {
+    // Average land rank evolution multi per scored plot
+    cropEvolution: plotCount ? Math.exp(goalScore('evolution', b, ctx)) / plotCount : 1,
+    cappedPlots: plotValues.filter(v => v >= ctx.cropValueCap).length,
+    plotCount,
+    lowestCropValue: plotCount ? Math.min(...plotValues) : 0,
+    cropValueCap: ctx.cropValueCap,
+    ...getOgRange(farming),
+  }
+}
+
+// Adds points one at a time to whichever unlocked upgrade of `goals` raises the summed
+// goal score most. Every upgrade costs 1 point and is concave, so greedy is optimal.
+// Returns the points it couldn't use (locked, or no gain left).
+function greedyAllocate(goals, points, levels, rankMulti, ctx, totalRankPoints) {
+  const b = bonusesAt(levels, rankMulti)
+  const current = Object.fromEntries(goals.map(g => [g, goalScore(g, b, ctx)]))
+  const candidates = goals
+    .flatMap(g => LAND_RANK_GOALS[g].upgrades)
+    .filter(i => totalRankPoints >= landRankMap[i].unlockAt)
+  let left = points
+  while (left > 0) {
+    let best = null
+    for (const i of candidates) {
+      const goal = GOAL_OF_UPGRADE[i]
+      levels[i]++
+      const score = goalScore(goal, b, ctx)
+      levels[i]--
+      const gain = score - current[goal]
+      if (!best || gain > best.gain) best = { i, goal, score, gain }
+    }
+    if (!best || best.gain <= 0) break
+    levels[best.i]++
+    current[best.goal] = best.score
+    left--
+  }
+  return left
+}
+
+// Plans where plot rank points should go. Points can only come back out of the database
+// by resetting all of them, so there are two modes:
+// - spend (default): only the unspent points, added on top of the current levels
+// - fullReset: every point from scratch
+// Either way: seed ranks (5th column) up to `seedLevel` first, then the points reserved for
+// Farming EXP, then everything else to whatever raises Crop Evolution × Crop Value × Rank EXP
+// × Overgrowth the most (Toolbox's "all" goal, which also stops buying crop value once every
+// plot is capped). Returns { levels, leftover } with levels indexed like landRankMap.
+export function optimizeLandRanks(farming, rankMulti, { seedLevel, farmExpPoints, fullReset = false }) {
+  const totalRankPoints = farming?.totalRankPoints ?? 0
+  const currentLevels = farming?.upgradesLevels ?? []
+  const ctx = getPlotContext(farming)
+  const levels = landRankMap.map((_, i) => (fullReset ? 0 : currentLevels[i] ?? 0))
+  const spent = levels.reduce((sum, level) => sum + level, 0)
+  let left = Math.max(0, totalRankPoints - spent)
+
+  for (const i of SEED_RANKS) {
+    if (totalRankPoints < landRankMap[i].unlockAt) continue
+    const add = Math.min(Math.max(0, seedLevel - levels[i]), left)
+    levels[i] += add
+    left -= add
+  }
+
+  const farmExpPool = Math.min(Math.max(0, farmExpPoints), left)
+  left -= farmExpPool
+  left += greedyAllocate(['farmingExp'], farmExpPool, levels, rankMulti, ctx, totalRankPoints)
+  left = greedyAllocate(['evolution', 'cropValue', 'rankExp', 'overgrowth'], left, levels, rankMulti, ctx, totalRankPoints)
+
+  return {
+    levels,
+    leftover: left,
+  }
+}
+
+// % change per goal going from `before` to `after` levels
+export function compareLandRankPlans(farming, rankMulti, before, after) {
+  const ctx = getPlotContext(farming)
+  const scoreBefore = bonusesAt(before, rankMulti)
+  const scoreAfter = bonusesAt(after, rankMulti)
+  return Object.keys(LAND_RANK_GOALS).map(goal => ({
+    goal,
+    label: LAND_RANK_GOALS[goal].label,
+    change: 100 * (Math.exp(goalScore(goal, scoreAfter, ctx) - goalScore(goal, scoreBefore, ctx)) - 1),
+  }))
+}
+
+// ── Crop Evolution Multi ──────────────────────────────────────────────────────
+// Every multiplier in the game's crop evolution chance (Toolbox getCropEvolution), each
+// read from its own system's utils. Sources not ported yet count as 1x and are marked
+// 'missing'; 'partial' ones are missing some inner boosts (listed in `missing`).
+
+const sproutlucks = [0, 1, 2, 3]
+const geneologies = [
+  { exotic: 4, above: 50 },
+  { exotic: 5, above: 100 },
+  { exotic: 6, above: 150 },
+  { exotic: 7, above: 200 },
+  { exotic: 8, above: 250 },
+]
+const MASS_IRRIGATION_TALENT = 205
+const CROPIUS_MAPPER_BUBBLE = 'c25'
+const CROP_EVO_VIAL_STAT = '6FarmEvo'
+const CROP_EVO_CARD_EFFECT = '+{% Farming EVO Multi (Passive)'
+const CROP_EVO_VAULT_UPGRADE = 78
+const SACRIFICE_OF_HARVEST_GRIMOIRE = 14
+const LIL_OVERGROWTH_ACHIEVEMENT = 355
+const CROP_EVO_SUSHI = 35
+const CROP_EVO_BALLOT = 29
+const CROP_EVO_STAMP_EFFECT = 'Crop Evolution Chance'
+
+function source(id, label, system, multi, extra = {}) {
+  return {
+    id,
+    label,
+    system,
+    multi,
+    status: extra.status ?? 'exact',
+    missing: extra.missing ?? [],
+    note: extra.note,
+  }
+}
+
+const notPorted = (id, label, system, note) => source(id, label, system, 1, {
+  status: 'missing',
+  note,
+})
+
+export function getCropEvolutionBreakdown(snapshot, rankMulti) {
+  const farming = snapshot?.farming ?? {}
+  const exotics = farming.exoticLevels
+  const market = farming.marketLevels ?? []
+  const characters = snapshot?.characters ?? []
+  const farmingLevel = getHighestSkillLevel(characters, 'farming')
+
+  // Market: Biology Boost (+15%/LV) and Evolution GMO (compounds per crop with 200+ stock)
+  const counts = farming.gmoCropCounts ?? {}
+  const superGmo = 1 + (market[15] ?? 0) * 0.5 * (counts[100000] ?? 0) / 100
+  const evolutionGmo = superGmo * Math.pow(1 + (market[9] ?? 0) * 0.8 / 100, counts[200] ?? 0)
+
+  // Land ranks: the shared multiplicative total, plus Evolution Boost × the plot's rank
+  const b = bonusesAt(farming.upgradesLevels ?? [], rankMulti)
+  const ranks = farming.farmingRanks ?? []
+  const avgRank = ranks.length ? ranks.reduce((sum, rank) => sum + rank, 0) / ranks.length : 0
+  const voteSelected = isBallotBonusSelected(snapshot?.voteBallot, CROP_EVO_BALLOT)
+
+  const cropius = getBubbleBonus(snapshot, CROPIUS_MAPPER_BUBBLE)
+  const clearedW6Maps = countClearedMaps(characters, WORLD_6_FIRST_MAP, WORLD_6_MAP_COUNT)
+  const vial = getVialBonusByStat(snapshot, CROP_EVO_VIAL_STAT)
+  const stamp = getStampBonusByEffect(snapshot, CROP_EVO_STAMP_EFFECT)
+  const meal = getMealBonusByStat(snapshot, 'zCropEvo')
+  const summoningMeal = getMealBonusByStat(snapshot, 'zCropEvoSumm')
+  // Nyanborgir: x1 at Summoning LV 0-48, x2 from 49, x3 from 99...
+  const summoningLevel = getHighestSkillLevel(characters, 'summoning')
+  const summoningMealMulti = Math.ceil((summoningLevel + 1) / 50)
+  const geneology = geneologies.reduce((sum, { exotic, above }) => (
+    sum + Math.max(0, farmingLevel - above) * exoticBonus(exotics, exotic)
+  ), 0)
+
+  const sources = [
+    source('biology', 'Biology Boost', 'Farming market', 1 + (market[4] ?? 0) * 15 / 100),
+    source('gmo', 'Evolution GMO', 'Farming market', Math.max(1, evolutionGmo), {
+      note: `${counts[200] ?? 0} crops with 200+ stock`,
+    }),
+    notPorted('winner', 'Summoning winner bonus', 'Summoning', 'Needs summoning battles plus charms, artifacts, gem shop and more'),
+    notPorted('lamp', 'The Lamp', 'Caverns (W5)', 'Needs cavern wishes'),
+    notPorted('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Needs total Tome points'),
+    source('cropius', 'Cropius Mapper (bubble)', 'Alchemy', 1 + cropius.value * clearedW6Maps / 100, {
+      status: cropius.missing.length ? 'partial' : 'exact',
+      missing: cropius.missing,
+      note: `${clearedW6Maps} World 6 maps cleared across characters`,
+    }),
+    source('vial', 'Flavorgil (vial)', 'Alchemy', 1 + vial.value / 100, {
+      status: vial.missing.length ? 'partial' : 'exact',
+      missing: vial.missing,
+    }),
+    source('card', 'Jellofish card', 'Cards', 1 + getPassiveCardBonus(CROP_EVO_CARD_EFFECT, snapshot?.cards) / 100),
+    source('meal', 'Bill Jack Pep (meal)', 'Cooking', 1 + meal.value / 100, {
+      status: meal.missing.length ? 'partial' : 'exact',
+      missing: meal.missing,
+    }),
+    source('summoningMeal', 'Nyanborgir (meal)', 'Cooking', 1 + summoningMeal.value * summoningMealMulti / 100, {
+      status: summoningMeal.missing.length ? 'partial' : 'exact',
+      missing: summoningMeal.missing,
+      note: `x${summoningMealMulti} at Summoning LV ${summoningLevel}`,
+    }),
+    source('vault', 'Croppius Evolvius (vault)', 'Upgrade Vault', 1 + getUpgradeVaultBonus(snapshot?.upgradeVault, CROP_EVO_VAULT_UPGRADE) / 100),
+    notPorted('monument', 'Monument', 'Caverns (W5)', 'Needs Bravery monument progress'),
+    source('stamp', 'Crop Evo Stamp', 'Stamps', 1 + stamp.value / 100, {
+      status: stamp.missing.length ? 'partial' : 'exact',
+      missing: stamp.missing,
+    }),
+    source('grimoire', 'Sacrifice of Harvest (grimoire)', 'Grimoire', 1 + getGrimoireBonus(snapshot?.grimoire, SACRIFICE_OF_HARVEST_GRIMOIRE) / 100),
+    source('achievement', "Lil' Overgrowth (achievement)", 'Achievements', isAchievementComplete(snapshot?.achievements, LIL_OVERGROWTH_ACHIEVEMENT) ? 1.05 : 1),
+    source('killroy', 'Killroy shop', 'Killroy', Math.max(1, getKillroyBonus(snapshot?.killroy, KILLROY_CROP_EVO))),
+    source('mastery', 'Farming skill mastery', 'Rift', isSkillMasteryBonusUnlocked(snapshot, 'farming', 1) ? 1.15 : 1),
+    notPorted('starSign', 'Cropiovo Minor (star sign)', 'Star signs', 'Needs star signs, infinite stars, chips and Seraph Cosmos'),
+    source('landRankTotal', 'Land rank total', 'Farming land ranks', Math.max(1, (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100))),
+    source('massIrrigation', 'Mass Irrigation (talent)', 'Talents', Math.max(1, getHighestTalentBonus(snapshot?.talents, MASS_IRRIGATION_TALENT)), {
+      status: 'partial',
+      missing: ['Added talent levels'],
+    }),
+    source('landRankPlot', 'Evolution Boost × plot rank', 'Farming land ranks', 1 + b(0) * avgRank / 100, {
+      status: voteSelected ? 'partial' : 'exact',
+      missing: voteSelected ? ['Vote ballot bonus'] : [],
+      note: 'Average plot rank',
+    }),
+    ...sproutlucks.map(i => source(`sproutluck${i}`, exoticMarketMap[i].label, 'Exotic market', 1 + exoticBonus(exotics, i) / 100)),
+    notPorted('button', 'Button', 'W7 Button', 'Needs button presses and research grid'),
+    notPorted('sticker', 'Sticker', 'W7 Research', 'Needs sticker levels and research grid'),
+    source('geneology', 'Geneology I-V', 'Exotic market', 1 + geneology / 100, {
+      note: `Farming LV ${farmingLevel}`,
+    }),
+    source('sushi', 'Sushi Station', 'Sushi (W7)', 1 + getSushiBonus(snapshot?.sushi, CROP_EVO_SUSHI) / 100),
+  ]
+
+  return {
+    sources,
+    total: sources.reduce((product, s) => product * s.multi, 1),
+  }
+}

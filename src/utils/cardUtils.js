@@ -59,3 +59,12 @@ export function getCardSetBonus(setId, stars) {
   const set = cardSetMap[setId]
   return set ? set.bonus * Math.max(stars + 1, 0) : 0
 }
+
+// Account-wide (Passive) card bonus: every owned card whose effect matches, at
+// bonus × (stars + 1) (Toolbox getCardBonusByEffect / calcCardBonus)
+export function getPassiveCardBonus(effect, cards) {
+  return Object.entries(cardMap).reduce((sum, [rawName, card]) => {
+    if (card.effect !== effect || !isCardOwned(rawName, cards)) return sum
+    return sum + card.bonus * (getCardStars(rawName, cards) + 1)
+  }, 0)
+}

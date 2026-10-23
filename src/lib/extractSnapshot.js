@@ -56,6 +56,10 @@ const weaponKeys = new Set(
 
 const extractors = {
   level: (json, i) => json[`Lv0_${i}`]?.[0] ?? null,
+  // Lv0_i = [class LV, then skill LVs by skill index (16 = Farming, 18 = Summoning)]
+  skillLevels: (json, i) => parseRaw(json[`Lv0_${i}`]) ?? [],
+  // KLA_i[map][0] = kills still needed to clear each map (0 or below = cleared)
+  mapKillsLeft: (json, i) => (parseRaw(json[`KLA_${i}`]) ?? []).map(entry => entry?.[0] ?? 0),
   equipOrder: (json, i) => json[`EquipOrder_${i}`]?.[0] ?? {},
   inventory: (json, i, weaponKeys) => {
     const order = json[`InventoryOrder_${i}`] ?? []
@@ -779,6 +783,130 @@ function parseOutposts(json, raw) {
 
 // ── Main Export ───────────────────────────────────────────────────────────────
 // Accepts a flat save, or a wrapped export like IdleOn Toolbox's { data: {...}, charNames: [...] }
+// Parses a save value that may be stored as a JSON string
+function parseRaw(raw) {
+  if (typeof raw !== 'string') return raw
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return undefined
+  }
+}
+
+// ── Talents ───────────────────────────────────────────────────────────────────
+// SL_i = { talentId: base level } for character i (the live talent tab).
+// highestBaseLevels[id] = best base level across characters. Added talent levels
+// (from the many +Talent LV sources) are NOT included.
+function parseTalents(json, charCount) {
+  const highestBaseLevels = {}
+  for (let i = 0; i < charCount; i++) {
+    const levels = parseRaw(json[`SL_${i}`]) ?? {}
+    for (const [id, level] of Object.entries(levels)) {
+      highestBaseLevels[id] = Math.max(highestBaseLevels[id] ?? 0, Number(level) || 0)
+    }
+  }
+  return { highestBaseLevels }
+}
+
+// ── Alchemy ───────────────────────────────────────────────────────────────────
+// CauldronInfo[0-3] = bubble levels per cauldron (power, quicc, high-iq, kazam) as
+// { index: level }; CauldronInfo[4] = vial levels by vial index.
+// bubbleLevels is keyed by bubbleIndex ('_29', 'a3', 'b12', 'c25') like bubbleMap.
+const CAULDRON_PREFIXES = ['_', 'a', 'b', 'c']
+
+function parseAlchemy(json) {
+  const info = parseRaw(json['CauldronInfo']) ?? []
+  const bubbleLevels = {}
+  CAULDRON_PREFIXES.forEach((prefix, cauldron) => {
+    Object.entries(info[cauldron] ?? {}).forEach(([index, level]) => {
+      if (index !== 'length') bubbleLevels[`${prefix}${index}`] = Number(level) || 0
+    })
+  })
+  const vialLevels = {}
+  Object.entries(info[4] ?? {}).forEach(([index, level]) => {
+    if (index !== 'length') vialLevels[index] = Number(level) || 0
+  })
+  return {
+    bubbleLevels,
+    vialLevels,
+  }
+}
+
+// ── Grimoire (Death Bringer) ──────────────────────────────────────────────────
+// Grimoire[i] = level of grimoire upgrade i (see data/grimoireMap.js)
+function parseGrimoire(json) {
+  return { levels: parseRaw(json['Grimoire']) ?? [] }
+}
+
+// ── Upgrade Vault ─────────────────────────────────────────────────────────────
+// UpgVault[i] = level of vault upgrade i (see data/upgradeVaultMap.js)
+function parseUpgradeVault(json) {
+  return { levels: parseRaw(json['UpgVault']) ?? [] }
+}
+
+// ── Achievements ──────────────────────────────────────────────────────────────
+// AchieveReg[i] === -1 means achievement i is complete
+function parseAchievements(json) {
+  return (parseRaw(json['AchieveReg']) ?? []).map(value => value === -1)
+}
+
+// ── Rift ──────────────────────────────────────────────────────────────────────
+// Rift[0] = current rift level. Rift bonuses unlock every 5 levels (see utils/riftUtils.js).
+function parseRift(json) {
+  const rift = parseRaw(json['Rift']) ?? []
+  return { level: parseInt(rift[0]) || 0 }
+}
+
+// ── Killroy ───────────────────────────────────────────────────────────────────
+// Permanent shop bonus levels, by the game's KillroyBonuses index 0-7:
+// OptLacc 228, 229, 230 then 467-471 (1 = Crop Evolution Chance)
+const KILLROY_SHOP_OPTIONS = [228, 229, 230, 467, 468, 469, 470, 471]
+
+function parseKillroy(json) {
+  const optLacc = parseRaw(json['OptLacc']) ?? []
+  return { shopLevels: KILLROY_SHOP_OPTIONS.map(option => Number(optLacc[option]) || 0) }
+}
+
+// ── Sushi Station (W7) ────────────────────────────────────────────────────────
+// Sushi[5][i] >= 0 once sushi type i has been discovered. uniqueSushi counts the
+// unbroken run of discovered types from the first one, like the game.
+function parseSushi(json) {
+  const tracking = parseRaw(json['Sushi'])?.[5] ?? []
+  let uniqueSushi = 0
+  while ((tracking[uniqueSushi] ?? -1) >= 0) uniqueSushi++
+  return { uniqueSushi }
+}
+
+// ── Stamps ────────────────────────────────────────────────────────────────────
+// StampLv[tree] = { index: level } for tree 0 combat, 1 skills, 2 misc
+// (stampMap compassIndex prefixes '_', 'a', 'b'). Exalted stamps: see parseExaltedStamps.
+function parseStamps(json) {
+  const raw = parseRaw(json['StampLv']) ?? []
+  const levels = [0, 1, 2].map(tree => {
+    const entries = Object.entries(raw[tree] ?? {}).filter(([index]) => index !== 'length')
+    return Object.fromEntries(entries.map(([index, level]) => [index, Number(level) || 0]))
+  })
+  return { levels }
+}
+
+// ── Sneaking (W6) ─────────────────────────────────────────────────────────────
+// Ninja[107][i] = 1 once Pristine Charm i is unlocked (see data/sneakingMap.js)
+function parseSneaking(json) {
+  const ninja = parseRaw(json['Ninja']) ?? []
+  return { pristineCharms: (ninja[107] ?? []).map(unlocked => unlocked === 1) }
+}
+
+// ── Vote Ballot ───────────────────────────────────────────────────────────────
+// serverVars (outside data) holds this week's vote: voteCategories[0] = the winning
+// ballot bonus, voteCat2[0] = the winning Meritocracy bonus.
+function parseVoteBallot(rawJson) {
+  const serverVars = rawJson?.serverVars ?? {}
+  return {
+    selectedBonus: serverVars.voteCategories?.[0] ?? null,
+    selectedMeritocracy: serverVars.voteCat2?.[0] ?? null,
+  }
+}
+
 function unwrapSave(json) {
   const isWrapped = json?.data
     && typeof json.data === 'object'
@@ -835,5 +963,16 @@ export function extractSnapshot(rawJson) {
     cards: parseCards(json),
     labChips: parseLabChips(json, charList.length),
     royalGuardian: parseRoyalGuardian(json),
+    talents: parseTalents(json, charList.length),
+    alchemy: parseAlchemy(json),
+    grimoire: parseGrimoire(json),
+    upgradeVault: parseUpgradeVault(json),
+    achievements: parseAchievements(json),
+    rift: parseRift(json),
+    killroy: parseKillroy(json),
+    sushi: parseSushi(json),
+    voteBallot: parseVoteBallot(rawJson),
+    stamps: parseStamps(json),
+    sneaking: parseSneaking(json),
   }
-}
+}

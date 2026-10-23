@@ -1,7 +1,7 @@
 // ── Shared / Global ───────────────────────────────────────────────────────────
 export { CLASS_NAMES, CLASS_BEST_FOR, getClassName } from './classes'
 export { sections } from './sections'
-export { talentMap } from './talentMap'
+export { talentMap, talentGrowthMap } from './talentMap'
 export { MASTERCLASSES } from './masterClasses'
 export { itemMap } from './itemMap'
 export { equipmentMap, GEAR_SETS, GEAR_SET_PIECES } from './equipmentMap'
@@ -13,6 +13,8 @@ export { cardMap, cardSetMap } from './cardMap'
 export { BIS_SETUPS, BIS_CATEGORIES } from './bisSetups'
 export { mobsMap, mapEnemyData } from './mobsMap'
 export { worldMap } from './worldMap'
+export { grimoireMap } from './grimoireMap' // Death Bringer class system
+export { upgradeVaultMap } from './upgradeVaultMap'
 export { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier, STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti } from './royalGuardianMap'
 export { buildOutpostSummary, OUTPOST_UPGRADES, OUTPOST_MODES, SUPPORT_CAMP_MODE, SAVAGE_STRONGHOLD_MODE, PURITY_RANK, formatOutpostExp } from './royalOutposts'
 export {
@@ -38,6 +40,7 @@ export { obolMap, obolByRawName, obolFarmMap, obolFarmSources, circleTiers, squa
 export { stampMap } from './stampsMap'
 export { STAMP_TIERS } from './stampsMap'
 export { bubbleMap } from './bubblesMap'
+export { vialMap } from './vialMap'
 export { BUBBLE_TIERS } from './bubblesMap'
 
 // ── World 3 ───────────────────────────────────────────────────────────────────
@@ -49,12 +52,15 @@ export { prayerMap } from './prayerMap'
 // ── World 4 ───────────────────────────────────────────────────────────────────
 export { labChipMap } from './labChipMap'
 export { cookingMap, cookingBonusTypes, ribbonData } from './cookingMap'
+export { mealMap } from './mealMap'
 export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
 
 // ── World 5 ───────────────────────────────────────────────────────────────────
 
 // ── World 6 ───────────────────────────────────────────────────────────────────
-export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, landRankMap, landRankStatGroups, calcRankBonus } from './farmingMap'
+export { pristineCharmMap } from './sneakingMap'
+export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, landRankMap, calcRankBonus } from './farmingMap'
 
 // ── World 7 ───────────────────────────────────────────────────────────────────
-export { legendTalentMap, LEGEND_TALENT_ORDER } from './legendTalentMap'
+export { legendTalentMap, LEGEND_TALENT_ORDER } from './legendTalentMap'
+export { sushiUniqueBonuses } from './sushiMap'
