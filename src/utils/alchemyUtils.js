@@ -5,6 +5,10 @@ import { getSushiBonus } from './sushiUtils'
 import { getUpgradeVaultBonus } from './upgradeVaultUtils'
 import { isRiftBonusUnlocked } from './riftUtils'
 import { isMeritocracyBonusSelected } from './voteUtils'
+import { getTesseractBonus } from './tesseractUtils'
+import { getArcadeBonus } from './arcadeUtils'
+import { getCompanionBonus } from './companionUtils'
+import { getJellyBonus } from './jellyUtils'
 
 // Alchemy (W2) bonus math, ported from IdleonToolbox parsers/world-2/alchemy.ts.
 // Each function returns { value, missing } where `missing` lists the parts of the
@@ -18,6 +22,9 @@ export const MAX_PRISMA_MULTI = 5
 const PRISMA_EXOTIC = 48 // Prisma Petal
 const PRISMA_LEGEND_TALENT = 36 // Wowa Woowa
 const PRISMA_SUSHI = 23
+const PINNACLE_OF_PRISMA = 45 // tesseract
+const RIFT_HIVEMIND = 88 // companion: +50% (+75% upgraded)
+const PRISMA_JELLY = 36
 
 export function isPrismaBubble(snapshot, bubbleIndex) {
   return (snapshot?.prismaBubbles ?? []).includes(bubbleIndex)
@@ -28,9 +35,13 @@ export function getPrismaMulti(snapshot) {
   const exotic = calcExoticBonus(exoticMarketMap[PRISMA_EXOTIC], snapshot?.farming?.exoticLevels?.[PRISMA_EXOTIC] ?? 0)
   const legend = getLegendTalentBonus(PRISMA_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, PRISMA_LEGEND_TALENT))
   const sushi = getSushiBonus(snapshot?.sushi, PRISMA_SUSHI)
+  const tesseract = getTesseractBonus(snapshot?.tesseract, PINNACLE_OF_PRISMA)
+  const arcade = getArcadeBonus(snapshot, 'Prisma Bonuses')
+  const companion = 50 * getCompanionBonus(snapshot?.companions, RIFT_HIVEMIND)
+  const jelly = getJellyBonus(snapshot?.jellyOperator, PRISMA_JELLY)
   return {
-    value: Math.min(MAX_PRISMA_MULTI, 2 + (exotic + legend + sushi) / 100),
-    missing: ['Tesseract', 'Arcade', 'Palette', 'Trophy', 'Ethereal Sigils', 'Companion', 'Jelly Operator'],
+    value: Math.min(MAX_PRISMA_MULTI, 2 + (exotic + legend + sushi + tesseract + arcade + companion + jelly) / 100),
+    missing: ['Palette', 'Trophy', 'Ethereal Sigils'],
   }
 }
 

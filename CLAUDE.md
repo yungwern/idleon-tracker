@@ -35,7 +35,9 @@ src/
 │                       # Growth-curve data (func/x1/x2, bonus = growth() in utils/mathUtils.js) lives on
 │                       #   bubbleMap + stampMap entries, vialMap.js, talentMap.js talentGrowthMap. Generated
 │                       #   from Toolbox: grimoireMap, upgradeVaultMap, sushiMap, sneakingMap (pristine
-│                       #   charms), mealMap (every meal: baseStat/stat).
+│                       #   charms), mealMap (every meal: baseStat/stat), companionMap, tesseractMap, arcadeMap,
+│                       #   jellyMap, meritMap, emperorMap, artifactMap, summoningMap, cavernsMap, zenithMap,
+│                       #   starSignMap, researchMap (grid squares, observations, stickers), buttonMap.
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
@@ -55,13 +57,21 @@ src/
                         #   talent levels (Evo Boost % box calibrates).
                         #   getCropEvolutionBreakdown = every crop evo multi (Toolbox getCropEvolution), each read
                         #   from its own system's utils; sources marked exact / partial (missing inner boosts) /
-                        #   missing. Still missing: summoning winner bonus, lamp, monument, Crop Chapter (tome
-                        #   points), star sign, button, sticker.
+                        #   missing. Every source is read now; partial: vial + jewel (lab assumed connected),
+                        #   Dank Ranks / Mass Irrigation added talent levels (Arctis, Symbols of Beyond, family,
+                        #   Equinox Symbols not read). Tome points and Evo Boost % are per-browser inputs.
+                        #   Crop Evo button bonus = index 7 in the game data (Toolbox reads index 5).
                         # One util per game system, each returning plain numbers or { value, missing }:
                         #   alchemyUtils (bubbles, prisma, vials), stampUtils, cookingUtils (meals), breedingUtils
                         #   (shiny levels/passives), talentUtils (highest base level bonus), grimoireUtils,
                         #   upgradeVaultUtils, killroyUtils, sushiUtils, sneakingUtils (charms), riftUtils,
-                        #   skillUtils (Lv0_i skill index map, skill rank), achievementUtils, voteUtils, mapUtils.
+                        #   skillUtils (Lv0_i skill index map, skill rank), achievementUtils, voteUtils, mapUtils,
+                        #   companionUtils, jellyUtils, tesseractUtils, arcadeUtils, gemShopUtils, meritUtils,
+                        #   bundleUtils, sailingUtils (simple artifacts), armorSetUtils, emperorUtils,
+                        #   summoningUtils (winner bonuses), cavernUtils (lamp, monument), zenithUtils,
+                        #   starSignUtils, characterUtils (played character = newest PTimeAway), tomeUtils,
+                        #   equinoxUtils, eventShopUtils / gamingUtils (save-letter flags, saveCodeUtils),
+                        #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels, assumed connected).
                         #   New bonus sources go in their system's util, never in the page that uses them.
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
@@ -130,8 +140,10 @@ batch can be claimed again (counted as ~2 claims per batch).
 
 **Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components.
 Each game system has its own `parseX` in extractSnapshot (talents, alchemy, stamps, sneaking, grimoire, upgradeVault,
-achievements, rift, killroy, sushi, voteBallot from the export's top-level serverVars). Snapshot shape changes only
-show up after re-importing a save.
+achievements, rift, killroy, sushi, companions + voteBallot from the export's top-level companion/serverVars, and
+more). Snapshot shape changes only show up after re-importing a save.
+**Played character**: account bonuses the game reads "as the logged-in character" (star signs, chips, skill levels,
+added talent levels) use `getActiveCharacter` (newest PTimeAway_i).
 
 **Characters come from the save**: names from `playerNames`, classes from `CharacterClass_N` (IDs mapped in
 `data/classes.js`). Character count is whatever the save has, so never hard-code 10 or 11. `snapshot.characters[i]`

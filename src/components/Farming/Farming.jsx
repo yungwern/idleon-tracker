@@ -36,24 +36,28 @@ const TABS = [
   { id: 'cropEvo', label: 'Crop Evolution' },
 ]
 
+// Per-browser inputs for values the save doesn't hold
 const EVO_BOOST_KEY = 'farming_evo_boost_input'
+const TOME_POINTS_KEY = 'farming_tome_points_input'
 
 const hideBrokenImg = e => {
   e.currentTarget.style.display = 'none'
 }
 
-function readEvoBoost() {
+function readSavedInput(key) {
   try {
-    return localStorage.getItem(EVO_BOOST_KEY) ?? ''
+    return localStorage.getItem(key) ?? ''
   } catch {
     return ''
   }
 }
 
-function saveEvoBoost(value) {
+const readEvoBoost = () => readSavedInput(EVO_BOOST_KEY)
+
+function saveInput(key, value) {
   try {
-    if (value.trim() === '') localStorage.removeItem(EVO_BOOST_KEY)
-    else localStorage.setItem(EVO_BOOST_KEY, value)
+    if (value.trim() === '') localStorage.removeItem(key)
+    else localStorage.setItem(key, value)
   } catch {
     // Storage unavailable: the value just won't persist
   }
@@ -131,7 +135,7 @@ function LandRanksTab({ snapshot, farming }) {
 
   function handleEvoBoostChange(e) {
     setEvoBoost(e.target.value)
-    saveEvoBoost(e.target.value)
+    saveInput(EVO_BOOST_KEY, e.target.value)
     setPlan(null)
   }
 
@@ -197,7 +201,7 @@ function LandRanksTab({ snapshot, farming }) {
           onChange={handleEvoBoostChange}
         />
         <span className="farming-input-hint">
-          Copy Evolution Boost's % from the game if it differs: the save only has Dank Ranks' base level.
+          Copy Evolution Boost's % from the game if it differs: a few of Dank Ranks' added talent levels aren't read yet.
         </span>
       </div>
 
@@ -649,10 +653,19 @@ const STATUS_LABELS = {
 function CropEvolutionTab({ snapshot }) {
   // Uses the same Evo Boost % calibration as the Land Ranks tab
   const [evoBoost] = useState(readEvoBoost)
+  const [tomePoints, setTomePoints] = useState(() => readSavedInput(TOME_POINTS_KEY))
   const { sources, total } = useMemo(
-    () => getCropEvolutionBreakdown(snapshot, getRankMulti(snapshot, evoBoost)),
-    [snapshot, evoBoost]
+    () => getCropEvolutionBreakdown(snapshot, getRankMulti(snapshot, evoBoost), {
+      tomePoints,
+      rankCalibrated: parseFloat(evoBoost) > 0,
+    }),
+    [snapshot, evoBoost, tomePoints]
   )
+
+  function handleTomePointsChange(e) {
+    setTomePoints(e.target.value)
+    saveInput(TOME_POINTS_KEY, e.target.value)
+  }
   const counts = sources.reduce((acc, s) => ({ ...acc, [s.status]: (acc[s.status] ?? 0) + 1 }), {})
 
   return (
@@ -678,6 +691,21 @@ function CropEvolutionTab({ snapshot }) {
           value={counts.missing ?? 0}
           valueClass="farming-chip-value--bad"
         />
+      </div>
+
+      <div className="farming-input-row">
+        <span className="farming-input-label">Tome Points</span>
+        <input
+          type="number"
+          min="0"
+          className="farming-input"
+          placeholder="e.g. 25000"
+          value={tomePoints}
+          onChange={handleTomePointsChange}
+        />
+        <span className="farming-input-hint">
+          Your total from the game's Tome, for the Crop Chapter bubble (the save doesn't store it).
+        </span>
       </div>
 
       <div className="evo-table">
@@ -723,7 +751,7 @@ export default function Farming({ snapshot }) {
         intro="Track your farming progress across land ranks, the Day and Night markets, and the weekly Exotic Market."
         items={[
           'Land Ranks: locked upgrades are dimmed. Evolution, Production and Soil EXP Boost scale with plot rank, so their cards also show the total on your lowest plot.',
-          'Land rank bonuses use Dank Ranks from your save. The save only has its base level, so if the game shows a different Evolution Boost %, enter it to calibrate.',
+          'Land rank bonuses use Dank Ranks from your save. A few of its added talent levels aren\'t read yet, so if the game shows a different Evolution Boost %, enter it to calibrate.',
           'Spend plans only your unspent points on top of your current levels, since the game can only take points back by resetting all of them. Full Reset replans every point from scratch.',
           'Both score each plot the way IdleOn Toolbox does: seed ranks go to their max level, Farm EXP gets the points you reserve, and every other point goes where it raises Crop Evolution × Crop Value × Rank EXP × Overgrowth the most. Crop value stops getting points once every plot is at the cap.',
           'Market costs include your Better Day / Better Night exotic discounts. Night Market upgrades cost magic beans.',

@@ -4,6 +4,8 @@ import { getCharmBonus } from './sneakingUtils'
 import { getUpgradeVaultBonus } from './upgradeVaultUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { getSushiBonus } from './sushiUtils'
+import { getArmorSetBonus } from './armorSetUtils'
+import { getJellyBonus } from './jellyUtils'
 
 // Stamp bonus math (W1), ported from IdleonToolbox parsers/world-1/stamps.ts.
 // Returns { value, missing } like the alchemy utils.
@@ -17,9 +19,12 @@ export function getExaltedStampMulti(snapshot) {
   const legend = getLegendTalentBonus(36, getLegendTalentLevel(snapshot?.legendTalents, 36))
   const charm = getCharmBonus(snapshot?.sneaking, 'Jellypick')
   const sushi = getSushiBonus(snapshot?.sushi, 17)
+  const emperorSet = getArmorSetBonus(snapshot?.armorSmithySets, 'EMPEROR_SET')
+  // The game divides only the jelly term by 100
+  const jelly = getJellyBonus(snapshot?.jellyOperator, 50) / 100
   return {
-    value: 1 + (100 + exotic + legend + charm + sushi) / 100,
-    missing: ['Atom', 'Compass', 'Emperor set', 'Event shop', 'Palette', 'Exalted fragment', 'Jelly Operator'],
+    value: 1 + (100 + exotic + legend + charm + sushi + emperorSet + jelly) / 100,
+    missing: ['Atom', 'Compass', 'Event shop', 'Palette', 'Exalted fragment'],
   }
 }
 

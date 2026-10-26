@@ -60,6 +60,12 @@ const extractors = {
   skillLevels: (json, i) => parseRaw(json[`Lv0_${i}`]) ?? [],
   // KLA_i[map][0] = kills still needed to clear each map (0 or below = cleared)
   mapKillsLeft: (json, i) => (parseRaw(json[`KLA_${i}`]) ?? []).map(entry => entry?.[0] ?? 0),
+  // SL_i = { talentId: base level } on the live talent tab
+  talentLevels: (json, i) => parseRaw(json[`SL_${i}`]) ?? {},
+  // PTimeAway_i = when this character was last left; the played character's keeps moving
+  awayTime: (json, i) => Number(json[`PTimeAway_${i}`]) || 0,
+  // PVtStarSign_i = '69,64,6,' — equipped star sign indexes (see data/starSignMap.js)
+  starSigns: (json, i) => String(json[`PVtStarSign_${i}`] ?? '').split(',').filter(Boolean).map(Number),
   equipOrder: (json, i) => json[`EquipOrder_${i}`]?.[0] ?? {},
   inventory: (json, i, weaponKeys) => {
     const order = json[`InventoryOrder_${i}`] ?? []
@@ -862,6 +868,11 @@ function parseRift(json) {
 // OptLacc 228, 229, 230 then 467-471 (1 = Crop Evolution Chance)
 const KILLROY_SHOP_OPTIONS = [228, 229, 230, 467, 468, 469, 470, 471]
 
+function parseNinjaMasteryTier(json) {
+  // OptLacc[232] = Sneaking ninja mastery tier
+  return Number((parseRaw(json['OptLacc']) ?? [])[232]) || 0
+}
+
 function parseKillroy(json) {
   const optLacc = parseRaw(json['OptLacc']) ?? []
   return { shopLevels: KILLROY_SHOP_OPTIONS.map(option => Number(optLacc[option]) || 0) }
@@ -894,6 +905,169 @@ function parseStamps(json) {
 function parseSneaking(json) {
   const ninja = parseRaw(json['Ninja']) ?? []
   return { pristineCharms: (ninja[107] ?? []).map(unlocked => unlocked === 1) }
+}
+
+// ── Companions ────────────────────────────────────────────────────────────────
+// The export's top-level `companion.l` lists owned copies as 'index,tradable,?,?,level'.
+// Pet Bonus Tokens (OptLacc[606] = comma list of indices) grant a companion's bonus without
+// owning it, up to the tokens owned (OptLacc[605] + [615], max 2); the game wipes an
+// over-long list. owned[index] = highest Pet Mart+ level owned (0 = base), -1 = token only.
+function parseCompanions(rawJson, json) {
+  const owned = {}
+  for (const entry of rawJson?.companion?.l ?? []) {
+    const [index, , , , level] = String(entry).split(',')
+    owned[index] = Math.max(owned[index] ?? 0, Number(level) || 0)
+  }
+  const optLacc = parseRaw(json['OptLacc']) ?? []
+  const tokensOwned = Math.min(1, Number(optLacc[605]) || 0) + Math.min(1, Number(optLacc[615]) || 0)
+  const rawTokens = optLacc[606]
+  const tokens = rawTokens === '' || rawTokens == null ? [] : String(rawTokens).split(',')
+  if (tokens.length <= tokensOwned + 0.5) {
+    tokens.forEach(index => {
+      if (owned[index] === undefined && index !== '') owned[index] = -1
+    })
+  }
+  return { owned }
+}
+
+// ── Jelly Operator (W7) ───────────────────────────────────────────────────────
+// Research[7][9] = obstructions defeated (see data/jellyMap.js)
+function parseJellyOperator(json) {
+  const research = parseRaw(json['Research']) ?? []
+  return { obstructionsDefeated: Number(research[7]?.[9]) || 0 }
+}
+
+// ── Tesseract (Arcane Cultist) ────────────────────────────────────────────────
+// Arcane[i] = level of tesseract upgrade i (see data/tesseractMap.js)
+function parseTesseract(json) {
+  return { levels: parseRaw(json['Arcane']) ?? [] }
+}
+
+// ── Arcade (W2) ───────────────────────────────────────────────────────────────
+// ArcadeUpg[i] = level of gold ball shop upgrade i (see data/arcadeMap.js)
+function parseArcade(json) {
+  return { levels: parseRaw(json['ArcadeUpg']) ?? [] }
+}
+
+// ── Gem Shop ──────────────────────────────────────────────────────────────────
+// GemItemsPurchased[i] = times gem shop item i was bought
+function parseGemShop(json) {
+  return { purchases: parseRaw(json['GemItemsPurchased']) ?? [] }
+}
+
+// ── Merits (Tasks) ────────────────────────────────────────────────────────────
+// TaskZZ2[world][i] = level of merit i in that world's merit shop (see data/meritMap.js)
+function parseMerits(json) {
+  return { levels: parseRaw(json['TaskZZ2']) ?? [] }
+}
+
+// ── Bundles ───────────────────────────────────────────────────────────────────
+// BundlesReceived = { bundleName: count }; owned = names received at least once
+function parseBundles(json) {
+  const raw = parseRaw(json['BundlesReceived']) ?? {}
+  return { owned: Object.keys(raw).filter(name => Number(raw[name]) > 0) }
+}
+
+// ── Sailing (W5) ──────────────────────────────────────────────────────────────
+// Sailing[3][i] = artifact i's form (0 not found, 1 found, 2 ancient ... 7 verisimilitude)
+function parseSailing(json) {
+  const sailing = parseRaw(json['Sailing']) ?? []
+  return { artifactForms: (sailing[3] ?? []).map(form => Number(form) || 0) }
+}
+
+// ── Emperor Showdown (W6) ─────────────────────────────────────────────────────
+// OptLacc[369] = highest Emperor showdown beaten (see data/emperorMap.js)
+function parseEmperor(json) {
+  const optLacc = parseRaw(json['OptLacc']) ?? []
+  return { highestShowdown: Number(optLacc[369]) || 0 }
+}
+
+// ── Summoning (W6) ────────────────────────────────────────────────────────────
+// Summon[1] = enemy ids of every battle won; OptLacc[319] = highest endless battle reached
+function parseSummoning(json) {
+  const summon = parseRaw(json['Summon']) ?? []
+  const optLacc = parseRaw(json['OptLacc']) ?? []
+  return {
+    wonBattles: summon[1] ?? [],
+    highestEndless: Number(optLacc[319]) || 0,
+  }
+}
+
+// ── Caverns (W5 Hole) ─────────────────────────────────────────────────────────
+// Holes[4] = hole majik (cosmo) levels, [15] = Bravery Monument bonus levels, [21] = Lamp
+// wishes used, [31]/[32] = fountain upgrade levels / marbleize tiers per water type.
+function parseCaverns(json) {
+  const holes = parseRaw(json['Holes']) ?? []
+  return {
+    holeMajiks: holes[4] ?? [],
+    braveryBonuses: holes[15] ?? [],
+    wishesUsed: holes[21] ?? [],
+    fountainLevels: holes[31] ?? [],
+    fountainMarbles: holes[32] ?? [],
+  }
+}
+
+// ── Zenith Market (W7 Spelunking) ─────────────────────────────────────────────
+// Spelunk[45][i] = level of zenith market upgrade i (see data/zenithMap.js)
+function parseZenith(json) {
+  const spelunk = parseRaw(json['Spelunk']) ?? []
+  return { marketLevels: spelunk[45] ?? [] }
+}
+
+// ── Star Signs ────────────────────────────────────────────────────────────────
+// StarSg = { starName: 1 } for every unlocked star sign
+function parseStarSigns(json) {
+  const raw = parseRaw(json['StarSg']) ?? {}
+  return { unlocked: Object.keys(raw).filter(name => Number(raw[name]) > 0) }
+}
+
+// ── Equinox (W3) ──────────────────────────────────────────────────────────────
+// WeeklyBoss['d_' + i] = -1 once equinox cloud (challenge) i is complete
+function parseEquinox(json) {
+  const weeklyBoss = parseRaw(json['WeeklyBoss']) ?? {}
+  const completedClouds = Object.keys(weeklyBoss)
+    .filter(key => key.startsWith('d_') && weeklyBoss[key] === -1)
+    .map(key => Number(key.slice(2)))
+  return { completedClouds }
+}
+
+// ── Research (W7) ─────────────────────────────────────────────────────────────
+// Research[0] = grid square levels, [1] = observation placed on each square (-1 none),
+// [9] = stickers owned per type, [11] = King Rat Crowns reclaimed (one entry each)
+function parseResearch(json) {
+  const research = parseRaw(json['Research']) ?? []
+  return {
+    gridLevels: research[0] ?? [],
+    gridObservations: research[1] ?? [],
+    stickerLevels: (research[9] ?? []).map(level => Number(level) || 0),
+    kingRatCrowns: (research[11] ?? []).length,
+  }
+}
+
+// ── Gaming (W5) ───────────────────────────────────────────────────────────────
+// Gaming[12] = unlocked superbits as a string of save letters (see utils/saveCodeUtils.js)
+function parseGaming(json) {
+  const gaming = parseRaw(json['Gaming']) ?? []
+  return { superbits: String(gaming[12] ?? '') }
+}
+
+// ── Account Options ───────────────────────────────────────────────────────────
+// OptLacc[311] = event shop purchases as save letters; OptLacc[594] = Button presses (W7)
+function parseEventShop(json) {
+  const optLacc = parseRaw(json['OptLacc']) ?? []
+  return { purchases: String(optLacc[311] ?? '') }
+}
+
+function parseButton(json) {
+  const optLacc = parseRaw(json['OptLacc']) ?? []
+  return { presses: Number(optLacc[594]) || 0 }
+}
+
+// ── Lab Jewels (W4) ───────────────────────────────────────────────────────────
+// Lab[14][i] = 1 once jewel i is owned. Whether it's connected in the mainframe isn't worked out.
+function parseLabJewels(json) {
+  const lab = parseRaw(json['Lab']) ?? []
+  return { owned: (lab[14] ?? []).map(owned => owned === 1) }
 }
 
 // ── Vote Ballot ───────────────────────────────────────────────────────────────
@@ -974,5 +1148,25 @@ export function extractSnapshot(rawJson) {
     voteBallot: parseVoteBallot(rawJson),
     stamps: parseStamps(json),
     sneaking: parseSneaking(json),
+    companions: parseCompanions(rawJson, json),
+    jellyOperator: parseJellyOperator(json),
+    tesseract: parseTesseract(json),
+    arcade: parseArcade(json),
+    gemShop: parseGemShop(json),
+    merits: parseMerits(json),
+    bundles: parseBundles(json),
+    sailing: parseSailing(json),
+    emperor: parseEmperor(json),
+    summoning: parseSummoning(json),
+    caverns: parseCaverns(json),
+    zenith: parseZenith(json),
+    starSigns: parseStarSigns(json),
+    equinox: parseEquinox(json),
+    research: parseResearch(json),
+    gaming: parseGaming(json),
+    eventShop: parseEventShop(json),
+    button: parseButton(json),
+    labJewels: parseLabJewels(json),
+    ninjaMasteryTier: parseNinjaMasteryTier(json),
   }
 }

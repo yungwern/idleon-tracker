@@ -15,6 +15,10 @@ export { mobsMap, mapEnemyData } from './mobsMap'
 export { worldMap } from './worldMap'
 export { grimoireMap } from './grimoireMap' // Death Bringer class system
 export { upgradeVaultMap } from './upgradeVaultMap'
+export { companionMap } from './companionMap'
+export { tesseractMap } from './tesseractMap' // Arcane Cultist class system
+export { meritMap } from './meritMap'
+export { starSignMap } from './starSignMap'
 export { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier, STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti } from './royalGuardianMap'
 export { buildOutpostSummary, OUTPOST_UPGRADES, OUTPOST_MODES, SUPPORT_CAMP_MODE, SAVAGE_STRONGHOLD_MODE, PURITY_RANK, formatOutpostExp } from './royalOutposts'
 export {
@@ -41,6 +45,7 @@ export { stampMap } from './stampsMap'
 export { STAMP_TIERS } from './stampsMap'
 export { bubbleMap } from './bubblesMap'
 export { vialMap } from './vialMap'
+export { arcadeShopMap } from './arcadeMap'
 export { BUBBLE_TIERS } from './bubblesMap'
 
 // ── World 3 ───────────────────────────────────────────────────────────────────
@@ -56,11 +61,19 @@ export { mealMap } from './mealMap'
 export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
 
 // ── World 5 ───────────────────────────────────────────────────────────────────
+export { artifactMap } from './artifactMap'
+export { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel } from './cavernsMap'
 
 // ── World 6 ───────────────────────────────────────────────────────────────────
 export { pristineCharmMap } from './sneakingMap'
+export { emperorBonusOrder } from './emperorMap'
+export { summoningBonuses, summoningEnemyBonuses, summoningEndless } from './summoningMap'
 export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, landRankMap, calcRankBonus } from './farmingMap'
 
 // ── World 7 ───────────────────────────────────────────────────────────────────
 export { legendTalentMap, LEGEND_TALENT_ORDER } from './legendTalentMap'
 export { sushiUniqueBonuses } from './sushiMap'
+export { jellyObstructions } from './jellyMap'
+export { zenithMarketMap } from './zenithMap'
+export { researchGridSquares, researchObservationBonuses, stickerBaseBonuses } from './researchMap'
+export { buttonBonusMap } from './buttonMap'

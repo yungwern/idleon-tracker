@@ -6,18 +6,25 @@ import {
   getSeedByCropId,
 } from '../data'
 import { getLegendTalentMulti, getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
-import { getHighestTalentBonus } from './talentUtils'
+import { getAccountTalentBonus, getAccountTalentLevel } from './talentUtils'
 import { getGrimoireBonus } from './grimoireUtils'
 import { getBubbleBonus, getVialBonusByStat } from './alchemyUtils'
 import { getPassiveCardBonus } from './cardUtils'
 import { getUpgradeVaultBonus } from './upgradeVaultUtils'
 import { isAchievementComplete } from './achievementUtils'
 import { getKillroyBonus, KILLROY_CROP_EVO } from './killroyUtils'
-import { getHighestSkillLevel, isSkillMasteryBonusUnlocked } from './skillUtils'
+import { getSkillLevel, isSkillMasteryBonusUnlocked } from './skillUtils'
 import { getSushiBonus } from './sushiUtils'
 import { isBallotBonusSelected } from './voteUtils'
 import { getStampBonusByEffect } from './stampUtils'
 import { getMealBonusByStat } from './cookingUtils'
+import { getWinnerBonusByName } from './summoningUtils'
+import { getTomeBubbleMulti } from './tomeUtils'
+import { getLampBonus, getMonumentBonus } from './cavernUtils'
+import { getStarSignBonus } from './starSignUtils'
+import { getActiveCharacterIndex } from './characterUtils'
+import { getButtonBonus } from './buttonUtils'
+import { getStickerBonus } from './researchUtils'
 import { countClearedMaps, WORLD_6_FIRST_MAP, WORLD_6_MAP_COUNT } from './mapUtils'
 
 // Farming math, checked against IdleonToolbox parsers/world-6/farming.ts.
@@ -220,8 +227,8 @@ const GOAL_OF_UPGRADE = Object.fromEntries(
 )
 
 // Multiplier on every Land Rank Database bonus: Dank Ranks (Death Bringer talent 207) ×
-// Plump Database (exotic 14). The save only has Dank Ranks' base level, so the game's
-// Evolution Boost % can be entered to calibrate it exactly (bonus shown ÷ bonus at 1x).
+// Plump Database (exotic 14). A few of Dank Ranks' added talent levels aren't read, so the
+// game's Evolution Boost % can be entered to calibrate it exactly (bonus shown ÷ bonus at 1x).
 const DANK_RANKS_TALENT = 207
 
 export function getRankMulti(snapshot, evoBoostInput) {
@@ -230,7 +237,7 @@ export function getRankMulti(snapshot, evoBoostInput) {
   const evoBase = calcRankBonus(landRankMap[0], farming?.upgradesLevels?.[0] ?? 0)
   const shown = parseFloat(evoBoostInput)
   if (shown > 0 && evoBase > 0) return Math.max(exoticMulti, shown / evoBase)
-  return Math.max(1, getHighestTalentBonus(snapshot?.talents, DANK_RANKS_TALENT)) * exoticMulti
+  return Math.max(1, getAccountTalentBonus(snapshot, DANK_RANKS_TALENT).value) * exoticMulti
 }
 
 // 5th column max LV: 1 + grimoire 9 + Datadigging (exotic 15) + Extended Database (legend 3)
@@ -425,6 +432,7 @@ const geneologies = [
 ]
 const MASS_IRRIGATION_TALENT = 205
 const CROPIUS_MAPPER_BUBBLE = 'c25'
+const CROP_CHAPTER_BUBBLE = '_29'
 const CROP_EVO_VIAL_STAT = '6FarmEvo'
 const CROP_EVO_CARD_EFFECT = '+{% Farming EVO Multi (Passive)'
 const CROP_EVO_VAULT_UPGRADE = 78
@@ -433,6 +441,8 @@ const LIL_OVERGROWTH_ACHIEVEMENT = 355
 const CROP_EVO_SUSHI = 35
 const CROP_EVO_BALLOT = 29
 const CROP_EVO_STAMP_EFFECT = 'Crop Evolution Chance'
+const CROP_EVO_BUTTON = 7
+const CROP_EVO_STICKER = 4
 
 function source(id, label, system, multi, extra = {}) {
   return {
@@ -451,12 +461,23 @@ const notPorted = (id, label, system, note) => source(id, label, system, 1, {
   note,
 })
 
-export function getCropEvolutionBreakdown(snapshot, rankMulti) {
+// tomePoints: total Tome points typed in by the player (not in the save).
+// rankCalibrated: the Evo Boost % box is filled in, so rankMulti is exact.
+export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints, rankCalibrated = false } = {}) {
   const farming = snapshot?.farming ?? {}
   const exotics = farming.exoticLevels
   const market = farming.marketLevels ?? []
   const characters = snapshot?.characters ?? []
-  const farmingLevel = getHighestSkillLevel(characters, 'farming')
+  // Character-dependent sources use the character the save was taken on, like the game
+  const activeIndex = getActiveCharacterIndex(snapshot)
+  const activeCharacter = characters[activeIndex]
+  const farmingLevel = getSkillLevel(activeCharacter, 'farming')
+  const starSign = getStarSignBonus(snapshot, 'Crop_Evo', activeIndex)
+  const massIrrigation = getAccountTalentBonus(snapshot, MASS_IRRIGATION_TALENT)
+  // Without the Evo Boost % calibration, Dank Ranks may be missing a few added levels
+  const rankStatus = rankCalibrated
+    ? { status: 'exact', missing: [] }
+    : { status: 'partial', missing: ['Dank Ranks added talent levels (enter Evo Boost % on Land Ranks)'] }
 
   // Market: Biology Boost (+15%/LV) and Evolution GMO (compounds per crop with 200+ stock)
   const counts = farming.gmoCropCounts ?? {}
@@ -470,13 +491,16 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti) {
   const voteSelected = isBallotBonusSelected(snapshot?.voteBallot, CROP_EVO_BALLOT)
 
   const cropius = getBubbleBonus(snapshot, CROPIUS_MAPPER_BUBBLE)
+  const cropChapter = getBubbleBonus(snapshot, CROP_CHAPTER_BUBBLE)
+  const tomeMulti = getTomeBubbleMulti(tomePoints)
+  const hasTomePoints = Number(tomePoints) > 0
   const clearedW6Maps = countClearedMaps(characters, WORLD_6_FIRST_MAP, WORLD_6_MAP_COUNT)
   const vial = getVialBonusByStat(snapshot, CROP_EVO_VIAL_STAT)
   const stamp = getStampBonusByEffect(snapshot, CROP_EVO_STAMP_EFFECT)
   const meal = getMealBonusByStat(snapshot, 'zCropEvo')
   const summoningMeal = getMealBonusByStat(snapshot, 'zCropEvoSumm')
   // Nyanborgir: x1 at Summoning LV 0-48, x2 from 49, x3 from 99...
-  const summoningLevel = getHighestSkillLevel(characters, 'summoning')
+  const summoningLevel = getSkillLevel(activeCharacter, 'summoning')
   const summoningMealMulti = Math.ceil((summoningLevel + 1) / 50)
   const geneology = geneologies.reduce((sum, { exotic, above }) => (
     sum + Math.max(0, farmingLevel - above) * exoticBonus(exotics, exotic)
@@ -487,9 +511,15 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti) {
     source('gmo', 'Evolution GMO', 'Farming market', Math.max(1, evolutionGmo), {
       note: `${counts[200] ?? 0} crops with 200+ stock`,
     }),
-    notPorted('winner', 'Summoning winner bonus', 'Summoning', 'Needs summoning battles plus charms, artifacts, gem shop and more'),
-    notPorted('lamp', 'The Lamp', 'Caverns (W5)', 'Needs cavern wishes'),
-    notPorted('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Needs total Tome points'),
+    source('winner', 'Summoning winner bonus', 'Summoning', 1 + getWinnerBonusByName(snapshot, '<x Crop EVO') / 100),
+    source('lamp', 'The Lamp', 'Caverns (W5)', 1 + getLampBonus(snapshot, 2, 0) / 100),
+    hasTomePoints
+      ? source('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 1 + cropChapter.value * tomeMulti / 100, {
+        status: cropChapter.missing.length ? 'partial' : 'exact',
+        missing: cropChapter.missing,
+        note: `${Number(tomePoints).toLocaleString()} Tome points (x${tomeMulti})`,
+      })
+      : notPorted('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Enter your Tome points above'),
     source('cropius', 'Cropius Mapper (bubble)', 'Alchemy', 1 + cropius.value * clearedW6Maps / 100, {
       status: cropius.missing.length ? 'partial' : 'exact',
       missing: cropius.missing,
@@ -510,7 +540,7 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti) {
       note: `x${summoningMealMulti} at Summoning LV ${summoningLevel}`,
     }),
     source('vault', 'Croppius Evolvius (vault)', 'Upgrade Vault', 1 + getUpgradeVaultBonus(snapshot?.upgradeVault, CROP_EVO_VAULT_UPGRADE) / 100),
-    notPorted('monument', 'Monument', 'Caverns (W5)', 'Needs Bravery monument progress'),
+    source('monument', 'Wisdom Monument', 'Caverns (W5)', 1 + getMonumentBonus(snapshot, 2, 4) / 100),
     source('stamp', 'Crop Evo Stamp', 'Stamps', 1 + stamp.value / 100, {
       status: stamp.missing.length ? 'partial' : 'exact',
       missing: stamp.missing,
@@ -519,20 +549,26 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti) {
     source('achievement', "Lil' Overgrowth (achievement)", 'Achievements', isAchievementComplete(snapshot?.achievements, LIL_OVERGROWTH_ACHIEVEMENT) ? 1.05 : 1),
     source('killroy', 'Killroy shop', 'Killroy', Math.max(1, getKillroyBonus(snapshot?.killroy, KILLROY_CROP_EVO))),
     source('mastery', 'Farming skill mastery', 'Rift', isSkillMasteryBonusUnlocked(snapshot, 'farming', 1) ? 1.15 : 1),
-    notPorted('starSign', 'Cropiovo Minor (star sign)', 'Star signs', 'Needs star signs, infinite stars, chips and Seraph Cosmos'),
-    source('landRankTotal', 'Land rank total', 'Farming land ranks', Math.max(1, (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100))),
-    source('massIrrigation', 'Mass Irrigation (talent)', 'Talents', Math.max(1, getHighestTalentBonus(snapshot?.talents, MASS_IRRIGATION_TALENT)), {
+    source('starSign', 'Crop Evo star signs', 'Star signs', 1 + starSign.value * farmingLevel / 100, {
+      status: starSign.missing.length ? 'partial' : 'exact',
+      missing: starSign.missing,
+    }),
+    source('landRankTotal', 'Land rank total', 'Farming land ranks', Math.max(1, (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100)), rankStatus),
+    source('massIrrigation', 'Mass Irrigation (talent)', 'Talents', Math.max(1, massIrrigation.value), {
       status: 'partial',
-      missing: ['Added talent levels'],
+      missing: massIrrigation.missing,
+      note: `LV ${getAccountTalentLevel(snapshot, MASS_IRRIGATION_TALENT).value}`,
     }),
     source('landRankPlot', 'Evolution Boost × plot rank', 'Farming land ranks', 1 + b(0) * avgRank / 100, {
-      status: voteSelected ? 'partial' : 'exact',
-      missing: voteSelected ? ['Vote ballot bonus'] : [],
+      status: voteSelected || !rankCalibrated ? 'partial' : 'exact',
+      missing: [...(voteSelected ? ['Vote ballot bonus'] : []), ...rankStatus.missing],
       note: 'Average plot rank',
     }),
     ...sproutlucks.map(i => source(`sproutluck${i}`, exoticMarketMap[i].label, 'Exotic market', 1 + exoticBonus(exotics, i) / 100)),
-    notPorted('button', 'Button', 'W7 Button', 'Needs button presses and research grid'),
-    notPorted('sticker', 'Sticker', 'W7 Research', 'Needs sticker levels and research grid'),
+    source('button', 'The Button', 'Button (W7)', 1 + getButtonBonus(snapshot, CROP_EVO_BUTTON) / 100, {
+      note: "Uses the game data's Crop Evo slot (Toolbox reads a different one)",
+    }),
+    source('sticker', 'Crop Evo sticker', 'Research (W7)', 1 + getStickerBonus(snapshot, CROP_EVO_STICKER) / 100),
     source('geneology', 'Geneology I-V', 'Exotic market', 1 + geneology / 100, {
       note: `Farming LV ${farmingLevel}`,
     }),
