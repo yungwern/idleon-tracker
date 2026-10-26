@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { cookingMap, cookingBonusTypes, ribbonData } from '../../data'
-import { ribbonMulti, ribbonTierClass, masteryNodeMulti, RIBBON_MAX_RANK } from '../../utils/cookingUtils'
+import { cookingMap, cookingBonusTypes } from '../../data'
+import { ribbonMulti, ribbonData, ribbonTierClass, masteryNodeMulti, RIBBON_MAX_RANK } from '../../utils/cookingUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import './Cooking.css'
 
@@ -347,4 +347,4 @@ export default function Cooking({ snapshot }) {
       )}
     </div>
   )
-}
+}

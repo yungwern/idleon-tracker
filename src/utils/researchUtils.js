@@ -1,16 +1,13 @@
 import { researchGridSquares, researchObservationBonuses, stickerBaseBonuses } from '../data'
-import { getCompanionBonus, isCompanionActive } from './companionUtils'
+import { getCompanionBonus, isKingDootActive } from './companionUtils'
 import { getCloudBonus, EQUINOX_CLOUDS } from './equinoxUtils'
 import { getSushiBonus } from './sushiUtils'
 import { getEventShopBonus } from './eventShopUtils'
 import { isSuperbitUnlocked } from './gamingUtils'
-import { getActiveCharacter } from './characterUtils'
-import { getSkillLevel } from './skillUtils'
 
 // Research (W7) grid and stickers, from IdleonToolbox parsers/world-7/research.ts and
 // world-6/farming.ts getStickerBonus.
 
-const KING_DOOT = 0 // companion
 const GRID_ALL_MULTI_COMPANION = 55
 const DOOT_GRID_SQUARE = 173
 
@@ -18,8 +15,7 @@ const DOOT_GRID_SQUARE = 173
 // played character has Divinity LV 2+.
 export function getGridAllMulti(snapshot) {
   const research = snapshot?.research
-  const doot = isCompanionActive(snapshot?.companions, KING_DOOT)
-    && getSkillLevel(getActiveCharacter(snapshot), 'divinity') >= 2 ? 1 : 0
+  const doot = isKingDootActive(snapshot) ? 1 : 0
   const clouds = getCloudBonus(snapshot?.equinox, EQUINOX_CLOUDS.researchGrid1)
     + getCloudBonus(snapshot?.equinox, EQUINOX_CLOUDS.researchGrid2)
     + getCloudBonus(snapshot?.equinox, EQUINOX_CLOUDS.researchGrid3)

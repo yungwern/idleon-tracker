@@ -98,11 +98,24 @@ export const exoticMarketMap = [
   ...Array.from({ length: 19 }, () => null),
 ]
 
-export const calcExoticBonus = (upgrade, level) => {
+// An organic label (Spelunk[50]) doubles an exotic's bonus; exotic 39 is capped at 50 after that.
+// Account-aware version: getExoticBonus in utils/exoticUtils.js.
+const EXOTIC_ORGANIC_MULTI = 2
+const EXOTIC_39_CAP = 50
+
+export const calcExoticBonus = (upgrade, level, organic = false) => {
   if (!upgrade || level === 0) return 0
-  return upgrade.type === 1
+  const base = upgrade.type === 1
     ? upgrade.baseValue * (level / (1000 + level))
     : upgrade.baseValue * level
+  const value = base * (organic ? EXOTIC_ORGANIC_MULTI : 1)
+  return upgrade.index === 39 ? Math.min(EXOTIC_39_CAP, value) : value
+}
+
+// Highest bonus a type 1 (capped) exotic can reach
+export const exoticCap = (upgrade, organic = false) => {
+  const cap = upgrade.baseValue * (organic ? EXOTIC_ORGANIC_MULTI : 1)
+  return upgrade.index === 39 ? Math.min(EXOTIC_39_CAP, cap) : cap
 }
 
 // ── Land Rank Database ────────────────────────────────────────────────────────
@@ -150,4 +163,4 @@ export const calcRankBonus = (rankEntry, upgradeLevel, combinedMulti = 1) => {
   return rankEntry.isLinear
     ? multi * rankEntry.base * upgradeLevel
     : multi * (1.7 * rankEntry.base * upgradeLevel) / (upgradeLevel + 80)
-}
+}

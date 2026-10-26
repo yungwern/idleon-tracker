@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { extractSnapshot } from '../lib/extractSnapshot'
 
 const STORAGE_KEY = 'idleon_save_snapshot'
 
-export function useSaveImport() {
-  const [snapshot, setSnapshot] = useState(null)
+function loadSavedSnapshot() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    console.warn('Failed to load save snapshot from localStorage.')
+    return null
+  }
+}
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) setSnapshot(JSON.parse(raw))
-    } catch {
-      console.warn('Failed to load save snapshot from localStorage.')
-    }
-  }, [])
+export function useSaveImport() {
+  const [snapshot, setSnapshot] = useState(loadSavedSnapshot)
 
   function importFromText(text) {
     try {
@@ -50,4 +51,4 @@ export function useSaveImport() {
     clearSnapshot,
     importedAt: snapshot ? formatImportedAt(snapshot.importedAt) : null,
   }
-}
+}

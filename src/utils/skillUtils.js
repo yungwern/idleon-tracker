@@ -26,10 +26,6 @@ export function getSkillLevel(character, skill) {
   return Math.max(0, character?.skillLevels?.[SKILLS[skill]] ?? 0)
 }
 
-export function getHighestSkillLevel(characters, skill) {
-  return Math.max(0, ...(characters ?? []).map(character => getSkillLevel(character, skill)))
-}
-
 export function getTotalSkillLevel(characters, skill) {
   return (characters ?? []).reduce((sum, character) => sum + getSkillLevel(character, skill), 0)
 }

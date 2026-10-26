@@ -1,5 +1,5 @@
 // ── Shared / Global ───────────────────────────────────────────────────────────
-export { CLASS_NAMES, CLASS_BEST_FOR, getClassName } from './classes'
+export { CLASS_NAMES, CLASS_BEST_FOR, CLASS_TALENT_TABS, CLASS_FAMILY_BONUSES, getClassName } from './classes'
 export { sections } from './sections'
 export { talentMap, talentGrowthMap } from './talentMap'
 export { MASTERCLASSES } from './masterClasses'
@@ -41,12 +41,10 @@ export { anvilMap, anvilMapById } from './anvilMap'
 
 // ── World 2 ───────────────────────────────────────────────────────────────────
 export { obolMap, obolByRawName, obolFarmMap, obolFarmSources, circleTiers, squareTiers, hexagonTiers, sparkleTiers, idealAccountBoard, endgameAccountBoard, characterBoards } from './obolMap'
-export { stampMap } from './stampsMap'
-export { STAMP_TIERS } from './stampsMap'
-export { bubbleMap } from './bubblesMap'
+export { stampMap, STAMP_TIERS } from './stampsMap'
+export { bubbleMap, BUBBLE_TIERS } from './bubblesMap'
 export { vialMap } from './vialMap'
 export { arcadeShopMap } from './arcadeMap'
-export { BUBBLE_TIERS } from './bubblesMap'
 
 // ── World 3 ───────────────────────────────────────────────────────────────────
 export { cogMap, BOARD_ROWS, BOARD_COLS, COG_BORDER_CLASS, COG_PLACEMENTS, saltMap } from './constructionMap'
@@ -56,19 +54,21 @@ export { prayerMap } from './prayerMap'
 
 // ── World 4 ───────────────────────────────────────────────────────────────────
 export { labChipMap } from './labChipMap'
-export { cookingMap, cookingBonusTypes, ribbonData } from './cookingMap'
+export { cookingMap, cookingBonusTypes } from './cookingMap'
 export { mealMap } from './mealMap'
 export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
 
 // ── World 5 ───────────────────────────────────────────────────────────────────
 export { artifactMap } from './artifactMap'
+export { paletteMap } from './gamingMap'
+export { godMap } from './divinityMap'
 export { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel } from './cavernsMap'
 
 // ── World 6 ───────────────────────────────────────────────────────────────────
 export { pristineCharmMap } from './sneakingMap'
 export { emperorBonusOrder } from './emperorMap'
 export { summoningBonuses, summoningEnemyBonuses, summoningEndless } from './summoningMap'
-export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, landRankMap, calcRankBonus } from './farmingMap'
+export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, exoticCap, landRankMap, calcRankBonus } from './farmingMap'
 
 // ── World 7 ───────────────────────────────────────────────────────────────────
 export { legendTalentMap, LEGEND_TALENT_ORDER } from './legendTalentMap'
@@ -76,4 +76,4 @@ export { sushiUniqueBonuses } from './sushiMap'
 export { jellyObstructions } from './jellyMap'
 export { zenithMarketMap } from './zenithMap'
 export { researchGridSquares, researchObservationBonuses, stickerBaseBonuses } from './researchMap'
-export { buttonBonusMap } from './buttonMap'
+export { buttonBonusMap } from './buttonMap'

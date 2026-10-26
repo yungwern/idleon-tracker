@@ -152,7 +152,6 @@ export const mobsMap = {
   Ancient_Golem: 'Ancient Golem',
   Boop: 'Boop',
   Gloomie_Mushroom: 'Gloomie Mushroom',
-  Mister_Brightside: 'Mister Brightside',
   The_Rift: 'The Rift',
 };
 

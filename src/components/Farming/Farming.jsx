@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { marketMap, exoticMarketMap, landRankMap, calcExoticBonus, calcRankBonus, getSeedByCropId } from '../../data'
+import { marketMap, exoticMarketMap, landRankMap, calcExoticBonus, exoticCap, calcRankBonus, getSeedByCropId } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import { getLegendTalentLevel } from '../../utils/legendTalentUtils'
 import { formatBigNumber } from '../../utils/cogBoardUtils'
@@ -36,8 +36,7 @@ const TABS = [
   { id: 'cropEvo', label: 'Crop Evolution' },
 ]
 
-// Per-browser inputs for values the save doesn't hold
-const EVO_BOOST_KEY = 'farming_evo_boost_input'
+// Per-browser input for a value the save doesn't hold
 const TOME_POINTS_KEY = 'farming_tome_points_input'
 
 const hideBrokenImg = e => {
@@ -51,8 +50,6 @@ function readSavedInput(key) {
     return ''
   }
 }
-
-const readEvoBoost = () => readSavedInput(EVO_BOOST_KEY)
 
 function saveInput(key, value) {
   try {
@@ -118,11 +115,10 @@ function LandRanksTab({ snapshot, farming }) {
   const lowestPlotRank = farmingRanks.length ? Math.min(...farmingRanks) : 0
   const seedLevel = getSeedRankMaxLevel(snapshot)
 
-  const [evoBoost, setEvoBoost] = useState(readEvoBoost)
   const [farmExpPoints, setFarmExpPoints] = useState('')
   const [plan, setPlan] = useState(null)
 
-  const rankMulti = getRankMulti(snapshot, evoBoost)
+  const rankMulti = getRankMulti(snapshot)
   const totals = useMemo(
     () => getLandRankTotals(farming, rankMulti),
     [farming, rankMulti]
@@ -131,12 +127,6 @@ function LandRanksTab({ snapshot, farming }) {
   const rankBonus = (rank, level) => {
     const bonus = calcRankBonus(rank, level, rankMulti)
     return PER_PLOT_RANKS.has(rank.index) ? bonus * lowestPlotRank : bonus
-  }
-
-  function handleEvoBoostChange(e) {
-    setEvoBoost(e.target.value)
-    saveInput(EVO_BOOST_KEY, e.target.value)
-    setPlan(null)
   }
 
   function runOptimizer(fullReset) {
@@ -189,20 +179,6 @@ function LandRanksTab({ snapshot, farming }) {
           label="Plots"
           value={`${plotCount}/36`}
         />
-      </div>
-
-      <div className="farming-input-row">
-        <span className="farming-input-label">Evo Boost % (optional)</span>
-        <input
-          type="number"
-          className="farming-input"
-          placeholder={formatDecimal(calcRankBonus(landRankMap[0], upgradesLevels[0] ?? 0, rankMulti), 0)}
-          value={evoBoost}
-          onChange={handleEvoBoostChange}
-        />
-        <span className="farming-input-hint">
-          Copy Evolution Boost's % from the game if it differs: a few of Dank Ranks' added talent levels aren't read yet.
-        </span>
       </div>
 
       {/* ── Rank Database ── */}
@@ -441,12 +417,12 @@ function MarketCard({ upgrade, level, costMulti, haveOf }) {
   )
 }
 
-function MarketTab({ farming }) {
+function MarketTab({ snapshot, farming }) {
   const [activeMarket, setActiveMarket] = useState('day')
   const marketLevels = farming.marketLevels ?? []
   const cropDepot = farming.cropDepot ?? {}
   const night = activeMarket === 'night'
-  const costMulti = marketCostMulti(farming.exoticLevels, night)
+  const costMulti = marketCostMulti(snapshot, night)
   const upgrades = night ? marketMap.slice(8) : marketMap.slice(0, 8)
 
   // Night Market costs magic beans (cropId null)
@@ -487,9 +463,9 @@ function MarketTab({ farming }) {
 // ============================================================
 
 function ExoticCard({ upgrade, inRotation }) {
-  const value = calcExoticBonus(upgrade, upgrade.level)
-  // Type 1 bonuses approach baseValue; type 0 grow without a cap
-  const capPct = upgrade.type === 1 ? (value / upgrade.baseValue) * 100 : null
+  const value = calcExoticBonus(upgrade, upgrade.level, upgrade.organic)
+  // Type 1 bonuses approach their cap; type 0 grow without one
+  const capPct = upgrade.type === 1 ? (value / exoticCap(upgrade, upgrade.organic)) * 100 : null
 
   return (
     <div className={`exotic-card${inRotation ? ' exotic-card--rotation' : ''}`}>
@@ -501,6 +477,9 @@ function ExoticCard({ upgrade, inRotation }) {
           onError={hideBrokenImg}
         />
         <span className="exotic-card-name">{upgrade.label}</span>
+        {upgrade.organic && (
+          <span className="exotic-card-organic">Organic 2x</span>
+        )}
       </div>
       <span className="exotic-card-level">
         Lv. <span>{upgrade.level}</span>
@@ -525,7 +504,7 @@ function ExoticCard({ upgrade, inRotation }) {
 }
 
 function ExoticMarketTab({ farming, legendTalents }) {
-  const { exoticLevels, cropDepot } = farming
+  const { exoticLevels, organicExotics, cropDepot } = farming
   const buyOneGetOneLevel = getLegendTalentLevel(legendTalents, BUY_ONE_GET_ONE_TALENT)
   const [target, setTarget] = useState('')
   const targetLevels = parseInt(target) || 0
@@ -540,17 +519,18 @@ function ExoticMarketTab({ farming, legendTalents }) {
       .map(u => ({
         ...u,
         level: exoticLevels?.[u.index] ?? 0,
+        organic: (organicExotics ?? []).includes(u.index),
       }))
     return {
       onSale: rotation.map(i => upgrades.find(u => u.index === i)),
       offSale: upgrades.filter(u => !rotation.includes(u.index)),
     }
-  }, [now, exoticLevels])
+  }, [now, exoticLevels, organicExotics])
 
   const growOrder = useMemo(() => onSale
     .map(upgrade => {
       const haveQty = cropDepot?.[String(upgrade.cropCostId)]?.qty ?? 0
-      const levels = exoticLevelsFromCrops(haveQty, exoticLevels, buyOneGetOneLevel)
+      const levels = exoticLevelsFromCrops(haveQty, farming, buyOneGetOneLevel)
       return {
         upgrade,
         haveQty,
@@ -559,7 +539,7 @@ function ExoticMarketTab({ farming, legendTalents }) {
       }
     })
     .sort((a, b) => a.upgrade.cropCostId - b.upgrade.cropCostId),
-  [onSale, cropDepot, exoticLevels, buyOneGetOneLevel, targetLevels])
+  [onSale, cropDepot, farming, buyOneGetOneLevel, targetLevels])
 
   return (
     <div className="farming-tab">
@@ -647,19 +627,18 @@ function ExoticMarketTab({ farming, legendTalents }) {
 const STATUS_LABELS = {
   exact: 'Exact',
   partial: 'Partial',
+  input: 'Needs input',
   missing: 'Not read yet',
 }
 
+// Sources that count as 1x until something is added: show their note instead of a multi
+const isPending = status => status === 'input' || status === 'missing'
+
 function CropEvolutionTab({ snapshot }) {
-  // Uses the same Evo Boost % calibration as the Land Ranks tab
-  const [evoBoost] = useState(readEvoBoost)
   const [tomePoints, setTomePoints] = useState(() => readSavedInput(TOME_POINTS_KEY))
   const { sources, total } = useMemo(
-    () => getCropEvolutionBreakdown(snapshot, getRankMulti(snapshot, evoBoost), {
-      tomePoints,
-      rankCalibrated: parseFloat(evoBoost) > 0,
-    }),
-    [snapshot, evoBoost, tomePoints]
+    () => getCropEvolutionBreakdown(snapshot, getRankMulti(snapshot), { tomePoints }),
+    [snapshot, tomePoints]
   )
 
   function handleTomePointsChange(e) {
@@ -674,7 +653,7 @@ function CropEvolutionTab({ snapshot }) {
         <StatChip
           label="Crop Evolution Multi"
           value={`${formatMulti(total)}x`}
-          tooltip="Every source below multiplied together. Sources not read yet count as 1x, so this reads low until they're added."
+          tooltip="Every source below multiplied together. Sources that need input or aren't read yet count as 1x, so this reads low until they're filled in."
         />
         <StatChip
           label="Exact"
@@ -686,11 +665,19 @@ function CropEvolutionTab({ snapshot }) {
           value={counts.partial ?? 0}
           valueClass="farming-chip-value--gold"
         />
-        <StatChip
-          label="Not Read Yet"
-          value={counts.missing ?? 0}
-          valueClass="farming-chip-value--bad"
-        />
+        {counts.input > 0 && (
+          <StatChip
+            label="Needs Input"
+            value={counts.input}
+          />
+        )}
+        {counts.missing > 0 && (
+          <StatChip
+            label="Not Read Yet"
+            value={counts.missing}
+            valueClass="farming-chip-value--bad"
+          />
+        )}
       </div>
 
       <div className="farming-input-row">
@@ -716,15 +703,15 @@ function CropEvolutionTab({ snapshot }) {
           >
             <span className="evo-name">
               {s.label}
-              {s.note && s.status !== 'missing' && <span className="evo-note">{s.note}</span>}
+              {s.note && !isPending(s.status) && <span className="evo-note">{s.note}</span>}
             </span>
             <span className="evo-system">{s.system}</span>
-            <span className="evo-multi">{s.status === 'missing' ? '—' : `${formatMulti(s.multi)}x`}</span>
+            <span className="evo-multi">{isPending(s.status) ? '—' : `${formatMulti(s.multi)}x`}</span>
             <span className={`evo-status evo-status--${s.status} tooltip-anchor`}>
               {STATUS_LABELS[s.status]}
               {(s.status !== 'exact') && (
                 <span className="tooltip tooltip--wrap tooltip--right">
-                  {s.status === 'missing' ? s.note : `Not included yet: ${s.missing.join(', ')}`}
+                  {isPending(s.status) ? s.note : `Not included yet: ${s.missing.join(', ')}`}
                 </span>
               )}
             </span>
@@ -751,10 +738,10 @@ export default function Farming({ snapshot }) {
         intro="Track your farming progress across land ranks, the Day and Night markets, and the weekly Exotic Market."
         items={[
           'Land Ranks: locked upgrades are dimmed. Evolution, Production and Soil EXP Boost scale with plot rank, so their cards also show the total on your lowest plot.',
-          'Land rank bonuses use Dank Ranks from your save. A few of its added talent levels aren\'t read yet, so if the game shows a different Evolution Boost %, enter it to calibrate.',
+          'Land rank bonuses use Dank Ranks from your save, with every added talent level your played character gets.',
           'Spend plans only your unspent points on top of your current levels, since the game can only take points back by resetting all of them. Full Reset replans every point from scratch.',
           'Both score each plot the way IdleOn Toolbox does: seed ranks go to their max level, Farm EXP gets the points you reserve, and every other point goes where it raises Crop Evolution × Crop Value × Rank EXP × Overgrowth the most. Crop value stops getting points once every plot is at the cap.',
-          'Market costs include your Better Day / Better Night exotic discounts. Night Market upgrades cost magic beans.',
+          'Market costs include your Emperor discount and Better Day / Better Night exotics. Night Market upgrades cost magic beans.',
           'The Exotic Market rotation follows the real weekly reset. Set a target in the grow order to see which on-sale crops you still need — it accounts for Better Exotic and the Buy One Get One Free legend talent.',
         ]}
       />
@@ -772,7 +759,7 @@ export default function Farming({ snapshot }) {
       </div>
 
       {activeTab === 'landranks' && <LandRanksTab snapshot={snapshot} farming={farming} />}
-      {activeTab === 'market' && <MarketTab farming={farming} />}
+      {activeTab === 'market' && <MarketTab snapshot={snapshot} farming={farming} />}
       {activeTab === 'exotic' && <ExoticMarketTab farming={farming} legendTalents={snapshot?.legendTalents} />}
       {activeTab === 'cropEvo' && <CropEvolutionTab snapshot={snapshot} />}
     </div>

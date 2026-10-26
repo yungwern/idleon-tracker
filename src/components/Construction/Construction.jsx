@@ -46,7 +46,6 @@ function Numpad({ value, onChange }) {
 function CompareTool({ cogs, onClose, onResult, onReplace }) {
   const [step, setStep] = useState('color')
   const [cogColor, setCogColor] = useState(null)
-  const [cogName, setCogName] = useState(null)
   const [pattern, setPattern] = useState(null)
   const [bonusExp, setBonusExp] = useState('')
   const [playerExp, setPlayerExp] = useState('')
@@ -83,7 +82,6 @@ function CompareTool({ cogs, onClose, onResult, onReplace }) {
     }
     setStep('color')
     setCogColor(null)
-    setCogName(null)
     setPattern(null)
     setBonusExp('')
     setPlayerExp('')
@@ -108,7 +106,6 @@ function CompareTool({ cogs, onClose, onResult, onReplace }) {
                 className="compare-color-btn"
                 onClick={() => {
                   setCogColor(`CogCry${i}`)
-                  setCogName(cogMap[`CogCry${i}`]?.name ?? `CogCry${i}`)
                   setStep('pattern')
                 }}
               >

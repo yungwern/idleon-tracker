@@ -20,7 +20,7 @@ src/
 ├── components/         # One folder per feature (see casing note below)
 │   ├── Section pages:  Breeding, Construction, Cooking, Farming, GearOptimizer,
 │   │                   MasterClasses, Minibosses, Obols, Shrines, Statues, Worship
-│   └── Shared/sub:     AnvilProduction (Overview tab; Anvil page removed), BuffsPanel, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
+│   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js
@@ -37,7 +37,10 @@ src/
 │                       #   from Toolbox: grimoireMap, upgradeVaultMap, sushiMap, sneakingMap (pristine
 │                       #   charms), mealMap (every meal: baseStat/stat), companionMap, tesseractMap, arcadeMap,
 │                       #   jellyMap, meritMap, emperorMap, artifactMap, summoningMap, cavernsMap, zenithMap,
-│                       #   starSignMap, researchMap (grid squares, observations, stickers), buttonMap.
+│                       #   starSignMap, researchMap (grid squares, observations, stickers), buttonMap,
+│                       #   divinityMap (godMap by slot), gamingMap (paletteMap).
+│                       # classes.js also has CLASS_TALENT_TABS (class lines) and CLASS_FAMILY_BONUSES.
+│                       # Data files never import utils; computed tables (e.g. ribbonData) live in utils.
 ├── hooks/              # useSaveImport.js
 ├── lib/                # extractSnapshot.js — parses raw save JSON
 ├── styles/             # global.css — shared layout classes and reusable components
@@ -53,25 +56,28 @@ src/
                         # farmingUtils.js — Farming market costs, exotic rotation, land rank totals + optimizer
                         #   (ported from Toolbox parsers/world-6/farming.ts: per-plot goal scores in log space,
                         #   greedy over Toolbox's "all" goal; default spends only unspent points and never lowers a level,
-                        #   Full Reset replans every point). Not parsed yet: Emperor cost discount, Dank Ranks added
-                        #   talent levels (Evo Boost % box calibrates).
+                        #   Full Reset replans every point). Market costs include the Emperor discount.
                         #   getCropEvolutionBreakdown = every crop evo multi (Toolbox getCropEvolution), each read
                         #   from its own system's utils; sources marked exact / partial (missing inner boosts) /
-                        #   missing. Every source is read now; partial: vial + jewel (lab assumed connected),
-                        #   Dank Ranks / Mass Irrigation added talent levels (Arctis, Symbols of Beyond, family,
-                        #   Equinox Symbols not read). Tome points and Evo Boost % are per-browser inputs.
+                        #   input (waits on a typed-in value, e.g. Crop Chapter needs Tome points) / missing.
+                        #   All match Toolbox on Eli's save; only partial: lab mainframe (vial, stamp, meal jewel)
+                        #   is assumed connected. Tome points are a per-browser input (see tomeUtils).
                         #   Crop Evo button bonus = index 7 in the game data (Toolbox reads index 5).
                         # One util per game system, each returning plain numbers or { value, missing }:
                         #   alchemyUtils (bubbles, prisma, vials), stampUtils, cookingUtils (meals), breedingUtils
-                        #   (shiny levels/passives), talentUtils (highest base level bonus), grimoireUtils,
+                        #   (shiny levels/passives), talentUtils (account talent levels incl. added), grimoireUtils,
                         #   upgradeVaultUtils, killroyUtils, sushiUtils, sneakingUtils (charms), riftUtils,
                         #   skillUtils (Lv0_i skill index map, skill rank), achievementUtils, voteUtils, mapUtils,
+                        #   mapBonusUtils (Arcane Cultist map bonuses + cap), exoticUtils (getExoticBonus, organic 2x),
                         #   companionUtils, jellyUtils, tesseractUtils, arcadeUtils, gemShopUtils, meritUtils,
                         #   bundleUtils, sailingUtils (simple artifacts), armorSetUtils, emperorUtils,
                         #   summoningUtils (winner bonuses), cavernUtils (lamp, monument), zenithUtils,
                         #   starSignUtils, characterUtils (played character = newest PTimeAway), tomeUtils,
                         #   equinoxUtils, eventShopUtils / gamingUtils (save-letter flags, saveCodeUtils),
-                        #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels, assumed connected).
+                        #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels + mainframe, assumed connected),
+                        #   divinityUtils (minor link bonuses), familyUtils (family bonus walk), coralReefUtils,
+                        #   gamingUtils (superbits, palette). talentUtils getAddedTalentLevels = every added level
+                        #   source (Arctis, Symbols, family, Equinox...), checked against Toolbox (246 on Eli's save).
                         #   New bonus sources go in their system's util, never in the page that uses them.
 
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
@@ -88,6 +94,10 @@ IdleOn Resources/       # Outside src/ — not shipped with the site
                         # More Toolbox data files get added here as needed — ask Eli for the one you need
                         # Game formulas (odds, bonuses) live in Toolbox's parsers/ folder on GitHub
                         #   (Morta1/IdleonToolbox), e.g. parsers/class-specific/royalGuardian.ts
+                        # Toolbox as an oracle: in a shallow clone, `npm i --no-save date-fns`, then with tsx
+                        #   (--tsconfig tsconfig.json) import './polyfills' and parseData(raw.data, raw.charNames,
+                        #   raw.companion, raw.guildData, raw.serverVars, raw.accountCreateTime, raw.tournament)
+                        #   to get Toolbox's numbers for raw-save.json and compare against ours.
 ```
 
 **File casing**: Windows doesn't care about filename case, but Linux/GitHub builds do — imports must
@@ -139,7 +149,8 @@ batch can be claimed again (counted as ~2 claims per batch).
 **Adding new pages**: register the section in `data/sections.js` and wire up the component in `App.jsx`
 
 **Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components.
-Each game system has its own `parseX` in extractSnapshot (talents, alchemy, stamps, sneaking, grimoire, upgradeVault,
+OptLacc (account options) is parsed once in `extractSnapshot` and passed to the parsers that read it; use `parseRaw`
+for any save key that may be a JSON string. Each game system has its own `parseX` in extractSnapshot (alchemy, stamps, sneaking, grimoire, upgradeVault,
 achievements, rift, killroy, sushi, companions + voteBallot from the export's top-level companion/serverVars, and
 more). Snapshot shape changes only show up after re-importing a save.
 **Played character**: account bonuses the game reads "as the logged-in character" (star signs, chips, skill levels,

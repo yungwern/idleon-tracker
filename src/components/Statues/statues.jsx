@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { statueMap, statueWorlds, statueCandyMobs } from '../../data'
 import { mapEnemyData } from '../../data/mobsMap'
 import { statueLevelColor } from '../../utils/appUtils.js'
-import { getCappedMapMulti } from '../../utils/mapBonusUtils.js'
+import { getCappedMapMulti, getMapBonusCap } from '../../utils/mapBonusUtils.js'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './statues.css'
@@ -192,7 +192,7 @@ export default function Statues({ snapshot }) {
   const [activeTab, setActiveTab] = useState('farming')
   const statues = snapshot?.statues
   const mapBonuses = snapshot?.mapBonuses
-  const mapBonusCap = snapshot?.mapBonusCap
+  const mapBonusCap = getMapBonusCap(snapshot)
 
   if (!statues || statues.length === 0) {
     return (

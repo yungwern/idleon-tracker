@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { MASTERCLASSES, itemMap, equipmentMap } from '../../data'
-import { stampMap, STAMP_TIERS } from '../../data/'
+import { stampMap, STAMP_TIERS } from '../../data'
 import { bubbleMap, BUBBLE_TIERS } from '../../data'
 import TierList from '../TierList/TierList'
 import { mobsMap, mapEnemyData } from '../../data'
@@ -785,4 +785,4 @@ export default function MasterClasses({ snapshot }) {
       )}
     </div>
   )
-}
+}

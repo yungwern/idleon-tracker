@@ -1,4 +1,5 @@
-import { stampMap, exoticMarketMap, calcExoticBonus } from '../data'
+import { stampMap } from '../data'
+import { getExoticBonus } from './exoticUtils'
 import { growth } from './mathUtils'
 import { getCharmBonus } from './sneakingUtils'
 import { getUpgradeVaultBonus } from './upgradeVaultUtils'
@@ -6,6 +7,7 @@ import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { getSushiBonus } from './sushiUtils'
 import { getArmorSetBonus } from './armorSetUtils'
 import { getJellyBonus } from './jellyUtils'
+import { getAssumedLabBonus, LAB_BONUSES } from './labUtils'
 
 // Stamp bonus math (W1), ported from IdleonToolbox parsers/world-1/stamps.ts.
 // Returns { value, missing } like the alchemy utils.
@@ -15,7 +17,7 @@ const BASE_STAT = /Base (Damage|HP|Accuracy|Defence)/
 
 // Exalted stamps get 1 + this / 100 (Toolbox getExaltedStampBonus)
 export function getExaltedStampMulti(snapshot) {
-  const exotic = calcExoticBonus(exoticMarketMap[49], snapshot?.farming?.exoticLevels?.[49] ?? 0)
+  const exotic = getExoticBonus(snapshot?.farming, 49)
   const legend = getLegendTalentBonus(36, getLegendTalentLevel(snapshot?.legendTalents, 36))
   const charm = getCharmBonus(snapshot?.sneaking, 'Jellypick')
   const sushi = getSushiBonus(snapshot?.sushi, 17)
@@ -43,7 +45,10 @@ export function getStampBonus(snapshot, rawName) {
   if (stamp.skillIndex > 0) missing.push('Skill level reduction')
   if (stamp.effect?.includes('Efficiency')) missing.push('Toilet Paper Postage')
 
+  // Combat and skill stamps (not misc) get Liqorice Rolle and the Certified Stamp Book
   const charm = tree !== 2 ? getCharmBonus(snapshot?.sneaking, 'Liqorice Rolle') : 0
+  const stampBook = tree !== 2 ? getAssumedLabBonus(LAB_BONUSES.certifiedStampBook) : { value: 1, missing: [] }
+  missing.push(...stampBook.missing)
   const vault = BASE_STAT.test(stamp.effect ?? '') ? getUpgradeVaultBonus(snapshot?.upgradeVault, 16) : 0
   let exalted = 1
   if ((snapshot?.exaltedStamps ?? []).includes(stamp.compassIndex)) {
@@ -52,7 +57,7 @@ export function getStampBonus(snapshot, rawName) {
     missing.push(...multi.missing.map(part => `Exalted: ${part}`))
   }
   return {
-    value: growth(stamp.func, level, stamp.x1, stamp.x2) * (1 + charm / 100) * (1 + vault / 100) * exalted,
+    value: growth(stamp.func, level, stamp.x1, stamp.x2) * stampBook.value * (1 + charm / 100) * (1 + vault / 100) * exalted,
     missing,
   }
 }

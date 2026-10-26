@@ -8,8 +8,8 @@ import { RANK_BAR_UNLOCK_ARMORY, KINGDOM_EXPANSION_ARMORY, COMPOUNDING_OUTPOSTIN
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 function parseStorage(json) {
-  const order    = typeof json.ChestOrder    === 'string' ? JSON.parse(json.ChestOrder)    : (json.ChestOrder    ?? [])
-  const quantity = typeof json.ChestQuantity === 'string' ? JSON.parse(json.ChestQuantity) : (json.ChestQuantity ?? [])
+  const order    = parseRaw(json.ChestOrder) ?? []
+  const quantity = parseRaw(json.ChestQuantity) ?? []
 
   const items = {}
   order.forEach((key, idx) => {
@@ -30,7 +30,7 @@ function parseStorage(json) {
 // characters) works. Save index i matches every `_${i}` key (Lv0_i, EquipOrder_i, ...).
 function parseCharacterList(json) {
   const rawNames = json.playerNames ?? json.charNames ?? []
-  let names = typeof rawNames === 'string' ? JSON.parse(rawNames) : rawNames
+  let names = parseRaw(rawNames)
 
   // No name list in this export — count the characters by their class keys instead
   if (!Array.isArray(names) || names.length === 0) {
@@ -62,6 +62,8 @@ const extractors = {
   mapKillsLeft: (json, i) => (parseRaw(json[`KLA_${i}`]) ?? []).map(entry => entry?.[0] ?? 0),
   // SL_i = { talentId: base level } on the live talent tab
   talentLevels: (json, i) => parseRaw(json[`SL_${i}`]) ?? {},
+  // CauldronBubbles[i] = the character's equipped active bubbles ('c21' style ids, 0 = empty)
+  equippedBubbles: (json, i) => ((parseRaw(json['CauldronBubbles']) ?? [])[i] ?? []).filter(id => typeof id === 'string'),
   // PTimeAway_i = when this character was last left; the played character's keeps moving
   awayTime: (json, i) => Number(json[`PTimeAway_${i}`]) || 0,
   // PVtStarSign_i = '69,64,6,' — equipped star sign indexes (see data/starSignMap.js)
@@ -70,7 +72,7 @@ const extractors = {
   inventory: (json, i, weaponKeys) => {
     const order = json[`InventoryOrder_${i}`] ?? []
     const qty   = json[`ItemQTY_${i}`] ?? []
-    const meta  = JSON.parse(json[`IMm_${i}`] ?? '{}')
+    const meta  = parseRaw(json[`IMm_${i}`]) ?? {}
     const map = {}
     order.forEach((key, idx) => {
       if (key !== 'Blank' && key !== 'LockedInvSpace') {
@@ -90,7 +92,7 @@ const extractors = {
   },
   carryBags: (json, i) => {
     const raw = json[`MaxCarryCap_${i}`]
-    const caps = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {})
+    const caps = parseRaw(raw) ?? {}
     return {
       Mining:   caps.Mining   ?? 0,
       Chopping: caps.Chopping ?? 0,
@@ -103,9 +105,7 @@ const extractors = {
     }
   },
   superTalentPresets: (json, i) => {
-    const spelunk = typeof json.Spelunk === 'string'
-      ? JSON.parse(json.Spelunk)
-      : json.Spelunk
+    const spelunk = parseRaw(json.Spelunk)
 
     const presetConfig = [
       { label: 'Tab 1', presetIndex: 0, slKey: `SL_${i}` },
@@ -113,9 +113,7 @@ const extractors = {
     ]
 
     return presetConfig.map(({ label, presetIndex, slKey }) => {
-      const talentLevels = typeof json[slKey] === 'string'
-        ? JSON.parse(json[slKey])
-        : (json[slKey] ?? {})
+      const talentLevels = parseRaw(json[slKey]) ?? {}
 
       const spelunkIndex = 20 + i + 12 * presetIndex
       const superArray = spelunk?.[spelunkIndex] ?? []
@@ -133,13 +131,13 @@ const extractors = {
   },
   prayers: (json, i) => {
     const raw = json[`Prayers_${i}`]
-    const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+    const arr = parseRaw(raw) ?? []
     return arr.filter(id => id !== -1)
   },
   obols: (json, i) => {
     const order = json[`ObolEqO0_${i}`] ?? []
     const mapRaw = json[`ObolEqMAP_${i}`]
-    const stoneMap = typeof mapRaw === 'string' ? JSON.parse(mapRaw) : (mapRaw ?? {})
+    const stoneMap = parseRaw(mapRaw) ?? {}
 
     return order.map((rawName, idx) => {
       if (rawName === 'Blank') return { rawName: 'Blank', stoneData: {} }
@@ -160,9 +158,7 @@ const extractors = {
 // ── Exalted Stamps ────────────────────────────────────────────────────────────
 function parseExaltedStamps(json) {
   try {
-    const compass = typeof json['Compass'] === 'string'
-      ? JSON.parse(json['Compass'])
-      : (json['Compass'] ?? [])
+    const compass = parseRaw(json['Compass']) ?? []
     return compass[4] ?? []
   } catch {
     console.warn('Failed to parse exalted stamps from Compass.')
@@ -171,9 +167,8 @@ function parseExaltedStamps(json) {
 }
 
 // ── Prisma Bubbles ────────────────────────────────────────────────────────────
-function parsePrismaBubbles(json) {
+function parsePrismaBubbles(optLacc) {
   try {
-    const optLacc = json['OptLacc'] ?? []
     const raw = optLacc[384] ?? ''
     if (!raw) return []
     return raw.split(',').filter(Boolean).map(id => id.replace(/^0(?=[a-z_])/, ''))
@@ -186,7 +181,7 @@ function parsePrismaBubbles(json) {
 // ── Map Bonuses (Arcane Cultist) ──────────────────────────────────────────────
 function parseMapBonuses(json) {
   const raw = json['MapBon']
-  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  const arr = parseRaw(raw) ?? []
   return arr.map((entry, mapIndex) => {
     if (!Array.isArray(entry) || entry.length < 3) return null
     return {
@@ -198,50 +193,27 @@ function parseMapBonuses(json) {
   })
 }
 
-// ── Map Bonus Cap (Arcane Cultist) ────────────────────────────────────────────
-// Cap = 100 * (Overwhelming Energy bonus - 1) + min(10, Beyond All Limits)
-// Overwhelming Energy = talent 589, highest base level across characters (SL_i, live talents).
-//   Added talent levels are NOT included, so the cap can read slightly low.
-// Beyond All Limits = Tesseract upgrade 58 (Arcane[58]), +1 per level.
-function parseMapBonusCap(json, charCount) {
-  let overwhelmingEnergy = 0
-  for (let i = 0; i < charCount; i++) {
-    const raw = json[`SL_${i}`]
-    const levels = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? {})
-    overwhelmingEnergy = Math.max(overwhelmingEnergy, Number(levels['589'] ?? 0))
-  }
-  const rawArcane = json['Arcane']
-  const arcane = typeof rawArcane === 'string' ? JSON.parse(rawArcane) : (rawArcane ?? [])
-  return {
-    overwhelmingEnergy,
-    beyondAllLimits: Number(arcane[58] ?? 0),
-  }
-}
-
 // ── Minibosses ───────────────────────────────────────────────────────────────
 function parseMiniBosses(json) {
   const rawSneaking = json['Ninja']
-  const arr = typeof rawSneaking === 'string' ? JSON.parse(rawSneaking) : (rawSneaking ?? [])
+  const arr = parseRaw(rawSneaking) ?? []
   const kills = arr?.[105] ?? []
   return kills.slice(0, 10)
 }
 
 // Days since each spawned miniboss was last spawned (OptLacc = account options list)
-function parseMiniBossDays(json) {
-  const raw = json['OptLacc']
-  const opts = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+function parseMiniBossDays(optLacc) {
   return {
-    mini3a: Number(opts[96] ?? 0),
-    mini4a: Number(opts[98] ?? 0),
-    mini5a: Number(opts[225] ?? 0),
-    mini6a: Number(opts[226] ?? 0),
+    mini3a: Number(optLacc[96] ?? 0),
+    mini4a: Number(optLacc[98] ?? 0),
+    mini5a: Number(optLacc[225] ?? 0),
+    mini6a: Number(optLacc[226] ?? 0),
   }
 }
 
 // ── Gear Optimizer ─────────────────────────────────────────────────────────
-function parseArmorSmithySets(json) {
+function parseArmorSmithySets(optLacc) {
   try {
-    const optLacc = json['OptLacc'] ?? []
     const raw = optLacc[379] ?? ''
     if (!raw) return []
     const [, ...unlockedSets] = raw.toString().split(',')
@@ -255,7 +227,7 @@ function parseArmorSmithySets(json) {
 // ── Statues ─────────────────────────────────────────────────────────────────
 function parseStatues(json) {
   const raw = json['StatueLevels_0']
-  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  const arr = parseRaw(raw) ?? []
   return arr.map(([level, xp], id) => ({ id, level, xp }))
 }
 
@@ -268,11 +240,11 @@ function parseAnvil(json, charList) {
   for (let i = 0; i < characterCount; i++) {
     const selectKey = `AnvilPAselect_${i}`
     const raw = json[selectKey]
-    const selected = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+    const selected = parseRaw(raw) ?? []
 
     const statsKey = `AnvilPAstats_${i}`
     const rawStats = json[statsKey]
-    const paStats = typeof rawStats === 'string' ? JSON.parse(rawStats) : (rawStats ?? [])
+    const paStats = parseRaw(rawStats) ?? []
     const capPoints = paStats[5] ?? 0
 
     charStats.push({ capPoints, totalHammers: selected.length })
@@ -307,7 +279,7 @@ function parseAnvil(json, charList) {
 function parseAccountObols(json) {
   const order = json['ObolEqO1'] ?? []
   const mapRaw = json['ObolEqMAPz1']
-  const stoneMap = typeof mapRaw === 'string' ? JSON.parse(mapRaw) : (mapRaw ?? {})
+  const stoneMap = parseRaw(mapRaw) ?? {}
 
   return order.map((rawName, idx) => {
     if (rawName === 'Blank') return { rawName: 'Blank', stoneData: {} }
@@ -331,8 +303,8 @@ const CONSTRUCTION_PATTERN_LABELS = {
 }
 
 function parseConstruction(json) {
-  const cogMap = typeof json.CogM === 'string' ? JSON.parse(json.CogM) : (json.CogM ?? {})
-  const cogOrder = typeof json.CogO === 'string' ? JSON.parse(json.CogO) : (json.CogO ?? [])
+  const cogMap = parseRaw(json.CogM) ?? {}
+  const cogOrder = parseRaw(json.CogO) ?? []
 
   let totalExpRate = 0
 
@@ -374,14 +346,14 @@ function parseConstruction(json) {
 
 function parseTowerLevels(json) {
   const raw = json['Tower']
-  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  const arr = parseRaw(raw) ?? []
   return arr.slice(0, 27).map(v => Number(v) || 0)
 }
 
 // ── Shrines ─────────────────────────────────────────────────────────────────
 function parseShrines(json) {
   const raw = json['Shrine']
-  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  const arr = parseRaw(raw) ?? []
   const towerLevels = parseTowerLevels(json)
 
   return arr.map((entry, i) => {
@@ -411,13 +383,12 @@ function parseShrines(json) {
 //   Lv0_N[12] = Lab skill level. Shrine World Tour is a mainframe node with no unlock flag and the
 //   save doesn't store lab connections, so Lab unlocked on any character stands in for it.
 function parseShrineBuffs(json, charCount) {
-  const parse = raw => (typeof raw === 'string' ? JSON.parse(raw) : raw)
-  const architect = Array.from({ length: charCount }, (_, i) => parse(json[`SL_${i}`]) ?? {})
+  const architect = Array.from({ length: charCount }, (_, i) => parseRaw(json[`SL_${i}`]) ?? {})
     .some(levels => Number(levels['639']) > 0)
-  const labUnlocked = Array.from({ length: charCount }, (_, i) => parse(json[`Lv0_${i}`]) ?? [])
+  const labUnlocked = Array.from({ length: charCount }, (_, i) => parseRaw(json[`Lv0_${i}`]) ?? [])
     .some(skills => Number(skills[12]) > 0)
-  const sailing = parse(json['Sailing']) ?? []
-  const ninja = parse(json['Ninja']) ?? []
+  const sailing = parseRaw(json['Sailing']) ?? []
+  const ninja = parseRaw(json['Ninja']) ?? []
   const jadeUnlocks = ninja[102]?.[9]
 
   return {
@@ -431,7 +402,7 @@ function parseShrineBuffs(json, charCount) {
 // ── Worship ─────────────────────────────────────────────────────────
 function parseWorship(json) {
   const raw = json?.TotemInfo
-  const totemInfoRaw = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
+  const totemInfoRaw = parseRaw(raw) ?? []
   const maxWaves = totemInfoRaw?.[0] ?? []
   const totemEntries = Object.values(worshipMap)
 
@@ -448,9 +419,9 @@ function parseWorship(json) {
 
 // ── Cooking ──────────────────────────────────────────────────────────────────
 function parseCooking(json) {
-  const meals = typeof json.Meals === 'string' ? JSON.parse(json.Meals) : (json.Meals ?? [])
-  const ribbon = typeof json.Ribbon === 'string' ? JSON.parse(json.Ribbon) : (json.Ribbon ?? [])
-  const cookMaster = typeof json.CookMaster === 'string' ? JSON.parse(json.CookMaster) : (json.CookMaster ?? [])
+  const meals = parseRaw(json.Meals) ?? []
+  const ribbon = parseRaw(json.Ribbon) ?? []
+  const cookMaster = parseRaw(json.CookMaster) ?? []
 
   const mealLevels = meals[0] ?? []
   const cabinetSlots = ribbon.slice(0, 28)
@@ -479,9 +450,9 @@ const TERRITORY_TEAM_SIZE = 4
 
 function parseBreeding(json) {
   const raw = json['Breeding']
-  const arr = typeof raw === 'string' ? JSON.parse(raw) : (raw ?? [])
-  const petsRaw = typeof json['Pets'] === 'string' ? JSON.parse(json['Pets']) : (json['Pets'] ?? [])
-  const menagerie = typeof json['Menagerie'] === 'string' ? JSON.parse(json['Menagerie']) : (json['Menagerie'] ?? [])
+  const arr = parseRaw(raw) ?? []
+  const petsRaw = parseRaw(json['Pets']) ?? []
+  const menagerie = parseRaw(json['Menagerie']) ?? []
 
   const shinyPetsLevels = arr.slice(22, 26)
 
@@ -504,7 +475,7 @@ function parseBreeding(json) {
 // Spice foraging: unlocked territories, the team on each, and every pet the account owns
 // (Spice Formations uses the owned pets for which gene types are available and their typical power)
 function parseTerritories(json, petsRaw) {
-  const parse = raw => (typeof raw === 'string' ? JSON.parse(raw) : (raw ?? []))
+  const parse = raw => (parseRaw(raw) ?? [])
   const territoryRaw = parse(json['Territory'])
   const storedRaw = parse(json['PetsStored'])
   const toPet = entry => ({
@@ -542,27 +513,17 @@ function parseTerritories(json, petsRaw) {
 // ── Farming ───────────────────────────────────────────────────────────────────
 function parseFarming(json) {
   // ── Raw save keys ──
-  const rawTimeAway = typeof json['TimeAway'] === 'string'
-  ? JSON.parse(json['TimeAway'])
-  : (json['TimeAway'] ?? {})
+  const rawTimeAway = parseRaw(json['TimeAway']) ?? {}
 
   const globalTime = rawTimeAway?.GlobalTime ?? null
 
-  const rawUpgrades = typeof json['FarmUpg'] === 'string'
-    ? JSON.parse(json['FarmUpg'])
-    : (json['FarmUpg'] ?? [])
+  const rawUpgrades = parseRaw(json['FarmUpg']) ?? []
 
-  const rawPlot = typeof json['FarmPlot'] === 'string'
-    ? JSON.parse(json['FarmPlot'])
-    : (json['FarmPlot'] ?? [])
+  const rawPlot = parseRaw(json['FarmPlot']) ?? []
 
-  const rawCrop = typeof json['FarmCrop'] === 'string'
-    ? JSON.parse(json['FarmCrop'])
-    : (json['FarmCrop'] ?? {})
+  const rawCrop = parseRaw(json['FarmCrop']) ?? {}
 
-  const rawRanks = typeof json['FarmRank'] === 'string'
-    ? JSON.parse(json['FarmRank'])
-    : (json['FarmRank'] ?? [])
+  const rawRanks = parseRaw(json['FarmRank']) ?? []
 
   // ── Market upgrade levels ──
   // Index 1 = beans, index 19 = instaGrow (matches toolbox)
@@ -573,6 +534,8 @@ function parseFarming(json) {
 
   const marketLevels = rawUpgrades.slice(2, 18)   // 16 entries
   const exoticLevels = rawUpgrades.slice(20, 80)  // 60 entries, exoticLevels[i] = rawUpgrades[20 + i]
+  // Spelunk[50] = exotics with an organic label (2x bonus)
+  const organicExotics = ((parseRaw(json['Spelunk']) ?? [])[50] ?? []).map(Number)
 
   // ── Plots ──
   // Each entry: [seedType, progress, cropType, isLocked, cropQuantity, currentOG, cropProgress]
@@ -643,6 +606,7 @@ function parseFarming(json) {
     globalTime,
     marketLevels,
     exoticLevels,
+    organicExotics,
     beans,
     instaGrow,
     plots,
@@ -662,12 +626,10 @@ function parseFarming(json) {
 // Cards0 = card counts by monster rawName (star math lives in utils/cardUtils.js)
 // Max stars: 4, +1 at Rift 45, +1 once Spelunking lore boss 3 is beaten (Spelunk[0][2])
 // OptLacc[155] / [603] = cards raised to at least 5 / 6 stars (0-indexed, same as borders)
-function parseCards(json) {
-  const parse = raw => (typeof raw === 'string' ? JSON.parse(raw) : raw)
-  const counts = parse(json['Cards0']) ?? {}
-  const rift = parse(json['Rift']) ?? []
-  const spelunk = parse(json['Spelunk']) ?? []
-  const optLacc = parse(json['OptLacc']) ?? []
+function parseCards(json, optLacc) {
+  const counts = parseRaw(json['Cards0']) ?? {}
+  const rift = parseRaw(json['Rift']) ?? []
+  const spelunk = parseRaw(json['Spelunk']) ?? []
   const toList = raw => (raw ? String(raw).split(',') : [])
   const riftStar = (rift[0] ?? 0) >= 45 ? 1 : 0
   const spelunkStar = (spelunk[0]?.[2] ?? 0) > 0 ? 1 : 0
@@ -684,7 +646,7 @@ function parseCards(json) {
 // Lab[15] = total owned per chip index (equipped + in storage)
 // → { characters: [['ConsoleChip20', ...], ...], owned: ['ConsoleChip20', ...] }
 function parseLabChips(json, charCount) {
-  const lab = typeof json['Lab'] === 'string' ? JSON.parse(json['Lab']) : (json['Lab'] ?? [])
+  const lab = parseRaw(json['Lab']) ?? []
   const characters = Array.from({ length: charCount }, (_, i) => (lab[i + 1] ?? [])
     .filter(chip => chip >= 0)
     .map(chip => `ConsoleChip${chip}`))
@@ -699,9 +661,7 @@ function parseLabChips(json, charCount) {
 
 // ── Legend Talents ────────────────────────────────────────────────────────────────
 function parseLegendTalents(json) {
-  const spelunk = typeof json['Spelunk'] === 'string'
-    ? JSON.parse(json['Spelunk'])
-    : (json['Spelunk'] ?? [])
+  const spelunk = parseRaw(json['Spelunk']) ?? []
   const levels = spelunk[18] ?? []
   return levels
 }
@@ -711,12 +671,8 @@ function parseLegendTalents(json) {
 //   (45 = Royal Reverence, 78 = Statue Flair unlocked), RoyalG[22] = Statue Flair level per statue
 // Menagerie[2][17] = unlock that raises the Statue Flair max level from 3 to 4
 function parseRoyalGuardian(json) {
-  const raw = typeof json['RoyalG'] === 'string'
-    ? JSON.parse(json['RoyalG'])
-    : (json['RoyalG'] ?? [])
-  const menagerie = typeof json['Menagerie'] === 'string'
-    ? JSON.parse(json['Menagerie'])
-    : (json['Menagerie'] ?? [])
+  const raw = parseRaw(json['RoyalG']) ?? []
+  const menagerie = parseRaw(json['Menagerie']) ?? []
   return {
     statueLevels: raw[0] ?? [],
     royalReverenceLevel: raw[2]?.[45] ?? 0,
@@ -730,9 +686,7 @@ function parseRoyalGuardian(json) {
 // Royal Guardian outposts: RoyalMaps[mapIndex] with 3+ entries is a built outpost.
 // Unlock flags come from the Armory (RoyalG[2]) and the Orblet Market (RoyalG[23]).
 function parseOutposts(json, raw) {
-  const maps = typeof json['RoyalMaps'] === 'string'
-    ? JSON.parse(json['RoyalMaps'])
-    : (json['RoyalMaps'] ?? [])
+  const maps = parseRaw(json['RoyalMaps']) ?? []
   const armory = raw[2] ?? []
   const level = id => Number(armory[id] ?? 0)
 
@@ -763,9 +717,7 @@ function parseOutposts(json, raw) {
   }
 
   // Jelly Operator (World 7): obstructions defeated unlock its bonuses, some of which add outpost PTS
-  const research = typeof json['Research'] === 'string'
-    ? JSON.parse(json['Research'])
-    : (json['Research'] ?? [])
+  const research = parseRaw(json['Research']) ?? []
 
   return {
     outposts,
@@ -799,21 +751,6 @@ function parseRaw(raw) {
   }
 }
 
-// ── Talents ───────────────────────────────────────────────────────────────────
-// SL_i = { talentId: base level } for character i (the live talent tab).
-// highestBaseLevels[id] = best base level across characters. Added talent levels
-// (from the many +Talent LV sources) are NOT included.
-function parseTalents(json, charCount) {
-  const highestBaseLevels = {}
-  for (let i = 0; i < charCount; i++) {
-    const levels = parseRaw(json[`SL_${i}`]) ?? {}
-    for (const [id, level] of Object.entries(levels)) {
-      highestBaseLevels[id] = Math.max(highestBaseLevels[id] ?? 0, Number(level) || 0)
-    }
-  }
-  return { highestBaseLevels }
-}
-
 // ── Alchemy ───────────────────────────────────────────────────────────────────
 // CauldronInfo[0-3] = bubble levels per cauldron (power, quicc, high-iq, kazam) as
 // { index: level }; CauldronInfo[4] = vial levels by vial index.
@@ -835,7 +772,24 @@ function parseAlchemy(json) {
   return {
     bubbleLevels,
     vialLevels,
+    etherealSigils: countEtherealSigils(json),
   }
+}
+
+// CauldronP2W[4] = [progress, tier] per sigil; tier 3 = ethereal, 4 = eclectic (also ethereal)
+function countEtherealSigils(json) {
+  const sigils = (parseRaw(json['CauldronP2W']) ?? [])[4] ?? []
+  let count = 0
+  for (let i = 1; i < sigils.length; i += 2) {
+    if (sigils[i] === 3 || sigils[i] === 4) count++
+  }
+  return count
+}
+
+// ── Looty ─────────────────────────────────────────────────────────────────────
+// Cards1 = every item the account has ever dropped; only trophies are kept
+function parseDroppedTrophies(json) {
+  return (parseRaw(json['Cards1']) ?? []).filter(item => String(item).startsWith('Trophy'))
 }
 
 // ── Grimoire (Death Bringer) ──────────────────────────────────────────────────
@@ -868,13 +822,7 @@ function parseRift(json) {
 // OptLacc 228, 229, 230 then 467-471 (1 = Crop Evolution Chance)
 const KILLROY_SHOP_OPTIONS = [228, 229, 230, 467, 468, 469, 470, 471]
 
-function parseNinjaMasteryTier(json) {
-  // OptLacc[232] = Sneaking ninja mastery tier
-  return Number((parseRaw(json['OptLacc']) ?? [])[232]) || 0
-}
-
-function parseKillroy(json) {
-  const optLacc = parseRaw(json['OptLacc']) ?? []
+function parseKillroy(optLacc) {
   return { shopLevels: KILLROY_SHOP_OPTIONS.map(option => Number(optLacc[option]) || 0) }
 }
 
@@ -902,9 +850,13 @@ function parseStamps(json) {
 
 // ── Sneaking (W6) ─────────────────────────────────────────────────────────────
 // Ninja[107][i] = 1 once Pristine Charm i is unlocked (see data/sneakingMap.js)
-function parseSneaking(json) {
+// OptLacc[232] = ninja mastery tier
+function parseSneaking(json, optLacc) {
   const ninja = parseRaw(json['Ninja']) ?? []
-  return { pristineCharms: (ninja[107] ?? []).map(unlocked => unlocked === 1) }
+  return {
+    pristineCharms: (ninja[107] ?? []).map(unlocked => unlocked === 1),
+    ninjaMasteryTier: Number(optLacc[232]) || 0,
+  }
 }
 
 // ── Companions ────────────────────────────────────────────────────────────────
@@ -912,13 +864,12 @@ function parseSneaking(json) {
 // Pet Bonus Tokens (OptLacc[606] = comma list of indices) grant a companion's bonus without
 // owning it, up to the tokens owned (OptLacc[605] + [615], max 2); the game wipes an
 // over-long list. owned[index] = highest Pet Mart+ level owned (0 = base), -1 = token only.
-function parseCompanions(rawJson, json) {
+function parseCompanions(rawJson, optLacc) {
   const owned = {}
   for (const entry of rawJson?.companion?.l ?? []) {
     const [index, , , , level] = String(entry).split(',')
     owned[index] = Math.max(owned[index] ?? 0, Number(level) || 0)
   }
-  const optLacc = parseRaw(json['OptLacc']) ?? []
   const tokensOwned = Math.min(1, Number(optLacc[605]) || 0) + Math.min(1, Number(optLacc[615]) || 0)
   const rawTokens = optLacc[606]
   const tokens = rawTokens === '' || rawTokens == null ? [] : String(rawTokens).split(',')
@@ -977,16 +928,14 @@ function parseSailing(json) {
 
 // ── Emperor Showdown (W6) ─────────────────────────────────────────────────────
 // OptLacc[369] = highest Emperor showdown beaten (see data/emperorMap.js)
-function parseEmperor(json) {
-  const optLacc = parseRaw(json['OptLacc']) ?? []
+function parseEmperor(optLacc) {
   return { highestShowdown: Number(optLacc[369]) || 0 }
 }
 
 // ── Summoning (W6) ────────────────────────────────────────────────────────────
 // Summon[1] = enemy ids of every battle won; OptLacc[319] = highest endless battle reached
-function parseSummoning(json) {
+function parseSummoning(json, optLacc) {
   const summon = parseRaw(json['Summon']) ?? []
-  const optLacc = parseRaw(json['OptLacc']) ?? []
   return {
     wonBattles: summon[1] ?? [],
     highestEndless: Number(optLacc[319]) || 0,
@@ -994,12 +943,15 @@ function parseSummoning(json) {
 }
 
 // ── Caverns (W5 Hole) ─────────────────────────────────────────────────────────
-// Holes[4] = hole majik (cosmo) levels, [15] = Bravery Monument bonus levels, [21] = Lamp
-// wishes used, [31]/[32] = fountain upgrade levels / marbleize tiers per water type.
+// Holes[4] / [6] = hole / IdleOn majik (cosmo) levels, [11][29..30] = the gods picked for
+// Pocket Divinity, [15] = Bravery Monument bonus levels, [21] = Lamp wishes used,
+// [31]/[32] = fountain upgrade levels / marbleize tiers per water type.
 function parseCaverns(json) {
   const holes = parseRaw(json['Holes']) ?? []
   return {
     holeMajiks: holes[4] ?? [],
+    idleonMajiks: holes[6] ?? [],
+    pocketGods: [holes[11]?.[29] ?? -1, holes[11]?.[30] ?? -1].map(Number),
     braveryBonuses: holes[15] ?? [],
     wishesUsed: holes[21] ?? [],
     fountainLevels: holes[31] ?? [],
@@ -1022,13 +974,20 @@ function parseStarSigns(json) {
 }
 
 // ── Equinox (W3) ──────────────────────────────────────────────────────────────
-// WeeklyBoss['d_' + i] = -1 once equinox cloud (challenge) i is complete
+// WeeklyBoss['d_' + i] = -1 once equinox cloud (challenge) i is complete.
+// Dream[2 + i] = level of equinox upgrade i (see EQUINOX_UPGRADES in utils/equinoxUtils.js).
+const DREAM_UPGRADES_OFFSET = 2
+
 function parseEquinox(json) {
   const weeklyBoss = parseRaw(json['WeeklyBoss']) ?? {}
   const completedClouds = Object.keys(weeklyBoss)
     .filter(key => key.startsWith('d_') && weeklyBoss[key] === -1)
     .map(key => Number(key.slice(2)))
-  return { completedClouds }
+  const dream = parseRaw(json['Dream']) ?? []
+  return {
+    completedClouds,
+    upgradeLevels: dream.slice(DREAM_UPGRADES_OFFSET).map(level => Number(level) || 0),
+  }
 }
 
 // ── Research (W7) ─────────────────────────────────────────────────────────────
@@ -1045,21 +1004,32 @@ function parseResearch(json) {
 }
 
 // ── Gaming (W5) ───────────────────────────────────────────────────────────────
-// Gaming[12] = unlocked superbits as a string of save letters (see utils/saveCodeUtils.js)
+// Gaming[12] = unlocked superbits as a string of save letters (see utils/saveCodeUtils.js).
+// Palette colours live in Spelunk: [9] = level per colour, [49] = Menagerie black stars (0-2).
 function parseGaming(json) {
   const gaming = parseRaw(json['Gaming']) ?? []
-  return { superbits: String(gaming[12] ?? '') }
+  const spelunk = parseRaw(json['Spelunk']) ?? []
+  return {
+    superbits: String(gaming[12] ?? ''),
+    paletteLevels: (spelunk[9] ?? []).map(level => Number(level) || 0),
+    paletteBlackStars: (spelunk[49] ?? []).map(stars => Number(stars) || 0),
+  }
+}
+
+// ── Spelunking (W7) ───────────────────────────────────────────────────────────
+// Spelunk[0][i] > 0 once lore boss i is defeated
+function parseSpelunking(json) {
+  const spelunk = parseRaw(json['Spelunk']) ?? []
+  return { loreBossesDefeated: (spelunk[0] ?? []).map(value => Number(value) > 0) }
 }
 
 // ── Account Options ───────────────────────────────────────────────────────────
 // OptLacc[311] = event shop purchases as save letters; OptLacc[594] = Button presses (W7)
-function parseEventShop(json) {
-  const optLacc = parseRaw(json['OptLacc']) ?? []
+function parseEventShop(optLacc) {
   return { purchases: String(optLacc[311] ?? '') }
 }
 
-function parseButton(json) {
-  const optLacc = parseRaw(json['OptLacc']) ?? []
+function parseButton(optLacc) {
   return { presses: Number(optLacc[594]) || 0 }
 }
 
@@ -1068,6 +1038,30 @@ function parseButton(json) {
 function parseLabJewels(json) {
   const lab = parseRaw(json['Lab']) ?? []
   return { owned: (lab[14] ?? []).map(owned => owned === 1) }
+}
+
+// ── Divinity (W5) ─────────────────────────────────────────────────────────────
+// Divinity[12 + i] = god slot character i is linked to (-1 none), [25] = gods unlocked.
+// Slots index data/divinityMap.js.
+function parseDivinity(json, charCount) {
+  const divinity = parseRaw(json['Divinity']) ?? []
+  return {
+    linkedGods: Array.from({ length: charCount }, (_, i) => Number(divinity[12 + i] ?? -1)),
+    unlockedGods: Number(divinity[25]) || 0,
+  }
+}
+
+// ── Coral Reef (W7) ───────────────────────────────────────────────────────────
+// Coral Kid upgrade levels: OptLacc[427..432] (page 1) then OptLacc[616..] (page 2)
+const CORAL_KID_PAGES = [427, 616]
+const CORAL_KID_PAGE_SIZE = 6
+
+function parseCoralReef(optLacc) {
+  return {
+    kidUpgradeLevels: CORAL_KID_PAGES.flatMap(start => (
+      Array.from({ length: CORAL_KID_PAGE_SIZE }, (_, i) => Number(optLacc[start + i]) || 0)
+    )),
+  }
 }
 
 // ── Vote Ballot ───────────────────────────────────────────────────────────────
@@ -1111,6 +1105,8 @@ export function extractSnapshot(rawJson) {
     return extracted
   })
 
+  const optLacc = parseRaw(json['OptLacc']) ?? []
+
   return {
     importedAt: new Date().toISOString(),
     characters: extractedCharacters,
@@ -1122,33 +1118,32 @@ export function extractSnapshot(rawJson) {
     shrineBuffs: parseShrineBuffs(json, charList.length),
     worship: parseWorship(json),
     towerLevels: parseTowerLevels(json),
-    armorSmithySets: parseArmorSmithySets(json),
+    armorSmithySets: parseArmorSmithySets(optLacc),
     miniBossesKills: parseMiniBosses(json),
-    miniBossDays: parseMiniBossDays(json),
+    miniBossDays: parseMiniBossDays(optLacc),
     exaltedStamps: parseExaltedStamps(json),
-    prismaBubbles: parsePrismaBubbles(json),
+    prismaBubbles: parsePrismaBubbles(optLacc),
     mapBonuses: parseMapBonuses(json),
-    mapBonusCap: parseMapBonusCap(json, charList.length),
     construction: parseConstruction(json),
     cooking: parseCooking(json),
     breeding: parseBreeding(json),
     farming: parseFarming(json),
     legendTalents: parseLegendTalents(json),
-    cards: parseCards(json),
+    cards: parseCards(json, optLacc),
     labChips: parseLabChips(json, charList.length),
     royalGuardian: parseRoyalGuardian(json),
-    talents: parseTalents(json, charList.length),
     alchemy: parseAlchemy(json),
+    droppedTrophies: parseDroppedTrophies(json),
     grimoire: parseGrimoire(json),
     upgradeVault: parseUpgradeVault(json),
     achievements: parseAchievements(json),
     rift: parseRift(json),
-    killroy: parseKillroy(json),
+    killroy: parseKillroy(optLacc),
     sushi: parseSushi(json),
     voteBallot: parseVoteBallot(rawJson),
     stamps: parseStamps(json),
-    sneaking: parseSneaking(json),
-    companions: parseCompanions(rawJson, json),
+    sneaking: parseSneaking(json, optLacc),
+    companions: parseCompanions(rawJson, optLacc),
     jellyOperator: parseJellyOperator(json),
     tesseract: parseTesseract(json),
     arcade: parseArcade(json),
@@ -1156,17 +1151,19 @@ export function extractSnapshot(rawJson) {
     merits: parseMerits(json),
     bundles: parseBundles(json),
     sailing: parseSailing(json),
-    emperor: parseEmperor(json),
-    summoning: parseSummoning(json),
+    emperor: parseEmperor(optLacc),
+    summoning: parseSummoning(json, optLacc),
     caverns: parseCaverns(json),
     zenith: parseZenith(json),
     starSigns: parseStarSigns(json),
     equinox: parseEquinox(json),
     research: parseResearch(json),
     gaming: parseGaming(json),
-    eventShop: parseEventShop(json),
-    button: parseButton(json),
+    spelunking: parseSpelunking(json),
+    eventShop: parseEventShop(optLacc),
+    button: parseButton(optLacc),
     labJewels: parseLabJewels(json),
-    ninjaMasteryTier: parseNinjaMasteryTier(json),
+    divinity: parseDivinity(json, charList.length),
+    coralReef: parseCoralReef(optLacc),
   }
-}
+}

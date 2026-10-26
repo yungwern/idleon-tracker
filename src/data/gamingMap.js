@@ -1,0 +1,230 @@
+// ============================================================
+// GAMING PALETTE (W5)
+// Palette colours by index: bonus = level × multi (type 0) or level / (level + 25) × multi (type 1).
+// Levels live in Spelunk[9]. From IdleonToolbox shared-data gamingPalette (x4 = multi, x5 = type).
+// ============================================================
+
+export const paletteMap = [
+  {
+    name: 'Olive Green',
+    multi: 10,
+    type: 0,
+    description: 'Nothing yet...',
+  },
+  {
+    name: 'Mossy Green',
+    multi: 3,
+    type: 1,
+    description: '+{% all Cell DMG in Jelly Operator',
+  },
+  {
+    name: 'Lime Green',
+    multi: 25,
+    type: 0,
+    description: '}x New Collectible Chance from Jars in Cavern 11',
+  },
+  {
+    name: 'Neon Tree',
+    multi: 80,
+    type: 1,
+    description: '+{% Palette Luck',
+  },
+  {
+    name: 'Bold Teal',
+    multi: 3,
+    type: 0,
+    description: '+{% Extra Dust for Windwalkers',
+  },
+  {
+    name: 'Bright Cyan',
+    multi: 300,
+    type: 1,
+    description: '}x Artifact Find chance',
+  },
+  {
+    name: 'Sky Blue',
+    multi: 1,
+    type: 0,
+    description: 'Nothing yet...',
+  },
+  {
+    name: 'DJ Musto',
+    multi: 10,
+    type: 0,
+    description: '}x extra Bits gained from all Sprouts',
+  },
+  {
+    name: 'Chartreuse',
+    multi: 10,
+    type: 0,
+    description: '}x Sprout Growth speed',
+  },
+  {
+    name: 'Zesty Green',
+    multi: 30,
+    type: 1,
+    description: '+{% higher chance for a Free Log Game',
+  },
+  {
+    name: 'Pair Green',
+    multi: 5,
+    type: 0,
+    description: '+{% All Skill Efficiency',
+  },
+  {
+    name: 'Minty Blue',
+    multi: 8,
+    type: 0,
+    description: '}x Sprout Growth speed',
+  },
+  {
+    name: 'Babby Blue',
+    multi: 2,
+    type: 0,
+    description: '+{% Critters when collecting from Trapping Drone',
+  },
+  {
+    name: 'Ocean Blue',
+    multi: 200,
+    type: 1,
+    description: '}x Total Spelunking POW',
+  },
+  {
+    name: 'Bleu Royale',
+    multi: 1,
+    type: 0,
+    description: 'Nothing yet...',
+  },
+  {
+    name: 'Golden Yellow',
+    multi: 40,
+    type: 1,
+    description: '+#% Gold Ball gain from Arcade',
+  },
+  {
+    name: 'Lemon Yellow',
+    multi: 25,
+    type: 1,
+    description: 'Gold Sprinkler has +#% chance to not use up charge',
+  },
+  {
+    name: 'Pastel Yellow',
+    multi: 100,
+    type: 1,
+    description: '+{% chance for Double Snail Mail',
+  },
+  {
+    name: 'Offwhite',
+    multi: 6,
+    type: 0,
+    description: '}x extra Bits gained from all Sprouts',
+  },
+  {
+    name: 'Light Cyan',
+    multi: 25,
+    type: 1,
+    description: '+#% chance for monsters to drop double Statues',
+  },
+  {
+    name: 'Periwinkle',
+    multi: 150,
+    type: 1,
+    description: '}x Sigil EXP gain',
+  },
+  {
+    name: 'Lavendar',
+    multi: 1,
+    type: 0,
+    description: 'Nothing yet...',
+  },
+  {
+    name: 'Toasty Orange',
+    multi: 3,
+    type: 0,
+    description: '+{% extra Bones for Deathbringers',
+  },
+  {
+    name: 'Honey Yellow',
+    multi: 8,
+    type: 1,
+    description: '+#% higher Exalted Stamp bonus',
+  },
+  {
+    name: 'Creamy Orange',
+    multi: 25,
+    type: 1,
+    description: '+#% chance for monsters to drop double Gold Food',
+  },
+  {
+    name: 'Peachy Pink',
+    multi: 1,
+    type: 0,
+    description: '}x higher Construction Build Rate',
+  },
+  {
+    name: 'Lilac Purple',
+    multi: 5,
+    type: 0,
+    description: '}x Mob Damage in Breeding fights',
+  },
+  {
+    name: 'Heather Purple',
+    multi: 2,
+    type: 0,
+    description: '+{% Laboratory EXP gain',
+  },
+  {
+    name: 'Violet',
+    multi: 6,
+    type: 1,
+    description: '+#% higher Prisma Bubble bonus',
+  },
+  {
+    name: 'Fuchsia',
+    multi: 3,
+    type: 0,
+    description: '+{% extra Tachyons for Arcane Cultists',
+  },
+  {
+    name: 'Burnt Sienna',
+    multi: 1,
+    type: 0,
+    description: '+{ Max Charm LV in Sneaking',
+  },
+  {
+    name: 'Red Orange',
+    multi: 15,
+    type: 1,
+    description: '+#% chance for a Mega Nut from Squirrel worth 50x',
+  },
+  {
+    name: 'Orange Red',
+    multi: 10,
+    type: 1,
+    description: '+#% Bonus Ballot multiplier',
+  },
+  {
+    name: 'Balmy Red',
+    multi: 100,
+    type: 1,
+    description: '+{% chance to get an extra Ribbon each day',
+  },
+  {
+    name: 'Maroon Four',
+    multi: 50,
+    type: 1,
+    description: '}x total Damage for all players',
+  },
+  {
+    name: 'Hot Pink',
+    multi: 80,
+    type: 1,
+    description: '{% cheaper Atom costs at the Atom Collider',
+  },
+  {
+    name: 'Magenta',
+    multi: 40,
+    type: 1,
+    description: '}x extra King Tokens per hour',
+  },
+]

@@ -1,5 +1,6 @@
-// Tome (W4). Total Tome points come from ~100 account stats, so the app takes them as an
-// input (the number shown in the game's Tome) instead of recomputing them.
+// Tome (W4). Total Tome points come from ~124 account stats across ~45 game systems (Toolbox
+// parsers/world-4/tome.ts calcTomeQuantity), most of which the snapshot doesn't parse, so the app
+// takes the total as an input (the number shown in the game's Tome) instead of recomputing it.
 
 // Tome bubbles (Crop Chapter, Tome Strength...) give their bonus once per 2000 points above 5000
 export function getTomeBubbleMulti(tomePoints) {

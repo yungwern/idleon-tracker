@@ -1,7 +1,6 @@
 import {
   landRankMap,
   exoticMarketMap,
-  calcExoticBonus,
   calcRankBonus,
   getSeedByCropId,
 } from '../data'
@@ -26,6 +25,8 @@ import { getActiveCharacterIndex } from './characterUtils'
 import { getButtonBonus } from './buttonUtils'
 import { getStickerBonus } from './researchUtils'
 import { countClearedMaps, WORLD_6_FIRST_MAP, WORLD_6_MAP_COUNT } from './mapUtils'
+import { getExoticBonus } from './exoticUtils'
+import { getEmperorBonus } from './emperorUtils'
 
 // Farming math, checked against IdleonToolbox parsers/world-6/farming.ts.
 // `farming` is snapshot.farming (see parseFarming in lib/extractSnapshot.js).
@@ -63,8 +64,6 @@ export function fillBonusText(text, value) {
     .replace('$', Math.ceil(value).toString())
 }
 
-const exoticBonus = (exoticLevels, index) =>
-  calcExoticBonus(exoticMarketMap[index], exoticLevels?.[index] ?? 0)
 
 // ── Day / Night Market ────────────────────────────────────────────────────────
 
@@ -73,12 +72,16 @@ const MARKET_COST_FLOOR_BELOW = 1e8
 
 export const isNightMarket = upgrade => upgrade.index >= 8
 
-// Better Day I/II (exotic 34/35) and Better Night I/II (36/37) discounts.
-// Toolbox also applies an Emperor bonus, which the snapshot doesn't parse yet.
-export function marketCostMulti(exoticLevels, nightMarket) {
+// Emperor market discount (bonus 2) × Better Day I/II (exotic 34/35) or Better Night I/II (36/37)
+const EMPEROR_MARKET_DISCOUNT = 2
+
+export function marketCostMulti(snapshot, nightMarket) {
+  const farming = snapshot?.farming
+  const emperor = getEmperorBonus(snapshot, EMPEROR_MARKET_DISCOUNT)
   const [a, b] = nightMarket ? [36, 37] : [34, 35]
-  return Math.max(0.1, 1 - exoticBonus(exoticLevels, a) / 100)
-    * Math.max(0.1, 1 - exoticBonus(exoticLevels, b) / 100)
+  return Math.max(0.001, 1 - emperor / (emperor + 100))
+    * Math.max(0.1, 1 - getExoticBonus(farming, a) / 100)
+    * Math.max(0.1, 1 - getExoticBonus(farming, b) / 100)
 }
 
 // Game: FarmingStuffs("MarketCostQTY")
@@ -176,8 +179,8 @@ export const BUY_ONE_GET_ONE_TALENT = 8
 
 // How many exotic levels a crop stack buys, after Better Exotic (exotic 38)
 // and the Buy One Get One Free legend talent.
-export function exoticLevelsFromCrops(cropQty, exoticLevels, legendTalentLevel) {
-  const betterExotic = exoticBonus(exoticLevels, 38)
+export function exoticLevelsFromCrops(cropQty, farming, legendTalentLevel) {
+  const betterExotic = getExoticBonus(farming, 38)
   const totalMulti = (1 + betterExotic / 100) * getLegendTalentMulti(BUY_ONE_GET_ONE_TALENT, legendTalentLevel)
   const baseQty = cropQty / totalMulti
   if (baseQty <= 1) return 0
@@ -226,17 +229,12 @@ const GOAL_OF_UPGRADE = Object.fromEntries(
   Object.entries(LAND_RANK_GOALS).flatMap(([goal, { upgrades }]) => upgrades.map(i => [i, goal]))
 )
 
-// Multiplier on every Land Rank Database bonus: Dank Ranks (Death Bringer talent 207) ×
-// Plump Database (exotic 14). A few of Dank Ranks' added talent levels aren't read, so the
-// game's Evolution Boost % can be entered to calibrate it exactly (bonus shown ÷ bonus at 1x).
+// Multiplier on every Land Rank Database bonus: Dank Ranks (Death Bringer talent 207, with the
+// played character's added levels) × Plump Database (exotic 14)
 const DANK_RANKS_TALENT = 207
 
-export function getRankMulti(snapshot, evoBoostInput) {
-  const farming = snapshot?.farming
-  const exoticMulti = 1 + exoticBonus(farming?.exoticLevels, 14) / 100
-  const evoBase = calcRankBonus(landRankMap[0], farming?.upgradesLevels?.[0] ?? 0)
-  const shown = parseFloat(evoBoostInput)
-  if (shown > 0 && evoBase > 0) return Math.max(exoticMulti, shown / evoBase)
+export function getRankMulti(snapshot) {
+  const exoticMulti = 1 + getExoticBonus(snapshot?.farming, 14) / 100
   return Math.max(1, getAccountTalentBonus(snapshot, DANK_RANKS_TALENT).value) * exoticMulti
 }
 
@@ -248,7 +246,7 @@ export function getSeedRankMaxLevel(snapshot) {
   const farming = snapshot?.farming
   const max = Math.round(1
     + getGrimoireBonus(snapshot?.grimoire, DATABASE_EXPANSION_GRIMOIRE)
-    + Math.ceil(exoticBonus(farming?.exoticLevels, 15))
+    + Math.ceil(getExoticBonus(farming, 15))
     + getLegendTalentBonus(EXTENDED_DATABASE_TALENT, getLegendTalentLevel(snapshot?.legendTalents, EXTENDED_DATABASE_TALENT)))
   const owned = Math.max(0, ...SEED_RANKS.map(i => farming?.upgradesLevels?.[i] ?? 0))
   return Math.max(max, owned)
@@ -280,10 +278,9 @@ function cropValueParts(farming) {
   const valueGmo = superGmo * (1 + (market[14] ?? 0) * 0.02 * (counts[10000] ?? 0) / 100)
   // Product Doubler (market 5): +3% per level, every full 100% is another 1x
   const productDoubler = Math.max(1, Math.floor(1 + (market[5] ?? 0) * 3 / 100))
-  const exotics = farming?.exoticLevels
   return {
     constant: productDoubler * Math.max(1, valueGmo),
-    cap: 1e4 * (1 + (exoticBonus(exotics, 23) + exoticBonus(exotics, 24) + exoticBonus(exotics, 25)) / 100),
+    cap: 1e4 * (1 + (getExoticBonus(farming, 23) + getExoticBonus(farming, 24) + getExoticBonus(farming, 25)) / 100),
   }
 }
 
@@ -420,7 +417,8 @@ export function compareLandRankPlans(farming, rankMulti, before, after) {
 // ── Crop Evolution Multi ──────────────────────────────────────────────────────
 // Every multiplier in the game's crop evolution chance (Toolbox getCropEvolution), each
 // read from its own system's utils. Sources not ported yet count as 1x and are marked
-// 'missing'; 'partial' ones are missing some inner boosts (listed in `missing`).
+// 'missing'; 'input' ones wait on a value the player types in (the save doesn't hold it) and
+// also count as 1x until then; 'partial' ones are missing some inner boosts (listed in `missing`).
 
 const sproutlucks = [0, 1, 2, 3]
 const geneologies = [
@@ -456,16 +454,20 @@ function source(id, label, system, multi, extra = {}) {
   }
 }
 
-const notPorted = (id, label, system, note) => source(id, label, system, 1, {
-  status: 'missing',
+const needsInput = (id, label, system, note) => source(id, label, system, 1, {
+  status: 'input',
   note,
 })
 
+// Status for a { value, missing } result: partial while any inner boost isn't read
+const statusOf = ({ missing }) => ({
+  status: missing.length ? 'partial' : 'exact',
+  missing,
+})
+
 // tomePoints: total Tome points typed in by the player (not in the save).
-// rankCalibrated: the Evo Boost % box is filled in, so rankMulti is exact.
-export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints, rankCalibrated = false } = {}) {
+export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = {}) {
   const farming = snapshot?.farming ?? {}
-  const exotics = farming.exoticLevels
   const market = farming.marketLevels ?? []
   const characters = snapshot?.characters ?? []
   // Character-dependent sources use the character the save was taken on, like the game
@@ -474,10 +476,6 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints, ran
   const farmingLevel = getSkillLevel(activeCharacter, 'farming')
   const starSign = getStarSignBonus(snapshot, 'Crop_Evo', activeIndex)
   const massIrrigation = getAccountTalentBonus(snapshot, MASS_IRRIGATION_TALENT)
-  // Without the Evo Boost % calibration, Dank Ranks may be missing a few added levels
-  const rankStatus = rankCalibrated
-    ? { status: 'exact', missing: [] }
-    : { status: 'partial', missing: ['Dank Ranks added talent levels (enter Evo Boost % on Land Ranks)'] }
 
   // Market: Biology Boost (+15%/LV) and Evolution GMO (compounds per crop with 200+ stock)
   const counts = farming.gmoCropCounts ?? {}
@@ -503,7 +501,7 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints, ran
   const summoningLevel = getSkillLevel(activeCharacter, 'summoning')
   const summoningMealMulti = Math.ceil((summoningLevel + 1) / 50)
   const geneology = geneologies.reduce((sum, { exotic, above }) => (
-    sum + Math.max(0, farmingLevel - above) * exoticBonus(exotics, exotic)
+    sum + Math.max(0, farmingLevel - above) * getExoticBonus(farming, exotic)
   ), 0)
 
   const sources = [
@@ -514,57 +512,38 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints, ran
     source('winner', 'Summoning winner bonus', 'Summoning', 1 + getWinnerBonusByName(snapshot, '<x Crop EVO') / 100),
     source('lamp', 'The Lamp', 'Caverns (W5)', 1 + getLampBonus(snapshot, 2, 0) / 100),
     hasTomePoints
-      ? source('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 1 + cropChapter.value * tomeMulti / 100, {
-        status: cropChapter.missing.length ? 'partial' : 'exact',
-        missing: cropChapter.missing,
+      ? source('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 1 + cropChapter * tomeMulti / 100, {
         note: `${Number(tomePoints).toLocaleString()} Tome points (x${tomeMulti})`,
       })
-      : notPorted('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Enter your Tome points above'),
-    source('cropius', 'Cropius Mapper (bubble)', 'Alchemy', 1 + cropius.value * clearedW6Maps / 100, {
-      status: cropius.missing.length ? 'partial' : 'exact',
-      missing: cropius.missing,
+      : needsInput('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Enter your Tome points above (the save doesn\'t store them)'),
+    source('cropius', 'Cropius Mapper (bubble)', 'Alchemy', 1 + cropius * clearedW6Maps / 100, {
       note: `${clearedW6Maps} World 6 maps cleared across characters`,
     }),
-    source('vial', 'Flavorgil (vial)', 'Alchemy', 1 + vial.value / 100, {
-      status: vial.missing.length ? 'partial' : 'exact',
-      missing: vial.missing,
-    }),
+    source('vial', 'Flavorgil (vial)', 'Alchemy', 1 + vial.value / 100, statusOf(vial)),
     source('card', 'Jellofish card', 'Cards', 1 + getPassiveCardBonus(CROP_EVO_CARD_EFFECT, snapshot?.cards) / 100),
-    source('meal', 'Bill Jack Pep (meal)', 'Cooking', 1 + meal.value / 100, {
-      status: meal.missing.length ? 'partial' : 'exact',
-      missing: meal.missing,
-    }),
+    source('meal', 'Bill Jack Pep (meal)', 'Cooking', 1 + meal.value / 100, statusOf(meal)),
     source('summoningMeal', 'Nyanborgir (meal)', 'Cooking', 1 + summoningMeal.value * summoningMealMulti / 100, {
-      status: summoningMeal.missing.length ? 'partial' : 'exact',
-      missing: summoningMeal.missing,
+      ...statusOf(summoningMeal),
       note: `x${summoningMealMulti} at Summoning LV ${summoningLevel}`,
     }),
     source('vault', 'Croppius Evolvius (vault)', 'Upgrade Vault', 1 + getUpgradeVaultBonus(snapshot?.upgradeVault, CROP_EVO_VAULT_UPGRADE) / 100),
     source('monument', 'Wisdom Monument', 'Caverns (W5)', 1 + getMonumentBonus(snapshot, 2, 4) / 100),
-    source('stamp', 'Crop Evo Stamp', 'Stamps', 1 + stamp.value / 100, {
-      status: stamp.missing.length ? 'partial' : 'exact',
-      missing: stamp.missing,
-    }),
+    source('stamp', 'Crop Evo Stamp', 'Stamps', 1 + stamp.value / 100, statusOf(stamp)),
     source('grimoire', 'Sacrifice of Harvest (grimoire)', 'Grimoire', 1 + getGrimoireBonus(snapshot?.grimoire, SACRIFICE_OF_HARVEST_GRIMOIRE) / 100),
     source('achievement', "Lil' Overgrowth (achievement)", 'Achievements', isAchievementComplete(snapshot?.achievements, LIL_OVERGROWTH_ACHIEVEMENT) ? 1.05 : 1),
     source('killroy', 'Killroy shop', 'Killroy', Math.max(1, getKillroyBonus(snapshot?.killroy, KILLROY_CROP_EVO))),
     source('mastery', 'Farming skill mastery', 'Rift', isSkillMasteryBonusUnlocked(snapshot, 'farming', 1) ? 1.15 : 1),
-    source('starSign', 'Crop Evo star signs', 'Star signs', 1 + starSign.value * farmingLevel / 100, {
-      status: starSign.missing.length ? 'partial' : 'exact',
-      missing: starSign.missing,
-    }),
-    source('landRankTotal', 'Land rank total', 'Farming land ranks', Math.max(1, (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100)), rankStatus),
+    source('starSign', 'Crop Evo star signs', 'Star signs', 1 + starSign.value * farmingLevel / 100, statusOf(starSign)),
+    source('landRankTotal', 'Land rank total', 'Farming land ranks', Math.max(1, (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100))),
     source('massIrrigation', 'Mass Irrigation (talent)', 'Talents', Math.max(1, massIrrigation.value), {
-      status: 'partial',
-      missing: massIrrigation.missing,
       note: `LV ${getAccountTalentLevel(snapshot, MASS_IRRIGATION_TALENT).value}`,
     }),
     source('landRankPlot', 'Evolution Boost × plot rank', 'Farming land ranks', 1 + b(0) * avgRank / 100, {
-      status: voteSelected || !rankCalibrated ? 'partial' : 'exact',
-      missing: [...(voteSelected ? ['Vote ballot bonus'] : []), ...rankStatus.missing],
+      status: voteSelected ? 'partial' : 'exact',
+      missing: voteSelected ? ['Vote ballot bonus'] : [],
       note: 'Average plot rank',
     }),
-    ...sproutlucks.map(i => source(`sproutluck${i}`, exoticMarketMap[i].label, 'Exotic market', 1 + exoticBonus(exotics, i) / 100)),
+    ...sproutlucks.map(i => source(`sproutluck${i}`, exoticMarketMap[i].label, 'Exotic market', 1 + getExoticBonus(farming, i) / 100)),
     source('button', 'The Button', 'Button (W7)', 1 + getButtonBonus(snapshot, CROP_EVO_BUTTON) / 100, {
       note: "Uses the game data's Crop Evo slot (Toolbox reads a different one)",
     }),

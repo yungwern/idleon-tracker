@@ -1,5 +1,3 @@
-import { RIBBON_MAX_RANK, ribbonMulti } from '../utils/cookingUtils'
-
 export const cookingMap = {
 
   // ── Good Meals to Ribbon ──────────────────────────────────────────────────
@@ -432,19 +430,3 @@ export const cookingBonusTypes = {
     'Polymer Refinery Speed', 'Research EXP Gains', 'Minehead Mine Currency Gain',
   ],
 };
-
-// ── Ribbon Data ───────────────────────────────────────────────────────────────
-// One row per rank, built from the game formula (utils/cookingUtils.js)
-// multi: base multiplier for that ribbon rank
-// vsLast: multiplier increase compared to the previous rank (rounded down)
-// rank1sRequired: number of rank 1 ribbons needed to reach this rank
-export const ribbonData = Array.from({ length: RIBBON_MAX_RANK }, (_, i) => {
-  const rank = i + 1
-  const multi = ribbonMulti(rank)
-  return {
-    rank,
-    multi,
-    vsLast: rank === 1 ? null : Math.floor((multi / ribbonMulti(rank - 1)) * 100 + 1e-9) / 100,
-    rank1sRequired: Math.pow(2, rank - 1),
-  }
-})

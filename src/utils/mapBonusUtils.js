@@ -1,3 +1,6 @@
+import { getAccountTalentBonus } from './talentUtils'
+import { getTesseractBonus } from './tesseractUtils'
+
 // ── Arcane Cultist Map Bonus Utilities ────────────────────────────────────────
 // Formulas from IdleonToolbox parsers/class-specific/tesseract.ts
 
@@ -13,16 +16,17 @@ export function getMapMulti(kills) {
   )
 }
 
-// Max map bonus %: 100 * (Overwhelming Energy - 1) + min(10, Beyond All Limits)
-// Overwhelming Energy is decayMulti(1, 500): 1 + level / (level + 500)
-export function getMapBonusCap(capInfo) {
-  if (!capInfo) return Infinity
-  const level = capInfo.overwhelmingEnergy ?? 0
-  const overwhelmingEnergy = 1 + level / (level + 500)
-  return 100 * (overwhelmingEnergy - 1) + Math.min(10, capInfo.beyondAllLimits ?? 0)
+// Max map bonus %: 100 * (Overwhelming Energy - 1) + min(10, Beyond All Limits).
+// Overwhelming Energy (talent 589) is read account-wide with the played character's added levels.
+const OVERWHELMING_ENERGY = 589
+const BEYOND_ALL_LIMITS = 58 // tesseract
+
+export function getMapBonusCap(snapshot) {
+  const overwhelmingEnergy = Math.max(1, getAccountTalentBonus(snapshot, OVERWHELMING_ENERGY).value)
+  return 100 * (overwhelmingEnergy - 1) + Math.min(10, getTesseractBonus(snapshot?.tesseract, BEYOND_ALL_LIMITS))
 }
 
-// Capped map bonus %
-export function getCappedMapMulti(kills, capInfo) {
-  return Math.min(getMapMulti(kills), getMapBonusCap(capInfo))
+// Capped map bonus % (cap from getMapBonusCap)
+export function getCappedMapMulti(kills, cap) {
+  return Math.min(getMapMulti(kills), cap)
 }

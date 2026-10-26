@@ -1,4 +1,5 @@
-import { bubbleMap, vialMap, exoticMarketMap, calcExoticBonus } from '../data'
+import { bubbleMap, vialMap } from '../data'
+import { getExoticBonus } from './exoticUtils'
 import { growth } from './mathUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { getSushiBonus } from './sushiUtils'
@@ -9,6 +10,8 @@ import { getTesseractBonus } from './tesseractUtils'
 import { getArcadeBonus } from './arcadeUtils'
 import { getCompanionBonus } from './companionUtils'
 import { getJellyBonus } from './jellyUtils'
+import { getAssumedLabBonus, LAB_BONUSES } from './labUtils'
+import { getPaletteBonus } from './gamingUtils'
 
 // Alchemy (W2) bonus math, ported from IdleonToolbox parsers/world-2/alchemy.ts.
 // Each function returns { value, missing } where `missing` lists the parts of the
@@ -25,6 +28,9 @@ const PRISMA_SUSHI = 23
 const PINNACLE_OF_PRISMA = 45 // tesseract
 const RIFT_HIVEMIND = 88 // companion: +50% (+75% upgraded)
 const PRISMA_JELLY = 36
+const PRISMA_TROPHY = 'Trophy23' // +10% once dropped
+const ETHEREAL_SIGIL_PRISMA = 0.2 // % per ethereal sigil
+const PRISMA_PALETTE = 28 // Violet
 
 export function isPrismaBubble(snapshot, bubbleIndex) {
   return (snapshot?.prismaBubbles ?? []).includes(bubbleIndex)
@@ -32,17 +38,17 @@ export function isPrismaBubble(snapshot, bubbleIndex) {
 
 // Multiplier on Prisma bubbles: 2x base + additive bonuses, capped at 5x (Toolbox getPrismaMulti)
 export function getPrismaMulti(snapshot) {
-  const exotic = calcExoticBonus(exoticMarketMap[PRISMA_EXOTIC], snapshot?.farming?.exoticLevels?.[PRISMA_EXOTIC] ?? 0)
+  const exotic = getExoticBonus(snapshot?.farming, PRISMA_EXOTIC)
   const legend = getLegendTalentBonus(PRISMA_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, PRISMA_LEGEND_TALENT))
   const sushi = getSushiBonus(snapshot?.sushi, PRISMA_SUSHI)
   const tesseract = getTesseractBonus(snapshot?.tesseract, PINNACLE_OF_PRISMA)
   const arcade = getArcadeBonus(snapshot, 'Prisma Bonuses')
   const companion = 50 * getCompanionBonus(snapshot?.companions, RIFT_HIVEMIND)
   const jelly = getJellyBonus(snapshot?.jellyOperator, PRISMA_JELLY)
-  return {
-    value: Math.min(MAX_PRISMA_MULTI, 2 + (exotic + legend + sushi + tesseract + arcade + companion + jelly) / 100),
-    missing: ['Palette', 'Trophy', 'Ethereal Sigils'],
-  }
+  const trophy = (snapshot?.droppedTrophies ?? []).includes(PRISMA_TROPHY) ? 10 : 0
+  const sigils = ETHEREAL_SIGIL_PRISMA * (snapshot?.alchemy?.etherealSigils ?? 0)
+  const palette = getPaletteBonus(snapshot, PRISMA_PALETTE)
+  return Math.min(MAX_PRISMA_MULTI, 2 + (exotic + legend + sushi + tesseract + arcade + companion + jelly + trophy + sigils + palette) / 100)
 }
 
 // ── Bubbles ───────────────────────────────────────────────────────────────────
@@ -59,7 +65,7 @@ function rawBubbleValue(snapshot, bubbleIndex, prisma) {
   if (!bubble) return 0
   const level = snapshot?.alchemy?.bubbleLevels?.[bubbleIndex] ?? 0
   const value = growth(bubble.func, level, bubble.x1, bubble.x2)
-  return isPrismaBubble(snapshot, bubbleIndex) ? value * prisma.value : value
+  return isPrismaBubble(snapshot, bubbleIndex) ? value * prisma : value
 }
 
 // A bubble's bonus as the game applies it account-wide (no class bubble multiplier)
@@ -70,11 +76,7 @@ export function getBubbleBonus(snapshot, bubbleIndex) {
   if (CAULDRON_BOOSTED[prefix]?.has(Number(bubbleIndex.slice(1)))) {
     value *= rawBubbleValue(snapshot, `${prefix}16`, prisma)
   }
-  const usesPrisma = isPrismaBubble(snapshot, bubbleIndex) && prisma.value < MAX_PRISMA_MULTI
-  return {
-    value,
-    missing: usesPrisma ? prisma.missing.map(part => `Prisma: ${part}`) : [],
-  }
+  return value
 }
 
 // ── Vials ─────────────────────────────────────────────────────────────────────
@@ -84,17 +86,17 @@ const VIAL_VAULT_UPGRADE = 42
 const VIAL_MERITOCRACY = 20
 
 // Multiplier on every vial (Toolbox getVialMultiplier). My 1st Chemistry Set (lab) doubles
-// vials while it's connected; the lab network isn't ported, so it's assumed connected.
+// vials while it's connected.
 export function getVialMultiplier(snapshot) {
-  const chemistrySet = 2
+  const chemistrySet = getAssumedLabBonus(LAB_BONUSES.myFirstChemistrySet)
   const vialMastery = isRiftBonusUnlocked(snapshot?.rift, 'vialMastery')
     ? 2 * Object.values(snapshot?.alchemy?.vialLevels ?? {}).filter(level => level >= MAX_VIAL_LEVEL).length
     : 0
   const vault = getUpgradeVaultBonus(snapshot?.upgradeVault, VIAL_VAULT_UPGRADE)
-  const missing = ['My 1st Chemistry Set (assumed connected)']
+  const missing = [...chemistrySet.missing]
   if (isMeritocracyBonusSelected(snapshot?.voteBallot, VIAL_MERITOCRACY)) missing.push('Meritocracy')
   return {
-    value: chemistrySet * (1 + (vialMastery + vault) / 100),
+    value: chemistrySet.value * (1 + (vialMastery + vault) / 100),
     missing,
   }
 }

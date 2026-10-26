@@ -1,4 +1,4 @@
-import { mealMap } from '../data/mealMap'
+import { mealMap } from '../data'
 import { getShinyPassiveTotal } from './breedingUtils'
 import { getWinnerBonusByName } from './summoningUtils'
 import { getCompanionBonus } from './companionUtils'
@@ -19,6 +19,20 @@ export const ribbonMulti = (rank) => {
   const r = rank ?? 0
   return 1 + Math.floor(5 * r + Math.floor(r / 2) * (4 + 6.5 * Math.floor(r / 5))) / 100
 }
+
+// One row per rank, built from the game formula above:
+// multi = base multiplier, vsLast = increase over the previous rank (rounded down),
+// rank1sRequired = rank 1 ribbons needed to reach this rank
+export const ribbonData = Array.from({ length: RIBBON_MAX_RANK }, (_, i) => {
+  const rank = i + 1
+  const multi = ribbonMulti(rank)
+  return {
+    rank,
+    multi,
+    vsLast: rank === 1 ? null : Math.floor((multi / ribbonMulti(rank - 1)) * 100 + 1e-9) / 100,
+    rank1sRequired: Math.pow(2, rank - 1),
+  }
+})
 
 // CSS color class for a ribbon rank's number (styles in Cooking.css)
 export const ribbonTierClass = (rank) => {
