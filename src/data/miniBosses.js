@@ -139,19 +139,51 @@ export function getOptimalKills(timer) {
   return best
 }
 
+// points = Death Note points the skull is worth on the Bosses page (game: WorkbenchStuff("DeathNoteRank")).
+// Each point is +1% Multikill per Tier, added no matter which world you fight in.
 export const RANK_THRESHOLDS = [
-  { kills: 100     },
-  { kills: 250     },
-  { kills: 1000    },
-  { kills: 5000    },
-  { kills: 25000   },
-  { kills: 100000  },
-  { kills: 1000000 },
+  { kills: 100,     points: 1  },
+  { kills: 250,     points: 2  },
+  { kills: 1000,    points: 3  },
+  { kills: 5000,    points: 4  },
+  { kills: 25000,   points: 5  },
+  { kills: 100000,  points: 7  },
+  { kills: 1000000, points: 10 },
 ]
 
 // Skull index = how many rank thresholds you've passed (0 = none, 7 = max)
 export function getSkullIndex(kills) {
   return RANK_THRESHOLDS.filter(t => kills >= t.kills).length
+}
+
+export function getDeathNotePoints(kills) {
+  const skullIndex = getSkullIndex(kills ?? 0)
+  return skullIndex > 0 ? RANK_THRESHOLDS[skullIndex - 1].points : 0
+}
+
+export const MAX_DEATH_NOTE_POINTS = RANK_THRESHOLDS[RANK_THRESHOLDS.length - 1].points * MINIBOSSES.length
+
+// W7 Luminous Menagerie mission 30 "Deathnote Boss PTS" (Toolbox research.json [52..55]).
+// Needs 25 points, +15 per claim. Claiming never spends points, so every step already covered is one more claim.
+export const DEATH_NOTE_MISSION = {
+  name: 'Deathnote Boss PTS',
+  img: 'images/menagerie/MenaIconY30.png',
+  baseReq: 25,
+  perClaim: 15,
+}
+
+export function getDeathNoteMission(points, claims) {
+  const { baseReq, perClaim } = DEATH_NOTE_MISSION
+  const requirement = baseReq + perClaim * claims
+  const previous = claims > 0 ? requirement - perClaim : 0
+  const claimable = points >= requirement
+    ? Math.floor((points - baseReq) / perClaim) + 1 - claims
+    : 0
+  return {
+    requirement,
+    claimable,
+    progress: Math.min(100, Math.max(0, ((points - previous) / (requirement - previous)) * 100)),
+  }
 }
 
 export function rankColor(skullIndex) {
@@ -172,4 +204,4 @@ export function formatKills(kills) {
   if (kills >= 1_000_000) return `${(kills / 1_000_000).toFixed(1)}M`
   if (kills >= 1_000) return `${(kills / 1_000).toFixed(1)}K`
   return kills.toLocaleString()
-}
+}

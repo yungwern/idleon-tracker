@@ -201,6 +201,18 @@ function parseMiniBosses(json) {
   return kills.slice(0, 10)
 }
 
+// Menagerie[1] = W7 Luminous Menagerie mission claims; [30] = "Deathnote Boss PTS".
+// No Menagerie key = save from before W7, so the mission doesn't exist yet (null).
+const DEATH_NOTE_MISSION_INDEX = 30
+
+function parseMiniBossMission(json) {
+  const menagerie = parseRaw(json['Menagerie'])
+  if (!Array.isArray(menagerie)) return null
+  return {
+    claims: Number(menagerie?.[1]?.[DEATH_NOTE_MISSION_INDEX] ?? 0),
+  }
+}
+
 // Days since each spawned miniboss was last spawned (OptLacc = account options list)
 function parseMiniBossDays(optLacc) {
   return {
@@ -1121,6 +1133,7 @@ export function extractSnapshot(rawJson) {
     armorSmithySets: parseArmorSmithySets(optLacc),
     miniBossesKills: parseMiniBosses(json),
     miniBossDays: parseMiniBossDays(optLacc),
+    miniBossMission: parseMiniBossMission(json),
     exaltedStamps: parseExaltedStamps(json),
     prismaBubbles: parsePrismaBubbles(optLacc),
     mapBonuses: parseMapBonuses(json),

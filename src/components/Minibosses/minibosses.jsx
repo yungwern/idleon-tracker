@@ -11,7 +11,12 @@ import {
   getVerminousHit,
   getVerminousHits,
   getBestVerminousPickles,
+  getDeathNotePoints,
+  MAX_DEATH_NOTE_POINTS,
+  DEATH_NOTE_MISSION,
+  getDeathNoteMission,
 } from '../../data'
+import { getDeathNoteTotalPoints } from '../../utils/minibossNotices'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import './minibosses.css'
 
@@ -77,6 +82,69 @@ function BoneJoePickleTracker({ pickles }) {
               {charMultiplier && (
                 <span className="bjp-tooltip-multi">{formatMultiplier(charMultiplier)}</span>
               )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Death Note Bosses page: total points (each skull is worth 1-10), the Multikill per Tier they give,
+// and the W7 Menagerie "Deathnote Boss PTS" mission (null mission = pre-W7 save or old import)
+function DeathNoteTracker({ kills, mission }) {
+  const points = getDeathNoteTotalPoints(kills)
+  const missionState = mission ? getDeathNoteMission(points, mission.claims) : null
+
+  return (
+    <div className="mb-dn tooltip-anchor">
+      <div className="mb-dn-row">
+        <img src="images/death note/StatusSkull6.png" alt="Death Note" className="mb-dn-icon" />
+        <span className="mb-dn-label">Death Note PTS</span>
+        <span className="mb-dn-value">
+          {points}
+          <span className="mb-dn-max"> / {MAX_DEATH_NOTE_POINTS}</span>
+        </span>
+      </div>
+      <div className="mb-dn-row mb-dn-row--divider">
+        <span className="mb-dn-label">Multikill per Tier</span>
+        <span className="mb-dn-multikill">+{points}%</span>
+      </div>
+      {missionState && (
+        <div className="mb-dn-mission">
+          <div className="mb-dn-row">
+            <img src={DEATH_NOTE_MISSION.img} alt={DEATH_NOTE_MISSION.name} className="mb-dn-icon" />
+            <span className="mb-dn-label">{DEATH_NOTE_MISSION.name}</span>
+            <span className="mb-dn-value">
+              {points}
+              <span className="mb-dn-max"> / {missionState.requirement}</span>
+            </span>
+            {missionState.claimable > 0 && (
+              <span className="mb-dn-claim">Claim {missionState.claimable}</span>
+            )}
+          </div>
+          <div className="mb-dn-track">
+            <div
+              className="mb-dn-fill"
+              style={{ width: `${missionState.progress}%` }}
+            />
+          </div>
+          <span className="mb-dn-note">
+           · Claimed {mission.claims} {mission.claims === 1 ? 'time' : 'times'} ·
+          </span>
+        </div>
+      )}
+      <div className="tooltip mb-dn-tooltip">
+        {MINIBOSSES.map(boss => {
+          const bossKills = kills?.[boss.index] ?? 0
+          const skullIndex = getSkullIndex(bossKills)
+          return (
+            <div key={boss.rawName} className="mb-dn-tooltip-row">
+              <span className="mb-dn-tooltip-name">{boss.displayName}</span>
+              {skullIndex > 0
+                ? <img src={`images/death note/StatusSkull${skullIndex - 1}.png`} alt="" className="mb-dn-tooltip-skull" />
+                : <span className="mb-dn-tooltip-skull" />}
+              <span className="mb-dn-tooltip-pts">{getDeathNotePoints(bossKills)}</span>
             </div>
           )
         })}
@@ -324,10 +392,17 @@ export default function Minibosses({ snapshot }) {
           'World 3–6 minibosses stack spawns over time. The most kills per day comes from spawning them once 2 are stacked (every 7 days). The Spawns bar shows how many are stacked as of your last save import: Kill = ready, Max = capped, or days until 2 are stacked.',
           'Verminous (Royal Guardian) ignores your own damage, so all your pickles would make it unkillable. Its card shows the best number to carry; hover the warning for the math.',
           'The "kills w/ pickles" estimate on each card assumes every pickle you own (storage included) is on the character doing the killing.',
+          'Each skull is worth Death Note points (1, 2, 3, 4, 5, 7, then 10 at 1M kills), up to 100 total. Every point is +1% Multikill per Tier, wherever you fight. The World 7 Luminous Menagerie mission Deathnote Boss PTS needs 25 points, then 15 more per claim. Hover the Death Note panel for each boss.',
         ]}
       />
       <div className="mb-top-row">
-        <BoneJoePickleTracker pickles={pickles} />
+        <div className="mb-tracker-row">
+          <BoneJoePickleTracker pickles={pickles} />
+          <DeathNoteTracker
+            kills={miniBossesKills}
+            mission={snapshot?.miniBossMission}
+          />
+        </div>
         <SpawnBar spawnDays={snapshot?.miniBossDays} />
       </div>
       <div className="mb-card-grid">

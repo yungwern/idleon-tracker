@@ -149,6 +149,9 @@ Shrine building levels (Tower[18..26]) give the W7 Dancing Coral bonus past Lv 2
 Breeding uses it too (`breedingBuffMap` in breedingMap.js): W7 Menagerie unlock 11 (Menagerie[2][11]) raises max shiny
 LV from 20 to 30. Menagerie unlock names/tooltips are Toolbox research.json [56]/[62]; icons are MenaIconO<N>.png.
 
+**Menagerie missions**: Menagerie[1][i] = claims of mission i (Toolbox research.json [52] text, [53] +req per claim,
+[54] base req). Minibosses tracks mission 30 (Deathnote Boss PTS); skull points live on RANK_THRESHOLDS in miniBosses.js.
+
 **Spice territories**: Pets[27+4i..] = team on territory i (Pets[0-26] fence, PetsStored = storage), each pet
 [rawName, geneId, power]. Territory[i] = [bar progress, fills, ?, 'CookingSpice{i}' | 'Blank' if locked, spices to claim].
 Territories can unlock out of order (16 open while 14 locked). A Converter keep also keeps the spices to claim, so a
