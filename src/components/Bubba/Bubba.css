@@ -1,0 +1,230 @@
+/* ============================================================
+   BUBBA PAGE
+   ============================================================ */
+
+.bubba-page {
+  max-width: 900px;
+}
+
+/* ── Top row: emulsify rules + charisma goals ── */
+.bubba-top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.bubba-card {
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bubba-card-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 10px;
+}
+
+/* ── Emulsify rules ── */
+.bubba-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bubba-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bubba-attr-pill {
+  flex-shrink: 0;
+  min-width: 64px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.bubba-rule-when {
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.4;
+}
+
+/* ── Charisma goals table ── */
+.bubba-goals {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.bubba-goals th {
+  padding: 4px 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #9ca3af;
+}
+
+.bubba-goals td {
+  padding: 8px 4px;
+  text-align: center;
+  font-weight: 700;
+  color: #fbbf24;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bubba-goals td.bubba-goals-label {
+  text-align: left;
+  color: #e5e7eb;
+  white-space: nowrap;
+}
+
+.bubba-goals-note {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.bubba-goals td.bubba-goals-zero {
+  color: #4b5563;
+}
+
+/* ── Steps ── */
+.bubba-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bubba-step {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s;
+}
+
+.bubba-step:hover {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.bubba-step-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bubba-step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bubba-step-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.bubba-step-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.bubba-step-gift {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(160, 196, 255, 0.1);
+  color: #a0c4ff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bubba-step-points {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bubba-step-points li {
+  font-size: 13px;
+  color: #d1d5db;
+  line-height: 1.5;
+}
+
+.bubba-step-tip {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-left: 2px solid #fbbf24;
+  background: rgba(245, 158, 11, 0.06);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+.bubba-step-goal {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bubba-step-goal-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #6b7280;
+  margin-right: 4px;
+}
+
+.bubba-step-goal-chip {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.bubba-step-goal-chip strong {
+  color: #fbbf24;
+}
+
+@media (max-width: 760px) {
+  .bubba-top-row {
+    grid-template-columns: 1fr;
+  }
+}

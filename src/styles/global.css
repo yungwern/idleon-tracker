@@ -459,3 +459,66 @@ body {
   display: block;
   color: #fbbf24;
 }
+
+/* ============================================================
+   DROPDOWN PANEL
+   A <details> section that opens on click: <details class="dropdown-panel">
+   <summary class="dropdown-panel-head"> title / stat / chips </summary> body </details>
+   ============================================================ */
+
+.dropdown-panel {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.dropdown-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.dropdown-panel-head::-webkit-details-marker {
+  display: none;
+}
+
+.dropdown-panel-head::before {
+  content: '▸';
+  color: #a0c4ff;
+  font-size: 12px;
+  transition: transform 0.15s;
+}
+
+.dropdown-panel[open] > .dropdown-panel-head::before {
+  transform: rotate(90deg);
+}
+
+.dropdown-panel-head:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dropdown-panel-title {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dropdown-panel-stat {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.dropdown-panel-chips {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.dropdown-panel-body {
+  padding: 4px 12px 12px;
+}

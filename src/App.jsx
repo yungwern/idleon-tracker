@@ -15,6 +15,7 @@ import Obols from './components/Obols/Obols.jsx'
 import Construction from './components/Construction/Construction.jsx'
 import Shrines from './components/Shrines/shrines.jsx'
 import Worship from './components/Worship/Worship.jsx'
+import Bubba from './components/Bubba/Bubba.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
 import Farming from './components/Farming/Farming.jsx'
@@ -74,6 +75,7 @@ export default function App() {
     if (current === 'Construction')   return <Construction snapshot={snapshot} />
     if (current === 'Shrines')        return <Shrines snapshot={snapshot} />
     if (current === 'Worship') return <Worship snapshot={snapshot} />
+    if (current === 'Bubba') return <Bubba />
     if (current === 'Cooking') return <Cooking snapshot={snapshot} />
     if (current === 'Breeding') return <Breeding snapshot={snapshot} />
     if (current === 'Farming') return <Farming snapshot={snapshot} />

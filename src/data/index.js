@@ -51,6 +51,7 @@ export { cogMap, BOARD_ROWS, BOARD_COLS, COG_BORDER_CLASS, COG_PLACEMENTS, saltM
 export { shrineMap, shrineBuffMap } from './shrineMap'
 export { worshipMap, soulsMap, towerMap } from './worshipMap'
 export { prayerMap } from './prayerMap'
+export { BUBBA_ATTRIBUTES, BUBBA_EMULSIFY_RULES, BUBBA_CHARISMA_GOALS, BUBBA_STEPS } from './bubbaMap'
 
 // ── World 4 ───────────────────────────────────────────────────────────────────
 export { labChipMap } from './labChipMap'

@@ -3,6 +3,7 @@ import {
   exoticMarketMap,
   calcRankBonus,
   getSeedByCropId,
+  seedInfo,
 } from '../data'
 import { getLegendTalentMulti, getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { getAccountTalentBonus, getAccountTalentLevel } from './talentUtils'
@@ -27,6 +28,7 @@ import { getStickerBonus } from './researchUtils'
 import { countClearedMaps, WORLD_6_FIRST_MAP, WORLD_6_MAP_COUNT } from './mapUtils'
 import { getExoticBonus } from './exoticUtils'
 import { getEmperorBonus } from './emperorUtils'
+import { getGemShopPurchases } from './gemShopUtils'
 
 // Farming math, checked against IdleonToolbox parsers/world-6/farming.ts.
 // `farming` is snapshot.farming (see parseFarming in lib/extractSnapshot.js).
@@ -53,6 +55,33 @@ export function formatMulti(value) {
 // Rounds to `decimals` places and drops trailing zeros (12.50 → "12.5")
 export function formatDecimal(value, decimals = 1) {
   return Number((value ?? 0).toFixed(decimals)).toString()
+}
+
+// A chance (0-1) as a percent that stays readable when tiny: 0.765%, 0.00229%, 1.67e-18%
+export function formatChance(chance) {
+  const percent = chance * 100
+  if (percent >= 1) return `${formatDecimal(percent, 1)}%`
+  if (percent >= 0.001) return `${Number(percent.toPrecision(3))}%`
+  return `${percent.toExponential(2)}%`
+}
+
+// How many times more of something: 1.06, 4.08, 504, 43,600, 1.31e7
+export function formatTimesMore(value) {
+  if (value < 100) return formatDecimal(value, 2)
+  if (value < 1e6) return Math.round(value).toLocaleString()
+  return formatMulti(value)
+}
+
+// Seconds as a rough wait: 45 min, 22 h, 27.4 days, 3.1 years, 1,000+ years
+export function formatWait(seconds) {
+  if (!Number.isFinite(seconds)) return 'never'
+  const hours = seconds / 3600
+  if (hours < 1) return `${Math.max(1, Math.round(seconds / 60))} min`
+  if (hours < 48) return `${formatDecimal(hours, 1)} h`
+  const days = hours / 24
+  if (days < 365) return `${formatDecimal(days, 1)} days`
+  const years = days / 365
+  return years < 1000 ? `${formatDecimal(years, 1)} years` : '1,000+ years'
 }
 
 // Fills a bonus text's placeholders: { = value, } = multiplier, $ = rounded-up value
@@ -439,7 +468,9 @@ const LIL_OVERGROWTH_ACHIEVEMENT = 355
 const CROP_EVO_SUSHI = 35
 const CROP_EVO_BALLOT = 29
 const CROP_EVO_STAMP_EFFECT = 'Crop Evolution Chance'
-const CROP_EVO_BUTTON = 7
+// The game's crop evo formula reads Button slot 5, even though the name list labels slot 7
+// "Crop Evo" (same as Toolbox; checked against the in-game Crop Evolution Multi)
+const CROP_EVO_BUTTON = 5
 const CROP_EVO_STICKER = 4
 
 function source(id, label, system, multi, extra = {}) {
@@ -544,9 +575,7 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = 
       note: 'Average plot rank',
     }),
     ...sproutlucks.map(i => source(`sproutluck${i}`, exoticMarketMap[i].label, 'Exotic market', 1 + getExoticBonus(farming, i) / 100)),
-    source('button', 'The Button', 'Button (W7)', 1 + getButtonBonus(snapshot, CROP_EVO_BUTTON) / 100, {
-      note: "Uses the game data's Crop Evo slot (Toolbox reads a different one)",
-    }),
+    source('button', 'The Button', 'Button (W7)', 1 + getButtonBonus(snapshot, CROP_EVO_BUTTON) / 100),
     source('sticker', 'Crop Evo sticker', 'Research (W7)', 1 + getStickerBonus(snapshot, CROP_EVO_STICKER) / 100),
     source('geneology', 'Geneology I-V', 'Exotic market', 1 + geneology / 100, {
       note: `Farming LV ${farmingLevel}`,
@@ -557,5 +586,283 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = 
   return {
     sources,
     total: sources.reduce((product, s) => product * s.multi, 1),
+    // Evolution Boost % per plot rank and the average rank the total uses, so callers can
+    // swap in one plot's own rank (getCropPushOutlook)
+    perRankBonus: b(0),
+    avgRank,
   }
+}
+
+// ── Next Crop Outlook ─────────────────────────────────────────────────────────
+// How long until the next undiscovered crop, if every plot is planted with its seed.
+// Each growth cycle, every plot rolls once to evolve one tier up its seed's chain (Toolbox
+// getCropEvolution): chance = 30% × decay^tier × the plot's evo multi, capped at 100%.
+// A fresh plant starts at tier 0, so even certain steps take one growth each.
+
+export const LAST_CROP_ID = seedInfo[seedInfo.length - 1].cropIdMax
+export const TOTAL_CROPS = LAST_CROP_ID + 1
+// The game fills every seed's base chance with Basic's (Toolbox: SeedInfo[0][5])
+const EVO_BASE_CHANCE = seedInfo[0].nextCropChance
+const MEDAL_SEED = 6
+const MEDAL_GROWTH_SECONDS = 25200 // Medal growth ignores growth speed
+const HORIZON_CYCLES = 5000
+const SPEED_GMO_STOCK = 1000
+const GROWTH_EXOTIC = 30 // Gogogrow
+
+// Growth speed multiplier (Toolbox updateFarming): Speed GMO × (Nutritious Soil + vial + exotic) × summoning
+export function getGrowthRate(snapshot) {
+  const farming = snapshot?.farming
+  const market = farming?.marketLevels ?? []
+  const counts = farming?.gmoCropCounts ?? {}
+  const superGmo = 1 + (market[15] ?? 0) * 0.5 * (counts[100000] ?? 0) / 100
+  const speedGmo = superGmo * (1 + (market[10] ?? 0) * 0.3 * (counts[SPEED_GMO_STOCK] ?? 0) / 100)
+  const soil = market[2] ?? 0
+  const vial = getVialBonusByStat(snapshot, '6FarmSpd').value
+  const summoning = getWinnerBonusByName(snapshot, '<x Farming SPD')
+  return Math.max(1, speedGmo)
+    * (1 + (soil + vial + getExoticBonus(farming, GROWTH_EXOTIC)) / 100)
+    * (1 + summoning / 100)
+}
+
+// Real seconds per growth cycle for a seed
+export function getGrowthSeconds(snapshot, seedType) {
+  if (seedType === MEDAL_SEED) return MEDAL_GROWTH_SECONDS
+  return 14400 * Math.pow(1.5, seedType) / getGrowthRate(snapshot)
+}
+
+const stepChance = (seed, tier, multi) => Math.min(1, EVO_BASE_CHANCE * Math.pow(seed.nextCropDecay, tier) * multi)
+
+// Crop ids not in the depot yet, lowest first (never past the last crop)
+export function getUndiscoveredCrops(farming) {
+  const depot = farming?.cropDepot ?? {}
+  const missing = []
+  for (let id = 0; id <= LAST_CROP_ID; id++) {
+    if (!depot[String(id)]) missing.push(id)
+  }
+  return missing
+}
+
+// Steps one plot's tier distribution forward a growth at a time (one roll per growth) and calls
+// onCycle(cycle, dist) after each, where dist[tier] = chance the plot sits at that tier.
+function walkPlot(seed, startTier, multi, maxTier, cycles, onCycle) {
+  let dist = new Float64Array(maxTier + 1)
+  dist[Math.min(startTier, maxTier)] = 1
+  const chances = Array.from({ length: maxTier }, (_, tier) => stepChance(seed, tier, multi))
+  for (let cycle = 1; cycle <= cycles; cycle++) {
+    const next = new Float64Array(maxTier + 1)
+    next[maxTier] = dist[maxTier]
+    for (let tier = 0; tier < maxTier; tier++) {
+      const moved = dist[tier] * chances[tier]
+      next[tier] += dist[tier] - moved
+      next[tier + 1] += moved
+    }
+    dist = next
+    onCycle(cycle, dist)
+  }
+}
+
+// One plot's evo multi: the breakdown total uses the average plot rank, so swap in this plot's
+function plotMulti(evo, rank) {
+  const avgTerm = 1 + evo.perRankBonus * evo.avgRank / 100
+  return evo.total / avgTerm * (1 + evo.perRankBonus * rank / 100)
+}
+
+// Unlocked plots grouped by (rank, starting tier), planted with `seed`: plots already growing it
+// keep their tier, the rest start fresh
+function plotGroups(farming, seed) {
+  const ranks = farming?.farmingRanks ?? []
+  const groups = new Map()
+  ;(farming?.plots ?? []).filter(plot => !plot.isLocked).forEach(plot => {
+    const rank = ranks[plot.index] ?? 0
+    const start = plot.seedType === seed.seedId ? plot.cropType : 0
+    const key = `${rank}|${start}`
+    const group = groups.get(key) ?? { rank, start, size: 0 }
+    group.size++
+    groups.set(key, group)
+  })
+  return [...groups.values()]
+}
+
+// Insta grows: each finishes one plot's growth on the spot, so it's one extra evolution roll.
+// FarmUpg[19] = banked; the Instagrow Generator (gem shop 139) adds 2 a day per purchase.
+// Mass Irrigation (talent 205) makes an insta grow also grow every plot above and below it, so one
+// insta grow covers a whole column: one plot per row of 9 (4 on a full 36-plot farm).
+const INSTAGROW_GENERATOR = 139
+const INSTAGROWS_PER_PURCHASE = 2
+const PLOTS_PER_ROW = 9
+
+export function getInstaGrows(snapshot) {
+  const plotCount = snapshot?.farming?.plots?.length ?? 0
+  const columnSize = getAccountTalentLevel(snapshot, MASS_IRRIGATION_TALENT).value > 0
+    ? Math.max(1, Math.ceil(plotCount / PLOTS_PER_ROW))
+    : 1
+  return {
+    banked: Math.max(0, Math.floor(snapshot?.farming?.instaGrow ?? 0)),
+    daily: INSTAGROWS_PER_PURCHASE * getGemShopPurchases(snapshot?.gemShop, INSTAGROW_GENERATOR),
+    // Plots each insta grow rolls for
+    plotsPerInsta: columnSize,
+  }
+}
+
+// reach[t][n] = chance one plot of the group has reached tiers[t] after n rolls
+function reachByRolls(seed, group, evo, tiers, rolls) {
+  const maxTier = Math.max(...tiers)
+  const reach = tiers.map(() => new Float64Array(rolls + 1))
+  tiers.forEach((tier, t) => {
+    reach[t][0] = Math.min(group.start, maxTier) >= tier ? 1 : 0
+  })
+  walkPlot(seed, group.start, plotMulti(evo, group.rank), maxTier, rolls, (roll, dist) => {
+    let reached = 0
+    let t = tiers.length - 1
+    // Sum dist from the top down, reading off each target tier on the way
+    for (let tier = maxTier; tier >= 0 && t >= 0; tier--) {
+      reached += dist[tier]
+      while (t >= 0 && tiers[t] === tier) {
+        reach[t][roll] = Math.min(1, reached)
+        t--
+      }
+    }
+  })
+  return reach
+}
+
+// Smallest n with values[n] at or above the target, or null
+function firstAtLeast(values, target) {
+  for (let n = 0; n < values.length; n++) {
+    if (values[n] >= target) return n
+  }
+  return null
+}
+
+// Outlook for the next `count` undiscovered crops (stops at the last crop), assuming every unlocked
+// plot is planted with the crop's seed. evo = getCropEvolutionBreakdown(). With insta grows, they all
+// go into one plot, or one column with Mass Irrigation (the best-ranked plots stand in for its
+// ranks): it climbs fastest, and once it's one tier below, every insta grow is another roll for
+// each of its plots. Each crop:
+//   chance          best plot's odds per roll of evolving into it
+//   multiNeeded     x more evo multi for a sure roll (1 if already sure)
+//   climbCycles     sure growths from a fresh plant before the first uncertain roll
+//   lastRollCycles  growths until any plot evolves, once every plot is one tier below
+//   medianCycles    growths until a 50% chance, without insta grows
+//   instaMedianCycles  the same, spending insta grows (0 = right away with the banked ones)
+//   instaFor50/90   insta grows on that plot/column for a 50% / 90% chance right away (rough when huge)
+//   focusPlots      plots each insta grow rolls for (4 with Mass Irrigation on a full farm)
+export function getCropPushOutlook(snapshot, evo, { count = 10 } = {}) {
+  const farming = snapshot?.farming
+  const insta = getInstaGrows(snapshot)
+  const targets = getUndiscoveredCrops(farming).slice(0, count)
+  const bySeed = new Map()
+  targets.forEach(cropId => {
+    const seed = getSeedByCropId(cropId)
+    bySeed.set(seed, [...(bySeed.get(seed) ?? []), cropId])
+  })
+
+  return [...bySeed.entries()].flatMap(([seed, cropIds]) => {
+    const groups = plotGroups(farming, seed)
+    const plotCount = groups.reduce((sum, group) => sum + group.size, 0)
+    const growthSeconds = getGrowthSeconds(snapshot, seed.seedId)
+    const instaPerGrowth = insta.daily * growthSeconds / 86400
+    const tiers = cropIds.map(cropId => cropId - seed.cropIdMin)
+    // The insta grow plot: the best-ranked, furthest along
+    const focus = groups.reduce((best, group, g) => {
+      const top = groups[best]
+      return group.rank > top.rank || (group.rank === top.rank && group.start > top.start) ? g : best
+    }, 0)
+    // Rolls to walk: the horizon's natural growths, plus every insta grow it could add for the insta plot
+    const rolls = HORIZON_CYCLES + insta.banked + Math.ceil(instaPerGrowth * HORIZON_CYCLES)
+    const reaches = groups.map((group, g) => reachByRolls(seed, group, evo, tiers, g === focus ? rolls : HORIZON_CYCLES))
+    const bestMulti = plotMulti(evo, groups[focus]?.rank ?? 0)
+    // Plots the insta grows land on, and how many plots of each group are left rolling naturally
+    const focusPlots = Math.min(insta.plotsPerInsta, plotCount)
+    let toTake = focusPlots
+    const restSizes = groups.map(group => group.size)
+    ;[focus, ...groups.keys()].forEach(g => {
+      const taken = Math.min(toTake, restSizes[g])
+      restSizes[g] -= taken
+      toTake -= taken
+    })
+    // Insta grows banked by the time of growth c: the bank plus every daily grant so far
+    const instaBy = cycle => insta.banked + insta.daily * Math.floor(cycle * growthSeconds / 86400)
+    let climbCycles = 0
+    while (climbCycles < seed.cropIdMax - seed.cropIdMin && stepChance(seed, climbCycles, bestMulti) >= 1) climbCycles++
+
+    return cropIds.map((cropId, t) => {
+      const tier = tiers[t]
+      const chance = tier > 0 ? stepChance(seed, tier - 1, bestMulti) : 1
+      const base = tier > 0 ? EVO_BASE_CHANCE * Math.pow(seed.nextCropDecay, tier - 1) : 1
+      const lastRollRate = groups.reduce((sum, group) => (
+        sum + group.size * (tier > 0 ? stepChance(seed, tier - 1, plotMulti(evo, group.rank)) : 1)
+      ), 0)
+      const lastRollCycles = lastRollRate > 0 ? 1 / Math.min(1, lastRollRate) : Infinity
+
+      // Chance nobody has it yet after `cycle` natural growths (focusRolls for the insta plots)
+      const focusReach = reaches[focus]?.[t] ?? new Float64Array(1)
+      const notYet = (cycle, focusRolls) => groups.reduce((product, group, g) => (
+        product * Math.pow(1 - reaches[g][t][cycle], restSizes[g])
+      ), Math.pow(1 - focusReach[Math.min(focusReach.length - 1, focusRolls)], focusPlots))
+      let medianCycles = null
+      let instaMedianCycles = null
+      for (let cycle = 0; cycle <= HORIZON_CYCLES; cycle++) {
+        if (medianCycles === null && notYet(cycle, cycle) <= 0.5) medianCycles = cycle
+        if (instaMedianCycles === null && notYet(cycle, cycle + instaBy(cycle)) <= 0.5) instaMedianCycles = cycle
+        if (medianCycles !== null && instaMedianCycles !== null) break
+      }
+      // Past the horizon: the climb plus the typical wait for the last roll
+      const climb = Math.min(climbCycles, tier)
+      medianCycles ??= climb + Math.LN2 * lastRollCycles
+      instaMedianCycles ??= climb + Math.LN2 / Math.min(1, lastRollRate + instaPerGrowth * focusPlots * chance)
+
+      // Insta grows for the focus plots to have a 50% / 90% chance between them
+      const anyFocus = Float64Array.from(focusReach, reach => 1 - Math.pow(1 - reach, focusPlots))
+      // Past the walked rolls: the climb plus the last roll's typical odds (rough)
+      const focusStart = groups[focus]?.start ?? 0
+      const beyond = target => Math.ceil(Math.max(0, climb - Math.min(focusStart, climb)) - Math.log(1 - target) / (focusPlots * chance))
+      const for50 = firstAtLeast(anyFocus, 0.5) ?? beyond(0.5)
+      const for90 = firstAtLeast(anyFocus, 0.9) ?? beyond(0.9)
+      return {
+        cropId,
+        seed,
+        tier,
+        chance,
+        multiNeeded: chance >= 1 ? 1 : 1 / (base * bestMulti),
+        climbCycles: climb,
+        lastRollCycles,
+        medianCycles,
+        instaMedianCycles: insta.banked + insta.daily > 0 ? instaMedianCycles : medianCycles,
+        instaFor50: for50,
+        instaFor90: for90,
+        growthSeconds,
+        plotCount,
+        focusPlots,
+      }
+    })
+  })
+}
+
+// Whether pushing for a crop is worth it now: sure (every roll lands), ready (your banked insta
+// grows give a 50%+ shot on one plot, or the last roll takes under a day), slow (under a week), or wait
+export const PUSH_VERDICTS = {
+  sure: { label: 'Guaranteed', hint: 'Every roll lands, so it only takes the climb.' },
+  ready: { label: 'Ready to push', hint: 'Your banked insta grows (or a last roll under a day) make it likely now.' },
+  slow: { label: 'Slow push', hint: 'The last roll takes days. Doable, but more evo multi or insta grows would speed it up a lot.' },
+  wait: { label: 'Build evo multi first', hint: 'The last roll takes over a week. Beans and evo bonuses are worth more right now.' },
+}
+
+export function getPushVerdict(outlook, instaGrows) {
+  if (outlook.chance >= 1) return 'sure'
+  if ((instaGrows?.banked ?? 0) >= outlook.instaFor50) return 'ready'
+  const lastRollSeconds = outlook.lastRollCycles * outlook.growthSeconds
+  if (lastRollSeconds <= 86400) return 'ready'
+  if (lastRollSeconds <= 7 * 86400) return 'slow'
+  return 'wait'
+}
+
+// How many times more evo multi the last roll needs so every plot together expects to land it
+// within `seconds` (1 when it already does)
+export function multiNeededWithin(outlook, seconds) {
+  const { chance, growthSeconds, plotCount, multiNeeded } = outlook
+  if (chance >= 1 || !plotCount) return 1
+  const cycles = Math.max(1, seconds / growthSeconds)
+  const target = Math.min(1, 1 / (cycles * plotCount))
+  return Math.max(1, Math.min(multiNeeded, target / chance))
 }

@@ -18,7 +18,7 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 ```
 src/
 ├── components/         # One folder per feature (see casing note below)
-│   ├── Section pages:  Breeding, Construction, Cooking, Farming, GearOptimizer,
+│   ├── Section pages:  Breeding, Bubba (static guide, data in bubbaMap.js), Construction, Cooking, Farming, GearOptimizer,
 │   │                   MasterClasses, Minibosses, Obols, Shrines, Statues, Worship
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
@@ -62,7 +62,15 @@ src/
                         #   input (waits on a typed-in value, e.g. Crop Chapter needs Tome points) / missing.
                         #   All match Toolbox on Eli's save; only partial: lab mainframe (vial, stamp, meal jewel)
                         #   is assumed connected. Tome points are a per-browser input (see tomeUtils).
-                        #   Crop Evo button bonus = index 7 in the game data (Toolbox reads index 5).
+                        #   getCropPushOutlook (Crop Evolution tab) = odds/time to the next undiscovered crops (stops at
+                        #   crop 330): one evo roll per plot per growth, chance 30% × decay^tier × plot multi (cap 100%),
+                        #   fresh plants climb one tier per growth; walks each plot's tier odds growth by growth.
+                        #   Medal growth is a fixed 7 h. Insta grows (FarmUpg[19] banked, +2/day per gem shop 139
+                        #   purchase) = one extra roll each, all modelled on one plot (getInstaGrows); with Mass
+                        #   Irrigation (talent 205) one insta grow rolls a whole column (rows of 9 → 4 plots).
+                        #   Verdict (getPushVerdict): banked insta grows cover a 50% shot, else the last-roll wait.
+                        #   global.css .dropdown-panel = shared click-to-open <details> section.
+                        #   Crop Evo reads Button slot 5 (not the slot 7 the name list calls "Crop Evo"; confirmed in game).
                         # One util per game system, each returning plain numbers or { value, missing }:
                         #   alchemyUtils (bubbles, prisma, vials), stampUtils, cookingUtils (meals), breedingUtils
                         #   (shiny levels/passives), talentUtils (account talent levels incl. added), grimoireUtils,

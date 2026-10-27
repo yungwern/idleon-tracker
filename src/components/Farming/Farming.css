@@ -761,3 +761,186 @@
   background: rgba(160, 196, 255, 0.12);
   color: #a0c4ff;
 }
+
+/* ── Next crop ── */
+
+.evo-next {
+  --verdict-color: #a0c4ff;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--verdict-color);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.evo-next--sure,
+.evo-next--ready {
+  --verdict-color: #86efac;
+}
+
+.evo-next--slow {
+  --verdict-color: #fbbf24;
+}
+
+.evo-next--wait {
+  --verdict-color: #fca5a5;
+}
+
+.evo-next-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.evo-next-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.evo-next-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.evo-next-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.evo-next-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.evo-verdict {
+  position: relative;
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--verdict-color);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: help;
+}
+
+.evo-next-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.evo-next-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.evo-next-stat--insta {
+  background: rgba(134, 239, 172, 0.05);
+}
+
+.evo-next-stat--insta .evo-next-value {
+  color: #86efac;
+}
+
+.evo-next-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+}
+
+.evo-next-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #a0c4ff;
+}
+
+.evo-next-note {
+  font-size: 10px;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+.evo-next-goal {
+  margin: 0;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.evo-next-goal strong {
+  color: #e5e7eb;
+}
+
+/* ── Crops after the next one ── */
+
+.evo-upcoming {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.evo-upcoming-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.evo-upcoming--insta .evo-upcoming-row {
+  grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(0, 1fr));
+}
+
+.evo-upcoming-row--head {
+  border-color: transparent;
+  background: none;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+}
+
+.evo-upcoming-crop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.evo-upcoming-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.evo-done {
+  margin: 0;
+  padding: 16px;
+  text-align: center;
+  color: #86efac;
+  font-size: 13px;
+}

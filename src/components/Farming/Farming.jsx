@@ -26,6 +26,16 @@ import {
   optimizeLandRanks,
   compareLandRankPlans,
   getCropEvolutionBreakdown,
+  getCropPushOutlook,
+  getInstaGrows,
+  getUndiscoveredCrops,
+  getPushVerdict,
+  multiNeededWithin,
+  PUSH_VERDICTS,
+  TOTAL_CROPS,
+  formatChance,
+  formatWait,
+  formatTimesMore,
 } from '../../utils/farmingUtils'
 import './Farming.css'
 
@@ -634,68 +644,152 @@ const STATUS_LABELS = {
 // Sources that count as 1x until something is added: show their note instead of a multi
 const isPending = status => status === 'input' || status === 'missing'
 
-function CropEvolutionTab({ snapshot }) {
-  const [tomePoints, setTomePoints] = useState(() => readSavedInput(TOME_POINTS_KEY))
-  const { sources, total } = useMemo(
-    () => getCropEvolutionBreakdown(snapshot, getRankMulti(snapshot), { tomePoints }),
-    [snapshot, tomePoints]
-  )
+const growthsText = cycles => `${formatDecimal(cycles, 1)} ${cycles === 1 ? 'growth' : 'growths'}`
+const waitText = (cycles, growthSeconds) => (cycles <= 0 ? 'Right away' : formatWait(cycles * growthSeconds))
 
-  function handleTomePointsChange(e) {
-    setTomePoints(e.target.value)
-    saveInput(TOME_POINTS_KEY, e.target.value)
-  }
-  const counts = sources.reduce((acc, s) => ({ ...acc, [s.status]: (acc[s.status] ?? 0) + 1 }), {})
+function NextCropCard({ outlook, instaGrows }) {
+  const {
+    cropId,
+    seed,
+    tier,
+    chance,
+    multiNeeded,
+    climbCycles,
+    lastRollCycles,
+    medianCycles,
+    instaMedianCycles,
+    instaFor50,
+    instaFor90,
+    growthSeconds,
+    plotCount,
+    focusPlots,
+  } = outlook
+  const verdict = getPushVerdict(outlook, instaGrows)
+  const hasInsta = instaGrows.banked + instaGrows.daily > 0
+  const seedSize = seed.cropIdMax - seed.cropIdMin + 1
+  const dayMulti = multiNeededWithin(outlook, 86400)
 
   return (
-    <div className="farming-tab">
-      <div className="farming-chip-row">
-        <StatChip
-          label="Crop Evolution Multi"
-          value={`${formatMulti(total)}x`}
-          tooltip="Every source below multiplied together. Sources that need input or aren't read yet count as 1x, so this reads low until they're filled in."
+    <div className={`evo-next evo-next--${verdict}`}>
+      <div className="evo-next-head">
+        <img
+          src={cropImgPath(cropId)}
+          alt=""
+          className="evo-next-img"
+          onError={hideBrokenImg}
         />
-        <StatChip
-          label="Exact"
-          value={counts.exact ?? 0}
-          valueClass="farming-chip-value--good"
-        />
-        <StatChip
-          label="Partial"
-          value={counts.partial ?? 0}
-          valueClass="farming-chip-value--gold"
-        />
-        {counts.input > 0 && (
-          <StatChip
-            label="Needs Input"
-            value={counts.input}
-          />
-        )}
-        {counts.missing > 0 && (
-          <StatChip
-            label="Not Read Yet"
-            value={counts.missing}
-            valueClass="farming-chip-value--bad"
-          />
-        )}
-      </div>
-
-      <div className="farming-input-row">
-        <span className="farming-input-label">Tome Points</span>
-        <input
-          type="number"
-          min="0"
-          className="farming-input"
-          placeholder="e.g. 25000"
-          value={tomePoints}
-          onChange={handleTomePointsChange}
-        />
-        <span className="farming-input-hint">
-          Your total from the game's Tome, for the Crop Chapter bubble (the save doesn't store it).
+        <div className="evo-next-title">
+          <span className="evo-next-name">Crop {cropId + 1} of {TOTAL_CROPS}</span>
+          <span className="evo-next-sub">
+            <SeedTag seed={seed} /> crop {tier + 1} of {seedSize}
+          </span>
+        </div>
+        <span className={`evo-verdict evo-verdict--${verdict} tooltip-anchor`}>
+          {PUSH_VERDICTS[verdict].label}
+          <span className="tooltip tooltip--wrap tooltip--right">{PUSH_VERDICTS[verdict].hint}</span>
         </span>
       </div>
 
-      <div className="evo-table">
+      <div className="evo-next-stats">
+        <div className="evo-next-stat">
+          <span className="evo-next-label">Evolve chance</span>
+          <span className="evo-next-value">{formatChance(chance)}</span>
+          <span className="evo-next-note">per growth, per plot</span>
+        </div>
+        <div className="evo-next-stat">
+          <span className="evo-next-label">Climb</span>
+          <span className="evo-next-value">{formatWait(climbCycles * growthSeconds)}</span>
+          <span className="evo-next-note">{growthsText(climbCycles)} of sure steps from a fresh plant</span>
+        </div>
+        <div className="evo-next-stat">
+          <span className="evo-next-label">Last roll</span>
+          <span className="evo-next-value">{chance >= 1 ? '—' : formatWait(lastRollCycles * growthSeconds)}</span>
+          <span className="evo-next-note">
+            {chance >= 1 ? 'every roll lands' : `${growthsText(lastRollCycles)} with ${plotCount} plots one tier below`}
+          </span>
+        </div>
+        {hasInsta && (
+          <div className="evo-next-stat evo-next-stat--insta">
+            <span className="evo-next-label">With insta grows</span>
+            <span className="evo-next-value">{waitText(instaMedianCycles, growthSeconds)}</span>
+            <span className="evo-next-note">
+              all on {focusPlots > 1 ? `one column (${focusPlots} plots)` : 'one plot'}: {formatBigNumber(instaFor50)} for a 50% shot, {formatBigNumber(instaFor90)} for 90%
+            </span>
+          </div>
+        )}
+        <div className="evo-next-stat">
+          <span className="evo-next-label">{hasInsta ? 'No insta grows' : 'Likely found'}</span>
+          <span className="evo-next-value">{waitText(medianCycles, growthSeconds)}</span>
+          <span className="evo-next-note">after planting (50% chance)</span>
+        </div>
+      </div>
+
+      {chance < 1 && (
+        <p className="evo-next-goal">
+          {dayMulti > 1
+            ? <>Evo multi goal: <strong>{formatTimesMore(dayMulti)}x</strong> more gets the last roll under a day</>
+            : <>The last roll is already under a day</>}
+          {' · '}
+          <strong>{formatTimesMore(multiNeeded)}x</strong> more makes every roll land
+        </p>
+      )}
+    </div>
+  )
+}
+
+function UpcomingCrops({ outlooks, hasInsta }) {
+  return (
+    <div className={`evo-upcoming${hasInsta ? ' evo-upcoming--insta' : ''}`}>
+      <div className="evo-upcoming-row evo-upcoming-row--head">
+        <span>Crop</span>
+        <span>Chance / growth</span>
+        <span>Multi for a sure roll</span>
+        {hasInsta && <span>Insta grows for 50%</span>}
+        <span>Likely found</span>
+      </div>
+      {outlooks.map(o => (
+        <div
+          key={o.cropId}
+          className="evo-upcoming-row"
+        >
+          <span className="evo-upcoming-crop">
+            <img
+              src={cropImgPath(o.cropId)}
+              alt=""
+              className="evo-upcoming-img"
+              onError={hideBrokenImg}
+            />
+            <span>
+              {o.cropId + 1}
+              <span className="evo-note"> {o.seed.name} {o.tier + 1}</span>
+            </span>
+          </span>
+          <span>{formatChance(o.chance)}</span>
+          <span>{o.multiNeeded > 1 ? `${formatTimesMore(o.multiNeeded)}x more` : 'Already sure'}</span>
+          {hasInsta && <span>{formatBigNumber(o.instaFor50)}</span>}
+          <span>{waitText(hasInsta ? o.instaMedianCycles : o.medianCycles, o.growthSeconds)}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function EvolutionSources({ sources, total }) {
+  const counts = sources.reduce((acc, s) => ({ ...acc, [s.status]: (acc[s.status] ?? 0) + 1 }), {})
+
+  return (
+    <details className="dropdown-panel">
+      <summary className="dropdown-panel-head">
+        <span className="dropdown-panel-title">Evolution Sources</span>
+        <span className="dropdown-panel-stat">{sources.length} multipliers · {formatMulti(total)}x total</span>
+        <span className="dropdown-panel-chips">
+          <span className="evo-status evo-status--exact">{counts.exact ?? 0} exact</span>
+          {counts.partial > 0 && <span className="evo-status evo-status--partial">{counts.partial} partial</span>}
+          {counts.input > 0 && <span className="evo-status evo-status--input">{counts.input} needs input</span>}
+          {counts.missing > 0 && <span className="evo-status evo-status--missing">{counts.missing} not read</span>}
+        </span>
+      </summary>
+      <div className="evo-table dropdown-panel-body">
         {sources.map(s => (
           <div
             key={s.id}
@@ -718,6 +812,99 @@ function CropEvolutionTab({ snapshot }) {
           </div>
         ))}
       </div>
+    </details>
+  )
+}
+
+function CropEvolutionTab({ snapshot }) {
+  const [tomePoints, setTomePoints] = useState(() => readSavedInput(TOME_POINTS_KEY))
+  const evo = useMemo(
+    () => getCropEvolutionBreakdown(snapshot, getRankMulti(snapshot), { tomePoints }),
+    [snapshot, tomePoints]
+  )
+  const outlooks = useMemo(() => getCropPushOutlook(snapshot, evo), [snapshot, evo])
+  const instaGrows = getInstaGrows(snapshot)
+  const hasInsta = instaGrows.banked + instaGrows.daily > 0
+  const cropsFound = TOTAL_CROPS - getUndiscoveredCrops(snapshot?.farming).length
+  const next = outlooks[0]
+
+  function handleTomePointsChange(e) {
+    setTomePoints(e.target.value)
+    saveInput(TOME_POINTS_KEY, e.target.value)
+  }
+
+  return (
+    <div className="farming-tab">
+      <div className="farming-chip-row">
+        <StatChip
+          label="Crops Found"
+          value={`${cropsFound} / ${TOTAL_CROPS}`}
+          valueClass={cropsFound >= TOTAL_CROPS ? 'farming-chip-value--good' : ''}
+        />
+        <StatChip
+          label="Crop Evolution Multi"
+          value={`${formatMulti(evo.total)}x`}
+          tooltip="Every source in Evolution Sources multiplied together, on your average plot rank. Sources that need input count as 1x until they're filled in."
+        />
+        {next && (
+          <StatChip
+            label={`${next.seed.name} Growth`}
+            value={formatWait(next.growthSeconds)}
+            tooltip="One growth = one evolution roll per plot."
+          />
+        )}
+        {hasInsta && (
+          <StatChip
+            label="Insta Grows"
+            value={`${instaGrows.banked.toLocaleString()} (+${instaGrows.daily}/day)`}
+            tooltip={`Each insta grow finishes a plot's growth on the spot: one extra evolution roll${instaGrows.plotsPerInsta > 1 ? `, for all ${instaGrows.plotsPerInsta} plots in its column thanks to Mass Irrigation` : ''}. Daily ones come from the Instagrow Generator in the gem shop.`}
+          />
+        )}
+      </div>
+
+      <div className="farming-input-row">
+        <span className="farming-input-label">Tome Points</span>
+        <input
+          type="number"
+          min="0"
+          className="farming-input"
+          placeholder="e.g. 25000"
+          value={tomePoints}
+          onChange={handleTomePointsChange}
+        />
+        <span className="farming-input-hint">
+          Your total from the game's Tome, for the Crop Chapter bubble (the save doesn't store it).
+        </span>
+      </div>
+
+      {next ? (
+        <>
+          <section className="farming-section">
+            <div className="farming-group-label">Next Crop</div>
+            <NextCropCard
+              outlook={next}
+              instaGrows={instaGrows}
+            />
+          </section>
+
+          {outlooks.length > 1 && (
+            <section className="farming-section">
+              <div className="farming-group-label">Crops After That</div>
+              <UpcomingCrops
+                outlooks={outlooks.slice(1)}
+                hasInsta={hasInsta}
+              />
+            </section>
+          )}
+        </>
+      ) : (
+        <p className="evo-done">Every crop has been found. Nothing left to evolve into!</p>
+      )}
+
+      <EvolutionSources
+        sources={evo.sources}
+        total={evo.total}
+      />
     </div>
   )
 }
@@ -743,6 +930,7 @@ export default function Farming({ snapshot }) {
           'Both score each plot the way IdleOn Toolbox does: seed ranks go to their max level, Farm EXP gets the points you reserve, and every other point goes where it raises Crop Evolution × Crop Value × Rank EXP × Overgrowth the most. Crop value stops getting points once every plot is at the cap.',
           'Market costs include your Emperor discount and Better Day / Better Night exotics. Night Market upgrades cost magic beans.',
           'The Exotic Market rotation follows the real weekly reset. Set a target in the grow order to see which on-sale crops you still need — it accounts for Better Exotic and the Buy One Get One Free legend talent.',
+          'Crop Evolution: each growth, every plot rolls once to evolve one crop up its seed (30% × the seed\'s decay per crop × your evo multi). A fresh plant climbs one crop per growth even when every roll is sure, so pushing for a new crop always costs that climb. Timings assume every unlocked plot is planted with the next crop\'s seed. Insta grows count as one extra roll each, all spent on one plot: it climbs fastest, and after that each one is another roll at the new crop. With Mass Irrigation an insta grow also grows every plot above and below, so they go on one column and roll for all of its plots.',
         ]}
       />
 
