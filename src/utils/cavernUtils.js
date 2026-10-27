@@ -1,4 +1,4 @@
-import { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel } from '../data'
+import { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel, glunkoUpgradeValues } from '../data'
 import { getZenithBonus } from './zenithUtils'
 
 // Caverns (W5 Hole) bonuses, from IdleonToolbox parsers/world-5/caverns
@@ -44,4 +44,9 @@ export function getMonumentBonus(snapshot, t, i) {
   const level = caverns?.braveryBonuses?.[Math.round(10 * t + i)] ?? 0
   if (base < 30) return level * base * multi
   return 0.1 * Math.ceil((level / (250 + level)) * 10 * base * multi)
+}
+
+// Crystal Glunko Cove upgrade t: level × value (Toolbox getCglunkoBonus)
+export function getGlunkoBonus(snapshot, t) {
+  return (snapshot?.glunko?.upgradeLevels?.[t] ?? 0) * (glunkoUpgradeValues[t] ?? 0)
 }

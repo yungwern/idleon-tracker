@@ -1,4 +1,4 @@
-import { spelunkingUpgradeMap, spelunkingTunnels, spelunkingChapterMap, spelunkingTunnelDiscoveries, amberTiers, MAX_GRAND_DISCOVERIES } from '../data'
+import { spelunkingUpgradeMap, spelunkingTunnels, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, amberTiers, MAX_GRAND_DISCOVERIES } from '../data'
 import { compoundingOutpostingMulti } from '../data/royalOutposts'
 import { growth } from './mathUtils'
 import { getMealBonusByStat } from './cookingUtils'
@@ -11,6 +11,10 @@ import { getBubbleBonus } from './alchemyUtils'
 import { getPassiveCardBonus } from './cardUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { isMeritocracyBonusSelected } from './voteUtils'
+import { getZenithBonus } from './zenithUtils'
+import { getMineheadBonus } from './mineheadUtils'
+import { getGlunkoBonus } from './cavernUtils'
+import { getActiveCharacter } from './characterUtils'
 import { formatBigNumber } from './cogBoardUtils'
 
 // Spelunking (W7), ported from IdleonToolbox parsers/world-7/spelunking.ts.
@@ -36,10 +40,31 @@ const STAMINA_RIFT_MASTERY = 5 // Rift Skill Mastery bonus 5 for Spelunking: +10
 const STAMINA_COMPOUNDING = 2 // Royal Guardian Compounding Outposting: Spelunking Stamina Regen
 const CHAPTER_ARTIFACT = 'Pointagon' // boosts every chapter bonus marked artifactBoost
 
+// Grand Discovery chance sources (Toolbox "Spelunk:GrandDiscoveries_FindChance")
+const GRAND_DISCOVERY_BASE = 4e-5
+const GD_ZENITH = 6
+const GD_JELLY = 31
+const GD_MINEHEAD = 14 // % per Spelunking LV of the played character
+const GD_SUSHI = 21 // % per Spelunking LV of the played character
+const GD_GLUNKO = 20
+const GRAND_VEIN = 238 // Royal Guardian talent: }x Grand Discovery chance
+
+// Toolkit tools: name, damage multi, and the shop upgrade that adds it (Hammer is always there).
+// The game also lists a Scepter (50x) and Mjolnir (250x); how those unlock isn't in Toolbox's data.
+const SHOP_TOOLS = [
+  { name: 'Hammer', damage: 1, upgrade: null },
+  { name: 'Mace', damage: 2, upgrade: 14 },
+  { name: 'Mallet', damage: 4, upgrade: 15 },
+  { name: 'Flail', damage: 7, upgrade: 16 },
+  { name: 'Warhammer', damage: 15, upgrade: 17 },
+]
+
 // Upgrades with a known index the page reads directly
 export const SPELUNKING_UPGRADES = {
   staminaResurgence: 5,
   overstimMeter: 6,
+  grandDiscoveries: 43,
+  manicDiscoveries: 55,
   blueAmber: 20,
   elixirTypes: 23,
   elixirSlots: 24,
@@ -128,11 +153,83 @@ export function getUpgradeBonus(spelunking, index, totals) {
 
 // Bonus of chapter bonus `i` in `chapter` (Toolbox getChapterBonus). Levels are Spelunk[8][4 × chapter + i].
 export function getChapterBonus(snapshot, chapter, i) {
-  const bonus = spelunkingChapterMap[chapter]?.[i]
+  const bonus = spelunkingChapterMap[chapter]?.bonuses?.[i]
   if (!bonus) return 0
   const level = snapshot?.spelunking?.chapterLevels?.[4 * chapter + i] ?? 0
-  const artifact = bonus.artifactBoost ? 1 + getArtifactBonus(snapshot?.sailing, CHAPTER_ARTIFACT) / 100 : 1
-  return artifact * growth(bonus.func, level, bonus.x1, bonus.x2)
+  return getChapterMulti(snapshot, bonus) * growth(bonus.func, level, bonus.x1, bonus.x2)
+}
+
+function getChapterMulti(snapshot, bonus) {
+  return bonus.artifactBoost ? 1 + getArtifactBonus(snapshot?.sailing, CHAPTER_ARTIFACT) / 100 : 1
+}
+
+const MILESTONE_PERCENTS = [50, 75, 90, 95, 99]
+
+// Every chapter bonus for the Lore tab: level, bonus, and for decay bonuses the cap, % of cap reached
+// and the levels that reach 50/75/90/95/99% of it (decay: x1 × L / (L + x2) → L = ceil(p × x2 / (1 - p)))
+export function getLoreChapters(snapshot) {
+  return spelunkingChapterMap.map((chapter, c) => ({
+    title: chapter.title,
+    index: c,
+    pagesOwned: getChapterPagesOwned(snapshot, c),
+    bonuses: chapter.bonuses.map((bonus, i) => {
+      const level = snapshot?.spelunking?.chapterLevels?.[4 * c + i] ?? 0
+      const multi = getChapterMulti(snapshot, bonus)
+      const value = multi * growth(bonus.func, level, bonus.x1, bonus.x2)
+      const isMulti = bonus.func === 'decayMulti'
+      const isDecay = bonus.func === 'decay' || isMulti
+      return {
+        ...bonus,
+        level,
+        value,
+        isMulti,
+        isDecay,
+        // decayMulti starts at 1, so its cap and progress are measured on the part above 1
+        cap: isDecay ? multi * (isMulti ? 1 + bonus.x1 : bonus.x1) : null,
+        progress: isDecay ? level / (level + bonus.x2) : null,
+        perLevel: isDecay ? null : multi * bonus.x1,
+        milestones: isDecay
+          ? MILESTONE_PERCENTS.map(percent => {
+            const milestoneLevel = Math.ceil((percent * bonus.x2) / (100 - percent))
+            return {
+              percent,
+              level: milestoneLevel,
+              value: multi * growth(bonus.func, milestoneLevel, bonus.x1, bonus.x2),
+              reached: level >= milestoneLevel,
+            }
+          })
+          : null,
+      }
+    }),
+  }))
+}
+
+// ── Grand Discoveries ─────────────────────────────────────────────────────────
+
+// Chance (0-1) of a Grand Discovery when destroying a tunnel's final object type, before the 2x-rarer-per-find
+// rule (Toolbox grandDiscoveriesChance). Uses the played character's Spelunking LV, no elixirs.
+export function getGrandDiscoveryChance(snapshot) {
+  const spelunking = snapshot?.spelunking
+  const totals = getSpelunkingTotals(snapshot)
+  const spelunkingLevel = getSkillLevel(getActiveCharacter(snapshot), 'spelunking')
+  const grandVein = Math.max(1, getAccountTalentBonus(snapshot, GRAND_VEIN).value)
+  return GRAND_DISCOVERY_BASE
+    * (1 + getUpgradeBonus(spelunking, SPELUNKING_UPGRADES.grandDiscoveries, totals) / 100)
+    * (1 + getZenithBonus(snapshot?.zenith, GD_ZENITH) / 100)
+    * (1 + getChapterBonus(snapshot, 4, 0) / 100)
+    * (1 + getJellyBonus(snapshot?.jellyOperator, GD_JELLY) / 100)
+    * (1 + (spelunkingLevel * (getMineheadBonus(snapshot?.minehead, GD_MINEHEAD) + getSushiBonus(snapshot?.sushi, GD_SUSHI))) / 100)
+    * (1 + getGlunkoBonus(snapshot, GD_GLUNKO) / 100)
+    * grandVein
+    * (1 + getUpgradeBonus(spelunking, SPELUNKING_UPGRADES.manicDiscoveries, totals) / 100)
+    * Math.max(1, getChapterBonus(snapshot, 6, 1))
+}
+
+// Best tool in the toolkit (what Min-Maxed Nova Blasts copies)
+export function getBestTool(spelunking) {
+  return SHOP_TOOLS.reduce((best, tool) => (
+    tool.upgrade === null || upgradeLevel(spelunking, tool.upgrade) >= 1 ? tool : best
+  ), SHOP_TOOLS[0])
 }
 
 // ── Stamina ───────────────────────────────────────────────────────────────────
@@ -240,7 +337,8 @@ export function getAmberTier(spelunking) {
   return { ...amberTiers[0], index: 0 }
 }
 
-// Raw amber → the number the game shows in the current tier
+// Raw amber → the number the game shows in the current tier. Once a tier is unlocked the game
+// only deals in it, so anything worth less than 1 of it shows (and counts) as 0.
 export function formatAmber(raw, tier) {
   const value = (raw ?? 0) / (tier?.worth ?? 1)
   if (!Number.isFinite(value)) return '∞'
@@ -291,10 +389,17 @@ export function getUpgradeDescription(snapshot, index, baseBonus, bonus, totals,
     case 5: // current regen rate
       text = text.replace(/\$/g, extras.staminaRegen ? (Math.round(10 * extras.staminaRegen) / 10).toString() : UNKNOWN)
       break
-    case 40: // best tool's name and damage
-    case 43: // 1 in $ Grand Discovery odds
-      text = text.replace(/[$#]/g, UNKNOWN)
+    case 40: { // best tool's name and damage
+      const tool = getBestTool(spelunking)
+      text = text.replace(/\$/g, tool.name).replace(/#/g, tool.damage.toString())
       break
+    }
+    case 43: { // 1 in $ Grand Discovery odds (past 100% the game would print "1 in 0")
+      const chance = extras.grandDiscoveryChance
+      text = text.replace(/\$/g, chance ? formatNumber(Math.max(1, 1 / chance)) : UNKNOWN)
+      if (chance >= 1) text += ` @ Base chance: ${formatNumber(100 * chance)}%, so your first finds in a tunnel are guaranteed.`
+      break
+    }
     case 6: // Overstim: % bonus amber per Overstim LV
       text = text.replace(/\$/g, formatNumber(30 + bonus))
       break
@@ -337,7 +442,10 @@ export function getSpelunkingUpgrades(snapshot, options = {}) {
   const spelunking = snapshot?.spelunking
   const totals = getSpelunkingTotals(snapshot)
   const discount = getSpelunkingCostDiscount(snapshot, options).value
-  const extras = { staminaRegen: getStaminaRegenRate(snapshot).value }
+  const extras = {
+    staminaRegen: getStaminaRegenRate(snapshot).value,
+    grandDiscoveryChance: getGrandDiscoveryChance(snapshot),
+  }
   const amber = spelunking?.amber ?? 0
 
   return spelunkingUpgradeMap.map((upgrade, index) => {
@@ -392,6 +500,185 @@ export function getOverstim(snapshot) {
   }
 }
 
+// Each tunnel's discoveries (found or not) and the odds of its next Grand Discovery
+// (each one found makes the next 2x rarer; none after the 10th)
+export function getTunnelDiscoveries(snapshot) {
+  const found = new Set(snapshot?.spelunking?.discoveries ?? [])
+  const chance = getGrandDiscoveryChance(snapshot)
+  return spelunkingTunnels.map((name, i) => {
+    const grandFound = snapshot?.spelunking?.grandDiscoveries?.[i] ?? 0
+    const tunnel = spelunkingTunnelRocks[i]
+    const rocks = (tunnel?.rocks ?? []).map((rock, r) => ({
+      name: rock.name.replace(/_/g, ' '),
+      image: `CaveRock${SPELUNKING_ROCK_LETTERS[i]}${r}.png`,
+      found: found.has(rock.name),
+      depth: rock.depth,
+      // POW needed to destroy it (Toolbox getDiscoveryPowerReq at its first depth); scaling rocks need more deeper
+      powRequired: 100 * (tunnel?.basePow ?? 0) * rock.pow,
+      scaling: rock.scaling,
+    }))
+    return {
+      name,
+      index: i,
+      rocks,
+      foundCount: rocks.filter(rock => rock.found).length,
+      grandFound,
+      nextGrandChance: grandFound >= MAX_GRAND_DISCOVERIES ? 0 : chance / Math.pow(2, grandFound),
+    }
+  })
+}
+
+// ── Reading pages ─────────────────────────────────────────────────────────────
+
+// Pages of chapter c owned: Spelunking<c> items in storage and every character's inventory
+export function getChapterPagesOwned(snapshot, chapter) {
+  const key = `Spelunking${chapter}`
+  const inStorage = snapshot?.storage?.items?.[key] ?? 0
+  return (snapshot?.characters ?? []).reduce((total, character) => {
+    const item = character?.inventory?.[key]
+    return total + (Array.isArray(item) ? 0 : item?.qty ?? 0)
+  }, inStorage)
+}
+
+const READ_LEVEL_CHAPTER = [3, 3] // Chapter 4 bonus 4: +% extra Chapter LVs from Pages
+
+// Multiplier on LVs gained per read (Chapter 4's extra Chapter LVs bonus)
+export function getReadMulti(snapshot) {
+  return 1 + getChapterBonus(snapshot, ...READ_LEVEL_CHAPTER) / 100
+}
+
+// Pages needed for a `level` read: the guide's table up to LV 30, then the same curve rounded up
+// (gives 5,564,069 for LV 31, the exact read confirmed in game)
+export function getReadPages(level) {
+  const known = spelunkingReadLevels.find(row => row.level === level)
+  if (known) return known.pages
+  const last = spelunkingReadLevels[spelunkingReadLevels.length - 1]
+  return Math.ceil(last.pages * Math.pow(READ_LEVEL_GROWTH, level - last.level))
+}
+
+// LVs a `level` read actually gives with the extra Chapter LVs bonus. `guaranteed` rounds down; the
+// fraction of `exact` is the chance of one more LV (confirmed in game: 34.4 gave 34 one read, 35 another).
+function readGain(level, multi) {
+  const exact = level * multi
+  return {
+    exact,
+    guaranteed: Math.floor(exact + 1e-9),
+  }
+}
+
+// Read LV for any stack size (continuous: pages between whole LVs still count). Fitted on the guide's
+// LV 17-30 and confirmed in game up to ~LV 36; the guide's LV 16 (25,000) sits a little off the curve.
+export function getReadLevel(pages) {
+  if (!(pages > 0)) return 0
+  const last = spelunkingReadLevels[spelunkingReadLevels.length - 1]
+  return Math.max(0, last.level + Math.log(pages / last.pages) / Math.log(READ_LEVEL_GROWTH))
+}
+
+// What one read of `pages` gives: read LV, LVs with the extra Chapter LVs bonus (rounded down), and the
+// chance (0-1) of one more
+export function getReadResult(snapshot, pages) {
+  const level = getReadLevel(pages)
+  const gain = readGain(level, getReadMulti(snapshot))
+  return {
+    level,
+    ...gain,
+    chance: gain.exact - gain.guaranteed,
+  }
+}
+
+// Page reads allowed per day, shared by every chapter: 5, +3 with Rift Skill Mastery bonus 4 for Spelunking
+const PAGE_READS_MASTERY = 4
+export function getMaxDailyReads(snapshot) {
+  return 5 + (isSkillMasteryBonusUnlocked(snapshot, 'spelunking', PAGE_READS_MASTERY) ? 3 : 0)
+}
+
+// "34.4M", "500k", "1,250,000" → pages (0 if unreadable)
+export function parsePages(text) {
+  const match = String(text ?? '').trim().toLowerCase().replace(/,/g, '').match(/^(\d*\.?\d+)\s*([kmb])?$/)
+  if (!match) return 0
+  const scale = { k: 1e3, m: 1e6, b: 1e9 }[match[2]] ?? 1
+  return Math.floor(Number(match[1]) * scale)
+}
+
+// Spending `pages` of chapter `chapter` over `reads` reads. An even split always gives the most LVs
+// (each read's LVs grow with log(pages), so smaller stacks are worth more per page). Returns the stack
+// per read, LVs per read and in total, which bonuses the stack opens up and the LVs each can expect,
+// and what one read of everything would give instead.
+export function planReads(snapshot, chapter, pages, reads) {
+  const count = Math.max(1, Math.floor(reads))
+  const perRead = Math.floor(pages / count)
+  const read = getReadResult(snapshot, perRead)
+  const bonuses = spelunkingChapterMap[chapter]?.bonuses ?? []
+  const open = bonuses.filter(bonus => perRead >= bonus.pages).length
+  const odds = open > 0 ? getReadOdds(open) : []
+  return {
+    reads: count,
+    perRead,
+    read,
+    totalExact: read.exact * count,
+    totalGuaranteed: read.guaranteed * count,
+    belowGuide: perRead > 0 && perRead < spelunkingReadLevels[0].pages,
+    bonuses: bonuses.map((bonus, i) => ({
+      name: bonus.name,
+      pages: bonus.pages,
+      open: i < open,
+      chance: odds[i] ?? 0,
+      expected: ((odds[i] ?? 0) / 100) * read.exact * count,
+    })),
+    single: getReadResult(snapshot, pages),
+  }
+}
+
+// How long to make a chapter's pages last. Every day uses all daily reads with equal stacks, which always
+// gets the most LVs; spreading over more days means smaller stacks (more LVs in total, fewer per day).
+export const READ_SPREADS = [
+  { days: 1, label: 'Today' },
+  { days: 3, label: '3 days' },
+  { days: 7, label: '1 week' },
+  { days: 14, label: '2 weeks' },
+  { days: 30, label: '1 month' },
+]
+
+// `readsPerDay` = how many of the day's reads (shared by every chapter) go to this chapter.
+// Stacks are kept at the guide's smallest read (25,000) or more: fewer reads if the pages run short.
+export function planSpread(snapshot, chapter, pages, days, readsPerDay) {
+  const dailyReads = Math.max(1, Math.min(getMaxDailyReads(snapshot), readsPerDay ?? Infinity))
+  const minStack = spelunkingReadLevels[0].pages
+  const wanted = dailyReads * days
+  const reads = Math.max(1, Math.min(wanted, Math.floor(pages / minStack)))
+  const plan = planReads(snapshot, chapter, pages, reads)
+  return {
+    ...plan,
+    days,
+    dailyReads,
+    capped: reads < wanted,
+    tooFew: pages < minStack,
+    perDay: plan.read.exact * Math.min(dailyReads, reads),
+  }
+}
+
+// Pages for each whole read LV from 16 up to `maxLevel` (past the guide's LV 30 they're `extended`)
+export function getReadLevelTable(snapshot, maxLevel = 35) {
+  const multi = getReadMulti(snapshot)
+  const first = spelunkingReadLevels[0].level
+  return Array.from({ length: Math.max(0, maxLevel - first + 1) }, (_, i) => {
+    const level = first + i
+    return {
+      level,
+      pages: getReadPages(level),
+      ...readGain(level, multi),
+      extended: level > spelunkingReadLevels[spelunkingReadLevels.length - 1].level,
+    }
+  })
+}
+
+
+
+// Chance (%) bonus i is boosted when a read unlocks `unlocked` of the chapter's bonuses
+export function getReadOdds(unlocked) {
+  return spelunkingReadOdds[Math.max(1, Math.min(spelunkingReadOdds.length, unlocked)) - 1]
+}
+
 // Headline numbers for the Spelunking overview strip
 export function getSpelunkingSummary(snapshot) {
   const spelunking = snapshot?.spelunking
@@ -405,7 +692,7 @@ export function getSpelunkingSummary(snapshot) {
     tunnelsCleared: (spelunking?.loreBossesDefeated ?? []).slice(0, tunnels).filter(Boolean).length,
     tunnels,
     maxGrandDiscoveries: tunnels * MAX_GRAND_DISCOVERIES,
-    maxDiscoveries: spelunkingTunnelDiscoveries.reduce((total, count) => total + count, 0),
+    maxDiscoveries: spelunkingTunnelRocks.reduce((total, tunnel) => total + tunnel.rocks.length, 0),
     overstim: getOverstim(snapshot),
     manicUnlocked: upgradeLevel(spelunking, SPELUNKING_UPGRADES.manicMode) >= 1,
     manicMode: spelunking?.manicMode ?? false,
@@ -418,6 +705,9 @@ export function getSpelunkingSummary(snapshot) {
       bestDepth: spelunking?.bestDepths?.[i] ?? 0,
       bestManicDepth: spelunking?.bestManicDepths?.[i] ?? 0,
       grandDiscoveries: spelunking?.grandDiscoveries?.[i] ?? 0,
+      biggestHaul: spelunking?.biggestHauls?.[i] ?? 0,
+      loreBoss: spelunkingLoreBosses[i] ?? null,
     })),
+    tunnelDiscoveries: getTunnelDiscoveries(snapshot),
   }
 }

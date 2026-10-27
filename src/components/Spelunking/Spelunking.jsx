@@ -2,12 +2,15 @@ import { useMemo, useState } from 'react'
 import { spelunkingUpgradeGroups, spelunkingUpgradeMap, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES } from '../../data'
 import { getSpelunkingSummary, getSpelunkingUpgrades, formatAmber } from '../../utils/spelunkingUtils'
 import { getMaxPossibleTalentLevel } from '../../utils/talentUtils'
+import { formatBigNumber } from '../../utils/cogBoardUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
+import LoreTab from './LoreTab'
 import './Spelunking.css'
 
 const TABS = [
   { id: 'upgrades', label: 'Shop Upgrades' },
   { id: 'tunnels', label: 'Tunnels' },
+  { id: 'lore', label: 'Lore' },
 ]
 
 const hideBrokenImg = e => {
@@ -130,11 +133,91 @@ function Overview({ summary }) {
 // TUNNELS TAB
 // ============================================================
 
+// Defeated: the reward it gave. Not yet: hidden behind a button so it isn't spoiled.
+function LoreBossReward({ boss, defeated }) {
+  const [revealed, setRevealed] = useState(false)
+  const showReward = defeated || revealed
+
+  return (
+    <div className={`spelunk-lore${defeated ? ' spelunk-lore--defeated' : ''}`}>
+      <div className="spelunk-lore-head">
+        <span className="spelunk-lore-label">
+          {defeated ? '✓ Lore Boss Defeated' : `Lore Boss · Depth ${boss.depth}`}
+        </span>
+        {!defeated && (
+          <button
+            type="button"
+            className="spelunk-lore-btn"
+            onClick={() => setRevealed(!revealed)}
+          >
+            {revealed ? 'Hide reward' : 'Show reward'}
+          </button>
+        )}
+      </div>
+      {showReward && boss.reward.map(line => (
+        <p
+          key={line}
+          className="spelunk-lore-line"
+        >
+          {line}
+        </p>
+      ))}
+    </div>
+  )
+}
+
+// 1 / chance: "1 in 1.3", "1 in 42"
+function oneIn(chance) {
+  const n = 1 / chance
+  return n < 10 ? (Math.round(n * 10) / 10).toString() : formatCount(n)
+}
+
+const formatPow = value => (value >= 1e7 ? formatBigNumber(value) : formatCount(value))
+
+// Click-to-open list of a tunnel's discoveries with the POW each one needs
+function TunnelDiscoveries({ discoveries }) {
+  const complete = discoveries.foundCount >= discoveries.rocks.length
+  return (
+    <details className="dropdown-panel spelunk-disc">
+      <summary className="dropdown-panel-head spelunk-disc-head">
+        <span className="dropdown-panel-title">Discoveries</span>
+        <span className={`spelunk-disc-count${complete ? ' spelunk-disc-count--done' : ''}`}>
+          {discoveries.foundCount} / {discoveries.rocks.length}
+        </span>
+      </summary>
+      <div className="dropdown-panel-body spelunk-disc-body">
+        {discoveries.rocks.map(rock => (
+          <div
+            key={rock.name}
+            className={`spelunk-disc-row${rock.found ? '' : ' spelunk-disc-row--missing'}`}
+          >
+            <span className="spelunk-disc-icon">
+              <img
+                src={`images/spelunking/${rock.image}`}
+                alt=""
+                className="spelunk-disc-img"
+                onError={hideBrokenImg}
+              />
+            </span>
+            <span className="spelunk-disc-name">{rock.name}</span>
+            <span className={`spelunk-disc-pow${rock.scaling ? ' tooltip-anchor' : ''}`}>
+              {formatPow(rock.powRequired)}{rock.scaling ? '+' : ''} POW
+              {rock.scaling && <span className="tooltip tooltip--right">Needs more POW the deeper it shows up</span>}
+            </span>
+          </div>
+        ))}
+      </div>
+    </details>
+  )
+}
+
 function TunnelsTab({ summary }) {
   return (
     <div className="spelunk-tunnel-grid">
       {summary.tunnelList.map((tunnel, i) => {
         const gdDone = tunnel.grandDiscoveries >= MAX_GRAND_DISCOVERIES
+        const discoveries = summary.tunnelDiscoveries[i]
+        const nextChance = discoveries?.nextGrandChance ?? 0
         return (
           <div
             key={tunnel.name}
@@ -157,15 +240,12 @@ function TunnelsTab({ summary }) {
                 <span className="spelunk-tunnel-index">Tunnel {i + 1}</span>
                 <span className="spelunk-tunnel-name">{tunnel.name}</span>
               </div>
-              <div className="spelunk-tunnel-boss tooltip-anchor">
-                <img
-                  src={`images/spelunking/CaveBoss${i}.png`}
-                  alt=""
-                  className={`spelunk-tunnel-boss-img${tunnel.cleared ? '' : ' spelunk-tunnel-boss-img--alive'}`}
-                  onError={hideBrokenImg}
-                />
-                <span className="tooltip tooltip--right">{tunnel.cleared ? 'Lore boss defeated' : 'Lore boss not defeated'}</span>
-              </div>
+              <img
+                src={`images/spelunking/CaveBoss${i}.png`}
+                alt=""
+                className={`spelunk-tunnel-boss-img${tunnel.cleared ? '' : ' spelunk-tunnel-boss-img--alive'}`}
+                onError={hideBrokenImg}
+              />
             </div>
             <div className="spelunk-tunnel-body">
               <div className="spelunk-tunnel-row">
@@ -179,12 +259,39 @@ function TunnelsTab({ summary }) {
                 </div>
               )}
               <div className="spelunk-tunnel-row">
+                <span>Biggest Haul</span>
+                <span className="spelunk-tunnel-value spelunk-tunnel-haul">
+                  <AmberIcon
+                    tier={summary.amberTier}
+                    small
+                  />
+                  {formatAmber(tunnel.biggestHaul, summary.amberTier)}
+                </span>
+              </div>
+              <div className="spelunk-tunnel-row">
                 <span>Grand Discoveries</span>
                 <span className={`spelunk-tunnel-value${gdDone ? ' spelunk-tunnel-value--done' : ''}`}>
                   {tunnel.grandDiscoveries} / {MAX_GRAND_DISCOVERIES}
                 </span>
               </div>
+              {!gdDone && nextChance > 0 && (
+                <div className="spelunk-tunnel-row">
+                  <span>Next Grand Discovery</span>
+                  <span className="spelunk-tunnel-value">
+                    {nextChance >= 1 ? 'Guaranteed' : `${(Math.round(nextChance * 10000) / 100)}% (1 in ${oneIn(nextChance)})`}
+                  </span>
+                </div>
+              )}
+              {discoveries && (
+                <TunnelDiscoveries discoveries={discoveries} />
+              )}
             </div>
+            {tunnel.loreBoss && (
+              <LoreBossReward
+                boss={tunnel.loreBoss}
+                defeated={tunnel.cleared}
+              />
+            )}
           </div>
         )
       })}
@@ -390,7 +497,7 @@ export default function Spelunking({ snapshot }) {
           'Costs include your shop discounts (Woahtermelon meal, sushi, jelly and the Royal Guardian Amber Hoard talent) and are shown in your current amber color, like in game.',
           'Turn on Max Amber Hoard to see prices with Amber Hoard at the highest level your account can reach, the way you\'d set it before a shopping trip.',
           'Green upgrades are affordable with the amber you have right now. Faded ones are locked behind the upgrade named on them.',
-          'Two numbers still show as "?": Grand Discovery odds and the best tool for Nova Blasts.',
+          'Lore shows every chapter bonus with how close it is to its cap, plus each tunnel\'s discoveries and the odds of its next Grand Discovery (played character\'s Spelunking LV, no elixirs).',
         ]}
       />
 
@@ -416,6 +523,7 @@ export default function Spelunking({ snapshot }) {
         />
       )}
       {activeTab === 'tunnels' && <TunnelsTab summary={summary} />}
+      {activeTab === 'lore' && <LoreTab snapshot={snapshot} />}
     </div>
   )
 }

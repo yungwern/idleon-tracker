@@ -1059,6 +1059,19 @@ function parseSpelunking(json, optLacc) {
   }
 }
 
+// ── Minehead (W7) ─────────────────────────────────────────────────────────────
+// Research[7][4] = Minehead opponents beaten (each unlocks a bonus, see data/mineheadMap.js)
+function parseMinehead(json) {
+  const research = parseRaw(json['Research']) ?? []
+  return { opponentsBeaten: Number(research?.[7]?.[4]) || 0 }
+}
+
+// ── Crystal Glunko Cove (W5 caverns) ──────────────────────────────────────────
+// OptLacc[630 + t] = Glunko upgrade t level (values in data/cavernsMap.js glunkoUpgradeValues)
+function parseGlunko(optLacc) {
+  return { upgradeLevels: Array.from({ length: 24 }, (_, t) => Number(optLacc[630 + t]) || 0) }
+}
+
 // ── Account Options ───────────────────────────────────────────────────────────
 // OptLacc[311] = event shop purchases as save letters; OptLacc[594] = Button presses (W7)
 function parseEventShop(optLacc) {
@@ -1202,5 +1215,7 @@ export function extractSnapshot(rawJson) {
     labJewels: parseLabJewels(json),
     divinity: parseDivinity(json, charList.length),
     coralReef: parseCoralReef(optLacc),
+    minehead: parseMinehead(json),
+    glunko: parseGlunko(optLacc),
   }
 }

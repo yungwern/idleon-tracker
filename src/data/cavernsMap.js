@@ -26,3 +26,7 @@ export const fountainBonusPerLevel = [
   [2, 20, 1, 1, 1, 5, 5, 1, 1, 10, 5, 5, 10, 1, 3, 2, 1, 3, 5, 1],
   [3, 30, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 2, 1],
 ]
+
+// Crystal Glunko Cove upgrades (W5 caverns): bonus = level (OptLacc[630 + t]) × value.
+// From IdleonToolbox shared-data randomList2[13] (descriptions in [12]); 20 = }x Grand Discovery Chance.
+export const glunkoUpgradeValues = [1, 15, 2, 8, 3, 1, 1, 3, 1, 10, 1, 1, 25, 3, 10, 100, 10, 25, 2, 1, 5, 150, 2, 1]

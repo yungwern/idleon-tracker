@@ -19,7 +19,7 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 src/
 ├── components/         # One folder per feature (see casing note below)
 │   ├── Section pages:  Breeding, Bubba (static guide, data in bubbaMap.js), Construction, Cooking, Farming, GearOptimizer,
-│   │                   MasterClasses, Minibosses, Obols, Shrines, Spelunking, Statues, Worship
+│   │                   MasterClasses, Minibosses, Obols, Shrines, Spelunking (+ LoreTab.jsx), Statues, Worship
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
@@ -39,7 +39,13 @@ src/
 │                       #   jellyMap, meritMap, emperorMap, artifactMap, summoningMap, cavernsMap, zenithMap,
 │                       #   starSignMap, researchMap (grid squares, observations, stickers), buttonMap,
 │                       #   divinityMap (godMap by slot), gamingMap (paletteMap), spelunkingMap (shop upgrades with
-│                       #   readable keys for Toolbox x1-x8, lore chapter bonuses, tunnel names, amber tiers).
+│                       #   readable keys for Toolbox x1-x8, lore chapters, tunnel rocks/lore bosses, amber tiers),
+│                       #   mineheadMap (opponent bonuses), cavernsMap glunkoUpgradeValues (Crystal Glunko Cove).
+│                       #   Lore page reading (spelunkingReadLevels/Odds) is from Pulse's Lore Breakpoints guide (Eli's
+│                       #   screenshot), not Toolbox. Confirmed by Eli's in-game reads: read LV is continuous
+│                       #   (30 + log(pages/3,865,564)/log(1.4394), no cap at 30), × (1 + Chapter 4 bonus 4 %), and the
+│                       #   fraction is a chance at +1 LV. 8 daily reads (with Rift mastery) are shared by all chapters.
+│                       #   Lore tab planner: equal stacks + all reads is always optimal; user picks reads/day + days.
 │                       # classes.js also has CLASS_TALENT_TABS (class lines) and CLASS_FAMILY_BONUSES.
 │                       # Data files never import utils; computed tables (e.g. ribbonData) live in utils.
 ├── hooks/              # useSaveImport.js
@@ -87,7 +93,9 @@ src/
                         #   divinityUtils (minor link bonuses), familyUtils (family bonus walk), coralReefUtils,
                         #   gamingUtils (superbits, palette), spelunkingUtils (shop upgrade bonus/cost/descriptions,
                         #   cost discount (optional max Amber Hoard), amber tier, chapter bonuses, stamina regen, overstim
-                        #   timer; all match Toolbox on Eli's save. Spelunk[1] has 15 tunnel slots, only 10 tunnels exist).
+                        #   timer, Grand Discovery odds, tunnel discoveries; all match Toolbox on Eli's save. Spelunk[1]
+                        #   has 15 tunnel slots, only 10 tunnels exist. Best Nova Blast tool only knows the 4 shop tools:
+                        #   how Scepter/Mjolnir unlock isn't in Toolbox data), mineheadUtils, cavernUtils getGlunkoBonus.
                         #   talentUtils getMaxPossibleTalentLevel = best SM_i max (book) level + added + super levels,
                         #   for talents people only fill when needed. SL_i = current talent levels, SM_i = max levels. talentUtils getAddedTalentLevels = every added level
                         #   source (Arctis, Symbols, family, Equinox...), checked against Toolbox (246 on Eli's save).

@@ -837,186 +837,499 @@ export const MAX_ELIXIR_TYPES = 12
 export const MAX_ELIXIR_SLOTS = 5
 export const MAX_ELIXIR_DUPLICATES = 4
 
-// Lore chapter bonuses: spelunkingChapterMap[chapter][i], level = Spelunk[8][4 * chapter + i].
-// bonus = growth(func, level, x1, x2), × (1 + Pointagon artifact %) when artifactBoost.
-// name: { = bonus, } = multiplier, | = line break. From IdleonToolbox shared-data spelunkingChapters.
+
+// Lore chapters: title + bonuses. Bonus i of chapter c has level Spelunk[8][4 * c + i];
+// bonus = growth(func, level, x1, x2), × (1 + Pointagon artifact %) when artifactBoost. pages = pages read
+// into the chapter before the bonus starts. name: { = bonus, } = multiplier, | = line break.
+// From IdleonToolbox shared-data spelunkingChapters + items Spelunking<c> (titles, icon Spelunking<c>.png).
 export const spelunkingChapterMap = [
-  [
-    {
-      name: '+{ Base|Spelunking Efficiency',
-      func: 'add',
-      x1: 5,
-      x2: 0,
-      artifactBoost: true,
-    },
-    {
-      name: '+{% Total|Spelunking Efficiency',
-      func: 'decay',
-      x1: 1000,
-      x2: 1000,
-      artifactBoost: true,
-    },
-    {
-      name: '+{% Faster|Spelunking Speed',
-      func: 'decay',
-      x1: 30,
-      x2: 2000,
-      artifactBoost: true,
-    },
-  ],
-  [
-    {
-      name: '+{ Base|Spelunking Efficiency',
-      func: 'add',
-      x1: 10,
-      x2: 0,
-      artifactBoost: true,
-    },
-    {
-      name: '+{%|Spelunking EXP gain',
-      func: 'decay',
-      x1: 30,
-      x2: 500,
-      artifactBoost: true,
-    },
-    {
-      name: '}x Total|Spelunking POW',
-      func: 'decayMulti',
-      x1: 4,
-      x2: 1000,
-      artifactBoost: true,
-    },
-    {
-      name: '}x Total|Amber Found',
-      func: 'decayMulti',
-      x1: 4,
-      x2: 1000,
-      artifactBoost: true,
-    },
-  ],
-  [
-    {
-      name: '+{ Max|Stamina for All Players',
-      func: 'decay',
-      x1: 25,
-      x2: 500,
-      artifactBoost: true,
-    },
-    {
-      name: '+{% Faster|Stamina Regeneration',
-      func: 'decay',
-      x1: 50,
-      x2: 600,
-      artifactBoost: true,
-    },
-    {
-      name: '{% extra|Overstim Fill Rate',
-      func: 'decay',
-      x1: 250,
-      x2: 1000,
-      artifactBoost: true,
-    },
-  ],
-  [
-    {
-      name: '+{% Max|Stamina for All Players',
-      func: 'decay',
-      x1: 10,
-      x2: 400,
-      artifactBoost: true,
-    },
-    {
-      name: '+{%|Spelunking EXP gain',
-      func: 'decay',
-      x1: 50,
-      x2: 600,
-      artifactBoost: true,
-    },
-    {
-      name: '+{% chance to|not use up Elixir',
-      func: 'decay',
-      x1: 3,
-      x2: 1000,
-      artifactBoost: true,
-    },
-    {
-      name: '{% extra|Chapter LVs from Pages',
-      func: 'decay',
-      x1: 50,
-      x2: 2000,
-      artifactBoost: true,
-    },
-  ],
-  [
-    {
-      name: '+{% Grand|Discovery Chance',
-      func: 'decay',
-      x1: 25,
-      x2: 1000,
-      artifactBoost: true,
-    },
-    {
-      name: '}x Total|Amber Found',
-      func: 'decay',
-      x1: 3,
-      x2: 3500,
-      artifactBoost: true,
-    },
-    {
-      name: '}x Total|Spelunking POW',
-      func: 'decay',
-      x1: 3,
-      x2: 3500,
-      artifactBoost: true,
-    },
-  ],
-  [
-    {
-      name: '}x Total|Spelunking POW',
-      func: 'decay',
-      x1: 10,
-      x2: 3500,
-      artifactBoost: true,
-    },
-    {
-      name: '}x Total|Amber Found',
-      func: 'decay',
-      x1: 10,
-      x2: 3500,
-      artifactBoost: true,
-    },
-    {
-      name: '+{% Faster|Stamina Regeneration',
-      func: 'decay',
-      x1: 60,
-      x2: 6000,
-      artifactBoost: true,
-    },
-  ],
-  [
-    {
-      name: '+{%|Spelunking EXP gain',
-      func: 'decay',
-      x1: 80,
-      x2: 1000,
-      artifactBoost: true,
-    },
-    {
-      name: '}x Grand|Discovery Chance',
-      func: 'decay',
-      x1: 2,
-      x2: 3000,
-      artifactBoost: true,
-    },
-    {
-      name: '}x Total|Spelunking POW',
-      func: 'decay',
-      x1: 12,
-      x2: 3500,
-      artifactBoost: true,
-    },
-  ],
+  {
+    title: 'The Fear Within',
+    bonuses: [
+      {
+        name: '+{ Base|Spelunking Efficiency',
+        func: 'add',
+        x1: 5,
+        x2: 0,
+        artifactBoost: true,
+        pages: 100,
+      },
+      {
+        name: '+{% Total|Spelunking Efficiency',
+        func: 'decay',
+        x1: 1000,
+        x2: 1000,
+        artifactBoost: true,
+        pages: 2000,
+      },
+      {
+        name: '+{% Faster|Spelunking Speed',
+        func: 'decay',
+        x1: 30,
+        x2: 2000,
+        artifactBoost: true,
+        pages: 25000,
+      },
+    ],
+  },
+  {
+    title: 'Decay Surrounds',
+    bonuses: [
+      {
+        name: '+{ Base|Spelunking Efficiency',
+        func: 'add',
+        x1: 10,
+        x2: 0,
+        artifactBoost: true,
+        pages: 100,
+      },
+      {
+        name: '+{%|Spelunking EXP gain',
+        func: 'decay',
+        x1: 30,
+        x2: 500,
+        artifactBoost: true,
+        pages: 2500,
+      },
+      {
+        name: '}x Total|Spelunking POW',
+        func: 'decayMulti',
+        x1: 4,
+        x2: 1000,
+        artifactBoost: true,
+        pages: 10000,
+      },
+      {
+        name: '}x Total|Amber Found',
+        func: 'decayMulti',
+        x1: 4,
+        x2: 1000,
+        artifactBoost: true,
+        pages: 200000,
+      },
+    ],
+  },
+  {
+    title: 'This is Gospel',
+    bonuses: [
+      {
+        name: '+{ Max|Stamina for All Players',
+        func: 'decay',
+        x1: 25,
+        x2: 500,
+        artifactBoost: true,
+        pages: 100,
+      },
+      {
+        name: '+{% Faster|Stamina Regeneration',
+        func: 'decay',
+        x1: 50,
+        x2: 600,
+        artifactBoost: true,
+        pages: 10000,
+      },
+      {
+        name: '{% extra|Overstim Fill Rate',
+        func: 'decay',
+        x1: 250,
+        x2: 1000,
+        artifactBoost: true,
+        pages: 200000,
+      },
+    ],
+  },
+  {
+    title: 'No Escape',
+    bonuses: [
+      {
+        name: '+{% Max|Stamina for All Players',
+        func: 'decay',
+        x1: 10,
+        x2: 400,
+        artifactBoost: true,
+        pages: 100,
+      },
+      {
+        name: '+{%|Spelunking EXP gain',
+        func: 'decay',
+        x1: 50,
+        x2: 600,
+        artifactBoost: true,
+        pages: 4000,
+      },
+      {
+        name: '+{% chance to|not use up Elixir',
+        func: 'decay',
+        x1: 3,
+        x2: 1000,
+        artifactBoost: true,
+        pages: 100000,
+      },
+      {
+        name: '{% extra|Chapter LVs from Pages',
+        func: 'decay',
+        x1: 50,
+        x2: 2000,
+        artifactBoost: true,
+        pages: 500000,
+      },
+    ],
+  },
+  {
+    title: 'Sunken Plunder',
+    bonuses: [
+      {
+        name: '+{% Grand|Discovery Chance',
+        func: 'decay',
+        x1: 25,
+        x2: 1000,
+        artifactBoost: true,
+        pages: 100,
+      },
+      {
+        name: '}x Total|Amber Found',
+        func: 'decay',
+        x1: 3,
+        x2: 3500,
+        artifactBoost: true,
+        pages: 80000,
+      },
+      {
+        name: '}x Total|Spelunking POW',
+        func: 'decay',
+        x1: 3,
+        x2: 3500,
+        artifactBoost: true,
+        pages: 1000000,
+      },
+    ],
+  },
+  {
+    title: 'Kelp Primeval',
+    bonuses: [
+      {
+        name: '}x Total|Spelunking POW',
+        func: 'decay',
+        x1: 10,
+        x2: 3500,
+        artifactBoost: true,
+        pages: 5000,
+      },
+      {
+        name: '}x Total|Amber Found',
+        func: 'decay',
+        x1: 10,
+        x2: 3500,
+        artifactBoost: true,
+        pages: 80000,
+      },
+      {
+        name: '+{% Faster|Stamina Regeneration',
+        func: 'decay',
+        x1: 60,
+        x2: 6000,
+        artifactBoost: true,
+        pages: 1500000,
+      },
+    ],
+  },
+  {
+    title: 'Burning Crusade',
+    bonuses: [
+      {
+        name: '+{%|Spelunking EXP gain',
+        func: 'decay',
+        x1: 80,
+        x2: 1000,
+        artifactBoost: true,
+        pages: 100,
+      },
+      {
+        name: '}x Grand|Discovery Chance',
+        func: 'decay',
+        x1: 2,
+        x2: 3000,
+        artifactBoost: true,
+        pages: 50000,
+      },
+      {
+        name: '}x Total|Spelunking POW',
+        func: 'decay',
+        x1: 12,
+        x2: 3500,
+        artifactBoost: true,
+        pages: 2000000,
+      },
+    ],
+  },
 ]
 
-// Discoveries per tunnel (Toolbox spelunkingRocks minus each tunnel's lore boss entry)
-export const spelunkingTunnelDiscoveries = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+// Discoveries per tunnel, in order (a tunnel's lore boss is its last rock, left out here). Found once the
+// name is in Spelunk[6]. Icon: CaveRock<letter><index>.png (letter '_' for tunnel 1, then a, b, c...).
+// POW required = 100 × basePow (the tunnel's first rock x7) × pow (x1); scaling rocks need more past `depth`.
+// depth = first depth the rock shows up (x6). From IdleonToolbox shared-data spelunkingRocks.
+export const spelunkingTunnelRocks = [
+  {
+    basePow: 1,
+    rocks: [
+      { name: 'Smol_Pebbles', pow: 0.01, depth: 0, scaling: false },
+      { name: 'Smooth_Rocks', pow: 0.1, depth: 2, scaling: false },
+      { name: 'Big_Stone', pow: 10, depth: 6, scaling: false },
+      { name: 'Gravel_Pile', pow: 300, depth: 11, scaling: false },
+      { name: 'Granite_Stack', pow: 5000, depth: 16, scaling: false },
+      { name: 'Stonespire', pow: 30000, depth: 20, scaling: true },
+    ],
+  },
+  {
+    basePow: 50,
+    rocks: [
+      { name: 'Stubby_Coral', pow: 0.2, depth: 0, scaling: false },
+      { name: 'Fuzzy_Fungi', pow: 0.8, depth: 2, scaling: false },
+      { name: 'Vibrant_Coral', pow: 4, depth: 7, scaling: false },
+      { name: 'Spikey_Shell', pow: 20, depth: 14, scaling: false },
+      { name: 'Seaweed_Tuft', pow: 100, depth: 20, scaling: false },
+      { name: 'Giant_Conch', pow: 300, depth: 26, scaling: false },
+      { name: 'Coralissimus', pow: 1000, depth: 31, scaling: true },
+    ],
+  },
+  {
+    basePow: 1500,
+    rocks: [
+      { name: 'Sheet_Metal', pow: 1, depth: 0, scaling: false },
+      { name: 'CTR_Television', pow: 4, depth: 3, scaling: false },
+      { name: 'Rusted_Girders', pow: 15, depth: 7, scaling: false },
+      { name: 'Corroded_Pipe', pow: 30, depth: 12, scaling: false },
+      { name: 'Sign_of_Haltage', pow: 75, depth: 17, scaling: false },
+      { name: 'E-Waste_Pile', pow: 250, depth: 24, scaling: false },
+      { name: 'Scrap_Heap', pow: 500, depth: 30, scaling: false },
+      { name: 'No_Man\'s_Crossroad', pow: 1000, depth: 35, scaling: true },
+    ],
+  },
+  {
+    basePow: 80000,
+    rocks: [
+      { name: 'Lil_Shroomie', pow: 1, depth: 0, scaling: false },
+      { name: 'Fly_Amanita', pow: 3, depth: 4, scaling: false },
+      { name: 'Toadstool_Sprouts', pow: 5, depth: 8, scaling: false },
+      { name: 'Fungi_Trunk', pow: 12, depth: 11, scaling: false },
+      { name: 'Tabletop_Shroomie', pow: 30, depth: 15, scaling: false },
+      { name: 'Speckled_Amanita', pow: 70, depth: 19, scaling: false },
+      { name: 'Toadshool_Thicket', pow: 200, depth: 25, scaling: false },
+      { name: 'Rotwood_Colony', pow: 2000, depth: 32, scaling: false },
+      { name: 'Plurabella', pow: 10000, depth: 40, scaling: true },
+    ],
+  },
+  {
+    basePow: 50000000,
+    rocks: [
+      { name: 'Cotton_Candy', pow: 1, depth: 0, scaling: false },
+      { name: 'Tiny_Teddy', pow: 3, depth: 3, scaling: false },
+      { name: 'Nacho_Box', pow: 5, depth: 7, scaling: false },
+      { name: 'Milk_Stack', pow: 20, depth: 10, scaling: false },
+      { name: 'Stuffed_Grizzly', pow: 35, depth: 15, scaling: false },
+      { name: 'Discarded_Popcorn', pow: 100, depth: 21, scaling: false },
+      { name: 'Broken_Horsey', pow: 700, depth: 28, scaling: false },
+      { name: 'Broken_Dispenser', pow: 1000, depth: 34, scaling: false },
+      { name: 'Knockdown_Tower', pow: 2500, depth: 39, scaling: false },
+      { name: 'Forgotten_Funhouse', pow: 20000, depth: 45, scaling: true },
+    ],
+  },
+  {
+    basePow: 600000000000,
+    rocks: [
+      { name: 'Skull_Pile', pow: 1, depth: 0, scaling: false },
+      { name: 'Stuck_Sword', pow: 2, depth: 4, scaling: false },
+      { name: 'Proud_Flag', pow: 15, depth: 7, scaling: false },
+      { name: 'Old_Bones', pow: 20, depth: 13, scaling: false },
+      { name: 'Wall_Remnants', pow: 200, depth: 19, scaling: false },
+      { name: 'Heroic_Remains', pow: 300, depth: 25, scaling: false },
+      { name: 'Knightly_Twohander', pow: 600, depth: 30, scaling: false },
+      { name: 'Vacant_Throne', pow: 1500, depth: 36, scaling: false },
+      { name: 'Kingdom_Flags ', pow: 5000, depth: 39, scaling: false },
+      { name: 'Fallen_Castle', pow: 20000, depth: 44, scaling: false },
+      { name: 'Monolith', pow: 110000, depth: 51, scaling: true },
+    ],
+  },
+  {
+    basePow: 200000000000000,
+    rocks: [
+      { name: 'Lil_Peeper', pow: 1, depth: 0, scaling: false },
+      { name: 'Snoozebox', pow: 3, depth: 4, scaling: false },
+      { name: 'Stuckstream', pow: 9, depth: 8, scaling: false },
+      { name: 'Stacked_Gaze', pow: 25, depth: 12, scaling: false },
+      { name: 'Upstairs', pow: 80, depth: 16, scaling: false },
+      { name: 'Oz_Mirror', pow: 300, depth: 21, scaling: false },
+      { name: 'Flowffee', pow: 1000, depth: 27, scaling: false },
+      { name: 'Ordinary_Door', pow: 5000, depth: 31, scaling: false },
+      { name: 'Grandmother_Clock', pow: 20000, depth: 35, scaling: false },
+      { name: 'Implausible_Statue', pow: 100000, depth: 40, scaling: false },
+      { name: 'Robust_Mirror', pow: 300000, depth: 49, scaling: false },
+      { name: 'Persisting_Time', pow: 1000000, depth: 56, scaling: true },
+    ],
+  },
+  {
+    basePow: 5000000000000000000,
+    rocks: [
+      { name: 'Opie', pow: 1, depth: 0, scaling: false },
+      { name: 'Bloo', pow: 2, depth: 5, scaling: false },
+      { name: 'Onyx', pow: 10, depth: 12, scaling: false },
+      { name: 'Merald', pow: 20, depth: 24, scaling: false },
+      { name: 'Gumborox', pow: 100, depth: 33, scaling: false },
+      { name: 'Beeg_Rubee', pow: 200, depth: 42, scaling: false },
+      { name: 'Chaomeraldi', pow: 500, depth: 54, scaling: false },
+      { name: 'Ammatheist', pow: 1000, depth: 68, scaling: false },
+      { name: 'Solidary_Pilar', pow: 5000, depth: 80, scaling: false },
+      { name: 'Supreme_Onyx', pow: 25000, depth: 91, scaling: false },
+      { name: 'Spagettical', pow: 150000, depth: 105, scaling: false },
+      { name: 'Flaming_Lavarock', pow: 2000000, depth: 120, scaling: false },
+      { name: 'Magnum_Opus', pow: 10000000, depth: 130, scaling: true },
+    ],
+  },
+  {
+    basePow: 8e+21,
+    rocks: [
+      { name: 'Snow', pow: 1, depth: 0, scaling: false },
+      { name: 'Keep_Out', pow: 2, depth: 5, scaling: false },
+      { name: 'Radi_Ooze', pow: 10, depth: 12, scaling: false },
+      { name: 'Smolman', pow: 20, depth: 24, scaling: false },
+      { name: 'Dead_Tree', pow: 100, depth: 33, scaling: false },
+      { name: 'Barbed_Wire', pow: 200, depth: 42, scaling: false },
+      { name: 'Small_Sonar', pow: 500, depth: 54, scaling: false },
+      { name: 'Cherno_Bile', pow: 1000, depth: 68, scaling: false },
+      { name: 'Incognisnow', pow: 5000, depth: 80, scaling: false },
+      { name: 'Labeled_Waste', pow: 25000, depth: 91, scaling: false },
+      { name: 'Artificial_Tree', pow: 150000, depth: 105, scaling: false },
+      { name: 'Contained_Impurity', pow: 2000000, depth: 120, scaling: false },
+      { name: 'Legrange_Sonar', pow: 10000000, depth: 130, scaling: false },
+      { name: 'DMK_Snowgoon', pow: 30000000, depth: 140, scaling: true },
+    ],
+  },
+  {
+    basePow: 1.75e+28,
+    rocks: [
+      { name: 'Candles', pow: 1, depth: 0, scaling: false },
+      { name: 'Lil_Jar', pow: 2, depth: 5, scaling: false },
+      { name: 'Wreath', pow: 5, depth: 12, scaling: false },
+      { name: 'Stool', pow: 10, depth: 24, scaling: false },
+      { name: 'Candlssimo', pow: 50, depth: 33, scaling: false },
+      { name: 'Vase_of_Air', pow: 125, depth: 42, scaling: false },
+      { name: 'Barrier_Rope', pow: 300, depth: 54, scaling: false },
+      { name: 'Vase_of_Thistle', pow: 750, depth: 68, scaling: false },
+      { name: 'Chair', pow: 3000, depth: 80, scaling: false },
+      { name: 'Marble_Urn', pow: 15000, depth: 91, scaling: false },
+      { name: 'Holy_Visage', pow: 60000, depth: 105, scaling: false },
+      { name: 'Candelabra', pow: 200000, depth: 120, scaling: false },
+      { name: 'Squarelumn', pow: 5000000, depth: 140, scaling: false },
+      { name: 'Crown_Jewel', pow: 20000000, depth: 160, scaling: true },
+      { name: 'Vase_of_Sanctimony', pow: 60000000, depth: 180, scaling: true },
+    ],
+  },
+]
+
+export const SPELUNKING_ROCK_LETTERS = ['_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+
+// Lore boss per tunnel: reward lines once it's defeated (Spelunk[0][i] > 0) and the depth it shows up at.
+// From IdleonToolbox shared-data generalSpelunky[14] (rewards, '@' = new line) and [7] (depth - 1).
+export const spelunkingLoreBosses = [
+  {
+    reward: [
+      'World\'s End island & Omnipotent Artifact tier unlocked in Sailing!',
+    ],
+    depth: 7,
+  },
+  {
+    reward: [
+      'Superbits in Gaming now has a 2nd page full of new upgrades!',
+    ],
+    depth: 11,
+  },
+  {
+    reward: [
+      'Cards can now be upgraded to 6-Star Majestic quality!',
+    ],
+    depth: 20,
+  },
+  {
+    reward: [
+      'Unlocks the Exotic Market tab & Medal seed type in Farming!',
+    ],
+    depth: 30,
+  },
+  {
+    reward: [
+      'Teal Summoning is now available, with new upgrades and opponents!',
+    ],
+    depth: 40,
+  },
+  {
+    reward: [
+      '+30 Max LV for Cooking Meals! ',
+      ' +1 Super Talent PTS! ',
+      ' +2 Gallery Slots!',
+    ],
+    depth: 50,
+  },
+  {
+    reward: [
+      'Sigils can be upgraded a 4th time to Ethereal! ',
+      ' Each one also gives +0.2% Prisma Bubble Multi!',
+    ],
+    depth: 70,
+  },
+  {
+    reward: [
+      'Get a brand new Shape for your Research Grid!',
+    ],
+    depth: 100,
+  },
+  {
+    reward: [
+      'Palette Colours now give 1.50x bonuses, and Palette Luck is +4% higher per Gaming LV',
+    ],
+    depth: 115,
+  },
+  {
+    reward: [
+      '1.50x chance for Marble Drops on Royal Guardians, and +50 Royal Guardian Talent PTS!',
+    ],
+    depth: 130,
+  },
+]
+
+// Reading chapter pages: holding a chapter item uses a stack of its pages to boost a random Lore Bonus.
+// Bigger stacks give more LVs per read (below), and only bonuses whose `pages` the stack meets can be picked.
+// From Pulse's Lore Breakpoints guide (Bright Hollow, patch 04.05.2026), which stops at LV 30. From LV 17 on,
+// each LV needs READ_LEVEL_GROWTH × the pages of the one before (pages ≈ 69.474 × 1.4394^LV); LV 16 is the
+// guide's 25,000. The read LV is continuous, not stepped: LV = 30 + log(pages / 3,865,564) / log(growth),
+// so pages between rows still count. LVs gained = read LV × (1 + Chapter 4's extra Chapter LVs %), and the
+// fraction is a chance at one more LV. Eli's in-game reads (extra LVs +10.97%), all matching:
+// 5,564,069 → 35 and 34 (34.40), 5,564,068 → 34 (34.40), 3,865,564 → 33 (33.29), 23,884,208 → 39 (38.84),
+// 34,378,000 → 40 (39.95, just under the LV 36 row).
+export const spelunkingReadLevels = [
+  { level: 16, pages: 25000 },
+  { level: 17, pages: 33953 },
+  { level: 18, pages: 48872 },
+  { level: 19, pages: 70346 },
+  { level: 20, pages: 101255 },
+  { level: 21, pages: 145746 },
+  { level: 22, pages: 209786 },
+  { level: 23, pages: 301964 },
+  { level: 24, pages: 434645 },
+  { level: 25, pages: 625625 },
+  { level: 26, pages: 900521 },
+  { level: 27, pages: 1296205 },
+  { level: 28, pages: 1865750 },
+  { level: 29, pages: 2685549 },
+  { level: 30, pages: 3865564 },
+]
+// (3,865,564 / 33,953)^(1/13), the guide's own LV 17 → 30 growth
+export const READ_LEVEL_GROWTH = 1.4393936865
+
+// Chance (%) each bonus is the one boosted, by how many of the chapter's bonuses the stack size unlocks:
+// spelunkingReadOdds[unlocked - 1][bonus]. Same guide.
+export const spelunkingReadOdds = [
+  [100],
+  [87.5, 12.5],
+  [54.7, 32.8, 12.5],
+  [27.3, 27.3, 32.8, 12.5],
+]

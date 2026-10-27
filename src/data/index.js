@@ -67,7 +67,7 @@ export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORD
 export { artifactMap } from './artifactMap'
 export { paletteMap } from './gamingMap'
 export { godMap } from './divinityMap'
-export { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel } from './cavernsMap'
+export { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel, glunkoUpgradeValues } from './cavernsMap'
 
 // ── World 6 ───────────────────────────────────────────────────────────────────
 export { pristineCharmMap } from './sneakingMap'
@@ -82,4 +82,5 @@ export { jellyObstructions } from './jellyMap'
 export { zenithMarketMap } from './zenithMap'
 export { researchGridSquares, researchObservationBonuses, stickerBaseBonuses } from './researchMap'
 export { buttonBonusMap } from './buttonMap'
-export { spelunkingUpgradeMap, spelunkingUpgradeGroups, spelunkingChapterMap, spelunkingTunnelDiscoveries, spelunkingTunnels, amberTiers, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES } from './spelunkingMap'
+export { mineheadOpponentBonuses } from './mineheadMap'
+export { spelunkingUpgradeMap, spelunkingUpgradeGroups, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, spelunkingTunnels, amberTiers, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES } from './spelunkingMap'
