@@ -836,3 +836,187 @@ export const MAX_GRAND_DISCOVERIES = 10
 export const MAX_ELIXIR_TYPES = 12
 export const MAX_ELIXIR_SLOTS = 5
 export const MAX_ELIXIR_DUPLICATES = 4
+
+// Lore chapter bonuses: spelunkingChapterMap[chapter][i], level = Spelunk[8][4 * chapter + i].
+// bonus = growth(func, level, x1, x2), × (1 + Pointagon artifact %) when artifactBoost.
+// name: { = bonus, } = multiplier, | = line break. From IdleonToolbox shared-data spelunkingChapters.
+export const spelunkingChapterMap = [
+  [
+    {
+      name: '+{ Base|Spelunking Efficiency',
+      func: 'add',
+      x1: 5,
+      x2: 0,
+      artifactBoost: true,
+    },
+    {
+      name: '+{% Total|Spelunking Efficiency',
+      func: 'decay',
+      x1: 1000,
+      x2: 1000,
+      artifactBoost: true,
+    },
+    {
+      name: '+{% Faster|Spelunking Speed',
+      func: 'decay',
+      x1: 30,
+      x2: 2000,
+      artifactBoost: true,
+    },
+  ],
+  [
+    {
+      name: '+{ Base|Spelunking Efficiency',
+      func: 'add',
+      x1: 10,
+      x2: 0,
+      artifactBoost: true,
+    },
+    {
+      name: '+{%|Spelunking EXP gain',
+      func: 'decay',
+      x1: 30,
+      x2: 500,
+      artifactBoost: true,
+    },
+    {
+      name: '}x Total|Spelunking POW',
+      func: 'decayMulti',
+      x1: 4,
+      x2: 1000,
+      artifactBoost: true,
+    },
+    {
+      name: '}x Total|Amber Found',
+      func: 'decayMulti',
+      x1: 4,
+      x2: 1000,
+      artifactBoost: true,
+    },
+  ],
+  [
+    {
+      name: '+{ Max|Stamina for All Players',
+      func: 'decay',
+      x1: 25,
+      x2: 500,
+      artifactBoost: true,
+    },
+    {
+      name: '+{% Faster|Stamina Regeneration',
+      func: 'decay',
+      x1: 50,
+      x2: 600,
+      artifactBoost: true,
+    },
+    {
+      name: '{% extra|Overstim Fill Rate',
+      func: 'decay',
+      x1: 250,
+      x2: 1000,
+      artifactBoost: true,
+    },
+  ],
+  [
+    {
+      name: '+{% Max|Stamina for All Players',
+      func: 'decay',
+      x1: 10,
+      x2: 400,
+      artifactBoost: true,
+    },
+    {
+      name: '+{%|Spelunking EXP gain',
+      func: 'decay',
+      x1: 50,
+      x2: 600,
+      artifactBoost: true,
+    },
+    {
+      name: '+{% chance to|not use up Elixir',
+      func: 'decay',
+      x1: 3,
+      x2: 1000,
+      artifactBoost: true,
+    },
+    {
+      name: '{% extra|Chapter LVs from Pages',
+      func: 'decay',
+      x1: 50,
+      x2: 2000,
+      artifactBoost: true,
+    },
+  ],
+  [
+    {
+      name: '+{% Grand|Discovery Chance',
+      func: 'decay',
+      x1: 25,
+      x2: 1000,
+      artifactBoost: true,
+    },
+    {
+      name: '}x Total|Amber Found',
+      func: 'decay',
+      x1: 3,
+      x2: 3500,
+      artifactBoost: true,
+    },
+    {
+      name: '}x Total|Spelunking POW',
+      func: 'decay',
+      x1: 3,
+      x2: 3500,
+      artifactBoost: true,
+    },
+  ],
+  [
+    {
+      name: '}x Total|Spelunking POW',
+      func: 'decay',
+      x1: 10,
+      x2: 3500,
+      artifactBoost: true,
+    },
+    {
+      name: '}x Total|Amber Found',
+      func: 'decay',
+      x1: 10,
+      x2: 3500,
+      artifactBoost: true,
+    },
+    {
+      name: '+{% Faster|Stamina Regeneration',
+      func: 'decay',
+      x1: 60,
+      x2: 6000,
+      artifactBoost: true,
+    },
+  ],
+  [
+    {
+      name: '+{%|Spelunking EXP gain',
+      func: 'decay',
+      x1: 80,
+      x2: 1000,
+      artifactBoost: true,
+    },
+    {
+      name: '}x Grand|Discovery Chance',
+      func: 'decay',
+      x1: 2,
+      x2: 3000,
+      artifactBoost: true,
+    },
+    {
+      name: '}x Total|Spelunking POW',
+      func: 'decay',
+      x1: 12,
+      x2: 3500,
+      artifactBoost: true,
+    },
+  ],
+]
+
+// Discoveries per tunnel (Toolbox spelunkingRocks minus each tunnel's lore boss entry)
+export const spelunkingTunnelDiscoveries = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15]

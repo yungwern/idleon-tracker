@@ -128,6 +128,30 @@ export function getAccountTalentLevel(snapshot, id) {
   }
 }
 
+// Highest level the account could put a talent at: the best character's max (book) level, plus
+// added levels (Royal Guardian talents capped by Talent Reattainment) and the super talent bonus.
+// For talents people only fill when they need them (e.g. Amber Hoard before Spelunking shopping).
+export function getMaxPossibleTalentLevel(snapshot, id) {
+  const maxBook = Math.max(0, ...(snapshot?.characters ?? []).map(character => Number(character?.talentMaxLevels?.[id]) || 0))
+  if (maxBook <= 0) return { value: 0, missing: [] }
+  const added = isBannedFromAddedLevels(id) ? 0 : capRoyalGuardianLevels(snapshot, id, getAddedTalentLevels(snapshot).value)
+  return {
+    value: maxBook + added + getSuperTalentBonus(snapshot),
+    missing: [],
+  }
+}
+
+// Bonus at getMaxPossibleTalentLevel. Returns { value, missing }.
+export function getMaxPossibleTalentBonus(snapshot, id) {
+  const stats = talentGrowthMap[id]
+  const level = getMaxPossibleTalentLevel(snapshot, id)
+  return {
+    value: stats ? growth(stats.func, level.value, stats.x1, stats.x2) : 0,
+    level: level.value,
+    missing: level.missing,
+  }
+}
+
 // The talent's bonus at the account level above. Returns { value, missing }.
 export function getAccountTalentBonus(snapshot, id) {
   const stats = talentGrowthMap[id]

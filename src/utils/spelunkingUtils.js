@@ -1,9 +1,16 @@
-import { spelunkingUpgradeMap, spelunkingTunnels, amberTiers, MAX_GRAND_DISCOVERIES } from '../data'
+import { spelunkingUpgradeMap, spelunkingTunnels, spelunkingChapterMap, spelunkingTunnelDiscoveries, amberTiers, MAX_GRAND_DISCOVERIES } from '../data'
+import { compoundingOutpostingMulti } from '../data/royalOutposts'
+import { growth } from './mathUtils'
 import { getMealBonusByStat } from './cookingUtils'
 import { getSushiBonus } from './sushiUtils'
 import { getJellyBonus } from './jellyUtils'
-import { getAccountTalentBonus } from './talentUtils'
+import { getAccountTalentBonus, getMaxPossibleTalentBonus } from './talentUtils'
 import { getSkillLevel, getTotalSkillLevel, isSkillMasteryBonusUnlocked } from './skillUtils'
+import { getArtifactBonus } from './sailingUtils'
+import { getBubbleBonus } from './alchemyUtils'
+import { getPassiveCardBonus } from './cardUtils'
+import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
+import { isMeritocracyBonusSelected } from './voteUtils'
 import { formatBigNumber } from './cogBoardUtils'
 
 // Spelunking (W7), ported from IdleonToolbox parsers/world-7/spelunking.ts.
@@ -16,11 +23,23 @@ const ROYAL_STATUES_COUNTED = 8 // AMBER_HOARD counts the first 8 Royal Statues
 const MEAL_STAT = 'SplkUpg' // Woahtermelon: % lower Spelunk costs
 const SUSHI_DISCOUNTS = [6, 27] // the bigger of these two unique sushi bonuses applies
 const JELLY_DISCOUNT = 22
-const PAGE_READS_MASTERY = 4 // Rift Skill Mastery bonus 4 for Spelunking: +3 daily page reads
 const GAME_LN10 = 2.30259 // the game's rounded ln(10), used for "digits" of the Biggest Haul
+
+// Stamina regen sources (Toolbox getStaminaRegenRate)
+const BASE_STAMINA_REGEN = 5 // per hour
+const STAMINA_MERITOCRACY = 17
+const STAMINA_LEGEND_TALENT = 30
+const STAMINA_SUSHI = 11
+const STAMINA_BUBBLE = 'c30' // FASTER_NRG (Kazam)
+const STAMINA_CARD_EFFECT = '+{% Stamina Regen (Passive)'
+const STAMINA_RIFT_MASTERY = 5 // Rift Skill Mastery bonus 5 for Spelunking: +10%
+const STAMINA_COMPOUNDING = 2 // Royal Guardian Compounding Outposting: Spelunking Stamina Regen
+const CHAPTER_ARTIFACT = 'Pointagon' // boosts every chapter bonus marked artifactBoost
 
 // Upgrades with a known index the page reads directly
 export const SPELUNKING_UPGRADES = {
+  staminaResurgence: 5,
+  overstimMeter: 6,
   blueAmber: 20,
   elixirTypes: 23,
   elixirSlots: 24,
@@ -105,6 +124,49 @@ export function getUpgradeBonus(spelunking, index, totals) {
   }
 }
 
+// ── Lore Chapters ─────────────────────────────────────────────────────────────
+
+// Bonus of chapter bonus `i` in `chapter` (Toolbox getChapterBonus). Levels are Spelunk[8][4 × chapter + i].
+export function getChapterBonus(snapshot, chapter, i) {
+  const bonus = spelunkingChapterMap[chapter]?.[i]
+  if (!bonus) return 0
+  const level = snapshot?.spelunking?.chapterLevels?.[4 * chapter + i] ?? 0
+  const artifact = bonus.artifactBoost ? 1 + getArtifactBonus(snapshot?.sailing, CHAPTER_ARTIFACT) / 100 : 1
+  return artifact * growth(bonus.func, level, bonus.x1, bonus.x2)
+}
+
+// ── Stamina ───────────────────────────────────────────────────────────────────
+
+// Stamina every character regenerates per hour (Toolbox getStaminaRegenRate). Returns { value, missing }.
+// The Meritocracy bonus amount isn't ported yet, so a week it's the winning pick is flagged missing.
+export function getStaminaRegenRate(snapshot) {
+  const spelunking = snapshot?.spelunking
+  const totals = getSpelunkingTotals(snapshot)
+  const missing = []
+  if (isMeritocracyBonusSelected(snapshot?.voteBallot, STAMINA_MERITOCRACY)) {
+    missing.push('Meritocracy stamina regen bonus (winning pick this week)')
+  }
+  const legend = getLegendTalentBonus(STAMINA_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, STAMINA_LEGEND_TALENT))
+  const rg = snapshot?.royalGuardian
+  const compounding = rg?.compoundingUnlocked && rg?.compoundingIndex === STAMINA_COMPOUNDING
+    ? compoundingOutpostingMulti(STAMINA_COMPOUNDING, rg?.outposts?.length ?? 0)
+    : 1
+  const additive = getUpgradeBonus(spelunking, SPELUNKING_UPGRADES.staminaResurgence, totals)
+    + getBubbleBonus(snapshot, STAMINA_BUBBLE)
+    + getChapterBonus(snapshot, 2, 1)
+    + getChapterBonus(snapshot, 5, 2)
+    + (isSkillMasteryBonusUnlocked(snapshot, 'spelunking', STAMINA_RIFT_MASTERY) ? 10 : 0)
+    + getPassiveCardBonus(STAMINA_CARD_EFFECT, snapshot?.cards)
+  return {
+    value: BASE_STAMINA_REGEN
+      * (1 + legend / 100)
+      * compounding
+      * (1 + getSushiBonus(snapshot?.sushi, STAMINA_SUSHI) / 100)
+      * (1 + additive / 100),
+    missing,
+  }
+}
+
 // Chance (%) that an object drops amber (Toolbox getAmberDropChance): Amber on the Rocks + Amber Be
 // Here, 10x rarer with Amber Supply Swap, capped at 80%
 export function getAmberDropChance(spelunking, totals) {
@@ -118,7 +180,9 @@ export function getAmberDropChance(spelunking, totals) {
 // Account-wide shop discount multiplier (Toolbox getSpelunkingCostDiscount):
 // Woahtermelon meal (doubled once the first character hits Spelunking LV 50), unique sushi + jelly,
 // and Royal Guardian AMBER_HOARD × total LV of the first 8 Royal Statues.
-export function getSpelunkingCostDiscount(snapshot) {
+// options.maxAmberHoard: price AMBER_HOARD at the highest level the account could reach (max book level +
+// added + super levels) instead of its current level, since people only fill it before shopping.
+export function getSpelunkingCostDiscount(snapshot, options = {}) {
   const meal = getMealBonusByStat(snapshot, MEAL_STAT)
   const firstCharacterLevel = getSkillLevel(snapshot?.characters?.[0], 'spelunking')
   const mealLevelMulti = Math.max(1, Math.min(2, 1 + Math.floor(firstCharacterLevel / 50)))
@@ -130,7 +194,9 @@ export function getSpelunkingCostDiscount(snapshot) {
 
   const statueLevels = (snapshot?.royalGuardian?.statueLevels ?? []).slice(0, ROYAL_STATUES_COUNTED)
   const statueTotal = Math.round(statueLevels.reduce((total, level) => total + (Number(level) || 0), 0))
-  const talent = getAccountTalentBonus(snapshot, AMBER_HOARD)
+  const talent = options.maxAmberHoard
+    ? getMaxPossibleTalentBonus(snapshot, AMBER_HOARD)
+    : getAccountTalentBonus(snapshot, AMBER_HOARD)
   const talentDiscount = 1 / (1 + Math.max(0, talent.value * statueTotal) / 100)
 
   return {
@@ -196,7 +262,7 @@ const UNKNOWN = '?'
 
 // Fill the description's placeholders (Toolbox replacePlaceholders). Returns one string per line.
 // A line after the first that still needs an unknown value is dropped instead of showing "?".
-export function getUpgradeDescription(snapshot, index, baseBonus, bonus, totals) {
+export function getUpgradeDescription(snapshot, index, baseBonus, bonus, totals, extras = {}) {
   const spelunking = snapshot?.spelunking
   let text = spelunkingUpgradeMap[index]?.description ?? ''
   text = text.replace(/\{/g, formatNumber(baseBonus))
@@ -222,7 +288,9 @@ export function getUpgradeDescription(snapshot, index, baseBonus, bonus, totals)
     case 56:
       text = text.replace(/\^/g, formatNumber(totals.manicDepths))
       break
-    case 5: // regen rate needs the stamina regen math
+    case 5: // current regen rate
+      text = text.replace(/\$/g, extras.staminaRegen ? (Math.round(10 * extras.staminaRegen) / 10).toString() : UNKNOWN)
+      break
     case 40: // best tool's name and damage
     case 43: // 1 in $ Grand Discovery odds
       text = text.replace(/[$#]/g, UNKNOWN)
@@ -239,12 +307,18 @@ export function getUpgradeDescription(snapshot, index, baseBonus, bonus, totals)
     case 25:
       text = text.replace(/\$/g, formatNumber(baseBonus))
       break
-    case 27: // exalted stamp fragments
-      text = text.replace(/\$/g, UNKNOWN).replace(/#/g, formatNumber(spelunking?.exaltedFragments ?? 0))
+    case 27: { // exalted stamp fragments: 1 in 60 × 8^found, better with this upgrade
+      const found = spelunking?.exaltedFragments ?? 0
+      const odds = (60 * Math.pow(8, found)) / (1 + bonus / 100)
+      text = text.replace(/\$/g, formatNumber(odds)).replace(/#/g, formatNumber(found))
       break
-    case 28: // prisma bubbles
-      text = text.replace(/\$/g, UNKNOWN).replace(/#/g, formatNumber(spelunking?.prismaFragments ?? 0))
+    }
+    case 28: { // prisma bubbles: 1 in 100 × 1.5^found
+      const found = spelunking?.prismaFragments ?? 0
+      const odds = (100 * Math.pow(1.5, found)) / (1 + bonus / 100)
+      text = text.replace(/\$/g, formatNumber(odds)).replace(/#/g, formatNumber(found))
       break
+    }
     default:
       break
   }
@@ -259,10 +333,11 @@ export function getUpgradeDescription(snapshot, index, baseBonus, bonus, totals)
 // ── Page data ─────────────────────────────────────────────────────────────────
 
 // Every shop upgrade with its level, bonuses, description lines and costs
-export function getSpelunkingUpgrades(snapshot) {
+export function getSpelunkingUpgrades(snapshot, options = {}) {
   const spelunking = snapshot?.spelunking
   const totals = getSpelunkingTotals(snapshot)
-  const discount = getSpelunkingCostDiscount(snapshot).value
+  const discount = getSpelunkingCostDiscount(snapshot, options).value
+  const extras = { staminaRegen: getStaminaRegenRate(snapshot).value }
   const amber = spelunking?.amber ?? 0
 
   return spelunkingUpgradeMap.map((upgrade, index) => {
@@ -281,7 +356,7 @@ export function getSpelunkingUpgrades(snapshot) {
       unlocked,
       baseBonus,
       bonus,
-      lines: getUpgradeDescription(snapshot, index, baseBonus, bonus, totals),
+      lines: getUpgradeDescription(snapshot, index, baseBonus, bonus, totals, extras),
       cost,
       costToMax: maxed ? 0 : getUpgradeCostToMax(index, level, discount),
       affordable: cost !== null && unlocked && amber >= cost,
@@ -291,7 +366,8 @@ export function getSpelunkingUpgrades(snapshot) {
 
 // Overstim meter: the save only spends banked progress while Spelunking is open, so replay it
 // to get the level the game will show (Toolbox overstimEffectiveLevel). Each LV costs 1.3x more.
-export function getOverstim(spelunking) {
+export function getOverstim(snapshot) {
+  const spelunking = snapshot?.spelunking
   let level = spelunking?.overstimLevel ?? 0
   let progress = spelunking?.overstimProgress ?? 0
   let required = 100 * Math.pow(1.3, level)
@@ -300,10 +376,19 @@ export function getOverstim(spelunking) {
     level += 1
     required = 100 * Math.pow(1.3, level)
   }
+  // Every character's regen feeds the meter once they're at max stamina (Toolbox overstimRate)
+  const regen = getStaminaRegenRate(snapshot)
+  const unlocked = upgradeLevel(spelunking, SPELUNKING_UPGRADES.overstimMeter) >= 1
+  const ratePerHour = unlocked
+    ? (snapshot?.characters?.length ?? 0) * regen.value * (1 + getChapterBonus(snapshot, 2, 2) / 100)
+    : 0
   return {
     level,
     progress,
     required,
+    ratePerHour,
+    hoursToNext: ratePerHour > 0 ? (required - progress) / ratePerHour : null,
+    missing: regen.missing,
   }
 }
 
@@ -320,9 +405,8 @@ export function getSpelunkingSummary(snapshot) {
     tunnelsCleared: (spelunking?.loreBossesDefeated ?? []).slice(0, tunnels).filter(Boolean).length,
     tunnels,
     maxGrandDiscoveries: tunnels * MAX_GRAND_DISCOVERIES,
-    pageReads: spelunking?.pageReadsToday ?? 0,
-    maxPageReads: 5 + 3 * (isSkillMasteryBonusUnlocked(snapshot, 'spelunking', PAGE_READS_MASTERY) ? 1 : 0),
-    overstim: getOverstim(spelunking),
+    maxDiscoveries: spelunkingTunnelDiscoveries.reduce((total, count) => total + count, 0),
+    overstim: getOverstim(snapshot),
     manicUnlocked: upgradeLevel(spelunking, SPELUNKING_UPGRADES.manicMode) >= 1,
     manicMode: spelunking?.manicMode ?? false,
     elixirTypes: getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.elixirTypes),

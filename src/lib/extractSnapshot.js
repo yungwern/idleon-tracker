@@ -62,6 +62,8 @@ const extractors = {
   mapKillsLeft: (json, i) => (parseRaw(json[`KLA_${i}`]) ?? []).map(entry => entry?.[0] ?? 0),
   // SL_i = { talentId: base level } on the live talent tab
   talentLevels: (json, i) => parseRaw(json[`SL_${i}`]) ?? {},
+  // SM_i = { talentId: max level } (book level the talent can go to, before added/super levels)
+  talentMaxLevels: (json, i) => parseRaw(json[`SM_${i}`]) ?? {},
   // CauldronBubbles[i] = the character's equipped active bubbles ('c21' style ids, 0 = empty)
   equippedBubbles: (json, i) => ((parseRaw(json['CauldronBubbles']) ?? [])[i] ?? []).filter(id => typeof id === 'string'),
   // PTimeAway_i = when this character was last left; the played character's keeps moving
@@ -1031,7 +1033,7 @@ function parseGaming(json) {
 // ── Spelunking (W7) ───────────────────────────────────────────────────────────
 // Spelunk[0][i] > 0 once lore boss i is defeated, [1] best depth per tunnel, [2] biggest haul per tunnel,
 // [4] = [amber, overstim LV, overstim progress, exalted frags, prisma frags, .., .., .., trackometer LV, .., manic mode],
-// [5] shop upgrade levels (-1 past the last upgrade), [6] discovery names, [44] grand discoveries per tunnel,
+// [5] shop upgrade levels (-1 past the last upgrade), [6] discovery names, [8] lore chapter levels, [44] grand discoveries per tunnel,
 // [47] best manic depth per tunnel. OptLacc[410] = lore pages read today. Math → utils/spelunkingUtils.js
 function parseSpelunking(json, optLacc) {
   const spelunk = parseRaw(json['Spelunk']) ?? []
@@ -1049,6 +1051,7 @@ function parseSpelunking(json, optLacc) {
     trackometerLevel: Number(status[8]) || 0,
     manicMode: Number(status[10]) >= 1,
     upgradeLevels: numbers(spelunk[5]),
+    chapterLevels: numbers(spelunk[8]),
     discoveries: spelunk[6] ?? [],
     grandDiscoveries: numbers(spelunk[44]),
     bestManicDepths: numbers(spelunk[47]),

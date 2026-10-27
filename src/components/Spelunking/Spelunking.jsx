@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { spelunkingUpgradeGroups, spelunkingUpgradeMap, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES } from '../../data'
+import { spelunkingUpgradeGroups, spelunkingUpgradeMap, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES } from '../../data'
 import { getSpelunkingSummary, getSpelunkingUpgrades, formatAmber } from '../../utils/spelunkingUtils'
+import { getMaxPossibleTalentLevel } from '../../utils/talentUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import './Spelunking.css'
 
@@ -15,6 +16,20 @@ const hideBrokenImg = e => {
 
 const formatCount = value => Math.round(value ?? 0).toLocaleString('en-US')
 
+const AMBER_HOARD = 235
+
+// 54.4 → "2d 6h", 3.5 → "3h 30m"
+function formatHours(hours) {
+  if (hours === null || !Number.isFinite(hours)) return null
+  const minutes = Math.max(1, Math.round(hours * 60))
+  const days = Math.floor(minutes / 1440)
+  const h = Math.floor((minutes % 1440) / 60)
+  const m = minutes % 60
+  if (days > 0) return `${days}d ${h}h`
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
+}
+
 // ============================================================
 // OVERVIEW STRIP
 // ============================================================
@@ -27,7 +42,14 @@ function StatTile({ label, value, sub, done, children }) {
         {children}
         {value}
       </span>
-      {sub && <span className="spelunk-stat-sub">{sub}</span>}
+      {[].concat(sub ?? []).filter(Boolean).map(line => (
+        <span
+          key={line}
+          className="spelunk-stat-sub"
+        >
+          {line}
+        </span>
+      ))}
     </div>
   )
 }
@@ -63,11 +85,19 @@ function Overview({ summary }) {
       <StatTile
         label="Total Best Depth"
         value={formatCount(totals.bestDepths)}
-        sub={summary.manicUnlocked ? `Manic: ${formatCount(totals.manicDepths)}` : 'All tunnels added up'}
+        sub="All tunnels, normal runs"
       />
+      {summary.manicUnlocked && (
+        <StatTile
+          label="Total Manic Depth"
+          value={formatCount(totals.manicDepths)}
+          sub="Separate record, Manic Mode runs"
+        />
+      )}
       <StatTile
         label="Discoveries"
-        value={formatCount(totals.discoveries)}
+        value={`${totals.discoveries} / ${summary.maxDiscoveries}`}
+        done={summary.maxDiscoveries > 0 && totals.discoveries >= summary.maxDiscoveries}
       />
       <StatTile
         label="Grand Discoveries"
@@ -75,21 +105,17 @@ function Overview({ summary }) {
         done={summary.maxGrandDiscoveries > 0 && totals.grandDiscoveries >= summary.maxGrandDiscoveries}
       />
       <StatTile
-        label="Daily Page Reads"
-        value={`${summary.pageReads} / ${summary.maxPageReads}`}
-        sub="Read today"
-        done={summary.pageReads >= summary.maxPageReads}
-      />
-      <StatTile
         label="Overstim"
         value={`Lv ${formatCount(overstim.level)}`}
-        sub={`${Math.floor((overstim.progress / overstim.required) * 100)}% to next LV`}
+        sub={[
+          `${Math.floor((overstim.progress / overstim.required) * 100)}% to next LV`,
+          formatHours(overstim.hoursToNext) && `Next LV in ~${formatHours(overstim.hoursToNext)}`,
+        ]}
       />
       <StatTile
         label="Elixirs"
         value={`${summary.elixirTypes} / ${MAX_ELIXIR_TYPES}`}
-        sub={`${summary.elixirSlots} / ${MAX_ELIXIR_SLOTS} slots · ${summary.elixirDuplicates} / ${MAX_ELIXIR_DUPLICATES} dupes`}
-        done={summary.elixirTypes >= MAX_ELIXIR_TYPES && summary.elixirSlots >= MAX_ELIXIR_SLOTS && summary.elixirDuplicates >= MAX_ELIXIR_DUPLICATES}
+        done={summary.elixirTypes >= MAX_ELIXIR_TYPES}
       />
       <StatTile
         label="Total Upgrade LV"
@@ -115,26 +141,50 @@ function TunnelsTab({ summary }) {
             className={`spelunk-tunnel${tunnel.cleared ? '' : ' spelunk-tunnel--locked'}`}
           >
             <div className="spelunk-tunnel-head">
-              <span className="spelunk-tunnel-index">{i + 1}</span>
-              <span className="spelunk-tunnel-name">{tunnel.name}</span>
-            </div>
-            <div className="spelunk-tunnel-row">
-              <span>Best Depth</span>
-              <span className="spelunk-tunnel-value">{formatCount(tunnel.bestDepth)}</span>
-            </div>
-            {summary.manicUnlocked && (
-              <div className="spelunk-tunnel-row">
-                <span>Manic Depth</span>
-                <span className="spelunk-tunnel-value">{formatCount(tunnel.bestManicDepth)}</span>
+              <img
+                src={`images/spelunking/CaveMainBG${i}.png`}
+                alt=""
+                className="spelunk-tunnel-bg"
+                onError={hideBrokenImg}
+              />
+              <img
+                src={`images/spelunking/CaveDoor${i}.png`}
+                alt=""
+                className="spelunk-tunnel-door"
+                onError={hideBrokenImg}
+              />
+              <div className="spelunk-tunnel-title">
+                <span className="spelunk-tunnel-index">Tunnel {i + 1}</span>
+                <span className="spelunk-tunnel-name">{tunnel.name}</span>
               </div>
-            )}
-            <div className="spelunk-tunnel-row">
-              <span>Grand Discoveries</span>
-              <span className={`spelunk-tunnel-value${gdDone ? ' spelunk-tunnel-value--done' : ''}`}>
-                {tunnel.grandDiscoveries} / {MAX_GRAND_DISCOVERIES}
-              </span>
+              <div className="spelunk-tunnel-boss tooltip-anchor">
+                <img
+                  src={`images/spelunking/CaveBoss${i}.png`}
+                  alt=""
+                  className={`spelunk-tunnel-boss-img${tunnel.cleared ? '' : ' spelunk-tunnel-boss-img--alive'}`}
+                  onError={hideBrokenImg}
+                />
+                <span className="tooltip tooltip--right">{tunnel.cleared ? 'Lore boss defeated' : 'Lore boss not defeated'}</span>
+              </div>
             </div>
-            {!tunnel.cleared && <span className="spelunk-tunnel-note">Lore boss not defeated</span>}
+            <div className="spelunk-tunnel-body">
+              <div className="spelunk-tunnel-row">
+                <span>Best Depth</span>
+                <span className="spelunk-tunnel-value">{formatCount(tunnel.bestDepth)}</span>
+              </div>
+              {summary.manicUnlocked && (
+                <div className="spelunk-tunnel-row">
+                  <span>Manic Depth</span>
+                  <span className="spelunk-tunnel-value">{formatCount(tunnel.bestManicDepth)}</span>
+                </div>
+              )}
+              <div className="spelunk-tunnel-row">
+                <span>Grand Discoveries</span>
+                <span className={`spelunk-tunnel-value${gdDone ? ' spelunk-tunnel-value--done' : ''}`}>
+                  {tunnel.grandDiscoveries} / {MAX_GRAND_DISCOVERIES}
+                </span>
+              </div>
+            </div>
           </div>
         )
       })}
@@ -201,10 +251,13 @@ function UpgradeRow({ upgrade, amberTier }) {
   )
 }
 
-function UpgradesTab({ upgrades, amberTier }) {
+function UpgradesTab({ snapshot, amberTier }) {
   const [search, setSearch] = useState('')
   const [hideMaxed, setHideMaxed] = useState(false)
   const [onlyAffordable, setOnlyAffordable] = useState(false)
+  const [maxAmberHoard, setMaxAmberHoard] = useState(false)
+  const upgrades = useMemo(() => getSpelunkingUpgrades(snapshot, { maxAmberHoard }), [snapshot, maxAmberHoard])
+  const hoardLevel = useMemo(() => getMaxPossibleTalentLevel(snapshot, AMBER_HOARD).value, [snapshot])
 
   const affordableCount = upgrades.filter(upgrade => upgrade.affordable).length
   const query = search.trim().toLowerCase()
@@ -257,6 +310,21 @@ function UpgradesTab({ upgrades, amberTier }) {
           Affordable now
           {affordableCount > 0 && <span className="notice-badge">{affordableCount}</span>}
         </label>
+        {hoardLevel > 0 && (
+          <label className="styled-checkbox tooltip-anchor spelunk-hoard-toggle">
+            <input
+              type="checkbox"
+              checked={maxAmberHoard}
+              onChange={e => setMaxAmberHoard(e.target.checked)}
+            />
+            Max Amber Hoard
+            <span className="tooltip tooltip--wrap">
+              Prices the shop as if your Royal Guardian had the Amber Hoard talent at Lv {hoardLevel}: its max
+              level plus added and super talent levels. Amber Hoard is normally left empty and only filled
+              before buying upgrades.
+            </span>
+          </label>
+        )}
       </div>
 
       {groups.length === 0 && <p className="page-empty spelunk-empty">No upgrades match.</p>}
@@ -302,7 +370,6 @@ function UpgradesTab({ upgrades, amberTier }) {
 export default function Spelunking({ snapshot }) {
   const [activeTab, setActiveTab] = useState('upgrades')
   const summary = useMemo(() => getSpelunkingSummary(snapshot), [snapshot])
-  const upgrades = useMemo(() => getSpelunkingUpgrades(snapshot), [snapshot])
 
   if (!snapshot?.spelunking?.upgradeLevels) {
     return (
@@ -321,8 +388,9 @@ export default function Spelunking({ snapshot }) {
         intro="Your World 7 Spelunking progress and the Amber shop."
         items={[
           'Costs include your shop discounts (Woahtermelon meal, sushi, jelly and the Royal Guardian Amber Hoard talent) and are shown in your current amber color, like in game.',
+          'Turn on Max Amber Hoard to see prices with Amber Hoard at the highest level your account can reach, the way you\'d set it before a shopping trip.',
           'Green upgrades are affordable with the amber you have right now. Faded ones are locked behind the upgrade named on them.',
-          'A few numbers that need stamina, POW or drop-chance math (regen rate, Grand Discovery odds, fragment odds) show as "?" for now.',
+          'Two numbers still show as "?": Grand Discovery odds and the best tool for Nova Blasts.',
         ]}
       />
 
@@ -343,7 +411,7 @@ export default function Spelunking({ snapshot }) {
 
       {activeTab === 'upgrades' && (
         <UpgradesTab
-          upgrades={upgrades}
+          snapshot={snapshot}
           amberTier={summary.amberTier}
         />
       )}

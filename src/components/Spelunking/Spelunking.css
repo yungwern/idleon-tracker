@@ -60,6 +60,7 @@
 
 .spelunk-stat-sub {
   font-size: 11px;
+  line-height: 1.4;
   color: #9ca3af;
 }
 
@@ -243,52 +244,107 @@
   color: #6b7280;
 }
 
+/* ── Amber Hoard toggle ── */
+.spelunk-hoard-toggle {
+  position: relative;
+}
+
 /* ── Tunnels Tab ── */
 .spelunk-tunnel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 12px;
 }
 
 .spelunk-tunnel {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   text-align: left;
-  padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
 }
 
 .spelunk-tunnel--locked {
   opacity: 0.55;
 }
 
+/* Header: the tunnel's own rock texture behind its door, name and lore boss */
 .spelunk-tunnel-head {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 2px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.spelunk-tunnel-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  filter: brightness(0.55);
+}
+
+.spelunk-tunnel-door,
+.spelunk-tunnel-title,
+.spelunk-tunnel-boss {
+  position: relative;
+}
+
+.spelunk-tunnel-door {
+  flex-shrink: 0;
+  width: 48px;
+  height: 42px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.spelunk-tunnel-title {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .spelunk-tunnel-index {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  color: #111827;
-  background: #22d3ee;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #22d3ee;
+  text-shadow: 0 1px 2px #000000;
 }
 
 .spelunk-tunnel-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: #e5e7eb;
+  color: #f3f4f6;
+  text-shadow: 0 1px 2px #000000;
+}
+
+.spelunk-tunnel-boss-img {
+  display: block;
+  width: 44px;
+  height: 40px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.spelunk-tunnel-boss-img--alive {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.spelunk-tunnel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px 12px;
 }
 
 .spelunk-tunnel-row {
@@ -305,9 +361,4 @@
 
 .spelunk-tunnel-value--done {
   color: #4ade80;
-}
-
-.spelunk-tunnel-note {
-  font-size: 11px;
-  color: #f87171;
 }

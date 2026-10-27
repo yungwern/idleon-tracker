@@ -39,7 +39,7 @@ src/
 │                       #   jellyMap, meritMap, emperorMap, artifactMap, summoningMap, cavernsMap, zenithMap,
 │                       #   starSignMap, researchMap (grid squares, observations, stickers), buttonMap,
 │                       #   divinityMap (godMap by slot), gamingMap (paletteMap), spelunkingMap (shop upgrades with
-│                       #   readable keys for Toolbox x1-x8, tunnel names, amber tiers).
+│                       #   readable keys for Toolbox x1-x8, lore chapter bonuses, tunnel names, amber tiers).
 │                       # classes.js also has CLASS_TALENT_TABS (class lines) and CLASS_FAMILY_BONUSES.
 │                       # Data files never import utils; computed tables (e.g. ribbonData) live in utils.
 ├── hooks/              # useSaveImport.js
@@ -86,8 +86,10 @@ src/
                         #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels + mainframe, assumed connected),
                         #   divinityUtils (minor link bonuses), familyUtils (family bonus walk), coralReefUtils,
                         #   gamingUtils (superbits, palette), spelunkingUtils (shop upgrade bonus/cost/descriptions,
-                        #   cost discount, amber tier, overstim; all 68 upgrades match Toolbox on Eli's save. Spelunk[1]
-                        #   has 15 tunnel slots but only 10 tunnels exist). talentUtils getAddedTalentLevels = every added level
+                        #   cost discount (optional max Amber Hoard), amber tier, chapter bonuses, stamina regen, overstim
+                        #   timer; all match Toolbox on Eli's save. Spelunk[1] has 15 tunnel slots, only 10 tunnels exist).
+                        #   talentUtils getMaxPossibleTalentLevel = best SM_i max (book) level + added + super levels,
+                        #   for talents people only fill when needed. SL_i = current talent levels, SM_i = max levels. talentUtils getAddedTalentLevels = every added level
                         #   source (Arctis, Symbols, family, Equinox...), checked against Toolbox (246 on Eli's save).
                         #   New bonus sources go in their system's util, never in the page that uses them.
 
@@ -96,6 +98,9 @@ public/images/          # Game sprites — Vite serves public/ at the site root,
                         #   data/website-data/*.json (items, cards, shared-data: chips, cardSets…). Eli
                         #   grabs PNGs from Toolbox (public/data/), so its ids match our image filenames.
                         #   Prefer it over the wiki; clone it shallow when you need data.
+                        #   https://idleoneer.com/ — another save-reading IdleOn site: good for layout ideas and how
+                        #   systems look in game (e.g. Spelunking tunnel depths). Pages only fill in with a connected
+                        #   save, so ask Eli for screenshots when you need to see one.
 IdleOn Resources/       # Outside src/ — not shipped with the site
                         # raw-save.json — Eli's latest IdleOn Toolbox export ({ data, charNames, ... })
                         # make_obol_farm_thumbs.py — rebuilds public/images/obols/farm/ (40px farm-card
