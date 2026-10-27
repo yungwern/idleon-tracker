@@ -1029,10 +1029,31 @@ function parseGaming(json) {
 }
 
 // ── Spelunking (W7) ───────────────────────────────────────────────────────────
-// Spelunk[0][i] > 0 once lore boss i is defeated
-function parseSpelunking(json) {
+// Spelunk[0][i] > 0 once lore boss i is defeated, [1] best depth per tunnel, [2] biggest haul per tunnel,
+// [4] = [amber, overstim LV, overstim progress, exalted frags, prisma frags, .., .., .., trackometer LV, .., manic mode],
+// [5] shop upgrade levels (-1 past the last upgrade), [6] discovery names, [44] grand discoveries per tunnel,
+// [47] best manic depth per tunnel. OptLacc[410] = lore pages read today. Math → utils/spelunkingUtils.js
+function parseSpelunking(json, optLacc) {
   const spelunk = parseRaw(json['Spelunk']) ?? []
-  return { loreBossesDefeated: (spelunk[0] ?? []).map(value => Number(value) > 0) }
+  const numbers = list => (list ?? []).map(value => Number(value) || 0)
+  const status = spelunk[4] ?? []
+  return {
+    loreBossesDefeated: (spelunk[0] ?? []).map(value => Number(value) > 0),
+    bestDepths: numbers(spelunk[1]),
+    biggestHauls: numbers(spelunk[2]),
+    amber: Number(status[0]) || 0,
+    overstimLevel: Number(status[1]) || 0,
+    overstimProgress: Number(status[2]) || 0,
+    exaltedFragments: Number(status[3]) || 0,
+    prismaFragments: Number(status[4]) || 0,
+    trackometerLevel: Number(status[8]) || 0,
+    manicMode: Number(status[10]) >= 1,
+    upgradeLevels: numbers(spelunk[5]),
+    discoveries: spelunk[6] ?? [],
+    grandDiscoveries: numbers(spelunk[44]),
+    bestManicDepths: numbers(spelunk[47]),
+    pageReadsToday: Number(optLacc[410]) || 0,
+  }
 }
 
 // ── Account Options ───────────────────────────────────────────────────────────
@@ -1172,7 +1193,7 @@ export function extractSnapshot(rawJson) {
     equinox: parseEquinox(json),
     research: parseResearch(json),
     gaming: parseGaming(json),
-    spelunking: parseSpelunking(json),
+    spelunking: parseSpelunking(json, optLacc),
     eventShop: parseEventShop(optLacc),
     button: parseButton(optLacc),
     labJewels: parseLabJewels(json),

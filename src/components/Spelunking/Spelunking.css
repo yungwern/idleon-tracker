@@ -1,0 +1,313 @@
+/* ============================================================
+   SPELUNKING PAGE (W7)
+   ============================================================ */
+
+.spelunk-page {
+  max-width: 1200px;
+}
+
+.spelunk-tabs {
+  --tab-color: #22d3ee;
+}
+
+.spelunk-empty {
+  text-align: center;
+}
+
+/* ── Overview Strip ── */
+.spelunk-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.spelunk-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.spelunk-stat--done {
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.spelunk-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+.spelunk-stat-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.spelunk-stat--done .spelunk-stat-value {
+  color: #4ade80;
+}
+
+.spelunk-stat-sub {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.spelunk-amber-icon {
+  width: 24px;
+  height: 22px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.spelunk-amber-icon--small {
+  width: 16px;
+  height: 15px;
+}
+
+/* ── Upgrade Controls ── */
+.spelunk-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.spelunk-search {
+  width: 260px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  outline: none;
+}
+
+.spelunk-search:focus {
+  border-color: rgba(34, 211, 238, 0.4);
+  background: rgba(34, 211, 238, 0.06);
+}
+
+/* ── Upgrade Groups ── */
+.spelunk-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  align-items: start;
+  gap: 14px;
+}
+
+.spelunk-group {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+  overflow: hidden;
+}
+
+.spelunk-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.spelunk-group-name {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #22d3ee;
+}
+
+.spelunk-group-tomax {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.spelunk-group-done {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+/* ── Upgrade Row ── */
+.spelunk-upgrade {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-left: 2px solid transparent;
+}
+
+.spelunk-upgrade + .spelunk-upgrade {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.spelunk-upgrade--affordable {
+  border-left-color: #4ade80;
+  background: rgba(74, 222, 128, 0.04);
+}
+
+.spelunk-upgrade--locked {
+  opacity: 0.45;
+}
+
+.spelunk-upgrade-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.spelunk-upgrade-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  min-width: 0;
+  flex: 1;
+}
+
+.spelunk-upgrade-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.spelunk-upgrade-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.spelunk-upgrade-level {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #a0c4ff;
+}
+
+.spelunk-upgrade--maxed .spelunk-upgrade-level {
+  color: #4ade80;
+}
+
+.spelunk-upgrade-line {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+.spelunk-upgrade-cost {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #f87171;
+}
+
+.spelunk-upgrade--affordable .spelunk-upgrade-cost {
+  color: #4ade80;
+}
+
+.spelunk-upgrade-cost--locked {
+  color: #6b7280;
+}
+
+.spelunk-upgrade-tomax {
+  font-weight: 400;
+  color: #6b7280;
+}
+
+/* ── Tunnels Tab ── */
+.spelunk-tunnel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.spelunk-tunnel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.spelunk-tunnel--locked {
+  opacity: 0.55;
+}
+
+.spelunk-tunnel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.spelunk-tunnel-index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111827;
+  background: #22d3ee;
+}
+
+.spelunk-tunnel-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.spelunk-tunnel-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.spelunk-tunnel-value {
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.spelunk-tunnel-value--done {
+  color: #4ade80;
+}
+
+.spelunk-tunnel-note {
+  font-size: 11px;
+  color: #f87171;
+}

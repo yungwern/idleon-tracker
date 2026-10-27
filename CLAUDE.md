@@ -19,7 +19,7 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 src/
 ├── components/         # One folder per feature (see casing note below)
 │   ├── Section pages:  Breeding, Bubba (static guide, data in bubbaMap.js), Construction, Cooking, Farming, GearOptimizer,
-│   │                   MasterClasses, Minibosses, Obols, Shrines, Statues, Worship
+│   │                   MasterClasses, Minibosses, Obols, Shrines, Spelunking, Statues, Worship
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
@@ -38,7 +38,8 @@ src/
 │                       #   charms), mealMap (every meal: baseStat/stat), companionMap, tesseractMap, arcadeMap,
 │                       #   jellyMap, meritMap, emperorMap, artifactMap, summoningMap, cavernsMap, zenithMap,
 │                       #   starSignMap, researchMap (grid squares, observations, stickers), buttonMap,
-│                       #   divinityMap (godMap by slot), gamingMap (paletteMap).
+│                       #   divinityMap (godMap by slot), gamingMap (paletteMap), spelunkingMap (shop upgrades with
+│                       #   readable keys for Toolbox x1-x8, tunnel names, amber tiers).
 │                       # classes.js also has CLASS_TALENT_TABS (class lines) and CLASS_FAMILY_BONUSES.
 │                       # Data files never import utils; computed tables (e.g. ribbonData) live in utils.
 ├── hooks/              # useSaveImport.js
@@ -84,7 +85,9 @@ src/
                         #   equinoxUtils, eventShopUtils / gamingUtils (save-letter flags, saveCodeUtils),
                         #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels + mainframe, assumed connected),
                         #   divinityUtils (minor link bonuses), familyUtils (family bonus walk), coralReefUtils,
-                        #   gamingUtils (superbits, palette). talentUtils getAddedTalentLevels = every added level
+                        #   gamingUtils (superbits, palette), spelunkingUtils (shop upgrade bonus/cost/descriptions,
+                        #   cost discount, amber tier, overstim; all 68 upgrades match Toolbox on Eli's save. Spelunk[1]
+                        #   has 15 tunnel slots but only 10 tunnels exist). talentUtils getAddedTalentLevels = every added level
                         #   source (Arctis, Symbols, family, Equinox...), checked against Toolbox (246 on Eli's save).
                         #   New bonus sources go in their system's util, never in the page that uses them.
 
@@ -148,9 +151,6 @@ InfoPanel — BiS Setups (Card Buffs) and Shrines use it. Pass `active: null` wh
 Shrine building levels (Tower[18..26]) give the W7 Dancing Coral bonus past Lv 200 (`coral` in shrineMap.js).
 Breeding uses it too (`breedingBuffMap` in breedingMap.js): W7 Menagerie unlock 11 (Menagerie[2][11]) raises max shiny
 LV from 20 to 30. Menagerie unlock names/tooltips are Toolbox research.json [56]/[62]; icons are MenaIconO<N>.png.
-
-**Menagerie missions**: Menagerie[1][i] = claims of mission i (Toolbox research.json [52] text, [53] +req per claim,
-[54] base req). Minibosses tracks mission 30 (Deathnote Boss PTS); skull points live on RANK_THRESHOLDS in miniBosses.js.
 
 **Spice territories**: Pets[27+4i..] = team on territory i (Pets[0-26] fence, PetsStored = storage), each pet
 [rawName, geneId, power]. Territory[i] = [bar progress, fills, ?, 'CookingSpice{i}' | 'Blank' if locked, spices to claim].

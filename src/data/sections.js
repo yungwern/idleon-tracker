@@ -6,5 +6,5 @@ export const sections = {
   World4: ['Cooking', 'Breeding'],
   World5: [],
   World6: ['Farming'],
-  World7: [],
+  World7: ['Spelunking'],
 }

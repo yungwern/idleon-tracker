@@ -19,6 +19,7 @@ import Bubba from './components/Bubba/Bubba.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
 import Farming from './components/Farming/Farming.jsx'
+import Spelunking from './components/Spelunking/Spelunking.jsx'
 
 import './App.css'
 import './styles/global.css'
@@ -79,6 +80,7 @@ export default function App() {
     if (current === 'Cooking') return <Cooking snapshot={snapshot} />
     if (current === 'Breeding') return <Breeding snapshot={snapshot} />
     if (current === 'Farming') return <Farming snapshot={snapshot} />
+    if (current === 'Spelunking') return <Spelunking snapshot={snapshot} />
     if (!sectionItems.includes(current)) {
       return (
         <div className="page">

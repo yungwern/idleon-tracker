@@ -55,7 +55,7 @@ export { cogMap, BOARD_ROWS, BOARD_COLS, COG_BORDER_CLASS, COG_PLACEMENTS, saltM
 export { shrineMap, shrineBuffMap } from './shrineMap'
 export { worshipMap, soulsMap, towerMap } from './worshipMap'
 export { prayerMap } from './prayerMap'
-export { BUBBA_ATTRIBUTES, BUBBA_EMULSIFY_RULES, BUBBA_CHARISMA_GOALS, BUBBA_STEPS } from './bubbaMap'
+export { BUBBA_UPGRADES, BUBBA_ATTRIBUTES, BUBBA_HAPPINESS, BUBBA_GIFT_HAPPINESS, BUBBA_CHARISMA_GOALS, BUBBA_PHASES } from './bubbaMap'
 
 // ── World 4 ───────────────────────────────────────────────────────────────────
 export { labChipMap } from './labChipMap'
@@ -81,4 +81,5 @@ export { sushiUniqueBonuses } from './sushiMap'
 export { jellyObstructions } from './jellyMap'
 export { zenithMarketMap } from './zenithMap'
 export { researchGridSquares, researchObservationBonuses, stickerBaseBonuses } from './researchMap'
-export { buttonBonusMap } from './buttonMap'
+export { buttonBonusMap } from './buttonMap'
+export { spelunkingUpgradeMap, spelunkingUpgradeGroups, spelunkingTunnels, amberTiers, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES } from './spelunkingMap'

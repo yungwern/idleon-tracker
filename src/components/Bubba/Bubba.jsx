@@ -1,30 +1,119 @@
 import {
+  BUBBA_UPGRADES,
   BUBBA_ATTRIBUTES,
-  BUBBA_EMULSIFY_RULES,
+  BUBBA_HAPPINESS,
+  BUBBA_GIFT_HAPPINESS,
   BUBBA_CHARISMA_GOALS,
-  BUBBA_STEPS,
+  BUBBA_PHASES,
 } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import './Bubba.css'
 
 // ============================================================
-// EMULSIFY RULES
+// HELPERS
 // ============================================================
 
-function EmulsifyRules() {
+const upgradeIcon = name => `images/bubba/Bubbo_Upgrade_${BUBBA_UPGRADES.indexOf(name)}.png`
+
+const attrSlug = name => name.toLowerCase()
+
+const attrIcon = name => `images/bubba/BubbaCharisma${BUBBA_ATTRIBUTES.indexOf(name)}.png`
+
+const TOKEN_PATTERN = /(\[[^\]]+\]|\{[^}]+\})/g
+
+// ============================================================
+// SHARED PIECES
+// ============================================================
+
+function UpgradeChip({ name }) {
   return (
-    <div className="bubba-card">
-      <div className="bubba-card-title">What to emulsify</div>
-      <div className="bubba-rules">
-        {BUBBA_EMULSIFY_RULES.map(rule => (
-          <div
-            key={rule.attribute}
-            className="bubba-rule"
-          >
-            <span className="bubba-attr-pill">{rule.attribute}</span>
-            <span className="bubba-rule-when">{rule.when}</span>
+    <span className="bubba-upgrade-chip">
+      <img
+        src={upgradeIcon(name)}
+        alt=""
+        className="bubba-upgrade-chip-img"
+      />
+      {name}
+    </span>
+  )
+}
+
+function AttrPill({ name, value }) {
+  return (
+    <span
+      className="bubba-attr-pill"
+      data-attr={attrSlug(name)}
+    >
+      <img
+        src={attrIcon(name)}
+        alt=""
+        className="bubba-attr-pill-img"
+      />
+      {name}
+      {value !== undefined && <strong>{value}</strong>}
+    </span>
+  )
+}
+
+// Turns "[Smoker]" into an upgrade chip and "{Joy}" into an attribute pill
+function RichText({ text }) {
+  return text.split(TOKEN_PATTERN).map((part, i) => {
+    if (part.startsWith('[') && BUBBA_UPGRADES.includes(part.slice(1, -1))) {
+      return <UpgradeChip key={i} name={part.slice(1, -1)} />
+    }
+    if (part.startsWith('{') && BUBBA_ATTRIBUTES.includes(part.slice(1, -1))) {
+      return <AttrPill key={i} name={part.slice(1, -1)} />
+    }
+    return part
+  })
+}
+
+// ============================================================
+// HERO
+// ============================================================
+
+function Hero() {
+  const giftTier = BUBBA_HAPPINESS[BUBBA_GIFT_HAPPINESS]
+
+  return (
+    <div className="bubba-hero">
+      <img
+        src="images/bubba/Bubba.png"
+        alt="Bubba"
+        className="bubba-hero-img"
+      />
+      <div className="bubba-hero-loop">
+        <div className="bubba-card-title">The core loop</div>
+        <div className="bubba-hero-steps">
+          <div className="bubba-hero-step">
+            <span className="bubba-hero-step-label">Pat with</span>
+            <AttrPill name="Joy" />
           </div>
-        ))}
+          <span className="bubba-arrow">›</span>
+          <div className="bubba-hero-step tooltip-anchor">
+            <img
+              src={`images/bubba/BubbaHappyIcon${BUBBA_GIFT_HAPPINESS}.png`}
+              alt={giftTier}
+              className="bubba-hero-happy"
+            />
+            <span className="bubba-hero-step-label">Grey happiness</span>
+            <span className="tooltip">{giftTier}</span>
+          </div>
+          <span className="bubba-arrow">›</span>
+          <div className="bubba-hero-step">
+            <span className="bubba-hero-step-label">Swap to</span>
+            <AttrPill name="Hustle" />
+          </div>
+          <span className="bubba-arrow">›</span>
+          <div className="bubba-hero-step">
+            <img
+              src="images/bubba/BubbaGift5.png"
+              alt="Gift"
+              className="bubba-hero-gift"
+            />
+            <span className="bubba-hero-step-label">Open a gift</span>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -43,23 +132,30 @@ function CharismaGoals() {
           <tr>
             <th />
             {BUBBA_ATTRIBUTES.map(attr => (
-              <th key={attr}>{attr}</th>
+              <th
+                key={attr}
+                data-attr={attrSlug(attr)}
+              >
+                <img
+                  src={attrIcon(attr)}
+                  alt=""
+                  className="bubba-goals-head-img"
+                />
+                {attr}
+              </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {BUBBA_CHARISMA_GOALS.map(goal => (
             <tr key={goal.label}>
-              <td className="bubba-goals-label">
-                {goal.label}
-                <span className="bubba-goals-note">{goal.note}</span>
-              </td>
+              <td className="bubba-goals-label">{goal.label}</td>
               {goal.values.map((value, i) => (
                 <td
                   key={BUBBA_ATTRIBUTES[i]}
                   className={value === 0 ? 'bubba-goals-zero' : ''}
                 >
-                  {value}
+                  {value === 0 ? '–' : value}
                 </td>
               ))}
             </tr>
@@ -71,20 +167,19 @@ function CharismaGoals() {
 }
 
 // ============================================================
-// STEP CARD
+// STEPS
 // ============================================================
 
 function GoalLine({ goal }) {
   return (
     <div className="bubba-step-goal">
-      <span className="bubba-step-goal-label">Charisma goal</span>
-      {BUBBA_ATTRIBUTES.map((attr, i) => (
-        <span
+      <span className="bubba-step-goal-label">{goal.label}</span>
+      {BUBBA_ATTRIBUTES.map((attr, i) => goal.values[i] > 0 && (
+        <AttrPill
           key={attr}
-          className="bubba-step-goal-chip"
-        >
-          {attr} <strong>{goal.values[i]}</strong>
-        </span>
+          name={attr}
+          value={goal.values[i]}
+        />
       ))}
     </div>
   )
@@ -99,11 +194,18 @@ function StepCard({ step, number }) {
       <div className="bubba-step-body">
         <div className="bubba-step-head">
           <span className="bubba-step-title">{step.title}</span>
-          {step.gift && <span className="bubba-step-gift">🎁 {step.gift}</span>}
+          {step.unlocks && (
+            <span className="bubba-step-unlock">
+              Unlocks
+              <UpgradeChip name={step.unlocks} />
+            </span>
+          )}
         </div>
         <ul className="bubba-step-points">
           {step.points.map((point, i) => (
-            <li key={i}>{point}</li>
+            <li key={i}>
+              <RichText text={point} />
+            </li>
           ))}
         </ul>
         {step.tips?.map((tip, i) => (
@@ -111,11 +213,43 @@ function StepCard({ step, number }) {
             key={i}
             className="bubba-step-tip"
           >
-            {tip}
+            <RichText text={tip} />
           </div>
         ))}
         {goal && <GoalLine goal={goal} />}
       </div>
+    </div>
+  )
+}
+
+function Phases() {
+  let stepNumber = 0
+
+  return (
+    <div className="bubba-phases">
+      {BUBBA_PHASES.map(phase => (
+        <section
+          key={phase.title}
+          className="bubba-phase"
+        >
+          <div className="bubba-phase-head">
+            <span className="bubba-phase-title">{phase.title}</span>
+            <span className="bubba-phase-subtitle">{phase.subtitle}</span>
+          </div>
+          <div className="bubba-steps">
+            {phase.steps.map(step => {
+              stepNumber += 1
+              return (
+                <StepCard
+                  key={step.title}
+                  step={step}
+                  number={stepNumber}
+                />
+              )
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }
@@ -132,26 +266,18 @@ export default function Bubba() {
       <InfoPanel
         intro="A step-by-step route for a Bubba run, from the first candies to the hourly coin loop."
         items={[
-          'Grey happiness is the target before every gift: pat with Joy emulsified to get there, then emulsify Hustle and open.',
           'Each gift should unlock the next upgrade. If one doesn\'t, you need more Smoker levels or a better dice roll.',
           'The Charisma goals are rough targets, not requirements.',
         ]}
       />
 
-      <div className="bubba-top-row">
-        <EmulsifyRules />
+      <Hero />
+
+      <div className="bubba-goals-row">
         <CharismaGoals />
       </div>
 
-      <div className="bubba-steps">
-        {BUBBA_STEPS.map((step, i) => (
-          <StepCard
-            key={step.title}
-            step={step}
-            number={i + 1}
-          />
-        ))}
-      </div>
+      <Phases />
     </div>
   )
 }

@@ -20,6 +20,8 @@ export const SKILLS = {
   farming: 16,
   sneaking: 17,
   summoning: 18,
+  spelunking: 19,
+  research: 20,
 }
 
 export function getSkillLevel(character, skill) {

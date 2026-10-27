@@ -447,5 +447,6 @@ export const talentMap = Object.fromEntries(
 export const talentGrowthMap = {
   205: { func: 'decayMulti', x1: 50, x2: 300 }, // Mass Irrigation: }x Crop Evo chance
   207: { func: 'decayMulti', x1: 2, x2: 200 }, // Dank Ranks: }x Land Rank Database bonuses
+  235: { func: 'decay', x1: 50, x2: 200 }, // Amber Hoard: % cheaper Spelunking shop per Royal Statue LV
   589: { func: 'decayMulti', x1: 1, x2: 500 }, // Overwhelming Energy: }x max map bonus
 }
