@@ -5,6 +5,7 @@ import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
 import { getMinibossNoticeCount } from './utils/minibossNotices.js'
 import { sections, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
+import { useTomePoints } from './hooks/useTomePoints.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
 import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
@@ -31,6 +32,7 @@ export default function App() {
   const [selected, setSelected] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const { snapshot, importFromText, clearSnapshot, importedAt } = useSaveImport()
+  const { tomePoints, setTomePoints } = useTomePoints()
 
   // ── Characters come straight from the imported save (any account, any count) ──
   const mergedCharacters = (snapshot?.characters ?? []).map((c, i) => {
@@ -79,8 +81,8 @@ export default function App() {
     if (current === 'Bubba') return <Bubba />
     if (current === 'Cooking') return <Cooking snapshot={snapshot} />
     if (current === 'Breeding') return <Breeding snapshot={snapshot} />
-    if (current === 'Farming') return <Farming snapshot={snapshot} />
-    if (current === 'Spelunking') return <Spelunking snapshot={snapshot} />
+    if (current === 'Farming') return <Farming snapshot={snapshot} tomePoints={tomePoints} />
+    if (current === 'Spelunking') return <Spelunking snapshot={snapshot} tomePoints={tomePoints} />
     if (!sectionItems.includes(current)) {
       return (
         <div className="page">
@@ -104,6 +106,9 @@ export default function App() {
       {showModal && (
         <ImportModal
           onImport={importFromText}
+          hasSave={!!snapshot}
+          tomePoints={tomePoints}
+          onTomePointsChange={setTomePoints}
           onClose={() => setShowModal(false)}
         />
       )}

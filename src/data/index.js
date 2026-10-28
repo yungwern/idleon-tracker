@@ -61,7 +61,7 @@ export { BUBBA_UPGRADES, BUBBA_ATTRIBUTES, BUBBA_HAPPINESS, BUBBA_GIFT_HAPPINESS
 export { labChipMap } from './labChipMap'
 export { cookingMap, cookingBonusTypes } from './cookingMap'
 export { mealMap } from './mealMap'
-export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
+export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, CRUCIBLE_WAVES, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
 
 // ── World 5 ───────────────────────────────────────────────────────────────────
 export { artifactMap } from './artifactMap'
@@ -80,7 +80,7 @@ export { legendTalentMap, LEGEND_TALENT_ORDER } from './legendTalentMap'
 export { sushiUniqueBonuses } from './sushiMap'
 export { jellyObstructions } from './jellyMap'
 export { zenithMarketMap } from './zenithMap'
-export { researchGridSquares, researchObservationBonuses, stickerBaseBonuses } from './researchMap'
+export { researchGridSquares, researchObservationBonuses, stickerBaseBonuses, menagerieBoostPerLevel } from './researchMap'
 export { buttonBonusMap } from './buttonMap'
 export { mineheadOpponentBonuses } from './mineheadMap'
-export { spelunkingUpgradeMap, spelunkingUpgradeGroups, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, spelunkingTunnels, amberTiers, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES } from './spelunkingMap'
+export { spelunkingUpgradeMap, spelunkingUpgradeGroups, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, spelunkingTunnels, amberTiers, spelunkingLoreTomeBonuses, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES } from './spelunkingMap'

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { spelunkingUpgradeGroups, spelunkingUpgradeMap, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES } from '../../data'
-import { getSpelunkingSummary, getSpelunkingUpgrades, formatAmber } from '../../utils/spelunkingUtils'
+import { spelunkingUpgradeGroups, spelunkingUpgradeMap, MAX_GRAND_DISCOVERIES } from '../../data'
+import { getSpelunkingSummary, getSpelunkingUpgrades, getSpelunkingPow, getAmberGain, getTunnelDiscoveries, getBestGrandDiscoveryCharacter, getGrandVein, formatAmber } from '../../utils/spelunkingUtils'
+import { toClassSlug } from '../../utils/appUtils'
 import { getMaxPossibleTalentLevel } from '../../utils/talentUtils'
 import { formatBigNumber } from '../../utils/cogBoardUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
@@ -18,6 +19,8 @@ const hideBrokenImg = e => {
 }
 
 const formatCount = value => Math.round(value ?? 0).toLocaleString('en-US')
+
+const formatPow = value => (value >= 1e7 ? formatBigNumber(value) : formatCount(value))
 
 const AMBER_HOARD = 235
 
@@ -37,22 +40,32 @@ function formatHours(hours) {
 // OVERVIEW STRIP
 // ============================================================
 
-function StatTile({ label, value, sub, done, children }) {
+// icon: image under images/spelunking/ shown before the value (or pass a custom one as children)
+function StatTile({ label, value, sub, done, tooltip, icon, children }) {
   return (
-    <div className={`spelunk-stat${done ? ' spelunk-stat--done' : ''}`}>
+    <div className={`spelunk-stat${done ? ' spelunk-stat--done' : ''}${tooltip ? ' tooltip-anchor' : ''}`}>
       <span className="spelunk-stat-label">{label}</span>
       <span className="spelunk-stat-value">
+        {icon && (
+          <img
+            src={`images/spelunking/${icon}`}
+            alt=""
+            className="spelunk-stat-icon"
+            onError={hideBrokenImg}
+          />
+        )}
         {children}
         {value}
       </span>
       {[].concat(sub ?? []).filter(Boolean).map(line => (
         <span
-          key={line}
+          key={typeof line === 'string' ? line : line.key}
           className="spelunk-stat-sub"
         >
           {line}
         </span>
       ))}
+      {tooltip && <span className="tooltip tooltip--wrap">{tooltip}</span>}
     </div>
   )
 }
@@ -68,62 +81,107 @@ function AmberIcon({ tier, small }) {
   )
 }
 
-function Overview({ summary }) {
-  const { totals, amberTier, overstim } = summary
+// Gold = best depth, blue = Manic Mode depth, like under each tunnel in game
+function DepthTrophy({ manic }) {
+  return (
+    <img
+      src={`images/spelunking/${manic ? 'ManicTrophy' : 'DepthTrophy'}.png`}
+      alt={manic ? 'Manic depth' : 'Best depth'}
+      className="spelunk-trophy"
+      onError={hideBrokenImg}
+    />
+  )
+}
+
+const percentToNext = meter => `${Math.floor((meter.progress / meter.required) * 100)}% to next LV`
+
+function Overview({ summary, pow, amberGain, tomeMissing }) {
+  const { totals, amberTier, overstim, trackometer } = summary
   return (
     <div className="spelunk-stats">
       <StatTile
         label="Amber"
         value={formatAmber(summary.amber, amberTier)}
-        sub={amberTier.name}
+        sub={[
+          amberTier.name,
+          `${formatPow(amberGain)}x Amber gain${tomeMissing ? '*' : ''}`,
+        ]}
+        tooltip={tomeMissing
+          ? '*Leaves out the Tome lore bonus to Amber: enter your Tome points in Import Save to include it.'
+          : null}
       >
         <AmberIcon tier={amberTier} />
       </StatTile>
       <StatTile
+        label="POW"
+        icon="CaveShopUpg0.png"
+        value={formatPow(pow)}
+        sub="Total Spelunking POW"
+      />
+      <StatTile
         label="Tunnels Cleared"
+        icon="CaveSkull.png"
         value={`${summary.tunnelsCleared} / ${summary.tunnels}`}
         sub="Lore bosses defeated"
         done={summary.tunnels > 0 && summary.tunnelsCleared >= summary.tunnels}
       />
       <StatTile
-        label="Total Best Depth"
+        label="Total Depth"
         value={formatCount(totals.bestDepths)}
-        sub="All tunnels, normal runs"
-      />
-      {summary.manicUnlocked && (
-        <StatTile
-          label="Total Manic Depth"
-          value={formatCount(totals.manicDepths)}
-          sub="Separate record, Manic Mode runs"
-        />
-      )}
+        sub={[
+          'Best runs, all tunnels',
+          summary.manicUnlocked && (
+            <span
+              key="manic"
+              className="spelunk-stat-manic"
+            >
+              <DepthTrophy manic />
+              Manic: {formatCount(totals.manicDepths)}
+            </span>
+          ),
+        ]}
+      >
+        <DepthTrophy />
+      </StatTile>
       <StatTile
         label="Discoveries"
+        icon="CaveRock_0.png"
         value={`${totals.discoveries} / ${summary.maxDiscoveries}`}
         done={summary.maxDiscoveries > 0 && totals.discoveries >= summary.maxDiscoveries}
       />
       <StatTile
         label="Grand Discoveries"
+        icon="CaveShopUpg43.png"
         value={`${totals.grandDiscoveries} / ${summary.maxGrandDiscoveries}`}
         done={summary.maxGrandDiscoveries > 0 && totals.grandDiscoveries >= summary.maxGrandDiscoveries}
       />
       <StatTile
         label="Overstim"
+        icon="CaveShopUpg6.png"
         value={`Lv ${formatCount(overstim.level)}`}
         sub={[
-          `${Math.floor((overstim.progress / overstim.required) * 100)}% to next LV`,
+          `${percentToNext(overstim)}`,
           formatHours(overstim.hoursToNext) && `Next LV in ~${formatHours(overstim.hoursToNext)}`,
+          overstim.amberBonus > 0 && `+${formatBigNumber(overstim.amberBonus)}% Amber`,
         ]}
       />
       <StatTile
-        label="Elixirs"
-        value={`${summary.elixirTypes} / ${MAX_ELIXIR_TYPES}`}
-        done={summary.elixirTypes >= MAX_ELIXIR_TYPES}
+        label="Trackometer"
+        icon="CaveShopUpg59.png"
+        value={trackometer.unlocked ? `Lv ${formatCount(trackometer.level)}` : 'Locked'}
+        sub={trackometer.unlocked
+          ? [
+            `${percentToNext(trackometer)} (${formatBigNumber(trackometer.progress)} / ${formatBigNumber(trackometer.required)})`,
+            `+${formatBigNumber(trackometer.expBonus)}% Stamina EXP`,
+            trackometer.amberBonus > 0 && `+${formatBigNumber(trackometer.amberBonus)}% Amber`,
+          ]
+          : 'Needs the Stamina Trackometer upgrade'}
       />
       <StatTile
         label="Total Upgrade LV"
+        icon="CaveSign1.png"
         value={formatCount(totals.upgradeLevels)}
-        sub={summary.manicUnlocked ? `Manic Mode ${summary.manicMode ? 'ON' : 'OFF'}` : null}
+        sub="All shop upgrades"
       />
     </div>
   )
@@ -172,8 +230,6 @@ function oneIn(chance) {
   return n < 10 ? (Math.round(n * 10) / 10).toString() : formatCount(n)
 }
 
-const formatPow = value => (value >= 1e7 ? formatBigNumber(value) : formatCount(value))
-
 // Click-to-open list of a tunnel's discoveries with the POW each one needs
 function TunnelDiscoveries({ discoveries }) {
   const complete = discoveries.foundCount >= discoveries.rocks.length
@@ -211,91 +267,178 @@ function TunnelDiscoveries({ discoveries }) {
   )
 }
 
-function TunnelsTab({ summary }) {
+const formatMulti = value => `${(Math.round(value * 100) / 100).toLocaleString('en-US')}x`
+
+// Who to delve on for Grand Discoveries, and the Max Grand Vein toggle
+function GrandDiscoveryPanel({ best, vein, maxGrandVein, setMaxGrandVein }) {
+  const { character, played } = best
+  if (!character) return null
+  const samePlayed = played === character
   return (
-    <div className="spelunk-tunnel-grid">
-      {summary.tunnelList.map((tunnel, i) => {
-        const gdDone = tunnel.grandDiscoveries >= MAX_GRAND_DISCOVERIES
-        const discoveries = summary.tunnelDiscoveries[i]
-        const nextChance = discoveries?.nextGrandChance ?? 0
-        return (
-          <div
-            key={tunnel.name}
-            className={`spelunk-tunnel${tunnel.cleared ? '' : ' spelunk-tunnel--locked'}`}
-          >
-            <div className="spelunk-tunnel-head">
-              <img
-                src={`images/spelunking/CaveMainBG${i}.png`}
-                alt=""
-                className="spelunk-tunnel-bg"
-                onError={hideBrokenImg}
-              />
-              <img
-                src={`images/spelunking/CaveDoor${i}.png`}
-                alt=""
-                className="spelunk-tunnel-door"
-                onError={hideBrokenImg}
-              />
-              <div className="spelunk-tunnel-title">
-                <span className="spelunk-tunnel-index">Tunnel {i + 1}</span>
-                <span className="spelunk-tunnel-name">{tunnel.name}</span>
-              </div>
-              <img
-                src={`images/spelunking/CaveBoss${i}.png`}
-                alt=""
-                className={`spelunk-tunnel-boss-img${tunnel.cleared ? '' : ' spelunk-tunnel-boss-img--alive'}`}
-                onError={hideBrokenImg}
-              />
-            </div>
-            <div className="spelunk-tunnel-body">
-              <div className="spelunk-tunnel-row">
-                <span>Best Depth</span>
-                <span className="spelunk-tunnel-value">{formatCount(tunnel.bestDepth)}</span>
-              </div>
-              {summary.manicUnlocked && (
-                <div className="spelunk-tunnel-row">
-                  <span>Manic Depth</span>
-                  <span className="spelunk-tunnel-value">{formatCount(tunnel.bestManicDepth)}</span>
+    <div className="spelunk-gd">
+      <div className="spelunk-gd-head">
+        <span className="spelunk-gd-title">Best for Grand Discoveries</span>
+        {vein.maxLevel > 0 && (
+          <label className="styled-checkbox tooltip-anchor spelunk-gd-toggle">
+            <input
+              type="checkbox"
+              checked={maxGrandVein}
+              onChange={e => setMaxGrandVein(e.target.checked)}
+            />
+            Max Grand Vein
+            <span className="tooltip tooltip--wrap tooltip--right">
+              Shows the odds as if your Royal Guardian had the Grand Vein talent at Lv {vein.maxLevel}: its max
+              level plus added and super talent levels. Grand Vein is normally left empty and only filled
+              before going for Grand Discoveries.
+            </span>
+          </label>
+        )}
+      </div>
+      <div
+        className="spelunk-gd-character"
+        data-class={toClassSlug(character.class)}
+      >
+        <span className="spelunk-gd-class-icon" />
+        <span className="spelunk-gd-name">{character.name}</span>
+        <span className="spelunk-gd-level">Spelunking LV {formatCount(best.level)}</span>
+        <span className="spelunk-gd-multi">{formatMulti(best.multi)} from Spelunking LV</span>
+      </div>
+      <p className="spelunk-gd-text">
+        {best.isRoyalGuardian
+          ? 'Delve on your highest-level Royal Guardian: only a Royal Guardian can fill Grand Vein, the biggest Grand Discovery boost, and the game also multiplies the chance by the logged-in character\'s Spelunking LV'
+          : 'You have no Royal Guardian for Grand Vein, so delve on your highest-level Spelunker: the game multiplies the chance by the logged-in character\'s Spelunking LV'}
+        {` (+${best.percentPerLevel}% per LV from Minehead and Sushi).`}
+        {!samePlayed && ` ${character.name} gets ${formatMulti(best.multi)} from that vs ${formatMulti(best.playedMulti)} on ${played?.name} (LV ${formatCount(best.playedLevel)}), the character this save was taken on.`}
+      </p>
+      <p className="spelunk-gd-text">
+        Grand Vein (Royal Guardian): Lv {formatCount(vein.level)} now ({formatMulti(vein.multi)})
+        {vein.maxLevel > 0 && `, Lv ${formatCount(vein.maxLevel)} at most (${formatMulti(vein.maxMulti)})`}.
+        {' '}Odds below use {character.name}'s LV, Grand Vein {maxGrandVein ? 'maxed' : 'as it is now'}, and no elixirs.
+      </p>
+    </div>
+  )
+}
+
+function TunnelsTab({ snapshot, summary }) {
+  const [maxGrandVein, setMaxGrandVein] = useState(false)
+  const best = useMemo(() => getBestGrandDiscoveryCharacter(snapshot), [snapshot])
+  const vein = useMemo(() => getGrandVein(snapshot), [snapshot])
+  const tunnelDiscoveries = useMemo(
+    () => getTunnelDiscoveries(snapshot, { maxGrandVein }),
+    [snapshot, maxGrandVein],
+  )
+  const grandLeft = summary.totals.grandDiscoveries < summary.maxGrandDiscoveries
+  return (
+    <>
+      {summary.manicUnlocked && (
+        <div className="spelunk-manic">
+          <img
+            src={`images/spelunking/ManicMode${summary.manicMode ? 'On' : 'Off'}.png`}
+            alt={`Manic Mode ${summary.manicMode ? 'on' : 'off'}`}
+            title={`Manic Mode is ${summary.manicMode ? 'on' : 'off'}`}
+            className="spelunk-manic-img"
+            onError={hideBrokenImg}
+          />
+        </div>
+      )}
+      {grandLeft && (
+        <GrandDiscoveryPanel
+          best={best}
+          vein={vein}
+          maxGrandVein={maxGrandVein}
+          setMaxGrandVein={setMaxGrandVein}
+        />
+      )}
+      <div className="spelunk-tunnel-grid">
+        {summary.tunnelList.map((tunnel, i) => {
+          const gdDone = tunnel.grandDiscoveries >= MAX_GRAND_DISCOVERIES
+          const discoveries = tunnelDiscoveries[i]
+          const nextChance = discoveries?.nextGrandChance ?? 0
+          return (
+            <div
+              key={tunnel.name}
+              className={`spelunk-tunnel${tunnel.cleared ? '' : ' spelunk-tunnel--locked'}`}
+            >
+              <div className="spelunk-tunnel-head">
+                <img
+                  src={`images/spelunking/CaveMainBG${i}.png`}
+                  alt=""
+                  className="spelunk-tunnel-bg"
+                  onError={hideBrokenImg}
+                />
+                <img
+                  src={`images/spelunking/CaveDoor${i}.png`}
+                  alt=""
+                  className="spelunk-tunnel-door"
+                  onError={hideBrokenImg}
+                />
+                <div className="spelunk-tunnel-title">
+                  <span className="spelunk-tunnel-index">Tunnel {i + 1}</span>
+                  <span className="spelunk-tunnel-name">{tunnel.name}</span>
                 </div>
-              )}
-              <div className="spelunk-tunnel-row">
-                <span>Biggest Haul</span>
-                <span className="spelunk-tunnel-value spelunk-tunnel-haul">
-                  <AmberIcon
-                    tier={summary.amberTier}
-                    small
-                  />
-                  {formatAmber(tunnel.biggestHaul, summary.amberTier)}
-                </span>
+                <img
+                  src={`images/spelunking/CaveBoss${i}.png`}
+                  alt=""
+                  className={`spelunk-tunnel-boss-img${tunnel.cleared ? '' : ' spelunk-tunnel-boss-img--alive'}`}
+                  onError={hideBrokenImg}
+                />
               </div>
-              <div className="spelunk-tunnel-row">
-                <span>Grand Discoveries</span>
-                <span className={`spelunk-tunnel-value${gdDone ? ' spelunk-tunnel-value--done' : ''}`}>
-                  {tunnel.grandDiscoveries} / {MAX_GRAND_DISCOVERIES}
-                </span>
-              </div>
-              {!gdDone && nextChance > 0 && (
+              <div className="spelunk-tunnel-body">
                 <div className="spelunk-tunnel-row">
-                  <span>Next Grand Discovery</span>
-                  <span className="spelunk-tunnel-value">
-                    {nextChance >= 1 ? 'Guaranteed' : `${(Math.round(nextChance * 10000) / 100)}% (1 in ${oneIn(nextChance)})`}
+                  <span>Best Depth</span>
+                  <span className="spelunk-tunnel-value spelunk-tunnel-depth">
+                    <DepthTrophy />
+                    {formatCount(tunnel.bestDepth)}
                   </span>
                 </div>
-              )}
-              {discoveries && (
-                <TunnelDiscoveries discoveries={discoveries} />
+                {summary.manicUnlocked && (
+                  <div className="spelunk-tunnel-row">
+                    <span>Manic Depth</span>
+                    <span className="spelunk-tunnel-value spelunk-tunnel-depth">
+                      <DepthTrophy manic />
+                      {formatCount(tunnel.bestManicDepth)}
+                    </span>
+                  </div>
+                )}
+                <div className="spelunk-tunnel-row">
+                  <span>Biggest Haul</span>
+                  <span className="spelunk-tunnel-value spelunk-tunnel-haul">
+                    <AmberIcon
+                      tier={summary.amberTier}
+                      small
+                    />
+                    {formatAmber(tunnel.biggestHaul, summary.amberTier)}
+                  </span>
+                </div>
+                <div className="spelunk-tunnel-row">
+                  <span>Grand Discoveries</span>
+                  <span className={`spelunk-tunnel-value${gdDone ? ' spelunk-tunnel-value--done' : ''}`}>
+                    {tunnel.grandDiscoveries} / {MAX_GRAND_DISCOVERIES}
+                  </span>
+                </div>
+                {!gdDone && nextChance > 0 && (
+                  <div className="spelunk-tunnel-row">
+                    <span>Next Grand Discovery</span>
+                    <span className="spelunk-tunnel-value">
+                      {nextChance >= 1 ? 'Guaranteed' : `${(Math.round(nextChance * 10000) / 100)}% (1 in ${oneIn(nextChance)})`}
+                    </span>
+                  </div>
+                )}
+                {discoveries && (
+                  <TunnelDiscoveries discoveries={discoveries} />
+                )}
+              </div>
+              {tunnel.loreBoss && (
+                <LoreBossReward
+                  boss={tunnel.loreBoss}
+                  defeated={tunnel.cleared}
+                />
               )}
             </div>
-            {tunnel.loreBoss && (
-              <LoreBossReward
-                boss={tunnel.loreBoss}
-                defeated={tunnel.cleared}
-              />
-            )}
-          </div>
-        )
-      })}
-    </div>
+          )
+        })}
+      </div>
+    </>
   )
 }
 
@@ -400,38 +543,40 @@ function UpgradesTab({ snapshot, amberTier }) {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <label className="styled-checkbox">
-          <input
-            type="checkbox"
-            checked={hideMaxed}
-            onChange={e => setHideMaxed(e.target.checked)}
-          />
-          Hide maxed
-        </label>
-        <label className="styled-checkbox">
-          <input
-            type="checkbox"
-            checked={onlyAffordable}
-            onChange={e => setOnlyAffordable(e.target.checked)}
-          />
-          Affordable now
-          {affordableCount > 0 && <span className="notice-badge">{affordableCount}</span>}
-        </label>
-        {hoardLevel > 0 && (
-          <label className="styled-checkbox tooltip-anchor spelunk-hoard-toggle">
+        <div className="spelunk-toggles">
+          <label className="styled-checkbox">
             <input
               type="checkbox"
-              checked={maxAmberHoard}
-              onChange={e => setMaxAmberHoard(e.target.checked)}
+              checked={hideMaxed}
+              onChange={e => setHideMaxed(e.target.checked)}
             />
-            Max Amber Hoard
-            <span className="tooltip tooltip--wrap">
-              Prices the shop as if your Royal Guardian had the Amber Hoard talent at Lv {hoardLevel}: its max
-              level plus added and super talent levels. Amber Hoard is normally left empty and only filled
-              before buying upgrades.
-            </span>
+            Hide maxed
           </label>
-        )}
+          <label className="styled-checkbox">
+            <input
+              type="checkbox"
+              checked={onlyAffordable}
+              onChange={e => setOnlyAffordable(e.target.checked)}
+            />
+            Affordable now
+            {affordableCount > 0 && <span className="notice-badge">{affordableCount}</span>}
+          </label>
+          {hoardLevel > 0 && (
+            <label className="styled-checkbox tooltip-anchor spelunk-hoard-toggle">
+              <input
+                type="checkbox"
+                checked={maxAmberHoard}
+                onChange={e => setMaxAmberHoard(e.target.checked)}
+              />
+              Max Amber Hoard
+              <span className="tooltip tooltip--wrap">
+                Prices the shop as if your Royal Guardian had the Amber Hoard talent at Lv {hoardLevel}: its max
+                level plus added and super talent levels. Amber Hoard is normally left empty and only filled
+                before buying upgrades.
+              </span>
+            </label>
+          )}
+        </div>
       </div>
 
       {groups.length === 0 && <p className="page-empty spelunk-empty">No upgrades match.</p>}
@@ -474,9 +619,11 @@ function UpgradesTab({ snapshot, amberTier }) {
 // PAGE
 // ============================================================
 
-export default function Spelunking({ snapshot }) {
+export default function Spelunking({ snapshot, tomePoints }) {
   const [activeTab, setActiveTab] = useState('upgrades')
   const summary = useMemo(() => getSpelunkingSummary(snapshot), [snapshot])
+  const pow = useMemo(() => getSpelunkingPow(snapshot).value, [snapshot])
+  const amberGain = useMemo(() => getAmberGain(snapshot, { tomePoints }), [snapshot, tomePoints])
 
   if (!snapshot?.spelunking?.upgradeLevels) {
     return (
@@ -494,14 +641,21 @@ export default function Spelunking({ snapshot }) {
       <InfoPanel
         intro="Your World 7 Spelunking progress and the Amber shop."
         items={[
+          'POW and Amber gain at the top are your account totals. Amber gain uses the Tome points you entered in Import Save for the Tome\'s Amber lore bonus.',
           'Costs include your shop discounts (Woahtermelon meal, sushi, jelly and the Royal Guardian Amber Hoard talent) and are shown in your current amber color, like in game.',
           'Turn on Max Amber Hoard to see prices with Amber Hoard at the highest level your account can reach, the way you\'d set it before a shopping trip.',
           'Green upgrades are affordable with the amber you have right now. Faded ones are locked behind the upgrade named on them.',
-          'Lore shows every chapter bonus with how close it is to its cap, plus each tunnel\'s discoveries and the odds of its next Grand Discovery (played character\'s Spelunking LV, no elixirs).',
+          'Tunnels shows each tunnel\'s discoveries and the odds of its next Grand Discovery, as if delving on your highest-level Royal Guardian (the game uses the logged-in character\'s Spelunking LV) with no elixirs. Max Grand Vein shows the odds with that Royal Guardian talent at its highest possible level.',
+          'Lore has three parts: Page Reads plans how to spend your pages, Breakpoints shows every chapter bonus and how close it is to its cap, and Red Jellyfish predicts the Luminous Menagerie\'s daily re-read.',
         ]}
       />
 
-      <Overview summary={summary} />
+      <Overview
+        summary={summary}
+        pow={pow}
+        amberGain={amberGain.value}
+        tomeMissing={amberGain.missing.some(note => note.startsWith('Tome'))}
+      />
 
       <div className="page-tabs spelunk-tabs">
         {TABS.map(tab => (
@@ -522,7 +676,12 @@ export default function Spelunking({ snapshot }) {
           amberTier={summary.amberTier}
         />
       )}
-      {activeTab === 'tunnels' && <TunnelsTab summary={summary} />}
+      {activeTab === 'tunnels' && (
+        <TunnelsTab
+          snapshot={snapshot}
+          summary={summary}
+        />
+      )}
       {activeTab === 'lore' && <LoreTab snapshot={snapshot} />}
     </div>
   )

@@ -316,6 +316,17 @@ body {
   background: var(--tab-color, #a0c4ff);
 }
 
+/* Smaller second row of tabs inside a tab (e.g. Spelunking > Lore) */
+.page-tabs--sub {
+  gap: 24px;
+  margin-top: -4px;
+}
+
+.page-tabs--sub .page-tab-btn {
+  padding: 8px 2px;
+  font-size: 11px;
+}
+
 /* ============================================================
    BUFFS PANEL
    Centered strip of account-wide buffs (components/BuffsPanel).

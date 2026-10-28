@@ -23,6 +23,7 @@
 }
 
 .spelunk-stat {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -76,18 +77,60 @@
   height: 15px;
 }
 
+/* Overview tile icons (shop upgrade sprites etc.) */
+.spelunk-stat-icon {
+  width: 26px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Depth trophies: gold = best depth, blue = Manic depth (art saved at 4x) */
+.spelunk-trophy {
+  width: 18px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.spelunk-stat-value .spelunk-trophy {
+  width: 26px;
+  height: 23px;
+}
+
+.spelunk-stat-manic {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spelunk-stat-manic .spelunk-trophy {
+  width: 14px;
+  height: 12px;
+}
+
 /* ── Upgrade Controls ── */
 .spelunk-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Checkbox filters on their own row under the search box */
+.spelunk-toggles {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 8px 16px;
 }
 
 .spelunk-search {
   width: 260px;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 6px 10px;
   font-size: 12px;
   font-family: inherit;
@@ -250,6 +293,91 @@
 }
 
 /* ── Tunnels Tab ── */
+/* Best Grand Discovery character + Max Grand Vein toggle */
+.spelunk-gd {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.spelunk-gd-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.spelunk-gd-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+.spelunk-gd-toggle {
+  position: relative;
+}
+
+.spelunk-gd-character {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.spelunk-gd-class-icon {
+  width: 28px;
+  height: 28px;
+  background-image: var(--class-icon);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.spelunk-gd-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--class-color, #e5e7eb);
+}
+
+.spelunk-gd-level {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.spelunk-gd-multi {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.spelunk-gd-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9ca3af;
+}
+
+/* Manic Mode on/off toggle, cut from the game UI (saved at 4x, shown at 2x) */
+.spelunk-manic {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.spelunk-manic-img {
+  width: 178px;
+  height: 60px;
+}
+
 .spelunk-tunnel-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -363,7 +491,8 @@
   color: #e5e7eb;
 }
 
-.spelunk-tunnel-haul {
+.spelunk-tunnel-haul,
+.spelunk-tunnel-depth {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1065,3 +1194,94 @@
   color: #a0c4ff;
 }
 
+
+/* ── Red Jellyfish (Lore > Red Jellyfish) ── */
+.spelunk-jelly-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.spelunk-jelly-icon {
+  width: 28px;
+  height: 84px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.spelunk-jelly-intro-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spelunk-jelly-intro-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f87171;
+}
+
+.spelunk-jelly-intro-sub {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.spelunk-jelly-chapter--empty {
+  opacity: 0.5;
+}
+
+.spelunk-jelly-read {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.spelunk-jelly-read-main {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f87171;
+}
+
+.spelunk-jelly-read-sub {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.spelunk-jelly-bonus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.spelunk-jelly-bonus + .spelunk-jelly-bonus {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.spelunk-jelly-bonus:last-child {
+  padding-bottom: 10px;
+}
+
+.spelunk-jelly-bonus--closed {
+  opacity: 0.45;
+}
+
+.spelunk-jelly-bonus-name {
+  flex: 1;
+  color: #e5e7eb;
+}
+
+.spelunk-jelly-bonus-odds {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: #a0c4ff;
+}
+
+.spelunk-jelly-rest .spelunk-odds-row {
+  grid-template-columns: repeat(3, 1fr);
+}

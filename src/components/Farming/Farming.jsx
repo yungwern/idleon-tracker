@@ -46,28 +46,9 @@ const TABS = [
   { id: 'cropEvo', label: 'Crop Evolution' },
 ]
 
-// Per-browser input for a value the save doesn't hold
-const TOME_POINTS_KEY = 'farming_tome_points_input'
 
 const hideBrokenImg = e => {
   e.currentTarget.style.display = 'none'
-}
-
-function readSavedInput(key) {
-  try {
-    return localStorage.getItem(key) ?? ''
-  } catch {
-    return ''
-  }
-}
-
-function saveInput(key, value) {
-  try {
-    if (value.trim() === '') localStorage.removeItem(key)
-    else localStorage.setItem(key, value)
-  } catch {
-    // Storage unavailable: the value just won't persist
-  }
 }
 
 function SeedTag({ seed }) {
@@ -816,8 +797,7 @@ function EvolutionSources({ sources, total }) {
   )
 }
 
-function CropEvolutionTab({ snapshot }) {
-  const [tomePoints, setTomePoints] = useState(() => readSavedInput(TOME_POINTS_KEY))
+function CropEvolutionTab({ snapshot, tomePoints }) {
   const evo = useMemo(
     () => getCropEvolutionBreakdown(snapshot, getRankMulti(snapshot), { tomePoints }),
     [snapshot, tomePoints]
@@ -827,11 +807,6 @@ function CropEvolutionTab({ snapshot }) {
   const hasInsta = instaGrows.banked + instaGrows.daily > 0
   const cropsFound = TOTAL_CROPS - getUndiscoveredCrops(snapshot?.farming).length
   const next = outlooks[0]
-
-  function handleTomePointsChange(e) {
-    setTomePoints(e.target.value)
-    saveInput(TOME_POINTS_KEY, e.target.value)
-  }
 
   return (
     <div className="farming-tab">
@@ -860,21 +835,6 @@ function CropEvolutionTab({ snapshot }) {
             tooltip={`Each insta grow finishes a plot's growth on the spot: one extra evolution roll${instaGrows.plotsPerInsta > 1 ? `, for all ${instaGrows.plotsPerInsta} plots in its column thanks to Mass Irrigation` : ''}. Daily ones come from the Instagrow Generator in the gem shop.`}
           />
         )}
-      </div>
-
-      <div className="farming-input-row">
-        <span className="farming-input-label">Tome Points</span>
-        <input
-          type="number"
-          min="0"
-          className="farming-input"
-          placeholder="e.g. 25000"
-          value={tomePoints}
-          onChange={handleTomePointsChange}
-        />
-        <span className="farming-input-hint">
-          Your total from the game's Tome, for the Crop Chapter bubble (the save doesn't store it).
-        </span>
       </div>
 
       {next ? (
@@ -913,7 +873,7 @@ function CropEvolutionTab({ snapshot }) {
 // MAIN COMPONENT
 // ============================================================
 
-export default function Farming({ snapshot }) {
+export default function Farming({ snapshot, tomePoints }) {
   const [activeTab, setActiveTab] = useState('landranks')
   const farming = snapshot?.farming ?? {}
 
@@ -949,7 +909,10 @@ export default function Farming({ snapshot }) {
       {activeTab === 'landranks' && <LandRanksTab snapshot={snapshot} farming={farming} />}
       {activeTab === 'market' && <MarketTab snapshot={snapshot} farming={farming} />}
       {activeTab === 'exotic' && <ExoticMarketTab farming={farming} legendTalents={snapshot?.legendTalents} />}
-      {activeTab === 'cropEvo' && <CropEvolutionTab snapshot={snapshot} />}
+      {activeTab === 'cropEvo' && <CropEvolutionTab
+        snapshot={snapshot}
+        tomePoints={tomePoints}
+      />}
     </div>
   )
 }

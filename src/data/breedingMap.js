@@ -889,3 +889,7 @@ export const territoryComps = [
     slots: ['rattler', 'looter', 'monolithic', 'refiller', 'defender', 'refiller'],
   },
 ]
+
+// Pet Arena Crucible (Menagerie unlock 8): bonus i is earned once the best wave (OptLacc[628]) passes
+// CRUCIBLE_WAVES[i] (Toolbox randomList[115])
+export const CRUCIBLE_WAVES = [5, 10, 15, 20, 25, 35, 50, 60, 70, 85, 100, 125, 150, 175, 200, 250]

@@ -806,6 +806,11 @@ function parseDroppedTrophies(json) {
   return (parseRaw(json['Cards1']) ?? []).filter(item => String(item).startsWith('Trophy'))
 }
 
+// Slab: how many different items the account has ever looted (Cards1 length)
+function parseLootedItemCount(json) {
+  return (parseRaw(json['Cards1']) ?? []).length
+}
+
 // ── Grimoire (Death Bringer) ──────────────────────────────────────────────────
 // Grimoire[i] = level of grimoire upgrade i (see data/grimoireMap.js)
 function parseGrimoire(json) {
@@ -865,10 +870,12 @@ function parseStamps(json) {
 // ── Sneaking (W6) ─────────────────────────────────────────────────────────────
 // Ninja[107][i] = 1 once Pristine Charm i is unlocked (see data/sneakingMap.js)
 // OptLacc[232] = ninja mastery tier
+// Ninja[102][9] = Jade Emporium unlocks as save letters (index i ↔ SAVE_LETTERS[i])
 function parseSneaking(json, optLacc) {
   const ninja = parseRaw(json['Ninja']) ?? []
   return {
     pristineCharms: (ninja[107] ?? []).map(unlocked => unlocked === 1),
+    jadeUnlocks: String(ninja[102]?.[9] ?? ''),
     ninjaMasteryTier: Number(optLacc[232]) || 0,
   }
 }
@@ -1007,13 +1014,25 @@ function parseEquinox(json) {
 // ── Research (W7) ─────────────────────────────────────────────────────────────
 // Research[0] = grid square levels, [1] = observation placed on each square (-1 none),
 // [9] = stickers owned per type, [11] = King Rat Crowns reclaimed (one entry each)
-function parseResearch(json) {
+// OptLacc[500] = Spelunking POW % from research
+function parseResearch(json, optLacc) {
   const research = parseRaw(json['Research']) ?? []
   return {
+    spelunkingPow: Number(optLacc[500]) || 0,
     gridLevels: research[0] ?? [],
     gridObservations: research[1] ?? [],
     stickerLevels: (research[9] ?? []).map(level => Number(level) || 0),
     kingRatCrowns: (research[11] ?? []).length,
+  }
+}
+
+// ── Luminous Menagerie (W7) ───────────────────────────────────────────────────
+// Menagerie[2][i] = 1 once unlock i is owned, Menagerie[3][i] = level of boost i (see utils/menagerieUtils.js)
+function parseMenagerie(json) {
+  const menagerie = parseRaw(json['Menagerie']) ?? []
+  return {
+    unlocks: (menagerie[2] ?? []).map(value => Number(value) >= 1),
+    boostLevels: (menagerie[3] ?? []).map(value => Number(value) || 0),
   }
 }
 
@@ -1032,9 +1051,11 @@ function parseGaming(json) {
 
 // ── Spelunking (W7) ───────────────────────────────────────────────────────────
 // Spelunk[0][i] > 0 once lore boss i is defeated, [1] best depth per tunnel, [2] biggest haul per tunnel,
-// [4] = [amber, overstim LV, overstim progress, exalted frags, prisma frags, .., .., .., trackometer LV, .., manic mode],
+// [4] = [amber, overstim LV, overstim progress, exalted frags, prisma frags, .., .., .., trackometer LV,
+//   trackometer progress, manic mode],
 // [5] shop upgrade levels (-1 past the last upgrade), [6] discovery names, [8] lore chapter levels, [44] grand discoveries per tunnel,
-// [47] best manic depth per tunnel. OptLacc[410] = lore pages read today. Math → utils/spelunkingUtils.js
+// [13][2] = Tome lore bonuses unlocked, [47] best manic depth per tunnel. OptLacc[410] = lore pages read today, [478] = tutorial step.
+// Math → utils/spelunkingUtils.js
 function parseSpelunking(json, optLacc) {
   const spelunk = parseRaw(json['Spelunk']) ?? []
   const numbers = list => (list ?? []).map(value => Number(value) || 0)
@@ -1049,6 +1070,7 @@ function parseSpelunking(json, optLacc) {
     exaltedFragments: Number(status[3]) || 0,
     prismaFragments: Number(status[4]) || 0,
     trackometerLevel: Number(status[8]) || 0,
+    trackometerProgress: Number(status[9]) || 0,
     manicMode: Number(status[10]) >= 1,
     upgradeLevels: numbers(spelunk[5]),
     chapterLevels: numbers(spelunk[8]),
@@ -1056,6 +1078,20 @@ function parseSpelunking(json, optLacc) {
     grandDiscoveries: numbers(spelunk[44]),
     bestManicDepths: numbers(spelunk[47]),
     pageReadsToday: Number(optLacc[410]) || 0,
+    loreBonusesUnlocked: Number(spelunk[13]?.[2]) || 0,
+    tutorialStep: Number(optLacc[478]) || 0,
+    redJelly: parseRedJelly(json),
+  }
+}
+
+// W7 Luminous Menagerie Red Jellyfish: Menagerie[2][7] = unlocked, Menagerie[0][6] = days rested (READ is
+// ready at 1+, resets to 0), Menagerie[4][c] = pages of chapter c read since the jelly came out (never spent).
+function parseRedJelly(json) {
+  const menagerie = parseRaw(json['Menagerie']) ?? []
+  return {
+    unlocked: Number(menagerie?.[2]?.[7]) >= 1,
+    daysRested: Number(menagerie?.[0]?.[6]) || 0,
+    trackedPages: (menagerie?.[4] ?? []).map(value => Number(value) || 0),
   }
 }
 
@@ -1184,6 +1220,7 @@ export function extractSnapshot(rawJson) {
     royalGuardian: parseRoyalGuardian(json),
     alchemy: parseAlchemy(json),
     droppedTrophies: parseDroppedTrophies(json),
+    lootedItemCount: parseLootedItemCount(json),
     grimoire: parseGrimoire(json),
     upgradeVault: parseUpgradeVault(json),
     achievements: parseAchievements(json),
@@ -1207,7 +1244,11 @@ export function extractSnapshot(rawJson) {
     zenith: parseZenith(json),
     starSigns: parseStarSigns(json),
     equinox: parseEquinox(json),
-    research: parseResearch(json),
+    research: parseResearch(json, optLacc),
+    menagerie: parseMenagerie(json),
+    // OptLacc[464] = Clam Work worker class, [628] = best Pet Arena Crucible wave
+    clamWorkerClass: Number(optLacc[464]) || 0,
+    crucibleBestWave: Number(optLacc[628]) || 0,
     gaming: parseGaming(json),
     spelunking: parseSpelunking(json, optLacc),
     eventShop: parseEventShop(optLacc),

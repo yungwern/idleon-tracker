@@ -1,14 +1,14 @@
-import { spelunkingUpgradeMap, spelunkingTunnels, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, amberTiers, MAX_GRAND_DISCOVERIES } from '../data'
+import { spelunkingUpgradeMap, spelunkingTunnels, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, amberTiers, spelunkingLoreTomeBonuses, MAX_GRAND_DISCOVERIES } from '../data'
 import { compoundingOutpostingMulti } from '../data/royalOutposts'
 import { growth } from './mathUtils'
 import { getMealBonusByStat } from './cookingUtils'
 import { getSushiBonus } from './sushiUtils'
 import { getJellyBonus } from './jellyUtils'
-import { getAccountTalentBonus, getMaxPossibleTalentBonus } from './talentUtils'
+import { getAccountTalentBonus, getAccountTalentLevel, getMaxPossibleTalentBonus } from './talentUtils'
 import { getSkillLevel, getTotalSkillLevel, isSkillMasteryBonusUnlocked } from './skillUtils'
 import { getArtifactBonus } from './sailingUtils'
 import { getBubbleBonus } from './alchemyUtils'
-import { getPassiveCardBonus } from './cardUtils'
+import { getPassiveCardBonus, getCardStars, isCardOwned } from './cardUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { isMeritocracyBonusSelected } from './voteUtils'
 import { getZenithBonus } from './zenithUtils'
@@ -16,6 +16,26 @@ import { getMineheadBonus } from './mineheadUtils'
 import { getGlunkoBonus } from './cavernUtils'
 import { getActiveCharacter } from './characterUtils'
 import { formatBigNumber } from './cogBoardUtils'
+import { getWinnerBonusByName } from './summoningUtils'
+import { getClamWorkBonus } from './clamWorkUtils'
+import { getCrucibleBonus } from './breedingUtils'
+import { getMenagerieBoost } from './menagerieUtils'
+import { getMeritBonus } from './meritUtils'
+import { getGemShopPurchases } from './gemShopUtils'
+import { getCompanionBonus } from './companionUtils'
+import { getDancingCoralBonus, DANCING_CORAL } from './coralReefUtils'
+import { getCropDepotBonus, CROP_DEPOT_BONUSES } from './farmingUtils'
+import { getSlabBonus, SLAB_BONUSES } from './lootyUtils'
+import { getMsaSpelunkingPow, getPaletteBonus } from './gamingUtils'
+import { getStickerBonus } from './researchUtils'
+import { getExoticBonus } from './exoticUtils'
+import { getButtonBonus } from './buttonUtils'
+import { getArcadeBonus } from './arcadeUtils'
+import { getLampBonus } from './cavernUtils'
+import { getStampBonusByEffect } from './stampUtils'
+import { getVialBonusByStat } from './alchemyUtils'
+import { getGrimoireBonus } from './grimoireUtils'
+import { getArmorSetBonus } from './armorSetUtils'
 
 // Spelunking (W7), ported from IdleonToolbox parsers/world-7/spelunking.ts.
 // Reads snapshot.spelunking (lib/extractSnapshot.js parseSpelunking).
@@ -75,6 +95,9 @@ export const SPELUNKING_UPGRADES = {
   manicMode: 53,
   pinkAmber: 66,
   amberSupplySwap: 67,
+  staminaTrackometer: 59,
+  amberTrack: 60,
+  maximaTrack: 61,
 }
 
 const upgradeLevel = (spelunking, index) => Math.max(0, spelunking?.upgradeLevels?.[index] ?? 0)
@@ -208,11 +231,56 @@ export function getLoreChapters(snapshot) {
 
 // Chance (0-1) of a Grand Discovery when destroying a tunnel's final object type, before the 2x-rarer-per-find
 // rule (Toolbox grandDiscoveriesChance). Uses the played character's Spelunking LV, no elixirs.
-export function getGrandDiscoveryChance(snapshot) {
+const GRAND_VEIN_CLASS = 'Royal Guardian'
+
+// Who to delve on for Grand Discoveries: the highest-Spelunking-LV Royal Guardian, since only they can
+// fill Grand Vein (by far the bigger boost) and the game also reads the logged-in character's Spelunking
+// LV. Accounts without a Royal Guardian fall back to the highest-level Spelunker.
+export function getBestGrandDiscoveryCharacter(snapshot) {
+  const characters = snapshot?.characters ?? []
+  const hasGuardian = characters.some(character => character?.class === GRAND_VEIN_CLASS)
+  let index = -1
+  characters.forEach((character, i) => {
+    if (hasGuardian && character?.class !== GRAND_VEIN_CLASS) return
+    if (index === -1 || getSkillLevel(character, 'spelunking') > getSkillLevel(characters[index], 'spelunking')) index = i
+  })
+  const percentPerLevel = getMineheadBonus(snapshot?.minehead, GD_MINEHEAD) + getSushiBonus(snapshot?.sushi, GD_SUSHI)
+  const multiFor = character => 1 + (getSkillLevel(character, 'spelunking') * percentPerLevel) / 100
+  const played = getActiveCharacter(snapshot)
+  return {
+    index,
+    character: characters[index] ?? null,
+    isRoyalGuardian: hasGuardian,
+    level: getSkillLevel(characters[index], 'spelunking'),
+    percentPerLevel,
+    multi: multiFor(characters[index]),
+    played,
+    playedLevel: getSkillLevel(played, 'spelunking'),
+    playedMulti: multiFor(played),
+  }
+}
+
+// Royal Guardian Grand Vein (}x Grand Discovery chance) now and at the highest level the account could
+// put it (people only fill it before Grand Discovery runs, like Amber Hoard before shopping)
+export function getGrandVein(snapshot) {
+  const max = getMaxPossibleTalentBonus(snapshot, GRAND_VEIN)
+  return {
+    level: getAccountTalentLevel(snapshot, GRAND_VEIN).value,
+    multi: Math.max(1, getAccountTalentBonus(snapshot, GRAND_VEIN).value),
+    maxLevel: max.level,
+    maxMulti: Math.max(1, max.value),
+  }
+}
+
+// Chance of a Grand Discovery per rock with none found yet in the tunnel (Toolbox
+// "Spelunk:GrandDiscoveries_FindChance"), using the best Spelunker's LV (see above).
+// options.maxGrandVein: price in Grand Vein at its max possible level instead of the current one.
+export function getGrandDiscoveryChance(snapshot, options = {}) {
   const spelunking = snapshot?.spelunking
   const totals = getSpelunkingTotals(snapshot)
-  const spelunkingLevel = getSkillLevel(getActiveCharacter(snapshot), 'spelunking')
-  const grandVein = Math.max(1, getAccountTalentBonus(snapshot, GRAND_VEIN).value)
+  const spelunkingLevel = getBestGrandDiscoveryCharacter(snapshot).level
+  const vein = getGrandVein(snapshot)
+  const grandVein = options.maxGrandVein ? vein.maxMulti : vein.multi
   return GRAND_DISCOVERY_BASE
     * (1 + getUpgradeBonus(spelunking, SPELUNKING_UPGRADES.grandDiscoveries, totals) / 100)
     * (1 + getZenithBonus(snapshot?.zenith, GD_ZENITH) / 100)
@@ -496,15 +564,34 @@ export function getOverstim(snapshot) {
     required,
     ratePerHour,
     hoursToNext: ratePerHour > 0 ? (required - progress) / ratePerHour : null,
+    // the "+% Amber" the game shows on the meter (Toolbox getOverstimBonus)
+    amberBonus: unlocked ? (30 + getUpgradeBonus(spelunking, SPELUNKING_UPGRADES.overstimMeter, getSpelunkingTotals(snapshot))) * level : 0,
     missing: regen.missing,
+  }
+}
+
+// Stamina Trackometer (upgrade 59): fills with stamina used in delves, each LV costs 1.5x more
+// (Toolbox overstimQtyREQ2 = 1000 × 1.5^LV). Upgrades 59-61 give their bonus per Trackometer LV.
+export function getTrackometer(snapshot) {
+  const spelunking = snapshot?.spelunking
+  const totals = getSpelunkingTotals(snapshot)
+  const level = spelunking?.trackometerLevel ?? 0
+  return {
+    unlocked: upgradeLevel(spelunking, SPELUNKING_UPGRADES.staminaTrackometer) >= 1,
+    level,
+    progress: spelunking?.trackometerProgress ?? 0,
+    required: 1000 * Math.pow(1.5, level),
+    expBonus: getUpgradeBonus(spelunking, SPELUNKING_UPGRADES.staminaTrackometer, totals),
+    amberBonus: getUpgradeBonus(spelunking, SPELUNKING_UPGRADES.amberTrack, totals),
+    maxStaminaBonus: getUpgradeBonus(spelunking, SPELUNKING_UPGRADES.maximaTrack, totals),
   }
 }
 
 // Each tunnel's discoveries (found or not) and the odds of its next Grand Discovery
 // (each one found makes the next 2x rarer; none after the 10th)
-export function getTunnelDiscoveries(snapshot) {
+export function getTunnelDiscoveries(snapshot, options = {}) {
   const found = new Set(snapshot?.spelunking?.discoveries ?? [])
-  const chance = getGrandDiscoveryChance(snapshot)
+  const chance = getGrandDiscoveryChance(snapshot, options)
   return spelunkingTunnels.map((name, i) => {
     const grandFound = snapshot?.spelunking?.grandDiscoveries?.[i] ?? 0
     const tunnel = spelunkingTunnelRocks[i]
@@ -679,6 +766,209 @@ export function getReadOdds(unlocked) {
   return spelunkingReadOdds[Math.max(1, Math.min(spelunkingReadOdds.length, unlocked)) - 1]
 }
 
+// ── Lore display helpers (shared by the Lore sub-tabs) ─────────────────────────
+
+// 548335627 → "548M", 25000 → "25,000"
+export function formatPages(value) {
+  return value >= 1e6 ? formatBigNumber(value) : Math.round(value ?? 0).toLocaleString('en-US')
+}
+
+// Chapter bonus name without its number: "}x_Total|Spelunking_POW" → "Total Spelunking POW"
+export function loreBonusName(name) {
+  return name.replace(/\|/g, ' ').replace(/^\+?[{}](%|x)?\s*/, '')
+}
+
+// ── Red Jellyfish ─────────────────────────────────────────────────────────────
+
+// Toolbox "MenagerieStuff:RedJellyReadingMulti": floor(days rested ^ 0.74), at least 1
+export function getRedJellyReadingMulti(daysRested) {
+  return Math.floor(Math.max(1, Math.pow(Math.max(0, daysRested), 0.74)))
+}
+
+// The Red Jellyfish's READ: one normal read per chapter of every page it has tracked for that chapter
+// (pages aren't spent). Checked against Eli's before/after saves: each chapter matched getReadResult. It
+// also gives a small +1-3 to each chapter's first bonus, which isn't counted here. Whether the reading
+// multi scales LVs is untested (only seen at 1x), so `multiTotal` assumes it does.
+export function getRedJellyRead(snapshot) {
+  const jelly = snapshot?.spelunking?.redJelly
+  const daysRested = jelly?.daysRested ?? 0
+  const multi = getRedJellyReadingMulti(daysRested)
+  const chapters = spelunkingChapterMap.map((chapter, c) => {
+    const pages = jelly?.trackedPages?.[c] ?? 0
+    const read = getReadResult(snapshot, pages)
+    const open = chapter.bonuses.filter(bonus => pages >= bonus.pages).length
+    const odds = open > 0 ? getReadOdds(open) : []
+    return {
+      index: c,
+      title: chapter.title,
+      pages,
+      read,
+      bonuses: chapter.bonuses.map((bonus, i) => ({
+        name: bonus.name,
+        pages: bonus.pages,
+        open: i < open,
+        chance: odds[i] ?? 0,
+      })),
+    }
+  })
+  const total = chapters.reduce((sum, chapter) => sum + chapter.read.exact, 0)
+  return {
+    unlocked: jelly?.unlocked ?? false,
+    daysRested,
+    ready: daysRested >= 1,
+    multi,
+    chapters,
+    total,
+    multiTotal: total * multi,
+    tracked: chapters.filter(chapter => chapter.pages > 0).length,
+  }
+}
+
+// Reading multi after resting `days`, for the "read every day" note (multi is always below the days waited)
+export function getRedJellyRestTable(dayList = [1, 3, 5, 7, 14, 30]) {
+  return dayList.map(days => ({
+    days,
+    multi: getRedJellyReadingMulti(days),
+  }))
+}
+
+// ── POW & Amber gain ──────────────────────────────────────────────────────────
+
+const LORE_TOME_GRIMOIRE = 17
+const LORE_TOME_ARMOR_SET = 'TROLL_SET'
+export const LORE_TOME_BONUSES = {
+  amber: 4,
+}
+
+// Tome lore bonus i as a % (game: Thingies LoreEpiBon). Needs the Tome points the player typed in.
+export function getLoreTomeBonus(snapshot, index, tomePoints) {
+  const bonus = spelunkingLoreTomeBonuses[index]
+  if (!bonus || (snapshot?.spelunking?.loreBonusesUnlocked ?? 0) <= index) return 0
+  const multi = 1 + (getGrimoireBonus(snapshot?.grimoire, LORE_TOME_GRIMOIRE)
+    + getArmorSetBonus(snapshot?.armorSmithySets, LORE_TOME_ARMOR_SET)) / 100
+  const p = Math.pow(Math.floor(Math.max(0, (Number(tomePoints) || 0) - bonus.tome) / 100), 0.7)
+  return multi * bonus.base * (p / (25 + p))
+}
+
+const SPELUNK_TUTORIAL_POW = 2 // POW is locked to 2 until the Spelunking tutorial (OptLacc[478]) passes step 8
+const POW_GEM_SHOP = 43 // 2x POW per purchase
+const POW_COMPANION = 143 // Boomy Mine
+const POW_MENAGERIE_BOOST = 22
+const POW_CLAM_WORK = 11
+const POW_CRUCIBLE = [3, 8] // 30x and 50x (added together)
+const POW_MERIT = [6, 0] // W7 merit: +15% POW multi per level
+const POW_EXOTIC = 42
+const POW_CARD_EFFECT = '+{% Spelunk POW (Passive)'
+const POW_CARD_CAP = 30
+const POW_STICKER = 6
+const POW_PALETTE = 13
+const POW_SUSHI = 20
+const POW_JELLIES = [38, 21]
+const POW_BUTTON = 6
+const POW_TOOLS = [14, 15, 16, 17]
+
+// Total Spelunking POW (Toolbox getPower): Learning the POW × every POW multi. Returns { value, missing }.
+// Leaves out the per-delve rock counters, which are 1 outside a delve.
+export function getSpelunkingPow(snapshot) {
+  const spelunking = snapshot?.spelunking
+  const totals = getSpelunkingTotals(snapshot)
+  const upg = index => getUpgradeBonus(spelunking, index, totals)
+  const farming = snapshot?.farming
+  const depot = getCropDepotBonus(snapshot, CROP_DEPOT_BONUSES.spelunky)
+  const slab = getSlabBonus(snapshot, SLAB_BONUSES.spelunkingPow)
+  const meal = getMealBonusByStat(snapshot, 'SplkPOW')
+  const chapters = [[1, 2], [4, 2], [5, 0], [6, 2]]
+    .reduce((total, [chapter, i]) => total * Math.max(1, getChapterBonus(snapshot, chapter, i)), 1)
+  const card = Math.min(getPassiveCardBonus(POW_CARD_EFFECT, snapshot?.cards), POW_CARD_CAP)
+
+  const multi = (1 + getWinnerBonusByName(snapshot, '<x Spelunk POW') / 100)
+    * (1 + getClamWorkBonus(snapshot, POW_CLAM_WORK))
+    * (30 * getCrucibleBonus(snapshot, POW_CRUCIBLE[0]) + 50 * getCrucibleBonus(snapshot, POW_CRUCIBLE[1]) + 1)
+    * (1 + getMenagerieBoost(snapshot?.menagerie, POW_MENAGERIE_BOOST) / 100)
+    * (1 + getMeritBonus(snapshot?.merits, ...POW_MERIT) / 100)
+    * Math.max(1, Math.pow(2, getGemShopPurchases(snapshot?.gemShop, POW_GEM_SHOP)))
+    * chapters
+    * Math.max(1, getCompanionBonus(snapshot?.companions, POW_COMPANION))
+    * (1 + upg(1) / 100)
+    * (1 + getDancingCoralBonus(snapshot, DANCING_CORAL.spelunkingPow) / 100)
+    * (1 + (depot.value + slab.value + getMsaSpelunkingPow(snapshot) + meal.value) / 100)
+    * (1 + upg(2) / 100)
+    * (1 + (snapshot?.research?.spelunkingPow ?? 0) / 100)
+    * (1 + upg(3) / 100)
+    * (1 + getStickerBonus(snapshot, POW_STICKER) / 100)
+    * (1 + getPaletteBonus(snapshot, POW_PALETTE) / 100)
+    * (1 + upg(46) / 100)
+    * (1 + upg(54) / 100)
+    * (1 + (getExoticBonus(farming, POW_EXOTIC) + card) / 100)
+    * (1 + POW_TOOLS.reduce((total, index) => total + upg(index), 0) / 100)
+    * (1 + getSushiBonus(snapshot?.sushi, POW_SUSHI) / 100)
+    * POW_JELLIES.reduce((total, index) => total * (1 + getJellyBonus(snapshot?.jellyOperator, index) / 100), 1)
+    * (1 + getButtonBonus(snapshot, POW_BUTTON) / 100)
+
+  const inTutorial = (spelunking?.tutorialStep ?? Infinity) < 8
+  return {
+    value: inTutorial ? SPELUNK_TUTORIAL_POW : (1 + upg(0)) * multi,
+    missing: [...new Set([...depot.missing, ...slab.missing, ...meal.missing])],
+  }
+}
+
+const AMBER_CARD = 'w7a7' // Litterfish: counted twice, min(5 × LV, 40) + min(10 × LV, 100)
+const AMBER_EXOTIC = 43
+const AMBER_SUSHI = 28
+const AMBER_RIFT_MASTERY = 6 // Rift Skill Mastery bonus 6 for Spelunking: 1.5x amber
+const AMBER_STAMP = 'Spelunking Amber gain'
+
+// Amber gain multi (Toolbox getAmberGain). Returns { value, missing }; the Tome lore bonus needs
+// tomePoints (typed in by the player), and is flagged missing without it.
+export function getAmberGain(snapshot, { tomePoints } = {}) {
+  const spelunking = snapshot?.spelunking
+  const totals = getSpelunkingTotals(snapshot)
+  const upg = index => getUpgradeBonus(spelunking, index, totals)
+  const depot = getCropDepotBonus(snapshot, CROP_DEPOT_BONUSES.spelunky)
+  const stamp = getStampBonusByEffect(snapshot, AMBER_STAMP)
+  const vial = getVialBonusByStat(snapshot, '7amber')
+  const meal = getMealBonusByStat(snapshot, 'SplkAmb')
+  const cardLevel = isCardOwned(AMBER_CARD, snapshot?.cards) ? getCardStars(AMBER_CARD, snapshot?.cards) + 1 : 0
+  const card = Math.min(5 * cardLevel, 40) + Math.min(10 * cardLevel, 100)
+  const overstim = (30 + upg(SPELUNKING_UPGRADES.overstimMeter)) * getOverstim(snapshot).level
+  const rift = isSkillMasteryBonusUnlocked(snapshot, 'spelunking', AMBER_RIFT_MASTERY) ? 1 : 0
+  const hasTome = Number(tomePoints) > 0
+  const lore = hasTome ? getLoreTomeBonus(snapshot, LORE_TOME_BONUSES.amber, tomePoints) : 0
+  const chapters = [[1, 3], [5, 1], [4, 1]]
+    .reduce((total, [chapter, i]) => total * Math.max(1, getChapterBonus(snapshot, chapter, i)), 1)
+
+  const value = (1 + getArcadeBonus(snapshot, 'Spelunking Amber') / 100)
+    * (1 + (depot.value + getLampBonus(snapshot, 3, 0) + stamp.value + vial.value + meal.value) / 100)
+    * (1 + getDancingCoralBonus(snapshot, DANCING_CORAL.amberGain) / 100)
+    * (1 + card / 100)
+    * (1 + getWinnerBonusByName(snapshot, '<x Amber Gain') / 100)
+    * (1 + (getUpgradeBaseBonus(spelunking, 7) + upg(20) + upg(41) + upg(51)) / 100)
+    * (1 + (upg(SPELUNKING_UPGRADES.overstimMeter) * overstim) / 100)
+    * (1 + (50 * rift) / 100)
+    * (1 + upg(44) / 100)
+    * (1 + upg(8) / 100)
+    * (1 + lore / 100)
+    * chapters
+    * (1 + getExoticBonus(snapshot?.farming, AMBER_EXOTIC) / 100)
+    * (1 + upg(9) / 100)
+    * (1 + upg(10) / 100)
+    * (1 + upg(21) / 150)
+    * (1 + getSushiBonus(snapshot?.sushi, AMBER_SUSHI) / 100)
+    * (1 + 14 * upg(SPELUNKING_UPGRADES.amberSupplySwap))
+    * (1 + upg(60) / 100)
+
+  return {
+    value,
+    missing: [...new Set([
+      ...depot.missing,
+      ...stamp.missing,
+      ...vial.missing,
+      ...meal.missing,
+      ...(hasTome || (spelunking?.loreBonusesUnlocked ?? 0) <= LORE_TOME_BONUSES.amber ? [] : ['Tome points (Amber lore bonus)']),
+    ])],
+  }
+}
+
 // Headline numbers for the Spelunking overview strip
 export function getSpelunkingSummary(snapshot) {
   const spelunking = snapshot?.spelunking
@@ -694,6 +984,7 @@ export function getSpelunkingSummary(snapshot) {
     maxGrandDiscoveries: tunnels * MAX_GRAND_DISCOVERIES,
     maxDiscoveries: spelunkingTunnelRocks.reduce((total, tunnel) => total + tunnel.rocks.length, 0),
     overstim: getOverstim(snapshot),
+    trackometer: getTrackometer(snapshot),
     manicUnlocked: upgradeLevel(spelunking, SPELUNKING_UPGRADES.manicMode) >= 1,
     manicMode: spelunking?.manicMode ?? false,
     elixirTypes: getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.elixirTypes),

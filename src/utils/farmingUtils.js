@@ -29,6 +29,8 @@ import { countClearedMaps, WORLD_6_FIRST_MAP, WORLD_6_MAP_COUNT } from './mapUti
 import { getExoticBonus } from './exoticUtils'
 import { getEmperorBonus } from './emperorUtils'
 import { getGemShopPurchases } from './gemShopUtils'
+import { isJadeUnlocked } from './sneakingUtils'
+import { getAssumedMainframeBonus, LAB_BONUSES } from './labUtils'
 
 // Farming math, checked against IdleonToolbox parsers/world-6/farming.ts.
 // `farming` is snapshot.farming (see parseFarming in lib/extractSnapshot.js).
@@ -496,7 +498,7 @@ const statusOf = ({ missing }) => ({
   missing,
 })
 
-// tomePoints: total Tome points typed in by the player (not in the save).
+// tomePoints: total Tome points typed in by the player in Import Save (not in the save).
 export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = {}) {
   const farming = snapshot?.farming ?? {}
   const market = farming.marketLevels ?? []
@@ -546,7 +548,7 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = 
       ? source('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 1 + cropChapter * tomeMulti / 100, {
         note: `${Number(tomePoints).toLocaleString()} Tome points (x${tomeMulti})`,
       })
-      : needsInput('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Enter your Tome points above (the save doesn\'t store them)'),
+      : needsInput('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Enter your Tome points in Import Save (the save doesn\'t store them)'),
     source('cropius', 'Cropius Mapper (bubble)', 'Alchemy', 1 + cropius * clearedW6Maps / 100, {
       note: `${clearedW6Maps} World 6 maps cleared across characters`,
     }),
@@ -865,4 +867,29 @@ export function multiNeededWithin(outlook, seconds) {
   const cycles = Math.max(1, seconds / growthSeconds)
   const target = Math.min(1, 1 / (cycles * plotCount))
   return Math.max(1, Math.min(multiNeeded, target / chance))
+}
+
+// ── Crop Depot bonuses ────────────────────────────────────────────────────────
+// Crop Depot (Crop Scientist) bonuses unlocked by Jade Emporium pens (Toolbox getCropDepotBonuses).
+// Only the ones other pages read so far. Returns { value, missing } as a %.
+const DEPOT_GRIMOIRE = 22
+const DEPOT_EXOTIC = 40
+const DEPOT_VAULT = 79
+
+export const CROP_DEPOT_BONUSES = {
+  spelunky: { jade: 40, value: crops => 5 * Math.round(Math.max(0, crops - 200)) }, // Science Fancy Pen: Spelunking POW + Amber
+}
+
+export function getCropDepotBonus(snapshot, bonus) {
+  const farming = snapshot?.farming
+  if (!bonus || !isJadeUnlocked(snapshot?.sneaking, bonus.jade)) return { value: 0, missing: [] }
+  const lab = getAssumedMainframeBonus(snapshot, LAB_BONUSES.depotStudiesPhd)
+  const extra = (1 + lab.value / 100)
+    * (1 + (getGrimoireBonus(snapshot?.grimoire, DEPOT_GRIMOIRE)
+      + getExoticBonus(farming, DEPOT_EXOTIC)
+      + getUpgradeVaultBonus(snapshot?.upgradeVault, DEPOT_VAULT)) / 100)
+  return {
+    value: bonus.value(farming?.cropsFound ?? 0) * extra,
+    missing: lab.missing,
+  }
 }

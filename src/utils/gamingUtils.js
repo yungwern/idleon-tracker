@@ -37,3 +37,19 @@ export function getPaletteBonus(snapshot, index) {
   const blackStarMulti = Math.max(1, 1 + stars + Math.floor(stars / 2))
   return bonus * (1 + legend / 100) * (1 + 0.5 * loreBoss) * blackStarMulti
 }
+
+// ── MSA (worship totem waves) ─────────────────────────────────────────────────
+const MSA_TOTALIZER = 7
+const MSA_SPELUNKING = 27
+
+// Total best wave across every worship totem
+export function getTotalTotemWaves(snapshot) {
+  return (snapshot?.worship?.totems ?? []).reduce((total, totem) => total + (totem.maxWave || 0), 0)
+}
+
+// MSA Spelunking POW %: 2.5 per 10 totem waves past 300, once MSA Totalizer and MSA Spelunking are unlocked
+export function getMsaSpelunkingPow(snapshot) {
+  const gaming = snapshot?.gaming
+  if (!isSuperbitUnlocked(gaming, MSA_TOTALIZER) || !isSuperbitUnlocked(gaming, MSA_SPELUNKING)) return 0
+  return 2.5 * Math.max(0, Math.floor((getTotalTotemWaves(snapshot) - 300) / 10))
+}

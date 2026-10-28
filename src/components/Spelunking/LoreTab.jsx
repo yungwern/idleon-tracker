@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { getLoreChapters, getReadLevelTable, getReadOdds, getReadMulti, getMaxDailyReads, planSpread, READ_SPREADS } from '../../utils/spelunkingUtils'
-import { formatBigNumber } from '../../utils/cogBoardUtils'
+import { getLoreChapters, getReadLevelTable, getReadOdds, getReadMulti, getMaxDailyReads, planSpread, READ_SPREADS, formatPages, loreBonusName as bareName } from '../../utils/spelunkingUtils'
+import RedJellyTab from './RedJellyTab'
 
 const hideBrokenImg = e => {
   e.currentTarget.style.display = 'none'
@@ -31,14 +31,6 @@ function amountText(name, value) {
   const sign = name.startsWith('+') ? '+' : ''
   return /\{%/.test(name) ? `${sign}${formatValue(value)}%` : `${sign}${formatValue(value)}`
 }
-
-// Name without its number, for bonuses not unlocked yet: "}x_Total|Spelunking_POW" → "Total Spelunking POW"
-function bareName(name) {
-  return name.replace(/\|/g, ' ').replace(/^\+?[{}](%|x)?\s*/, '')
-}
-
-// 548335627 → "548M"
-const formatPages = value => (value >= 1e6 ? formatBigNumber(value) : formatCount(value))
 
 // ============================================================
 // CHAPTERS
@@ -317,28 +309,57 @@ function ReadingReference({ snapshot }) {
 // LORE TAB
 // ============================================================
 
+const LORE_TABS = [
+  { id: 'reads', label: 'Page Reads' },
+  { id: 'breakpoints', label: 'Breakpoints' },
+  { id: 'jelly', label: 'Red Jellyfish' },
+]
+
 export default function LoreTab({ snapshot }) {
   const chapters = useMemo(() => getLoreChapters(snapshot), [snapshot])
+  const [activeTab, setActiveTab] = useState('reads')
 
   return (
     <>
-      <div className="spelunk-section-label">Read Planner</div>
-      <ReadPlanner
-        snapshot={snapshot}
-        chapters={chapters}
-      />
-      <ReadingReference snapshot={snapshot} />
-
-      <div className="spelunk-section-label">Chapters</div>
-      <div className="spelunk-chapter-grid">
-        {chapters.map(chapter => (
-          <ChapterCard
-            key={chapter.index}
-            chapter={chapter}
-          />
+      <div className="page-tabs page-tabs--sub spelunk-tabs">
+        {LORE_TABS.map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`page-tab-btn${activeTab === tab.id ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
         ))}
       </div>
 
+      {activeTab === 'reads' && (
+        <>
+          <div className="spelunk-section-label">Read Planner</div>
+          <ReadPlanner
+            snapshot={snapshot}
+            chapters={chapters}
+          />
+          <ReadingReference snapshot={snapshot} />
+        </>
+      )}
+
+      {activeTab === 'breakpoints' && (
+        <>
+          <div className="spelunk-section-label">Chapter Bonuses</div>
+          <div className="spelunk-chapter-grid">
+            {chapters.map(chapter => (
+              <ChapterCard
+                key={chapter.index}
+                chapter={chapter}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {activeTab === 'jelly' && <RedJellyTab snapshot={snapshot} />}
     </>
   )
 }

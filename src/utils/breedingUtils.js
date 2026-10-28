@@ -1,4 +1,5 @@
-import { breedingMap, breedingBuffMap, BASE_MAX_SHINY_LEVEL } from '../data/breedingMap'
+import { breedingMap, breedingBuffMap, BASE_MAX_SHINY_LEVEL, CRUCIBLE_WAVES } from '../data/breedingMap'
+import { isMenagerieUnlockOwned } from './menagerieUtils'
 
 // Breeding (W4) shiny pet math, from IdleonToolbox parsers/world-4/breeding.ts.
 // snapshot.breeding.shinyPetsLevels[world][pet] = shiny progress counter.
@@ -38,4 +39,20 @@ export function getShinyPassiveTotal(breeding, passive) {
     const level = getShinyLevel(breeding?.shinyPetsLevels, worldIndex, petIndex, maxShinyLevel)
     return sum + Math.round(pet.baseValue * level)
   }, 0)
+}
+
+// ── Pet Arena Crucible ────────────────────────────────────────────────────────
+const CRUCIBLE_UNLOCK = 8 // Menagerie unlock that opens the Crucible
+
+// Crucible bonuses earned: how many CRUCIBLE_WAVES the best wave (snapshot.crucibleBestWave) has passed
+export function getCrucibleBonusCount(snapshot) {
+  if (!isMenagerieUnlockOwned(snapshot?.menagerie, CRUCIBLE_UNLOCK)) return 0
+  const best = snapshot?.crucibleBestWave ?? 0
+  const index = CRUCIBLE_WAVES.findIndex(wave => best < wave)
+  return index === -1 ? CRUCIBLE_WAVES.length : index
+}
+
+// Crucible bonus i: 1 once earned, else 0 (game: Breeding PetArenaCrucBonus)
+export function getCrucibleBonus(snapshot, index) {
+  return getCrucibleBonusCount(snapshot) > index ? 1 : 0
 }

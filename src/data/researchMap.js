@@ -973,3 +973,6 @@ export const researchObservationBonuses = [25, 15, 50, 20, 20, 35, 25, 30, 35, 6
 
 // Sticker base bonus per sticker type (research.json[25]); Research[9][i] = stickers owned
 export const stickerBaseBonuses = [10, 5, 15, 250, 40, 30, 60, 1, 1, 1, 1, 1]
+
+// Luminous Menagerie boost bonus per level (research.json[58]); Menagerie[3][i] = boost level
+export const menagerieBoostPerLevel = [1, 25, 1, 10, 500, 10, 1, 100, 1, 20, 1, 75, 1, 100, 25, 600, 500, 1, 400, 50, 300, 1, 25, 5, 1]

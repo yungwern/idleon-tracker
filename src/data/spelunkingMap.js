@@ -1333,3 +1333,18 @@ export const spelunkingReadOdds = [
   [54.7, 32.8, 12.5],
   [27.3, 27.3, 32.8, 12.5],
 ]
+
+// Tome lore bonuses (Toolbox generalSpelunky[20] names, [21] "base|tome points"). Spelunk[13][2] = how many are
+// unlocked. bonus = base × (1 + (Grimoire 17 + Troll Set) / 100) × p / (25 + p), p = floor((Tome - tome) / 100)^0.7
+export const spelunkingLoreTomeBonuses = [
+  { name: 'Bones', base: 420, tome: 7000 },
+  { name: 'Villager EXP', base: 150, tome: 1000 },
+  { name: 'Dust', base: 750, tome: 6000 },
+  { name: 'Artifact Find', base: 100, tome: 3000 },
+  { name: 'Amber', base: 400, tome: 15000 },
+  { name: 'Palette Luck', base: 200, tome: 12000 },
+  { name: 'Tachyon', base: 600, tome: 5000 },
+  { name: 'Research XP', base: 20, tome: 16000 },
+  { name: 'Equinox', base: 220, tome: 5000 },
+  { name: 'W7 Skill 3', base: 100, tome: 17000 },
+]
