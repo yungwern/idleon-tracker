@@ -12,11 +12,11 @@ export const sections = {
 
 // Small sprite shown next to each section in the sidebar (paths without a leading slash)
 export const sectionIcons = {
-  'MasterClasses': 'images/class icons/mage/arcanecultist.png',
-  'Minibosses': 'images/mobs/Glunko_The_Massive.png',
-  'BiS Setups': 'images/premium gear/capes/EquipmentCape0.png',
+  'MasterClasses': 'images/masterclass/royal guardian/Orblet.png',
+  'Minibosses': 'images/mobs/Dr_Defecaus.png',
+  'BiS Setups': 'images/premium gear/armor/EquipmentGown9.png',
   'Statues': 'images/statues/EquipmentStatues1.png',
-  'Obols': 'images/obols/ObolPink0.png',
+  'Obols': 'images/obols/ObolPinkLuck.png',
   'Construction': 'images/skills/construction.png',
   'Shrines': 'images/shrines/ConTowerB18.png',
   'Worship': 'images/skills/worship.png',
