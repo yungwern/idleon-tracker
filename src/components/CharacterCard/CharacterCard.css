@@ -91,26 +91,31 @@
 }
 
 /* ── Prayers ── */
+/* Tooltips are positioned against the whole bar (icons are position: static), like the
+   class roles bar, so long bonus text opens below the row and never gets clipped by the card. */
 .prayers-bar {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* Same type as the card's other small headings (.char-overview-heading) */
 .prayers-label {
-  font-size: 0.7rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--class-color);
-  margin-right: 2px;
+  margin-right: 4px;
 }
 
 .prayer-icon-wrap {
-  position: relative;
   display: inline-flex;
+  cursor: default;
 }
 
 .prayer-icon {
@@ -118,6 +123,25 @@
   height: 38px;
   object-fit: contain;
   image-rendering: pixelated;
+}
+
+.prayer-icon-wrap .prayer-tooltip {
+  top: calc(100% + 4px);
+  bottom: auto;
+  left: 14px;
+  transform: none;
+  max-width: min(320px, calc(100% - 28px));
+}
+
+.prayer-tooltip-bonus {
+  display: block;
+  margin-top: 4px;
+  color: #4ade80;
+}
+
+.prayer-tooltip-curse {
+  display: block;
+  color: #f87171;
 }
 
 /* ── Class Roles ── */

@@ -421,6 +421,8 @@ function parseWorship(json) {
   const totemEntries = Object.values(worshipMap)
 
   return {
+    // PrayOwned[id] = prayer level (account-wide, shared by every character)
+    prayerLevels: (parseRaw(json?.PrayOwned) ?? []).map(level => Number(level) || 0),
     totems: maxWaves.map((maxWave, index) => {
       const waveMulti = maxWave === 0 ? 0 : Math.pow((5 + maxWave) / 10, 2.6)
       const expReward = Math.floor(15 * Math.pow(index + 1, 2) * Math.pow(waveMulti, 0.9)) || 0

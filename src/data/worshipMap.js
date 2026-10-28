@@ -49,7 +49,7 @@ export const worshipMap = {
         setupWave: 181,
         prayers: [
             { name: 'Fibers of Absence', wave: 21 },
-            { name: 'Vascous Tissue', wave: 51 },
+            { name: 'Vacuous Tissue', wave: 51 },
             { name: 'Beefy For Real', wave: 121 },
         ],
     },
@@ -225,4 +225,4 @@ export const towerMap = {
             'Provides a strong map-wide damage bonus to all towers.',
         ],
     },
-}
+}

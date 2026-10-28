@@ -8,6 +8,46 @@ import { obolByRawName } from '../../data'
 import './CharacterCard.css'
 
 import { toClassSlug } from '../../utils/appUtils.js'
+import {
+  getPrayerValues,
+  formatPrayerText,
+  sortPrayers,
+} from '../../utils/prayerUtils.js'
+
+// ── Prayer icon ──────────────────────────────────────────────────────────────
+// level = PrayOwned[id]; undefined on snapshots imported before prayer levels were parsed
+function PrayerIcon({ prayerId, level }) {
+  const prayer = prayerMap[prayerId]
+  const name = prayer?.name ?? `Prayer ${prayerId}`
+  const { bonus, curse } = getPrayerValues(prayerId, level)
+
+  return (
+    <div className="prayer-icon-wrap tooltip-anchor">
+      <img
+        src={`images/prayers/Prayer${prayerId}.png`}
+        alt={name}
+        className="prayer-icon"
+      />
+      <span className="tooltip tooltip--wrap buff-tooltip prayer-tooltip">
+        <span className="buff-tooltip-name">{name}</span>
+        {level !== undefined && (
+          <span className="buff-tooltip-source">
+            Lv {level}{prayer ? ` / ${prayer.maxLevel}` : ''}
+          </span>
+        )}
+        {prayer && (
+          <>
+            <span className="prayer-tooltip-bonus">{formatPrayerText(prayer.effect, bonus)}</span>
+            <span className="prayer-tooltip-curse">Curse: {formatPrayerText(prayer.curse, curse)}</span>
+          </>
+        )}
+        {level === undefined && (
+          <span className="buff-tooltip-warning">Re-import your save to see this prayer's values</span>
+        )}
+      </span>
+    </div>
+  )
+}
 
 // Save stores slots in a mixed order — this maps visual position to save index
 const CHAR_OBOL_VISUAL_TO_SAVE = [
@@ -193,16 +233,13 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
       {/* ── Prayers ── */}
       {snapshot?.characters?.[charIndex]?.prayers?.length > 0 && (
         <div className="prayers-bar">
-          <span className="prayers-label">Prayers:</span>
-          {snapshot.characters[charIndex].prayers.map(id => (
-            <div key={id} className="prayer-icon-wrap tooltip-anchor">
-              <img
-                src={`images/prayers/Prayer${id}.png`}
-                alt={prayerMap[id]?.name ?? `Prayer ${id}`}
-                className="prayer-icon"
-              />
-              <span className="tooltip">{prayerMap[id]?.name ?? `Prayer ${id}`}</span>
-            </div>
+          <span className="prayers-label">Prayers</span>
+          {sortPrayers(snapshot.characters[charIndex].prayers).map(id => (
+            <PrayerIcon
+              key={id}
+              prayerId={id}
+              level={snapshot.worship?.prayerLevels?.[id]}
+            />
           ))}
         </div>
       )}

@@ -101,6 +101,7 @@ src/
                         #   equinoxUtils, eventShopUtils / gamingUtils (save-letter flags, saveCodeUtils),
                         #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels + mainframe, assumed connected),
                         #   divinityUtils (minor link bonuses), familyUtils (family bonus walk), coralReefUtils,
+                        #   prayerUtils (bonus/curse at PrayOwned level = snapshot.worship.prayerLevels; cards sort prayers by id, utility prayers 3 and 5 last),
                         #   gamingUtils (superbits, palette), spelunkingUtils (shop upgrade bonus/cost/descriptions,
                         #   cost discount (optional max Amber Hoard), amber tier, chapter bonuses, stamina regen, overstim
                         #   timer, Grand Discovery odds, tunnel discoveries; all match Toolbox on Eli's save. Spelunk[1]
