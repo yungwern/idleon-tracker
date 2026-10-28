@@ -10,54 +10,262 @@ import {
   obolFarmSources,
   mobsMap,
   mapEnemyData,
-  idealAccountBoard,
-  endgameAccountBoard,
+  familyBoards,
   characterBoards,
 } from '../../data'
 import TierList from '../TierList/TierList'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import { AccountBoard, CharacterBoard } from './ObolBoard'
-import { isUpgraded } from './ObolUtils'
+import {
+  OBOL_CHECK_MODES,
+  passesObolCheck,
+  getObolNoticeTitle,
+  getFamilyMainStat,
+} from './ObolUtils'
+import { getFamilyObolNotices } from '../../utils/obolNotices.js'
+import { getCharacterNotices } from '../../utils/characterNotices.js'
 import './Obols.css'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function buildUpgradedIds(accountObols = []) {
+// Family board obols that pass the roll check (gold glow in the tier list)
+function buildUpgradedIds(accountObols = [], checkMode) {
   return new Set(
     accountObols
-      .filter(slot => slot.rawName !== 'Blank' && isUpgraded(slot.stoneData))
+      .filter(slot => slot.rawName !== 'Blank' && passesObolCheck(slot.stoneData, checkMode, getFamilyMainStat()))
       .map(slot => slot.rawName)
   )
 }
 
-// ── Example Boards Tab ────────────────────────────────────────────────────────
+// ── Roll Check Picker ─────────────────────────────────────────────────────────
+// One value for all three modes (each is stricter than the last), so they can't be combined.
 
-function ExampleBoardsTab() {
+function RollCheckPicker({ checkMode, onChange }) {
+  const active = OBOL_CHECK_MODES.find(m => m.id === checkMode) ?? OBOL_CHECK_MODES[0]
   return (
-    <div className="obols-example-tab">
-      {/* Account board comparison */}
-      <div className="obols-comparison">
-        <div className="obols-comparison-col">
-          <div className="obols-section-label">Ideal Board</div>
-          <AccountBoard slots={idealAccountBoard} />
-        </div>
-        <div className="obols-comparison-divider" />
-        <div className="obols-comparison-col">
-          <div className="obols-section-label">Endgame Ideal Board</div>
-          <AccountBoard slots={endgameAccountBoard} />
-        </div>
+    <div className="obols-check">
+      <span className="obols-check-label">Roll check</span>
+      <div className="segmented-control" role="radiogroup" aria-label="Obol roll check">
+        {OBOL_CHECK_MODES.map(mode => (
+          <button
+            key={mode.id}
+            type="button"
+            role="radio"
+            aria-checked={mode.id === active.id}
+            className={`segmented-control-btn${mode.id === active.id ? ' segmented-control-btn--active' : ''}`}
+            onClick={() => onChange(mode.id)}
+          >
+            {mode.label}
+          </button>
+        ))}
       </div>
+      <p className="obols-check-desc">{active.description}</p>
+    </div>
+  )
+}
 
-      {/* Character example boards */}
-      <div className="obols-section-label">Character Example Boards</div>
-      <div className="obols-char-boards-row">
-        {Object.entries(characterBoards).map(([key, board]) => (
-          <div key={key} className="obols-char-board-group">
-            <div className="obols-section-label">{board.label}</div>
-            <CharacterBoard slots={board.slots} />
+// ── Family Board Notice ───────────────────────────────────────────────────────
+
+function FamilyObolNotice({ noBonus, noBonusTotal, checkMode }) {
+  if (noBonusTotal === 0) {
+    return <p className="char-notice-clear obols-notice-clear">✓ Every family obol passes</p>
+  }
+  return (
+    <div className="char-notice obols-notice">
+      <div className="char-notice-header">
+        <span className="char-notice-title">
+          ⚠ {getObolNoticeTitle(noBonusTotal, checkMode)}
+        </span>
+      </div>
+      <div className="char-notice-items">
+        {noBonus.map(({ rawName, count }) => (
+          <div key={rawName} className="char-notice-item tooltip-anchor">
+            <img
+              src={`images/obols/${rawName}.png`}
+              alt={obolByRawName[rawName]?.name ?? rawName}
+              className="char-notice-item-img"
+            />
+            {count > 1 && <span className="char-notice-item-count">×{count}</span>}
+            <span className="tooltip">{obolByRawName[rawName]?.name ?? rawName}</span>
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+// ── Personal Boards Notice ────────────────────────────────────────────────────
+// Characters with equipped obols that fail the roll check (same counts as their Overview notices).
+// Click a character to open its Obols tab.
+
+function PersonalObolNotice({ failedByCharacter, checkMode, onOpenCharacter }) {
+  if (failedByCharacter.length === 0) {
+    return <p className="char-notice-clear obols-notice-clear">✓ Every equipped character obol passes</p>
+  }
+  const total = failedByCharacter.reduce((sum, c) => sum + c.count, 0)
+  return (
+    <div className="char-notice obols-notice">
+      <div className="char-notice-header">
+        <span className="char-notice-title">
+          ⚠ {getObolNoticeTitle(total, checkMode)} across {failedByCharacter.length}{' '}
+          {failedByCharacter.length === 1 ? 'character' : 'characters'}
+        </span>
+      </div>
+      <div className="char-notice-items">
+        {failedByCharacter.map(({ name, count }) => (
+          <button
+            key={name}
+            type="button"
+            className="char-notice-chip obols-notice-chip"
+            title={`Open ${name}'s obols`}
+            onClick={() => onOpenCharacter(name)}
+          >
+            {name}: {count} →
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Setup Picker ──────────────────────────────────────────────────────────────
+// Shows one example setup at a time so more setups can be added without crowding the tab.
+
+function SetupPicker({ setups, active, onChange }) {
+  return (
+    <div className="obols-setup-picker">
+      <span className="obols-check-label">Example setup</span>
+      <div className="segmented-control" role="radiogroup" aria-label="Example setup">
+        {Object.entries(setups).map(([id, setup]) => (
+          <button
+            key={id}
+            type="button"
+            role="radio"
+            aria-checked={id === active}
+            className={`segmented-control-btn${id === active ? ' segmented-control-btn--active' : ''}`}
+            onClick={() => onChange(id)}
+          >
+            {setup.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Example Boards Tab ────────────────────────────────────────────────────────
+// Sub-tabs: Family Boards (the player's family board, checked, next to one example setup) and
+// Personal Boards (one character example setup). Each sub-tab shows its notice first.
+// Family board save order (ObolEqO1) matches the on-screen layout, so no remap is needed.
+
+const BOARD_TABS = [
+  { id: 'family',   label: 'Family Boards' },
+  { id: 'personal', label: 'Personal Boards' },
+]
+
+function FamilyBoardsTab({ accountObols, familyNotices, checkMode }) {
+  const [setupId, setSetupId] = useState(Object.keys(familyBoards)[0])
+  const setup = familyBoards[setupId]
+  const hasFamilyBoard = accountObols.length > 0
+  const familySlots = accountObols.map(slot => slot.rawName)
+  const familyStoneData = Object.fromEntries(accountObols.map((slot, i) => [i, slot.stoneData]))
+
+  return (
+    <>
+      {hasFamilyBoard && (
+        <FamilyObolNotice
+          noBonus={familyNotices.noBonus}
+          noBonusTotal={familyNotices.noBonusTotal}
+          checkMode={checkMode}
+        />
+      )}
+      <SetupPicker
+        setups={familyBoards}
+        active={setupId}
+        onChange={setSetupId}
+      />
+      <div className="obols-comparison">
+        {hasFamilyBoard && (
+          <div className="obols-comparison-col">
+            <div className="obols-section-label obols-section-label--own">Your Family Board</div>
+            <AccountBoard
+              slots={familySlots}
+              stoneDataMap={familyStoneData}
+              checkMode={checkMode}
+              mainStat={getFamilyMainStat()}
+            />
+          </div>
+        )}
+        <div className="obols-comparison-col">
+          <div className="obols-section-label">{setup.label} Board</div>
+          <AccountBoard slots={setup.slots} />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function PersonalBoardsTab({ hasSave, failedByCharacter, checkMode, onOpenCharacter }) {
+  const [setupId, setSetupId] = useState(Object.keys(characterBoards)[0])
+  const setup = characterBoards[setupId]
+
+  return (
+    <>
+      {hasSave && (
+        <PersonalObolNotice
+          failedByCharacter={failedByCharacter}
+          checkMode={checkMode}
+          onOpenCharacter={onOpenCharacter}
+        />
+      )}
+      <SetupPicker
+        setups={characterBoards}
+        active={setupId}
+        onChange={setSetupId}
+      />
+      <div className="obols-char-boards-row">
+        <div className="obols-char-board-group">
+          <div className="obols-section-label">{setup.label}</div>
+          <CharacterBoard slots={setup.slots} />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function ExampleBoardsTab({ accountObols, familyNotices, hasSave, failedByCharacter, boardNotices, checkMode, onOpenCharacter }) {
+  const [boardTab, setBoardTab] = useState('family')
+
+  return (
+    <div className="obols-example-tab">
+      <div className="page-tabs page-tabs--sub">
+        {BOARD_TABS.map(tab => (
+          <button
+            key={tab.id}
+            className={`page-tab-btn${boardTab === tab.id ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setBoardTab(tab.id)}
+          >
+            {tab.label}
+            {boardNotices[tab.id] > 0 && <span className="notice-badge">{boardNotices[tab.id]}</span>}
+          </button>
+        ))}
+      </div>
+
+      {boardTab === 'family' && (
+        <FamilyBoardsTab
+          accountObols={accountObols}
+          familyNotices={familyNotices}
+          checkMode={checkMode}
+        />
+      )}
+      {boardTab === 'personal' && (
+        <PersonalBoardsTab
+          hasSave={hasSave}
+          failedByCharacter={failedByCharacter}
+          checkMode={checkMode}
+          onOpenCharacter={onOpenCharacter}
+        />
+      )}
     </div>
   )
 }
@@ -173,11 +381,25 @@ const TABS = [
   { id: 'farming',  label: 'Farming' },
 ]
 
-export default function Obols({ snapshot }) {
+export default function Obols({ snapshot, obolCheckMode, onObolCheckModeChange, onOpenCharacterObols }) {
   const [activeTab, setActiveTab] = useState('examples')
 
   const accountObols = snapshot?.accountObols ?? []
-  const upgradedIds = buildUpgradedIds(accountObols)
+  const upgradedIds = buildUpgradedIds(accountObols, obolCheckMode)
+  const familyNotices = getFamilyObolNotices(snapshot, obolCheckMode)
+  const failedByCharacter = (snapshot?.characters ?? [])
+    .map(c => ({
+      name: c.name,
+      count: getCharacterNotices(c, obolCheckMode).noBonusTotal,
+    }))
+    .filter(c => c.count > 0)
+  const boardNotices = {
+    family: familyNotices.noBonusTotal > 0 ? 1 : 0,
+    personal: failedByCharacter.length > 0 ? 1 : 0,
+  }
+  const tabNotices = {
+    examples: boardNotices.family + boardNotices.personal,
+  }
 
   const tierListProps = {
     itemMap: obolByRawName,
@@ -202,6 +424,11 @@ export default function Obols({ snapshot }) {
         ]}
       />
 
+      <RollCheckPicker
+        checkMode={obolCheckMode}
+        onChange={onObolCheckModeChange}
+      />
+
       {/* ── Nav Bar ── */}
       <div className="page-tabs">
         {TABS.map(tab => (
@@ -211,13 +438,22 @@ export default function Obols({ snapshot }) {
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
+            {tabNotices[tab.id] > 0 && <span className="notice-badge">{tabNotices[tab.id]}</span>}
           </button>
         ))}
       </div>
 
       {/* ── Example Boards Tab ── */}
       {activeTab === 'examples' && (
-        <ExampleBoardsTab />
+        <ExampleBoardsTab
+          accountObols={accountObols}
+          familyNotices={familyNotices}
+          hasSave={Boolean(snapshot)}
+          failedByCharacter={failedByCharacter}
+          boardNotices={boardNotices}
+          checkMode={obolCheckMode}
+          onOpenCharacter={onOpenCharacterObols}
+        />
       )}
 
       {/* ── Tier List Tab ── */}

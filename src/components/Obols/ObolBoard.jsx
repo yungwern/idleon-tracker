@@ -1,16 +1,64 @@
 import { obolByRawName } from '../../data'
-import { isUpgraded } from './ObolUtils'
+import { passesObolCheck, getObolRollNeeds } from './ObolUtils'
 import './ObolBoard.css'
 
 // ── Obol Slot ─────────────────────────────────────────────────────────────────
 
+function uqLabel(txt) {
+  // Normalize game inconsistency: DROP CHANCE and DROP RATE are the same thing
+  return txt.replace(/^%_?|^_/, '').replace(/_/g, ' ').replace(/DROP CHANCE/i, 'DROP RATE')
+}
+
 function formatUQ(txt, val) {
   if (!txt || !val) return null
-  const hasPercent = txt.startsWith('%')
-  let label = txt.replace(/^%_?|^_/, '').replace(/_/g, ' ')
-  // Normalize game inconsistency: DROP CHANCE and DROP RATE are the same thing
-  label = label.replace(/DROP CHANCE/i, 'DROP RATE')
-  return hasPercent ? `${label}: +${val}%` : `${label}: +${val}`
+  const label = uqLabel(txt)
+  return txt.startsWith('%') ? `${label}: +${val}%` : `${label}: +${val}`
+}
+
+// Reroll keys shown in the tooltip, with negative rolls too so a failed check can be explained
+const REROLL_STATS = [
+  ['STR', 'STR'],
+  ['AGI', 'AGI'],
+  ['WIS', 'WIS'],
+  ['LUK', 'LUK'],
+  ['Weapon_Power', 'WP'],
+  ['Defence', 'DEF'],
+]
+
+function formatRoll(label, val) {
+  if (typeof val !== 'number' || val === 0) return null
+  return {
+    text: `${label} ${val > 0 ? '+' : ''}${val} 🎲`,
+    negative: val < 0,
+  }
+}
+
+// Amber "?" lines for each roll the current mode still needs (ObolUtils getObolRollNeeds).
+// uqNames: the obol's own unique bonuses (from obolMap), since a roll can only be one of those.
+const ANY_STAT = 'STR/AGI/WIS/LUK'
+
+function getMissingRollHints(stoneData, checkMode, mainStat, uqNames) {
+  const uqText = uqNames.map(uqLabel).join(' / ')
+  return getObolRollNeeds(stoneData, checkMode, mainStat).map(({ need, stat }) => {
+    let text
+    if (need === 'any') text = uqText ? `${uqText} or any stat ? 🎲` : `${ANY_STAT} or WP ? 🎲`
+    if (need === 'uq') text = uqText ? `${uqText} ? 🎲` : 'No unique bonus to roll'
+    if (need === 'mainStat') text = `${stat} ? 🎲`
+    if (need === 'anyStat') text = `${ANY_STAT} ? 🎲`
+    return {
+      text,
+      missing: true,
+    }
+  })
+}
+
+function formatUqRoll(txt, val) {
+  if (typeof txt !== 'string' || typeof val !== 'number' || val === 0) return null
+  const text = val > 0 ? formatUQ(txt, val) : formatUQ(txt, val).replace('+-', '-')
+  return {
+    text: `${text} 🎲`,
+    negative: val < 0,
+  }
 }
 
 // Stat colors live in ObolBoard.css (obol-tooltip-stat-chip--str, etc.)
@@ -22,12 +70,16 @@ function StatChip({ label, value }) {
   )
 }
 
-export function ObolSlot({ rawName, stoneData, size = 'md' }) {
+// stoneData is only passed for a player's real board (example boards have none).
+// checkMode / mainStat: roll check (ObolUtils passesObolCheck). Passing obols glow, failing ones are marked.
+export function ObolSlot({ rawName, stoneData, size = 'md', checkMode, mainStat = null }) {
   if (!rawName || rawName === 'Blank') {
     return <div className={`obol-slot obol-slot--empty obol-slot--${size}`} />
   }
   const entry = obolByRawName[rawName]
-  const upgraded = stoneData !== undefined ? isUpgraded(stoneData) : false
+  const checked = stoneData !== undefined
+  const passes = checked && passesObolCheck(stoneData, checkMode, mainStat)
+  const slotState = checked ? (passes ? ' obol-slot--upgraded' : ' obol-slot--no-bonus') : ''
 
   // Base stat chips
   const statChips = ['STR', 'AGI', 'WIS', 'LUK'].filter(s => entry?.[s] > 0)
@@ -48,17 +100,18 @@ export function ObolSlot({ rawName, stoneData, size = 'md' }) {
   ].filter(Boolean)
 
   // Reroll bonuses
+  const missingLines = checked && !passes
+    ? getMissingRollHints(stoneData ?? {}, checkMode, mainStat, [entry?.uq1, entry?.uq2].filter(Boolean))
+    : []
   const rerollLines = stoneData && typeof stoneData === 'object' ? [
-    stoneData.STR  > 0 && `STR +${stoneData.STR} 🎲`,
-    stoneData.AGI  > 0 && `AGI +${stoneData.AGI} 🎲`,
-    stoneData.WIS  > 0 && `WIS +${stoneData.WIS} 🎲`,
-    stoneData.LUK  > 0 && `LUK +${stoneData.LUK} 🎲`,
-    stoneData.UQ1txt && stoneData.UQ1val > 0 && formatUQ(stoneData.UQ1txt, stoneData.UQ1val) + ' 🎲',
-    stoneData.UQ2txt && stoneData.UQ2val > 0 && formatUQ(stoneData.UQ2txt, stoneData.UQ2val) + ' 🎲',
+    ...REROLL_STATS.map(([key, label]) => formatRoll(label, stoneData[key])),
+    formatUqRoll(stoneData.UQ1txt, stoneData.UQ1val),
+    formatUqRoll(stoneData.UQ2txt, stoneData.UQ2val),
+    ...missingLines,
   ].filter(Boolean) : []
 
   return (
-    <div className={`obol-slot obol-slot--${size} tooltip-anchor${upgraded ? ' obol-slot--upgraded' : ''}`}>
+    <div className={`obol-slot obol-slot--${size} tooltip-anchor${slotState}`}>
       <img
         src={`images/obols/${rawName}.png`}
         alt={entry?.name ?? rawName}
@@ -75,7 +128,14 @@ export function ObolSlot({ rawName, stoneData, size = 'md' }) {
         )}
         {skillLines.map((s, i) => <span key={i} className="obol-tooltip-stat">{s}</span>)}
         {uqLines.map((s, i) => <span key={i} className="obol-tooltip-stat">{s}</span>)}
-        {rerollLines.map((s, i) => <span key={i} className={`obol-tooltip-stat obol-tooltip-reroll${i === 0 ? ' obol-tooltip-reroll--first' : ''}`}>{s}</span>)}
+        {rerollLines.map((roll, i) => (
+          <span
+            key={i}
+            className={`obol-tooltip-stat obol-tooltip-reroll${i === 0 ? ' obol-tooltip-reroll--first' : ''}${roll.negative ? ' obol-tooltip-reroll--negative' : ''}${roll.missing ? ' obol-tooltip-reroll--missing' : ''}`}
+          >
+            {roll.text}
+          </span>
+        ))}
       </div>
     </div>
   )
@@ -94,7 +154,7 @@ function buildAccountRows(slots) {
   return rows
 }
 
-export function AccountBoard({ slots, stoneDataMap = {} }) {
+export function AccountBoard({ slots, stoneDataMap = {}, checkMode, mainStat = null }) {
   const rows = buildAccountRows(slots)
   return (
     <div className="obol-board">
@@ -110,6 +170,8 @@ export function AccountBoard({ slots, stoneDataMap = {} }) {
                 key={slotIdx}
                 rawName={rawName}
                 stoneData={stoneDataMap[globalIdx]}
+                checkMode={checkMode}
+                mainStat={mainStat}
               />
             )
           })}
@@ -132,7 +194,7 @@ function buildCharRows(slots) {
   return rows
 }
 
-export function CharacterBoard({ slots, stoneDataMap = {} }) {
+export function CharacterBoard({ slots, stoneDataMap = {}, checkMode, mainStat = null }) {
   const rows = buildCharRows(slots)
   return (
     <div className="obol-char-board">
@@ -149,6 +211,8 @@ export function CharacterBoard({ slots, stoneDataMap = {} }) {
                 rawName={rawName}
                 stoneData={stoneDataMap[globalIdx]}
                 size={row.length === 3 ? 'lg' : 'sm'}
+                checkMode={checkMode}
+                mainStat={mainStat}
               />
             )
           })}

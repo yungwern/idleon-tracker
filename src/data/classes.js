@@ -331,6 +331,14 @@ export const CLASS_TALENT_TABS = {
   'Arcane Cultist': ['Savvy Basics', 'Mage', 'Shaman', 'Bubonic Conjuror', 'Arcane Cultist'],
 }
 
+// CLASS_MAIN_STATS: main stat by the first tab of a class line (CLASS_TALENT_TABS[class][0])
+export const CLASS_MAIN_STATS = {
+  'Beginner': 'LUK',
+  'Rage Basics': 'STR',
+  'Calm Basics': 'AGI',
+  'Savvy Basics': 'WIS',
+}
+
 export const CLASS_FAMILY_BONUSES = {
   2: {
     name: '+{_TOTAL_LUK',

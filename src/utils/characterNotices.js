@@ -3,11 +3,14 @@
 // and the sidebar badge always agree. Add new checks here.
 import { getObolNotices } from '../components/Obols/ObolUtils.js'
 import { getUnspentSuperTalents } from './talentUtils.js'
+import { getClassMainStat } from './characterUtils.js'
 
-// snapshotChar: snapshot.characters[i] (obols, superTalentPresets, level)
-export function getCharacterNotices(snapshotChar) {
+// snapshotChar: snapshot.characters[i] (obols, superTalentPresets, level, class)
+// obolCheckMode: Obols page roll check (ObolUtils OBOL_CHECK_MODES)
+export function getCharacterNotices(snapshotChar, obolCheckMode) {
   const level = snapshotChar?.level ?? 0
-  const { noBonus, emptySlots } = getObolNotices(snapshotChar?.obols ?? [], level)
+  const mainStat = getClassMainStat(snapshotChar?.class)
+  const { noBonus, emptySlots } = getObolNotices(snapshotChar?.obols ?? [], level, obolCheckMode, mainStat)
   const noBonusTotal = noBonus.reduce((sum, o) => sum + o.count, 0)
   const unspentTalents = getUnspentSuperTalents(snapshotChar?.superTalentPresets, level)
   const unspentTotal = unspentTalents.reduce((sum, t) => sum + t.unspent, 0)

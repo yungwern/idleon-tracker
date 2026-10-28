@@ -228,6 +228,16 @@ talent tab and built from that tab's talents (Toolbox talents.json); `characterU
 Overview), `utils/masterclassNotices.js` (returns `{ masterclassId: { sectionId: count } }`, feeding the sidebar
 badge and the masterclass/section nav badges), `utils/minibossNotices.js`. Sidebar badges are wired in
 `sectionNotices` in `App.jsx`; in-page badges use the shared `.notice-badge` class in `global.css`.
+**Obol roll check**: `passesObolCheck` in `Obols/ObolUtils.js` is the only obol check (Standard / Min/Max / BiS Setup,
+each stricter than the last; rules in its comment). One mode value (`useObolCheckMode`, localStorage, held in App) feeds
+character notices, the family board notice (`utils/obolNotices.js`, Obols sidebar badge) and board glow. Main stat
+per class = `CLASS_MAIN_STATS` (classes.js) via `characterUtils getClassMainStat`; family board = STR in every mode,
+same rules as a character (`getFamilyMainStat`, Eli: STR is strongest and you're active on RG). Obols with no UQ always fail Min/Max and BiS (by
+design: the example boards steer people off them). Storage obols are never checked.
+Obols > Example Boards has sub-tabs Family Boards (your board + one picked setup) / Personal Boards (one picked setup), each
+with its notice on top. Setups = `familyBoards` / `characterBoards` in obolMap.js (add a { label, slots } entry, no UI work).
+Personal notice chips open that character's Obols tab (App `openCharacterTab`: bumps a visit id = CharacterCard key + initialTab).
+Family board (`ObolEqO1`/`ObolEqMAPz1`) save order = on-screen order. `ObolEqO2`/`ObolEqMAPz2` (3 slots) exist but are unknown.
 
 **Line endings**: files use Windows CRLF. Keep them CRLF when editing so git diffs stay clean.
 

@@ -44,7 +44,7 @@ export { statueMap, statueWorlds, statueCandyMobs } from './statueMap'
 export { anvilMap, anvilMapById } from './anvilMap'
 
 // ── World 2 ───────────────────────────────────────────────────────────────────
-export { obolMap, obolByRawName, obolFarmMap, obolFarmSources, circleTiers, squareTiers, hexagonTiers, sparkleTiers, idealAccountBoard, endgameAccountBoard, characterBoards } from './obolMap'
+export { obolMap, obolByRawName, obolFarmMap, obolFarmSources, circleTiers, squareTiers, hexagonTiers, sparkleTiers, idealAccountBoard, endgameAccountBoard, familyBoards, characterBoards } from './obolMap'
 export { stampMap, STAMP_TIERS } from './stampsMap'
 export { bubbleMap, BUBBLE_TIERS } from './bubblesMap'
 export { vialMap } from './vialMap'

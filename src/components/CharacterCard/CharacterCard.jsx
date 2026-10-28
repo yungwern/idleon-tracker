@@ -3,6 +3,8 @@ import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import AnvilProduction from '../AnvilProduction/AnvilProduction.jsx'
 import { CharacterBoard } from '../Obols/ObolBoard.jsx'
 import { getCharacterNotices } from '../../utils/characterNotices.js'
+import { getClassMainStat } from '../../utils/characterUtils.js'
+import { getObolNoticeTitle } from '../Obols/ObolUtils.js'
 import { prayerMap } from '../../data/prayerMap'
 import { obolByRawName } from '../../data'
 import './CharacterCard.css'
@@ -62,8 +64,9 @@ const CHAR_OBOL_VISUAL_TO_SAVE = [
   18, 19, 20 // Row 3 large: save[18], save[19], save[20]
 ]
 
-function CharacterObolsTab({ charIndex, snapshot }) {
+function CharacterObolsTab({ charIndex, snapshot, obolCheckMode }) {
   const obols = snapshot?.characters?.[charIndex]?.obols ?? []
+  const mainStat = getClassMainStat(snapshot?.characters?.[charIndex]?.class)
 
   if (!obols.length) {
     return <div className="char-obols-empty">No obol data available — import a save to see equipped obols.</div>
@@ -80,7 +83,12 @@ function CharacterObolsTab({ charIndex, snapshot }) {
 
   return (
     <div className="char-obols-tab">
-      <CharacterBoard slots={slots} stoneDataMap={stoneDataMap} />
+      <CharacterBoard
+        slots={slots}
+        stoneDataMap={stoneDataMap}
+        checkMode={obolCheckMode}
+        mainStat={mainStat}
+      />
     </div>
   )
 }
@@ -88,7 +96,7 @@ function CharacterObolsTab({ charIndex, snapshot }) {
 // ── Overview Notifications ────────────────────────────────────────────────────
 // Things on this character that need attention. Add new checks here as
 // more notification types are built.
-function CharacterNotices({ charIndex, snapshot, onViewObols }) {
+function CharacterNotices({ charIndex, snapshot, obolCheckMode, onViewObols }) {
   const {
     noBonus,
     noBonusTotal,
@@ -96,7 +104,7 @@ function CharacterNotices({ charIndex, snapshot, onViewObols }) {
     unspentTalents,
     unspentTotal,
     count,
-  } = getCharacterNotices(snapshot?.characters?.[charIndex])
+  } = getCharacterNotices(snapshot?.characters?.[charIndex], obolCheckMode)
   const hasNotices = count > 0
 
   if (!snapshot) return null
@@ -113,7 +121,7 @@ function CharacterNotices({ charIndex, snapshot, onViewObols }) {
         <div className="char-notice">
           <div className="char-notice-header">
             <span className="char-notice-title">
-              ⚠ {noBonusTotal} {noBonusTotal === 1 ? 'obol has' : 'obols have'} no bonus stat
+              ⚠ {getObolNoticeTitle(noBonusTotal, obolCheckMode)}
             </span>
             <button className="char-notice-link" onClick={onViewObols}>
               View obols →
@@ -168,8 +176,8 @@ function CharacterNotices({ charIndex, snapshot, onViewObols }) {
   )
 }
 
-export default function CharacterCard({ character, charIndex, snapshot }) {
-  const [activeTab, setActiveTab] = useState('overview')
+export default function CharacterCard({ character, charIndex, snapshot, obolCheckMode, initialTab = 'overview' }) {
+  const [activeTab, setActiveTab] = useState(initialTab)
   const slug = toClassSlug(character.class)
 
   return (
@@ -265,6 +273,7 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
             <CharacterNotices
               charIndex={charIndex}
               snapshot={snapshot}
+              obolCheckMode={obolCheckMode}
               onViewObols={() => setActiveTab('obols')}
             />
             <section className="char-overview-section">
@@ -281,10 +290,14 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
         )}
 
         {activeTab === 'obols' && (
-          <CharacterObolsTab charIndex={charIndex} snapshot={snapshot} />
+          <CharacterObolsTab
+            charIndex={charIndex}
+            snapshot={snapshot}
+            obolCheckMode={obolCheckMode}
+          />
         )}
 
       </div>
     </div>
   )
-}
+}

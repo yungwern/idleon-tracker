@@ -3,10 +3,12 @@ import { toClassSlug } from './utils/appUtils.js'
 import { getCharacterNotices } from './utils/characterNotices.js'
 import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
 import { getMinibossNoticeCount } from './utils/minibossNotices.js'
+import { getObolNoticeCount } from './utils/obolNotices.js'
 import { getClassRoles } from './utils/characterUtils.js'
 import { sections, sectionIcons } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import { useTomePoints } from './hooks/useTomePoints.js'
+import { useObolCheckMode } from './hooks/useObolCheckMode.js'
 import { useCollapsedGroups } from './hooks/useCollapsedGroups.js'
 import { useCloudSave } from './hooks/useCloudSave.js'
 import { PROVIDER_LABELS } from './lib/idleonCloud.js'
@@ -34,9 +36,13 @@ import './styles/global.css'
 // ============================================================
 export default function App() {
   const [selected, setSelected] = useState(null)
+  // Opening a character from another page (e.g. Obols > Personal Boards) remounts its card on a tab.
+  // Sidebar clicks keep the same visit, so the card keeps its current tab like before.
+  const [characterVisit, setCharacterVisit] = useState({ id: 0, tab: 'overview' })
   const [showModal, setShowModal] = useState(false)
   const { snapshot, importFromJson, importFromText, clearSnapshot, importedAt, cloudSavedAt } = useSaveImport()
   const { tomePoints, setTomePoints } = useTomePoints()
+  const { obolCheckMode, setObolCheckMode } = useObolCheckMode()
   const { isCollapsed, toggleGroup } = useCollapsedGroups()
   // Logged-in cloud save: auto-syncs only while the loaded save came from the cloud (or there is none),
   // so a pasted or test save is never overwritten behind the player's back
@@ -57,7 +63,7 @@ export default function App() {
       nametag: nametagId !== 'Blank' ? { id: nametagId, equipped: true } : null,
       trophy:  trophyId  !== 'Blank' ? { id: trophyId,  equipped: true } : null,
       superTalentPresets: c.superTalentPresets ?? null,
-      noticeCount: getCharacterNotices(c).count,
+      noticeCount: getCharacterNotices(c, obolCheckMode).count,
     }
   })
 
@@ -70,7 +76,8 @@ export default function App() {
   const sectionNotices = useMemo(() => ({
     MasterClasses: getMasterclassNoticeCount(snapshot),
     Minibosses: getMinibossNoticeCount(snapshot),
-  }), [snapshot])
+    Obols: getObolNoticeCount(snapshot, obolCheckMode),
+  }), [snapshot, obolCheckMode])
 
   function handleClearSave() {
     cloud.signOut()
@@ -108,13 +115,38 @@ export default function App() {
     )
   }
 
+  function openCharacterTab(name, tab) {
+    setSelected(name)
+    setCharacterVisit(visit => ({ id: visit.id + 1, tab }))
+  }
+
   function renderContent() {
-    if (character) return <CharacterCard character={character} charIndex={charIndex} snapshot={snapshot} />
+    if (character) {
+      return (
+        <CharacterCard
+          key={characterVisit.id}
+          initialTab={characterVisit.tab}
+          character={character}
+          charIndex={charIndex}
+          snapshot={snapshot}
+          obolCheckMode={obolCheckMode}
+        />
+      )
+    }
     if (current === 'MasterClasses')  return <MasterClasses snapshot={snapshot} />
     if (current === 'Minibosses')     return <Minibosses snapshot={snapshot} />
     if (current === 'BiS Setups')     return <GearOptimizer snapshot={snapshot} />
     if (current === 'Statues')        return <Statues snapshot={snapshot} />
-    if (current === 'Obols') return <Obols snapshot={snapshot} />
+    if (current === 'Obols') {
+      return (
+        <Obols
+          snapshot={snapshot}
+          obolCheckMode={obolCheckMode}
+          onObolCheckModeChange={setObolCheckMode}
+          onOpenCharacterObols={name => openCharacterTab(name, 'obols')}
+        />
+      )
+    }
     if (current === 'Construction')   return <Construction snapshot={snapshot} />
     if (current === 'Shrines')        return <Shrines snapshot={snapshot} />
     if (current === 'Worship') return <Worship snapshot={snapshot} />

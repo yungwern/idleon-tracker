@@ -49,6 +49,12 @@
   filter: drop-shadow(0 0 3px rgba(250, 204, 21, 0.6)) drop-shadow(0 0 6px rgba(202, 138, 4, 0.4));
 }
 
+/* Equipped obol that fails the roll check (Obols page mode). Red so it can't be mistaken for the gold pass glow. */
+.obol-slot--no-bonus {
+  border-color: rgba(248, 113, 113, 0.7);
+  background: rgba(248, 113, 113, 0.08);
+}
+
 /* ── Account Board ── */
 .obol-board {
   display: flex;
@@ -191,4 +197,15 @@
   padding-top: 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 2px;
+}
+
+/* Negative reroll (after .obol-tooltip-reroll so its color wins) */
+.obol-tooltip-reroll--negative {
+  color: #f87171;
+}
+
+/* BiS Setup: stat roll the obol still needs */
+.obol-tooltip-reroll--missing {
+  color: #fbbf24;
+  opacity: 0.8;
 }

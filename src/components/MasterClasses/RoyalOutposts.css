@@ -180,6 +180,11 @@
   color: #4ade80;
 }
 
+.mc-outpost-world-chip--save {
+  border-color: rgba(251, 146, 60, 0.4);
+  color: #fb923c;
+}
+
 .mc-outpost-world-chip.tooltip-anchor {
   position: relative;
 }
@@ -195,6 +200,23 @@
   white-space: normal;
   line-height: 1.5;
   text-align: left;
+}
+
+.mc-outpost-world-tip-row {
+  display: block;
+}
+
+.mc-outpost-world-tip-row strong {
+  color: #f3f4f6;
+}
+
+.mc-outpost-world-tip-row--save {
+  color: #fb923c;
+}
+
+.mc-outpost-world-tip-note {
+  margin-top: 4px;
+  color: #9ca3af;
 }
 
 .mc-outpost-empty {

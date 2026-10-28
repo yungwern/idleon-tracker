@@ -17,6 +17,68 @@
   margin-bottom: 8px;
 }
 
+/* ── Roll Check Picker ── */
+.obols-check {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.obols-check-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+}
+
+.obols-check-desc {
+  max-width: 520px;
+  margin: 0;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* ── Setup Picker ── */
+.obols-setup-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Board Notices (top of each Example Boards sub-tab) ── */
+.obols-notice {
+  align-self: center;
+  width: 100%;
+  max-width: 560px;
+  box-sizing: border-box;
+}
+
+.obols-notice-clear {
+  text-align: center;
+}
+
+/* Character chips are buttons (open that character's Obols tab) */
+.obols-notice-chip {
+  background: none;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.obols-notice-chip:hover {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+}
+
+/* Label for the player's own board (vs the example boards next to it) */
+.obols-section-label--own {
+  color: #a0c4ff;
+}
+
 /* ── Example Boards Tab ── */
 .obols-example-tab {
   display: flex;
@@ -26,7 +88,8 @@
 
 .obols-comparison {
   display: flex;
-  gap: 32px;
+  flex-wrap: wrap;
+  gap: 24px;
   justify-content: center;
   align-items: flex-start;
 }
@@ -37,11 +100,6 @@
   align-items: center;
 }
 
-.obols-comparison-divider {
-  width: 1px;
-  background: rgba(255, 255, 255, 0.06);
-  align-self: stretch;
-}
 
 .obols-char-boards-row {
   display: flex;

@@ -300,12 +300,26 @@ export const idealAccountBoard = [
 
 export const endgameAccountBoard = [
   'ObolSilverPop', 'ObolSilverPop', 'ObolKnight', 'ObolSilverPop', 'ObolSilverPop',
-  'ObolSilverPop', 'ObolLava', 'ObolEmp', 'ObolLava', 'ObolSilverPop',
-  'ObolKnight', 'ObolEmp', 'ObolEmp', 'ObolKnight',
-  'ObolSilverPop', 'ObolLava', 'ObolEmp', 'ObolLava', 'ObolSilverPop',
+  'ObolSilverPop', 'ObolLava', 'ObolPinkLuck', 'ObolLava', 'ObolSilverPop',
+  'ObolKnight', 'ObolPinkLuck', 'ObolPinkLuck', 'ObolKnight',
+  'ObolSilverPop', 'ObolLava', 'ObolPinkLuck', 'ObolLava', 'ObolSilverPop',
   'ObolSilverPop', 'ObolSilverPop', 'ObolKnight', 'ObolSilverPop', 'ObolSilverPop',
 ]
 
+// Family board setups shown on Obols > Example Boards > Family Boards (one at a time, picked by label).
+// Add a setup here: { label, slots } with 24 slots in on-screen order.
+export const familyBoards = {
+  ideal: {
+    label: 'Ideal',
+    slots: idealAccountBoard,
+  },
+  endgame: {
+    label: 'Endgame Ideal',
+    slots: endgameAccountBoard,
+  },
+}
+
+// Character board setups shown on Obols > Example Boards > Personal Boards (one at a time).
 export const characterBoards = {
   dr: {
     label: 'Drop Rate',

@@ -226,7 +226,18 @@ function OutpostCard({ outpost, summary, optimizer }) {
 
 function OutpostWorld({ group, summary, optimizer }) {
   const noticeCount = group.outposts.filter(o => outpostNotices(o, summary).length > 0).length
-  const ptsToSpend = group.outposts.reduce((sum, o) => sum + (optimizer.byMap.get(o.mapIndex)?.ptsPlan.spend ?? 0), 0)
+  // Outposts with unspent PTS: savers (holding PTS for a Barracks level) first, then plain spenders.
+  // Anything not marked as saving can simply spend everything it has.
+  const ptsRows = group.outposts
+    .map(o => ({ outpost: o, opt: optimizer.byMap.get(o.mapIndex) }))
+    .filter(({ opt }) => opt && (opt.ptsPlan.spend > 0 || opt.ptsPlan.saveFor))
+    .sort((a, b) => Boolean(b.opt.ptsPlan.saveFor) - Boolean(a.opt.ptsPlan.saveFor))
+  const ptsToSpend = ptsRows.reduce((sum, { opt }) => sum + opt.ptsPlan.spend, 0)
+  const saving = ptsRows.filter(({ opt }) => opt.ptsPlan.saveFor).length
+  const ptsChip = [
+    ptsToSpend > 0 && `${ptsToSpend} PTS to spend`,
+    saving > 0 && `${saving} saving for Barracks`,
+  ].filter(Boolean).join(' · ')
   const commanderAdvice = optimizer.commanderAdvice.get(group.world)
   const postedAt = commanderAdvice
     ? [...commanderAdvice.postedAt].map(([mapIndex, n]) => `${n} at ${mapIndex >= 0 ? summary.nameOf(mapIndex) : 'no outpost'}`).join(', ')
@@ -238,8 +249,30 @@ function OutpostWorld({ group, summary, optimizer }) {
         <span className="mc-outpost-world-title">World {group.world}</span>
         <span className="mc-outpost-world-stat">{group.outposts.length} outposts</span>
         <span className="mc-outpost-world-chips">
-          {ptsToSpend > 0 && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--pts">{ptsToSpend} PTS to spend</span>
+          {ptsRows.length > 0 && (
+            <span className={`mc-outpost-world-chip mc-outpost-world-chip--pts${saving > 0 ? ' mc-outpost-world-chip--save' : ''} tooltip-anchor`}>
+              {ptsChip}
+              <span className="tooltip mc-outpost-world-tip">
+                {ptsRows.map(({ outpost, opt }) => {
+                  const plan = opt.ptsPlan
+                  const kept = opt.pts.left - plan.spend
+                  return plan.saveFor ? (
+                    <span key={outpost.mapIndex} className="mc-outpost-world-tip-row mc-outpost-world-tip-row--save">
+                      ⚠ <strong>{outpost.name}</strong>:{' '}
+                      {plan.spend > 0 ? `${spendText(plan.now)}, then save` : 'Save'}{' '}
+                      {kept} / {BARRACKS_COST} PTS for Barracks {plan.saveFor}
+                    </span>
+                  ) : (
+                    <span key={outpost.mapIndex} className="mc-outpost-world-tip-row">
+                      <strong>{outpost.name}</strong>: {spendText(plan.now)}
+                    </span>
+                  )
+                })}
+                {saving === 0 && (
+                  <span className="mc-outpost-world-tip-row mc-outpost-world-tip-note">No Barracks to save for: spend everything.</span>
+                )}
+              </span>
+            </span>
           )}
           {commanderAdvice?.needsMove && (
             <span className="mc-outpost-world-chip mc-outpost-world-chip--notice tooltip-anchor">

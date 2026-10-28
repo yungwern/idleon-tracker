@@ -1,4 +1,4 @@
-import { CLASS_TAB_ROLES, CLASS_TALENT_TABS } from '../data/classes.js'
+import { CLASS_MAIN_STATS, CLASS_TAB_ROLES, CLASS_TALENT_TABS } from '../data/classes.js'
 
 // The character the save was taken on. The game reads many account bonuses "as the logged-in
 // character sees them" (its star signs, chips, skill levels). Only the played character's
@@ -32,4 +32,10 @@ export function getClassRoles(className) {
     ...roles.filter(role => role.allChars),
     ...roles.filter(role => !role.allChars),
   ]
+}
+
+// Main stat of a class ('STR' | 'AGI' | 'WIS' | 'LUK'), from the start of its class line
+export function getClassMainStat(className) {
+  const firstTab = CLASS_TALENT_TABS[className]?.[0] ?? className
+  return CLASS_MAIN_STATS[firstTab] ?? null
 }
