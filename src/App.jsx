@@ -6,6 +6,8 @@ import { getMinibossNoticeCount } from './utils/minibossNotices.js'
 import { sections, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import { useTomePoints } from './hooks/useTomePoints.js'
+import { useCloudSave } from './hooks/useCloudSave.js'
+import { PROVIDER_LABELS } from './lib/idleonCloud.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
 import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
@@ -31,8 +33,12 @@ import './styles/global.css'
 export default function App() {
   const [selected, setSelected] = useState(null)
   const [showModal, setShowModal] = useState(false)
-  const { snapshot, importFromText, clearSnapshot, importedAt } = useSaveImport()
+  const { snapshot, importFromJson, importFromText, clearSnapshot, importedAt, cloudSavedAt } = useSaveImport()
   const { tomePoints, setTomePoints } = useTomePoints()
+  // Logged-in cloud save: auto-syncs only while the loaded save came from the cloud (or there is none),
+  // so a pasted or test save is never overwritten behind the player's back
+  const isCloudSave = snapshot?.source === 'cloud'
+  const cloud = useCloudSave(raw => importFromJson(raw, 'cloud'), !snapshot || isCloudSave)
 
   // ── Characters come straight from the imported save (any account, any count) ──
   const mergedCharacters = (snapshot?.characters ?? []).map((c, i) => {
@@ -64,6 +70,7 @@ export default function App() {
   }), [snapshot])
 
   function handleClearSave() {
+    cloud.signOut()
     clearSnapshot()
     setSelected(null)
   }
@@ -106,7 +113,12 @@ export default function App() {
       {showModal && (
         <ImportModal
           onImport={importFromText}
+          onImportJson={importFromJson}
           hasSave={!!snapshot}
+          cloud={cloud}
+          importedAt={importedAt}
+          cloudSavedAt={cloudSavedAt}
+          isCloudSave={isCloudSave}
           tomePoints={tomePoints}
           onTomePointsChange={setTomePoints}
           onClose={() => setShowModal(false)}
@@ -123,16 +135,33 @@ export default function App() {
             📂 Import Save
           </button>
           <div className="import-status">
+            {cloud.account && (
+              <span className="import-cloud">
+                ☁️ {PROVIDER_LABELS[cloud.account.provider]} account{snapshot && !isCloudSave ? ' (paused)' : ''}
+              </span>
+            )}
             {importedAt ? (
-              <>
-                <span className="import-timestamp">Last imported: {importedAt}</span>
-                <button className="clear-btn" onClick={handleClearSave}>
-                  🗑️ Delete Save
-                </button>
-              </>
+              <span className="import-timestamp">
+                {isCloudSave ? 'Synced' : 'Last imported'}: {importedAt}
+              </span>
             ) : (
               <span className="import-timestamp no-save">No save imported</span>
             )}
+            {cloud.account && (
+              <button className="sync-btn" onClick={cloud.sync} disabled={cloud.syncing}>
+                {cloud.syncing ? '⏳ Syncing…' : '🔄 Sync Save'}
+              </button>
+            )}
+            {importedAt && (
+              <button
+                className="clear-btn"
+                onClick={handleClearSave}
+                title={cloud.account ? 'Also signs you out of your IdleOn account' : undefined}
+              >
+                🗑️ Delete Save
+              </button>
+            )}
+            {cloud.error && <span className="import-error">{cloud.error}</span>}
           </div>
         </div>
 
@@ -192,4 +221,4 @@ export default function App() {
       </div>
     </div>
   )
-}
+}

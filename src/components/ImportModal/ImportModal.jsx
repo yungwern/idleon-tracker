@@ -1,30 +1,59 @@
 import { useState, useRef } from 'react'
 import { TOME_POINTS_USES } from '../../utils/tomeUtils'
+import CloudLogin from './CloudLogin.jsx'
 import './ImportModal.css'
 
-export default function ImportModal({ onImport, hasSave, tomePoints, onTomePointsChange, onClose }) {
+// Dev server only: the save Eli keeps for testing (IdleOn Resources/ is gitignored and never deployed)
+const DEV_SAVE_URL = '/IdleOn Resources/raw-save.json'
+
+export default function ImportModal({
+  onImport,
+  onImportJson,
+  hasSave,
+  tomePoints,
+  onTomePointsChange,
+  onClose,
+  cloud,
+  importedAt,
+  cloudSavedAt,
+  isCloudSave,
+}) {
+  const [tab, setTab] = useState('login')
   const [text, setText] = useState('')
   const [tome, setTome] = useState(tomePoints ?? '')
   const [error, setError] = useState(null)
   const textareaRef = useRef(null)
 
-  // With a save already loaded, the button can just update Tome points (no paste needed)
-  const tomeOnly = hasSave && !text.trim()
+  // With a save already loaded (or on the Log In tab), the button just saves Tome points
+  const pasting = tab === 'paste' && text.trim()
+  const tomeOnly = !pasting && (hasSave || tab === 'login')
 
   function handleImport() {
     setError(null)
-    if (!text.trim() && !hasSave) {
+    if (tab === 'paste' && !text.trim() && !hasSave) {
       setError('Please paste your save data before importing.')
       return
     }
     try {
-      if (text.trim()) onImport(text)
+      if (pasting) onImport(text)
       onTomePointsChange(tome)
       onClose()
     } catch (err) {
       setError(err instanceof SyntaxError
         ? 'Invalid JSON — make sure you copied the full save data from the decoder.'
         : err.message)
+    }
+  }
+
+  async function handleDevLoad() {
+    setError(null)
+    try {
+      const res = await fetch(encodeURI(DEV_SAVE_URL), { cache: 'no-store' })
+      onImportJson(await res.json(), 'dev')
+      onTomePointsChange(tome)
+      onClose()
+    } catch (err) {
+      setError(`Couldn't load ${DEV_SAVE_URL}: ${err.message}`)
     }
   }
 
@@ -39,17 +68,52 @@ export default function ImportModal({ onImport, hasSave, tomePoints, onTomePoint
           <h3>Import Save Data</h3>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
-        <p className="modal-description">
-          Paste your decoded save JSON below. Your data will be saved locally and persist between sessions.
-        </p>
-        <textarea
-          ref={textareaRef}
-          className="modal-textarea"
-          placeholder='Paste your decoded save JSON here...'
-          value={text}
-          onChange={e => { setText(e.target.value); setError(null) }}
-          spellCheck={false}
-        />
+
+        <div className="page-tabs modal-tabs">
+          <button
+            className={`page-tab-btn${tab === 'login' ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setTab('login')}
+          >
+            Log In
+          </button>
+          <button
+            className={`page-tab-btn${tab === 'paste' ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setTab('paste')}
+          >
+            Paste Save
+          </button>
+        </div>
+
+        {tab === 'login' && (
+          <CloudLogin
+            cloud={cloud}
+            importedAt={importedAt}
+            cloudSavedAt={cloudSavedAt}
+            isCloudSave={isCloudSave}
+          />
+        )}
+
+        {tab === 'paste' && (
+          <>
+            <p className="modal-description">
+              Paste your decoded save JSON below. Your data will be saved locally and persist between sessions.
+              {cloud.account && ' While a pasted save is loaded, the hub stops syncing your cloud save until you click Sync.'}
+            </p>
+            <textarea
+              ref={textareaRef}
+              className="modal-textarea"
+              placeholder='Paste your decoded save JSON here...'
+              value={text}
+              onChange={e => { setText(e.target.value); setError(null) }}
+              spellCheck={false}
+            />
+            {import.meta.env.DEV && (
+              <button className="modal-dev-load" onClick={handleDevLoad}>
+                🧪 Load IdleOn Resources/raw-save.json (dev only)
+              </button>
+            )}
+          </>
+        )}
 
         <div className="modal-manual">
           <div className="modal-manual-head">

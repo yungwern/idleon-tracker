@@ -57,8 +57,9 @@ src/
 │                       # classes.js also has CLASS_TALENT_TABS (class lines) and CLASS_FAMILY_BONUSES.
 │                       # Data files never import utils; computed tables (e.g. ribbonData) live in utils.
 ├── hooks/              # useSaveImport.js, useTomePoints.js (Tome points typed into the Import Save modal's
-                        #   Manual Inputs, held in App and passed to pages; add new uses to TOME_POINTS_USES)
-├── lib/                # extractSnapshot.js — parses raw save JSON
+                        #   Manual Inputs, held in App and passed to pages; add new uses to TOME_POINTS_USES),
+                        #   useCloudSave.js (logged-in cloud save, see Cloud login below)
+├── lib/                # extractSnapshot.js — parses raw save JSON; idleonCloud.js — cloud login + save read
 ├── styles/             # global.css — shared layout classes and reusable components
 └── utils/              # appUtils.js (toClassSlug, statueLevelColor, shrineLevelColor),
                         # talentUtils.js (super talent points for Overview notifications),
@@ -188,6 +189,16 @@ batch can be claimed again (counted as ~2 claims per batch).
 **Adding new pages**: register the section in `data/sections.js` and wire up the component in `App.jsx`
 
 **Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components.
+Snapshots carry `source`: 'paste', 'cloud' or 'dev' (Paste Save tab's dev-only "Load IdleOn Resources/raw-save.json" button).
+**Cloud login** (Import Save > Log In; Paste Save always stays): `lib/idleonCloud.js` signs in to the game's own Firebase
+project (idlemmo) with plain REST, no Firebase SDK, the same way Toolbox/Idleoneer do. Steam = OpenID to
+legendsofidleon.com/steamsso, player pastes that URL, game function `asil` returns a custom token → signInWithCustomToken
+(reply has no localId: uid comes from the token's user_id claim, e.g. steam_…). Google = device code (google.com/device)
+→ signInWithIdp. Email = signInWithPassword. Apple not built: needs our own server relay (Cloudflare Worker), like both
+other sites use. Save = Firestore `_data/{uid}` + RTDB `_uid`/`_comp` + Firestore `_vars`, assembled into the same
+`{ data, charNames, companion, serverVars }` bundle as a Toolbox export. `useCloudSave` keeps { provider, uid, refreshToken }
+in localStorage (`idleon_cloud_account`), renews the 1 h token via securetoken, and auto-syncs on load and on tab focus
+(2 min minimum) only while the loaded save's source is 'cloud'. Toolbox is GPL-3: reimplement, never copy its files.
 OptLacc (account options) is parsed once in `extractSnapshot` and passed to the parsers that read it; use `parseRaw`
 for any save key that may be a JSON string. Each game system has its own `parseX` in extractSnapshot (alchemy, stamps, sneaking, grimoire, upgradeVault,
 achievements, rift, killroy, sushi, companions + voteBallot from the export's top-level companion/serverVars, and
