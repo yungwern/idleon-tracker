@@ -1348,3 +1348,168 @@ export const spelunkingLoreTomeBonuses = [
   { name: 'Equinox', base: 220, tome: 5000 },
   { name: 'W7 Skill 3', base: 100, tome: 17000 },
 ]
+
+
+// Elixirs by save index (Spelunk[7] = equipped belt, Spelunk[48] = memorized elixirs, -1 = empty).
+// description/bonus from IdleonToolbox shared-data generalSpelunky[16] / [17]: { = bonus, @ = line break.
+// name / color are our own labels (the game shows no names); image = CaveElix<index>.png. tip = extra advice on the card.
+export const spelunkingElixirMap = [
+  {
+    name: 'Stamina Refund',
+    color: 'Yellow',
+    bonus: 25,
+    description: 'For the current player, {% of all stamina used is given right back! @ (Effect wears off when player runs out of Stamina)',
+  },
+  {
+    name: 'Hole Finder',
+    color: 'Striped',
+    bonus: 1,
+    description: 'Highlights an area on the floor. @ The hole to the next depth is guaranteed to be in that area!',
+  },
+  {
+    name: 'Second Wind',
+    color: 'Blue',
+    bonus: 30,
+    description: 'Gives the current player a 50% chance to regenerate {% Stamina when they run out. @ (Cannot be used a 2nd time while the effect is active)',
+  },
+  {
+    name: 'Amber Tally',
+    color: 'Amber',
+    bonus: 1,
+    description: 'Boosts your amber gain by +{% per 10 stamina used during the delve at the time this elixir was used. @ (Effect persists for the entire Delve)',
+  },
+  {
+    name: 'Glass Cannon',
+    color: 'Green',
+    bonus: 20,
+    description: 'Boosts POW to 5x your normal amount. @ However, you now lose {% POW each time you descend! @ (Effect persists for the entire Delve)',
+  },
+  {
+    name: 'Chain Smash',
+    color: 'Orange',
+    bonus: 60,
+    description: 'For the next 2 depths, whenever an object is destroyed it has a {% chance of hitting an adjacent object with the power of your Hammer tool.',
+  },
+  {
+    name: 'Double Amber',
+    color: 'Teal',
+    bonus: 25,
+    description: 'All objects have a +{% chance of dropping Double Amber instead of a single amber chunk @ (Effect lasts for the entire Delve)',
+  },
+  {
+    name: 'Shadow Strike',
+    color: 'Purple',
+    bonus: 30,
+    description: 'Shadow Strikes are 1.5x more common, and have a +{% higher chance to trigger a multi strike @ (Effect lasts for the entire Delve)',
+  },
+  {
+    name: 'Nova Blast',
+    color: 'Gold',
+    bonus: 1,
+    description: 'Triggers a Nova Blast. Woah...',
+  },
+  {
+    name: 'Grand Discovery',
+    color: 'Cream',
+    bonus: 1,
+    description: 'Increases Stamina Costs by 2x, reduces POW by 100x, but boosts Grand Discovery chance by 5x',
+  },
+  {
+    name: 'Overdrive',
+    color: 'Red',
+    bonus: 1,
+    tip: 'Only the first use is a great trade: 100x POW for 4x stamina. Each extra use adds the same stamina cost again but the POW gain shrinks, so more than one or two uses burns stamina fast.',
+    description: 'Increases Stamina Costs by 4x, boosts POW by 100x. @ Each use adds a stack of this effect, so 8x and 200x on the 2nd use. @ (Effect persists for the entire Delve)',
+  },
+  {
+    name: 'Unlabeled',
+    color: 'Pink',
+    bonus: 0,
+    description: 'This elixir doesn\'t have a label on it. At least, that\'s what the label says...',
+  },
+]
+
+// Elixir belt setups for each kind of delve (Eli's guide). elixirs = elixir indexes, in belt order.
+// memorized: true = the Elixir Memorization pick (free use of each at the start of every run), not a belt.
+// why = one line per elixir group, shown under the belt.
+export const spelunkingElixirSetups = [
+  {
+    id: 'memorized',
+    name: 'Memorized',
+    memorized: true,
+    elixirs: [0, 2, 7],
+    summary: 'Memorized elixirs are drunk automatically the moment a run starts (they are not a spare you can save for later), on top of your belt. Only memorize elixirs you\'d want active from the very first depth.',
+    why: [
+      'Yellow and Blue stretch your stamina in almost every kind of delve.',
+      'Purple Shadow Strikes last the whole delve, so getting one up from the very first depth is never wasted.',
+      'Never memorize Grand Discovery or Red: they would kick in at the start and drag down the whole run before they\'re useful.',
+      'Elixir Memorization comes later in the shop (up to 5 memorized) and Doublethink Memory can make each one a double use at the start.',
+    ],
+  },
+  {
+    id: 'depth',
+    name: 'Depth',
+    elixirs: [0, 2, 7, 7, 10],
+    summary: 'Pushing a new Best Depth: keep each player swinging as long as possible, then brute-force the tough objects at the bottom.',
+    why: [
+      'Yellow refunds a quarter of the stamina you spend, and Blue can refill a player who runs dry.',
+      'Purple makes Shadow Strikes 1.5x more common and multi strikes likelier for the whole delve, so more objects break per stamina. Two copies means more uses on the belt.',
+      'Red is the finisher: 100x POW once objects get too tough to break, at 4x stamina cost, so save it for the last depths. Stop after one or two: see Overdrive below for why.',
+    ],
+  },
+  {
+    id: 'shortcut',
+    name: 'Depth after Shortcut',
+    elixirs: [2, 7, 7, 7, 10],
+    summary: 'Same goal as Depth, but starting from a shortcut where the objects are already tough from the first swing.',
+    why: [
+      'Yellow is swapped for a third Purple: from a shortcut, breaking objects faster matters more than a stamina refund.',
+      'Blue still gives a chance to refill a player who runs out.',
+      'Red is still the finisher for the deepest, toughest objects, one or two uses at most.',
+    ],
+  },
+  {
+    id: 'manic',
+    name: 'Manic',
+    elixirs: [0, 2, 7, 7, 7],
+    summary: 'Manic Mode costs 30x stamina, so it\'s all about making every swing count.',
+    why: [
+      'Yellow and Blue are worth even more when every swing costs 30x stamina.',
+      'Three Purples so Shadow Strikes and multi strikes are always going.',
+      'No Red: its 4x stamina cost on top of Manic\'s 30x is too steep, and early Manic runs don\'t go deep enough to need the POW.',
+    ],
+  },
+  {
+    id: 'amber',
+    name: 'Amber',
+    elixirs: [3, 3, 3, 6, 6],
+    summary: 'Farming amber: no depth push, just stack every amber multiplier.',
+    why: [
+      'The Amber elixir gives +1% amber per 10 stamina already used in the delve, counted when you drink it, and lasts the rest of the delve: drink them late, with only 2 to 3 players\' stamina left.',
+      'Teal gives every object a +25% chance to drop double amber for the whole delve, so drink those immediately.',
+    ],
+  },
+  {
+    id: 'grand',
+    name: 'Grand Discovery',
+    elixirs: [2, 7, 7, 7, 9],
+    summary: 'Hunting Grand Discoveries: get deep enough that most objects are the tunnel\'s final type, then break as many as you can.',
+    why: [
+      'Cream gives 5x Grand Discovery chance, but 2x stamina cost and 100x less POW: drink it once the depth is mostly final objects.',
+      'Three Purples help make up for the lost POW.',
+      'Blue keeps a player going a little longer under the 2x stamina cost.',
+      'On later tunnels, one Red can win back the POW Cream takes away.',
+    ],
+  },
+  {
+    id: 'exiledThrone',
+    name: 'Exiled Throne GD',
+    elixirs: [0, 7, 9, 4, 10],
+    summary: 'For the last Grand Discoveries in Exiled Throne, whose final object shows up from depth 180 (usually 200-210) and needs more POW the deeper it appears. Bring 3 players: one to reach the depth, one to try for the Grand Discovery, one as backup.',
+    why: [
+      'Yellow and Purple get the first player down to depth 180 cheaply. Kill the lore boss at depth 130 on the way.',
+      'Green, Red and Cream are saved for when a final object shows up: Cream gives 5x Grand Discovery chance, and Green (5x) plus Red (100x) win back the 100x POW it takes. Green loses POW every descent, so drink them only once the object is in front of you.',
+      'Past about depth 225 (at ~3e37 POW) the final object needs too much POW, so take the first rope out and start again. This varies depending on your account\'s Spelunking POW and Stamina, so check the POW of the final object before you go too deep. If it\'s too high, leave and try again.',
+    ],
+  },
+]

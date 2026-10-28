@@ -1077,6 +1077,9 @@ function parseSpelunking(json, optLacc) {
     discoveries: spelunk[6] ?? [],
     grandDiscoveries: numbers(spelunk[44]),
     bestManicDepths: numbers(spelunk[47]),
+    // elixir indexes, -1 = empty: Spelunk[7] = equipped belt, Spelunk[48] = memorized elixirs
+    equippedElixirs: spelunk[7] ? numbers(spelunk[7]) : null,
+    memorizedElixirs: spelunk[48] ? numbers(spelunk[48]) : null,
     pageReadsToday: Number(optLacc[410]) || 0,
     loreBonusesUnlocked: Number(spelunk[13]?.[2]) || 0,
     tutorialStep: Number(optLacc[478]) || 0,

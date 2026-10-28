@@ -1285,3 +1285,333 @@
 .spelunk-jelly-rest .spelunk-odds-row {
   grid-template-columns: repeat(3, 1fr);
 }
+
+/* ── Elixirs Tab ── */
+.spelunk-elixir-icon {
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.spelunk-elixir-icon--sm {
+  width: 30px;
+  height: 30px;
+}
+
+.spelunk-elixir-icon--md {
+  width: 38px;
+  height: 38px;
+}
+
+.spelunk-elixir-icon--lg {
+  width: 46px;
+  height: 46px;
+}
+
+.spelunk-elixir-slot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: #1f1420;
+}
+
+.spelunk-elixir-slot--sm {
+  width: 40px;
+  height: 40px;
+}
+
+.spelunk-elixir-slot--md {
+  width: 50px;
+  height: 50px;
+}
+
+.spelunk-elixir-slot--lg {
+  width: 62px;
+  height: 62px;
+}
+
+.spelunk-elixir-slot--locked .spelunk-elixir-icon {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.spelunk-elixir-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  margin-left: 0;
+}
+
+.spelunk-elixir-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #9ca3af;
+}
+
+.spelunk-elixir-chip--active {
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+}
+
+.spelunk-elixir-chip--warn {
+  border-color: rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+}
+
+.spelunk-elixir-section {
+  margin-top: 24px;
+}
+
+.spelunk-elixir-heading {
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #d1d5db;
+}
+
+/* Your elixirs: belt + memorized panels */
+.spelunk-elixir-section--first {
+  margin-top: 0;
+}
+
+.spelunk-elixir-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 10px;
+}
+
+.spelunk-elixir-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.spelunk-elixir-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spelunk-elixir-panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #9ca3af;
+}
+
+.spelunk-elixir-panel-count {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.spelunk-elixir-panel-chip {
+  margin-left: auto;
+}
+
+.spelunk-elixir-panel-slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.spelunk-elixir-panel-slots .spelunk-elixir-setup-slot {
+  width: 64px;
+}
+
+.spelunk-elixir-slot--empty {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: transparent;
+}
+
+.spelunk-elixir-slot--unbought {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.spelunk-elixir-slot--empty + .spelunk-elixir-setup-slot-name {
+  color: #4b5563;
+}
+
+/* Setups */
+.spelunk-elixir-section .page-tabs--sub {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
+.spelunk-elixir-tab-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  vertical-align: middle;
+}
+
+.spelunk-elixir-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  text-align: left;
+}
+
+.spelunk-elixir-setup-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.spelunk-elixir-setup-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #22d3ee;
+}
+
+.spelunk-elixir-setup-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.spelunk-elixir-setup-summary {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d1d5db;
+}
+
+.spelunk-elixir-setup-belt {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 0;
+}
+
+.spelunk-elixir-setup-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 82px;
+}
+
+.spelunk-elixir-setup-slot-name {
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.spelunk-elixir-setup-why {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9ca3af;
+}
+
+/* All elixirs */
+.spelunk-elixir-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.spelunk-elixir-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  text-align: left;
+}
+
+.spelunk-elixir-card--equipped {
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.spelunk-elixir-card--locked {
+  opacity: 0.5;
+}
+
+.spelunk-elixir-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.spelunk-elixir-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.spelunk-elixir-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.spelunk-elixir-card-color {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.spelunk-elixir-card-line {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+.spelunk-elixir-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.spelunk-elixir-card-used {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.spelunk-elixir-card-tip {
+  margin-top: 2px;
+  padding: 6px 8px;
+  border-left: 2px solid #fbbf24;
+  border-radius: 4px;
+  background: rgba(251, 191, 36, 0.06);
+  font-size: 12px;
+  line-height: 1.45;
+  color: #fcd34d;
+}

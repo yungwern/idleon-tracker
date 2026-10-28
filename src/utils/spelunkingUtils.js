@@ -1,4 +1,4 @@
-import { spelunkingUpgradeMap, spelunkingTunnels, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, amberTiers, spelunkingLoreTomeBonuses, MAX_GRAND_DISCOVERIES } from '../data'
+import { spelunkingUpgradeMap, spelunkingTunnels, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, amberTiers, spelunkingLoreTomeBonuses, MAX_GRAND_DISCOVERIES, spelunkingElixirMap, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES } from '../data'
 import { compoundingOutpostingMulti } from '../data/royalOutposts'
 import { growth } from './mathUtils'
 import { getMealBonusByStat } from './cookingUtils'
@@ -89,6 +89,10 @@ export const SPELUNKING_UPGRADES = {
   elixirTypes: 23,
   elixirSlots: 24,
   elixirDuplicates: 25,
+  freeRefills: 26,
+  novaCrossover: 39,
+  elixirMemorization: 57,
+  doublethinkMemory: 58,
   greenAmber: 41,
   redAmber: 51,
   amberBeHere: 52,
@@ -231,17 +235,13 @@ export function getLoreChapters(snapshot) {
 
 // Chance (0-1) of a Grand Discovery when destroying a tunnel's final object type, before the 2x-rarer-per-find
 // rule (Toolbox grandDiscoveriesChance). Uses the played character's Spelunking LV, no elixirs.
-const GRAND_VEIN_CLASS = 'Royal Guardian'
-
-// Who to delve on for Grand Discoveries: the highest-Spelunking-LV Royal Guardian, since only they can
-// fill Grand Vein (by far the bigger boost) and the game also reads the logged-in character's Spelunking
-// LV. Accounts without a Royal Guardian fall back to the highest-level Spelunker.
+// Who to delve on for Grand Discoveries: the highest-Spelunking-LV character of any class, since the game
+// reads the logged-in character's Spelunking LV. Grand Vein is leveled on a Royal Guardian but works for
+// whoever delves (highest level across characters, like Toolbox getHighestTalentAcrossCharacters).
 export function getBestGrandDiscoveryCharacter(snapshot) {
   const characters = snapshot?.characters ?? []
-  const hasGuardian = characters.some(character => character?.class === GRAND_VEIN_CLASS)
   let index = -1
   characters.forEach((character, i) => {
-    if (hasGuardian && character?.class !== GRAND_VEIN_CLASS) return
     if (index === -1 || getSkillLevel(character, 'spelunking') > getSkillLevel(characters[index], 'spelunking')) index = i
   })
   const percentPerLevel = getMineheadBonus(snapshot?.minehead, GD_MINEHEAD) + getSushiBonus(snapshot?.sushi, GD_SUSHI)
@@ -250,7 +250,6 @@ export function getBestGrandDiscoveryCharacter(snapshot) {
   return {
     index,
     character: characters[index] ?? null,
-    isRoyalGuardian: hasGuardian,
     level: getSkillLevel(characters[index], 'spelunking'),
     percentPerLevel,
     multi: multiFor(characters[index]),
@@ -1000,5 +999,80 @@ export function getSpelunkingSummary(snapshot) {
       loreBoss: spelunkingLoreBosses[i] ?? null,
     })),
     tunnelDiscoveries: getTunnelDiscoveries(snapshot),
+  }
+}
+
+
+// ── Elixirs ───────────────────────────────────────────────────────────────────
+
+// Lore chapter 4 (No Escape) bonus #3: chance to not use up an elixir
+const ELIXIR_KEEP_CHAPTER = 3
+const ELIXIR_KEEP_BONUS = 2
+const MAX_ELIXIR_MEMORIZED = 5
+
+const countOf = (list, value) => list.filter(item => item === value).length
+
+// Elixir belt limits, use odds, and every elixir with its owned / equipped / memorized state.
+// Types = New Brand of Elixir LV (elixir i is owned when i < types). Slots = 1 + Elixir Slot LV.
+// Max copies of one elixir = 1 + Duplicate Elixirs LV (the "$" in its shop text).
+// equipped / memorized are null on a save imported before they were parsed.
+export function getElixirBelt(snapshot) {
+  const spelunking = snapshot?.spelunking
+  const types = getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.elixirTypes)
+  const equipped = spelunking?.equippedElixirs ? spelunking.equippedElixirs.filter(id => id >= 0) : null
+  const memorized = spelunking?.memorizedElixirs ? spelunking.memorizedElixirs.filter(id => id >= 0) : null
+  return {
+    types,
+    maxTypes: MAX_ELIXIR_TYPES,
+    slots: 1 + getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.elixirSlots),
+    maxSlots: MAX_ELIXIR_SLOTS,
+    maxCopies: 1 + getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.elixirDuplicates),
+    maxCopiesCap: 1 + MAX_ELIXIR_DUPLICATES,
+    memorizeSlots: getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.elixirMemorization),
+    maxMemorizeSlots: MAX_ELIXIR_MEMORIZED,
+    freeRefillChance: getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.freeRefills),
+    keepChance: getChapterBonus(snapshot, ELIXIR_KEEP_CHAPTER, ELIXIR_KEEP_BONUS),
+    doublethinkChance: getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.doublethinkMemory),
+    novaChance: getUpgradeBaseBonus(spelunking, SPELUNKING_UPGRADES.novaCrossover),
+    equipped,
+    memorized,
+    elixirs: spelunkingElixirMap.map((elixir, index) => ({
+      ...elixir,
+      index,
+      text: elixir.description.replace('{', elixir.bonus),
+      owned: index < types,
+      equippedCount: equipped ? countOf(equipped, index) : 0,
+      memorized: memorized ? memorized.includes(index) : false,
+    })),
+  }
+}
+
+// Can this setup be used with the belt as it is, and is it what's equipped (or memorized) right now?
+export function checkElixirSetup(belt, setup) {
+  const ids = setup.elixirs
+  const issues = []
+  const locked = [...new Set(ids)].filter(id => id >= belt.types)
+  if (locked.length > 0) {
+    issues.push(`Locked: ${locked.map(id => spelunkingElixirMap[id]?.name).join(', ')}`)
+  }
+  if (setup.memorized) {
+    if (belt.memorizeSlots < ids.length) {
+      issues.push(`Needs ${ids.length} memorize slots (you have ${belt.memorizeSlots})`)
+    }
+  } else {
+    if (belt.slots < ids.length) {
+      issues.push(`Needs ${ids.length} belt slots (you have ${belt.slots})`)
+    }
+    const copies = Math.max(...ids.map(id => countOf(ids, id)))
+    if (belt.maxCopies < copies) {
+      issues.push(`Needs ${copies} of the same elixir (you can equip ${belt.maxCopies})`)
+    }
+  }
+  const current = setup.memorized ? belt.memorized : belt.equipped
+  const sorted = list => [...list].sort((a, b) => a - b).join(',')
+  return {
+    fits: issues.length === 0,
+    issues,
+    active: current ? sorted(current) === sorted(ids) : null,
   }
 }

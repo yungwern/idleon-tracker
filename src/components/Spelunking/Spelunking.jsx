@@ -6,12 +6,14 @@ import { getMaxPossibleTalentLevel } from '../../utils/talentUtils'
 import { formatBigNumber } from '../../utils/cogBoardUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import LoreTab from './LoreTab'
+import ElixirTab from './ElixirTab'
 import './Spelunking.css'
 
 const TABS = [
   { id: 'upgrades', label: 'Shop Upgrades' },
   { id: 'tunnels', label: 'Tunnels' },
   { id: 'lore', label: 'Lore' },
+  { id: 'elixirs', label: 'Elixirs' },
 ]
 
 const hideBrokenImg = e => {
@@ -304,14 +306,12 @@ function GrandDiscoveryPanel({ best, vein, maxGrandVein, setMaxGrandVein }) {
         <span className="spelunk-gd-multi">{formatMulti(best.multi)} from Spelunking LV</span>
       </div>
       <p className="spelunk-gd-text">
-        {best.isRoyalGuardian
-          ? 'Delve on your highest-level Royal Guardian: only a Royal Guardian can fill Grand Vein, the biggest Grand Discovery boost, and the game also multiplies the chance by the logged-in character\'s Spelunking LV'
-          : 'You have no Royal Guardian for Grand Vein, so delve on your highest-level Spelunker: the game multiplies the chance by the logged-in character\'s Spelunking LV'}
+        Delve on your highest-level Spelunker: the game multiplies the chance by the logged-in character's Spelunking LV
         {` (+${best.percentPerLevel}% per LV from Minehead and Sushi).`}
         {!samePlayed && ` ${character.name} gets ${formatMulti(best.multi)} from that vs ${formatMulti(best.playedMulti)} on ${played?.name} (LV ${formatCount(best.playedLevel)}), the character this save was taken on.`}
       </p>
       <p className="spelunk-gd-text">
-        Grand Vein (Royal Guardian): Lv {formatCount(vein.level)} now ({formatMulti(vein.multi)})
+        Grand Vein is leveled on a Royal Guardian but boosts whoever delves: Lv {formatCount(vein.level)} now ({formatMulti(vein.multi)})
         {vein.maxLevel > 0 && `, Lv ${formatCount(vein.maxLevel)} at most (${formatMulti(vein.maxMulti)})`}.
         {' '}Odds below use {character.name}'s LV, Grand Vein {maxGrandVein ? 'maxed' : 'as it is now'}, and no elixirs.
       </p>
@@ -645,8 +645,9 @@ export default function Spelunking({ snapshot, tomePoints }) {
           'Costs include your shop discounts (Woahtermelon meal, sushi, jelly and the Royal Guardian Amber Hoard talent) and are shown in your current amber color, like in game.',
           'Turn on Max Amber Hoard to see prices with Amber Hoard at the highest level your account can reach, the way you\'d set it before a shopping trip.',
           'Green upgrades are affordable with the amber you have right now. Faded ones are locked behind the upgrade named on them.',
-          'Tunnels shows each tunnel\'s discoveries and the odds of its next Grand Discovery, as if delving on your highest-level Royal Guardian (the game uses the logged-in character\'s Spelunking LV) with no elixirs. Max Grand Vein shows the odds with that Royal Guardian talent at its highest possible level.',
+          'Tunnels shows each tunnel\'s discoveries and the odds of its next Grand Discovery, as if delving on your highest-level Spelunker (the game uses the logged-in character\'s Spelunking LV) with no elixirs. Grand Vein is leveled on a Royal Guardian but works for any character. Max Grand Vein shows the odds with that Royal Guardian talent at its highest possible level.',
           'Lore has three parts: Page Reads plans how to spend your pages, Breakpoints shows every chapter bonus and how close it is to its cap, and Red Jellyfish predicts the Luminous Menagerie\'s daily re-read.',
+          'Elixirs shows your belt limits and what\'s equipped, every elixir, and a recommended belt for each kind of delve (Depth, Manic, Amber, Grand Discovery...) with a check that it fits your belt.',
         ]}
       />
 
@@ -683,6 +684,7 @@ export default function Spelunking({ snapshot, tomePoints }) {
         />
       )}
       {activeTab === 'lore' && <LoreTab snapshot={snapshot} />}
+      {activeTab === 'elixirs' && <ElixirTab snapshot={snapshot} />}
     </div>
   )
 }
