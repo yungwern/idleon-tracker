@@ -3,9 +3,12 @@
 // Simulates each outpost forward in time with the game's rank EXP formulas
 // (ported from IdleOn Toolbox, parsers/class-specific/royalGuardian.ts) to answer:
 //   1. How should the unit slots be split between Traders and Surveyors?
-//   2. Should the next 12 PTS go into Barracks or Education?
+//   2. How should the unspent PTS be split between Barracks and Education? (closed form, see planPts)
 //   3. Which outpost in each world should its Commanders work on?
-// "Best" means the most Trade ranks (= PTS) at the end of the horizon.
+// "Best" means the most Trade ranks (= PTS) at the end of the horizon, counted with the
+// fraction of the current bar so close calls aren't decided by rounding.
+// Only Trader, Surveyor and empty slots are reassigned: Workers feed collection and Guards
+// keep resource nodes in range, so the optimizer never touches them.
 // ============================================================
 
 import { outpostRankThreshold, MAPS_PER_WORLD } from '../data/royalOutposts'
@@ -20,7 +23,9 @@ const COMMAND = 2
 const MILITARY = 3
 
 // Unit slot digits are 2 + unit type
+const UNIT_WORKER = 0
 const UNIT_TRADER = 1
+const UNIT_GUARD = 2
 const UNIT_SURVEYOR = 3
 const UNIT_DIGIT_OFFSET = 2
 
@@ -49,14 +54,22 @@ const ARMORY = {
 const STRONK_RANK_ORBLET = 6 // +5% rank EXP per level
 
 // Jelly Operator bonuses that touch outposts, keyed by bonus index (active once that many obstructions are beaten)
-const JELLY_VALUES = { 1: 35, 3: 5, 15: 4, 32: 3, 43: 3, 48: 3, 52: 3, 61: 3 }
+const JELLY_VALUES = { 1: 35, 3: 5, 15: 4, 32: 3, 41: 5, 43: 3, 48: 3, 52: 3, 61: 3 }
 const JELLY_RANK_EXP = 1
+const JELLY_SUPPORT = 41 // flat +% added to each Support Camp's boost
 const JELLY_PTS_BY_WORLD = [3, 15, 32, 43, 48, 52, 61, 61]
 
 function rankOf(exp, type) {
   let rank = 0
   while (rank < 1000 && exp >= outpostRankThreshold(rank, type)) rank++
   return rank
+}
+
+// Rank plus how far the bar is toward the next one, e.g. 43.6
+function fractionalRank(exp, rank, type) {
+  const previous = rank === 0 ? 0 : outpostRankThreshold(rank - 1, type)
+  const next = outpostRankThreshold(rank, type)
+  return rank + Math.min(1, Math.max(0, (exp - previous) / (next - previous)))
 }
 
 // Free units an outpost gets from its Command rank (game: PassiveUnitsz)
@@ -84,7 +97,7 @@ function accountContext(rg) {
       (1 + (5 * armory(ARMORY.knights)) / 100) * stronk * (purifiedMaps.has(MILITARY) ? 3 : 1),
     ],
     intelPerRank: (10 * armory(ARMORY.intelRank)) / 100,
-    supportBonus: 200 * (1 + armory(ARMORY.superSupport) / 100),
+    supportBonus: 200 * (1 + armory(ARMORY.superSupport) / 100) + jelly(JELLY_SUPPORT),
     jellyExp: 1 + jelly(JELLY_RANK_EXP) / 100,
     peacetimeMilitia: armory(ARMORY.peacetimeMilitia) >= 1,
     educationUnlocked: armory(ARMORY.greaterEducation) >= 1,
@@ -95,7 +108,10 @@ function accountContext(rg) {
 function outpostState(o, ctx, supportCount, commanders, militia) {
   const [barracks, logistics, education] = o.upgrades
   const slots = Math.min(MAX_UNIT_SLOTS, 1 + barracks)
-  const slotUnits = [...o.units.slice(0, slots)].map(c => Number(c) - UNIT_DIGIT_OFFSET)
+  // A slot with no digit yet (just bought) counts as empty
+  const slotUnits = Array.from({ length: slots }, (_, i) => Number(o.units[i] ?? 1) - UNIT_DIGIT_OFFSET)
+  const slotWorkers = slotUnits.filter(u => u === UNIT_WORKER).length
+  const slotGuards = slotUnits.filter(u => u === UNIT_GUARD).length
   const exp = o.rankExp.slice(0, 4)
   return {
     o,
@@ -103,6 +119,10 @@ function outpostState(o, ctx, supportCount, commanders, militia) {
     logistics,
     education,
     slots,
+    // Slots the optimizer may fill with Traders/Surveyors (everything but Workers and Guards)
+    flexSlots: slots - slotWorkers - slotGuards,
+    slotWorkers,
+    slotGuards,
     slotTraders: slotUnits.filter(u => u === UNIT_TRADER).length,
     slotSurveyors: slotUnits.filter(u => u === UNIT_SURVEYOR).length,
     exp,
@@ -144,10 +164,14 @@ function simulate(ctx, state, { education, plan }) {
       while (exp[t] >= outpostRankThreshold(ranks[t], t)) ranks[t]++
     }
   }
-  return { trade: ranks[TRADE], intel: ranks[INTEL], command: ranks[COMMAND] }
+  return {
+    trade: fractionalRank(exp[TRADE], ranks[TRADE], TRADE),
+    intel: ranks[INTEL],
+    command: ranks[COMMAND],
+  }
 }
 
-// Best plan of the form "all Surveyors until Intel X, then all Traders".
+// Best plan of the form "all Surveyors until Intel X, then all Traders", over the flexible slots.
 // X at or below the current Intel rank means all Traders right away.
 // (This beat every fixed Trader/Surveyor split in testing.)
 function bestUnitPlan(ctx, state, slots, education) {
@@ -183,16 +207,118 @@ function outpostPts(ctx, state) {
   return { total, spent, left: Math.max(0, Math.round(total - spent)) }
 }
 
-// Next even Command rank: those are the ones that add a free Trader (2, 6, 10...) or Surveyor (4, 8, 12...)
+// Trader-equivalents feeding the Trade bar under the recommended unit plan: every flexible slot,
+// the free Traders from Command rank, and idle Militia when Trade is the bar they feed.
+function effectiveTraders(ctx, state) {
+  const ranks = state.ranks
+  const highest = ranks.reduce((best, r, t) => (r > ranks[best] ? t : best), 0)
+  const militia = ctx.peacetimeMilitia && highest === TRADE
+    ? (state.militia * ctx.baseRate[MILITARY]) / (2 * ctx.baseRate[TRADE])
+    : 0
+  return state.flexSlots + passiveUnits(ranks[COMMAND], UNIT_TRADER) + militia
+}
+
+// How to spend PTS. Trade EXP grows with Traders × (10 + Education), so with n Traders one Barracks
+// level (+1 Trader for 12 PTS) beats 12 Education levels only once 10 + Education > 12n.
+// A tie goes to Education: every level also counts toward Global Decree - OL, and 12 Education
+// levels count 12 times where one Barracks level counts once.
+// Returns {
+//   now: [{ upgrade, levels, to }] - what the unspent PTS buy, in order,
+//   spend: PTS that buys, saveFor: Barracks level being saved up for (or null),
+//   upcoming: [{ upgrade: 'education', until } | { upgrade: 'barracks', level }] - the order after that,
+//   educationUntil: Education level where Barracks takes over (null when Barracks is maxed)
+// }
+function planPts(ctx, state, left) {
+  const st = {
+    education: state.education,
+    barracks: state.barracks,
+    traders: effectiveTraders(ctx, state),
+  }
+  const canBarracks = () => st.barracks < BARRACKS_SLOT_CAP
+  // First Education level where a Barracks level is the better buy
+  const switchAt = () => {
+    if (!ctx.educationUnlocked) return st.education
+    if (!canBarracks()) return Infinity
+    return Math.max(st.education, Math.floor(12 * st.traders - 10) + 1)
+  }
+  const educationUntil = Number.isFinite(switchAt()) && ctx.educationUnlocked ? switchAt() : null
+
+  const now = []
+  const add = (upgrade, levels, to) => {
+    const last = now[now.length - 1]
+    if (last?.upgrade === upgrade) {
+      last.levels += levels
+      last.to = to
+    } else {
+      now.push({ upgrade, levels, to })
+    }
+  }
+  let budget = left
+  let saveFor = null
+  while (budget > 0) {
+    const target = switchAt()
+    if (st.education < target) {
+      const levels = Math.min(budget, target - st.education)
+      st.education += levels
+      budget -= levels
+      add('education', levels, st.education)
+    } else if (canBarracks()) {
+      if (budget < BARRACKS_COST) {
+        saveFor = st.barracks + 1
+        break
+      }
+      st.barracks++
+      st.traders++
+      budget -= BARRACKS_COST
+      add('barracks', 1, st.barracks)
+    } else {
+      break
+    }
+  }
+
+  // The next two moves after spending what's here
+  const upcoming = []
+  while (upcoming.length < 2) {
+    const target = switchAt()
+    if (st.education < target) {
+      upcoming.push({
+        upgrade: 'education',
+        until: Number.isFinite(target) ? target : null,
+      })
+      if (!Number.isFinite(target)) break
+      st.education = target
+    } else if (canBarracks()) {
+      upcoming.push({
+        upgrade: 'barracks',
+        level: st.barracks + 1,
+      })
+      st.barracks++
+      st.traders++
+    } else {
+      break
+    }
+  }
+
+  return {
+    now,
+    spend: left - budget,
+    saveFor,
+    upcoming,
+    educationUntil,
+  }
+}
+
+// Next Command rank that adds a free Trader (2, 6, 10...). The ranks in between add a Worker, Guard
+// or Surveyor, none of which raise Trade, so Commanders are aimed at Traders only.
 function nextCommandUnit(ctx, state) {
   const rank = state.ranks[COMMAND]
-  const target = rank % 2 === 0 ? rank + 2 : rank + 1
+  const target = rank + 1 + ((((2 - (rank + 1)) % 4) + 4) % 4)
   const expNeeded = outpostRankThreshold(target - 1, COMMAND) - state.exp[COMMAND]
   const perCommanderHour = barRate(ctx, state, COMMAND, state.education, state.ranks[INTEL])
   return {
     rank,
     target,
-    unit: target % 4 === 2 ? 'Trader' : 'Surveyor',
+    unit: 'Trader',
     hoursPerCommander: expNeeded / perCommanderHour,
   }
 }
@@ -255,7 +381,8 @@ export function getCommanderAdvice(rg, outposts) {
   return advice
 }
 
-// Returns { byMap: Map(mapIndex → result), commandersByWorld, bestCommandTarget: Map(world → mapIndex), commanderAdvice }
+// Returns { byMap: Map(mapIndex → result), commandersByWorld, bestCommandTarget: Map(world → mapIndex), commanderAdvice,
+//   educationUnlocked }
 export function optimizeOutposts(rg, outposts) {
   const ctx = accountContext(rg)
   const built = new Set(outposts.map(o => o.mapIndex))
@@ -273,24 +400,18 @@ export function optimizeOutposts(rg, outposts) {
     const state = outpostState(raw, ctx, summaryOutpost.supportedBy.length,
       commanders.get(raw.mapIndex) ?? 0, militia.get(raw.mapIndex) ?? 0)
 
-    const plan = bestUnitPlan(ctx, state, state.slots, state.education)
+    const plan = bestUnitPlan(ctx, state, state.flexSlots, state.education)
     const current = simulate(ctx, state, {
       education: state.education,
       plan: () => [state.slotTraders, state.slotSurveyors],
     })
 
-    // Next 12 PTS: one Barracks level (only worth it while it still adds a unit slot) vs 12 Education
-    let nextPts = 'education'
-    if (!ctx.educationUnlocked) {
-      nextPts = state.barracks < BARRACKS_SLOT_CAP ? 'barracks' : null
-    } else if (state.barracks < BARRACKS_SLOT_CAP) {
-      const withBarracks = bestUnitPlan(ctx, state, state.slots + 1, state.education)
-      const withEducation = bestUnitPlan(ctx, state, state.slots, state.education + BARRACKS_COST)
-      nextPts = withBarracks.trade >= withEducation.trade ? 'barracks' : 'education'
-    }
-
+    const pts = outpostPts(ctx, state)
     const result = {
       slots: state.slots,
+      flexSlots: state.flexSlots,
+      slotWorkers: state.slotWorkers,
+      slotGuards: state.slotGuards,
       slotTraders: state.slotTraders,
       slotSurveyors: state.slotSurveyors,
       intel: state.ranks[INTEL],
@@ -298,15 +419,15 @@ export function optimizeOutposts(rg, outposts) {
       allTradersNow: plan.switchAt <= state.ranks[INTEL],
       projectedNow: current.trade,
       projectedBest: plan.trade,
-      pts: outpostPts(ctx, state),
-      barracks: state.barracks,
-      nextPts,
+      pts,
+      ptsPlan: planPts(ctx, state, pts.left),
+      supportBoost: ctx.supportBonus * summaryOutpost.supportedBy.length,
       command: { ...nextCommandUnit(ctx, state), commandersHere: state.commanders },
     }
     byMap.set(raw.mapIndex, result)
   })
 
-  return { byMap, commandersByWorld, bestCommandTarget, commanderAdvice }
+  return { byMap, commandersByWorld, bestCommandTarget, commanderAdvice, educationUnlocked: ctx.educationUnlocked }
 }
 
 // "3.5 days" / "18 hours"

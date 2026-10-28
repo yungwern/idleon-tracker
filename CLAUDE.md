@@ -70,6 +70,11 @@ src/
                         # spiceOptimizer.js — Breeding > Spice Formations: forage model (Toolbox TotalTrekkingHR/REQ,
                         #   checked against real saves) + best gene-type formation per territory (owned types,
                         #   typical power, not specific pets); runs in spiceOptimizer.worker.js.
+                        # outpostOptimizer.js — Royal Guardian Outposts tab (formulas = Toolbox royalGuardian.ts). Compares
+                        #   fractional Trade ranks (whole ranks tie and bias results); only Trader/Surveyor/empty slots are
+                        #   swappable (Workers/Guards hold collection and node range); Commanders aim at the next free
+                        #   Trader (Command 2, 6, 10...). PTS plan (planPts) is closed form: Trade EXP ∝ Traders × (10 + Edu),
+                        #   so a Barracks level beats 12 Education once 10 + Education > 12 × Traders (ties → Education).
                         # farmingUtils.js — Farming market costs, exotic rotation, land rank totals + optimizer
                         #   (ported from Toolbox parsers/world-6/farming.ts: per-plot goal scores in log space,
                         #   greedy over Toolbox's "all" goal; default spends only unspent points and never lowers a level,

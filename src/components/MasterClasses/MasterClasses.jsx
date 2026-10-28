@@ -564,7 +564,6 @@ function RoyalStatues({ snapshot, imageFolder }) {
         items={[
           'Locked statues cost 1 of their marble per try to unlock.',
           'Unlocked statues cost 1 Parchment of Enchantment per try to level up, and the chance drops as the level rises.',
-          'Counts include every character plus storage.',
         ]}
       />
       {snapshot && !rg && (
@@ -785,4 +784,4 @@ export default function MasterClasses({ snapshot }) {
       )}
     </div>
   )
-}
+}

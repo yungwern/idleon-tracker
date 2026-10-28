@@ -971,7 +971,7 @@ export const BUBBLE_TIERS = [
     id: 'c',
     label: 'C',
     sublabel: 'Consider',
-    bubbles: ['aUpgradesO0', 'aUpgradesG0', 'aUpgradesP0', 'aUpgradesY1'],
+    bubbles: ['aUpgradesO0', 'aUpgradesY1', 'aUpgradesO15', 'aUpgradesP0', 'aUpgradesP30', 'aUpgradesG0'],
   },
     {
     id: 'd',

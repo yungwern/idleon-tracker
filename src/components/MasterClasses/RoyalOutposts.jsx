@@ -29,13 +29,98 @@ function OutpostRankRow({ bar }) {
   )
 }
 
+const UPGRADE_KEYS = ['barracks', 'logistics', 'education']
+
+// "Education to LV 74, then Barracks 6"
+function upcomingText(upcoming) {
+  return upcoming
+    .map(step => (step.upgrade === 'barracks'
+      ? `Barracks ${step.level}`
+      : step.until ? `Education to LV ${step.until}` : 'Education'))
+    .join(', then ')
+}
+
+// "Barracks +1, Education +2"
+function spendText(now) {
+  return now.map(step => `${step.upgrade === 'barracks' ? 'Barracks' : 'Education'} +${step.levels}`).join(', ')
+}
+
+function ptsReason(plan, educationUnlocked) {
+  if (!educationUnlocked) return 'Greater Education isn\'t unlocked yet, so PTS go to Barracks.'
+  if (plan.educationUntil === null) return 'Barracks is maxed at 6 unit slots, so every PTS goes to Education.'
+  return `Education raises every bar's EXP; a Barracks level adds a Trader slot for ${BARRACKS_COST} PTS. `
+    + `Here Education is the better buy until LV ${plan.educationUntil}, then Barracks.`
+}
+
+// Upgrade levels with what the unspent PTS should buy, so several can be spent at once
+function OutpostUpgrades({ outpost, opt, educationUnlocked }) {
+  const plan = opt?.ptsPlan
+  const gains = {}
+  plan?.now.forEach(step => { gains[step.upgrade] = step.levels })
+
+  let line = null
+  if (plan) {
+    const tip = (
+      <span className="tooltip mc-outpost-advice-tip">
+        {opt.pts.left} of {opt.pts.total} PTS unspent. {ptsReason(plan, educationUnlocked)}
+      </span>
+    )
+    if (plan.spend > 0) {
+      line = (
+        <p className="mc-outpost-pts-line mc-outpost-pts-line--spend tooltip-anchor">
+          Spend {plan.spend} PTS: {spendText(plan.now)}
+          {plan.saveFor && <span className="mc-outpost-pts-save"> · save rest for Barracks {plan.saveFor}</span>}
+          {tip}
+        </p>
+      )
+    } else if (plan.saveFor) {
+      line = (
+        <p className="mc-outpost-pts-line mc-outpost-pts-line--save tooltip-anchor">
+          Saving for Barracks {plan.saveFor}: {opt.pts.left} / {BARRACKS_COST} PTS
+          {tip}
+        </p>
+      )
+    } else if (plan.upcoming.length > 0) {
+      line = (
+        <p className="mc-outpost-pts-line tooltip-anchor">
+          Next PTS: {upcomingText(plan.upcoming)}
+          {tip}
+        </p>
+      )
+    }
+  }
+
+  return (
+    <div className="mc-outpost-pts">
+      <div className="mc-outpost-upgrades">
+        {OUTPOST_UPGRADES.map((upg, i) => {
+          if (outpost.upgrades[i] === 0 && i === 1) return null
+          const gain = gains[UPGRADE_KEYS[i]]
+          return (
+            <span key={upg.name} className={`mc-outpost-upgrade${gain ? ' mc-outpost-upgrade--gain' : ''}`}>
+              {upg.short} <strong>{outpost.upgrades[i]}</strong>
+              {gain > 0 && <span className="mc-outpost-upgrade-gain">+{gain}</span>}
+            </span>
+          )
+        })}
+      </div>
+      {line}
+    </div>
+  )
+}
+
 // Only the recommendations that need action; details live in the tooltips
 function OutpostAdvice({ opt, world, worldCommanders, isBestCommand, commandersSettled }) {
-  const { slots, plan } = opt
+  const { flexSlots, plan } = opt
   const best = opt.allTradersNow
-    ? `${slots} Traders`
-    : `${slots} Surveyors until Intel ${plan.switchAt}, then Traders`
-  const unitsMatch = opt.allTradersNow ? opt.slotTraders === slots : opt.slotSurveyors === slots
+    ? `${flexSlots} Traders`
+    : `${flexSlots} Surveyors until Intel ${plan.switchAt}, then Traders`
+  const unitsMatch = flexSlots === 0
+    || (opt.allTradersNow ? opt.slotTraders === flexSlots : opt.slotSurveyors === flexSlots)
+  const kept = [
+    opt.slotWorkers > 0 && `${opt.slotWorkers} Worker${opt.slotWorkers === 1 ? '' : 's'}`,
+    opt.slotGuards > 0 && `${opt.slotGuards} Guard${opt.slotGuards === 1 ? '' : 's'}`,
+  ].filter(Boolean)
   const cmd = opt.command
   const commanders = Math.max(1, worldCommanders)
 
@@ -43,21 +128,11 @@ function OutpostAdvice({ opt, world, worldCommanders, isBestCommand, commandersS
     <div className="mc-outpost-advice">
       {!unitsMatch && (
         <p className="mc-outpost-advice-line mc-outpost-advice-line--change tooltip-anchor">
-          Swap to {best}
+          Swap to {best} (+{(opt.projectedBest - opt.projectedNow).toFixed(1)} Trade)
           <span className="tooltip mc-outpost-advice-tip">
             Now: {opt.slotTraders} Traders, {opt.slotSurveyors} Surveyors.
-            Trade rank in {HORIZON_DAYS} days: {opt.projectedNow} as-is, {opt.projectedBest} after swapping.
-          </span>
-        </p>
-      )}
-      {opt.nextPts && (
-        <p className="mc-outpost-advice-line tooltip-anchor">
-          Next PTS → {opt.nextPts === 'barracks' ? `Barracks ${opt.barracks + 1}` : 'Education'}
-          <span className="tooltip mc-outpost-advice-tip">
-            {opt.pts.left} PTS unspent.{' '}
-            {opt.nextPts === 'barracks'
-              ? `Barracks ${opt.barracks + 1} adds a unit slot, which beats ${BARRACKS_COST} Education levels here.`
-              : `${BARRACKS_COST} Education levels beat another Barracks level here.`}
+            Trade rank in {HORIZON_DAYS} days: {opt.projectedNow.toFixed(1)} as-is, {opt.projectedBest.toFixed(1)} after
+            swapping.{kept.length > 0 && ` Your ${kept.join(' and ')} stay as they are.`}
           </span>
         </p>
       )}
@@ -74,7 +149,7 @@ function OutpostAdvice({ opt, world, worldCommanders, isBestCommand, commandersS
         <p className="mc-outpost-advice-line mc-outpost-advice-line--best tooltip-anchor">
           ★ Send Commanders Here ★
           <span className="tooltip mc-outpost-advice-tip">
-            Fastest free unit in World {world}: Command {cmd.rank} → {cmd.target} adds a {cmd.unit} in about{' '}
+            Fastest free Trader in World {world}: Command {cmd.rank} → {cmd.target} adds a {cmd.unit} in about{' '}
             {formatDuration(cmd.hoursPerCommander / commanders)} with all {commanders} Commanders here.
           </span>
         </p>
@@ -117,14 +192,6 @@ function OutpostCard({ outpost, summary, optimizer }) {
         {ranks.map(bar => <OutpostRankRow key={bar.type} bar={bar} />)}
       </div>
 
-      <p className="mc-outpost-upgrades">
-        {OUTPOST_UPGRADES.map((upg, i) => (outpost.upgrades[i] > 0 || i !== 1) && (
-          <span key={upg.name} className="mc-outpost-upgrade">
-            {upg.short} <strong>{outpost.upgrades[i]}</strong>
-          </span>
-        ))}
-      </p>
-
       {isSupport && (
         <p className="mc-outpost-link">
           {outpost.supportTargets.length > 0
@@ -133,10 +200,16 @@ function OutpostCard({ outpost, summary, optimizer }) {
         </p>
       )}
       {outpost.supportedBy.length > 0 && (
-        <p className="mc-outpost-link">
-          Boosted by <strong>{outpost.supportedBy.map(summary.nameOf).join(', ')}</strong>
+        <p className="mc-outpost-link tooltip-anchor">
+          Boosted{opt ? <> <strong>+{Math.round(opt.supportBoost)}%</strong></> : ''} by{' '}
+          {outpost.supportedBy.length} Support Camp{outpost.supportedBy.length === 1 ? '' : 's'}
+          <span className="tooltip mc-outpost-advice-tip">
+            {outpost.supportedBy.map(summary.nameOf).join(', ')}
+          </span>
         </p>
       )}
+
+      <OutpostUpgrades outpost={outpost} opt={opt} educationUnlocked={optimizer.educationUnlocked} />
 
       {opt && (
         <OutpostAdvice
@@ -153,6 +226,7 @@ function OutpostCard({ outpost, summary, optimizer }) {
 
 function OutpostWorld({ group, summary, optimizer }) {
   const noticeCount = group.outposts.filter(o => outpostNotices(o, summary).length > 0).length
+  const ptsToSpend = group.outposts.reduce((sum, o) => sum + (optimizer.byMap.get(o.mapIndex)?.ptsPlan.spend ?? 0), 0)
   const commanderAdvice = optimizer.commanderAdvice.get(group.world)
   const postedAt = commanderAdvice
     ? [...commanderAdvice.postedAt].map(([mapIndex, n]) => `${n} at ${mapIndex >= 0 ? summary.nameOf(mapIndex) : 'no outpost'}`).join(', ')
@@ -164,8 +238,8 @@ function OutpostWorld({ group, summary, optimizer }) {
         <span className="mc-outpost-world-title">World {group.world}</span>
         <span className="mc-outpost-world-stat">{group.outposts.length} outposts</span>
         <span className="mc-outpost-world-chips">
-          {group.toClear > 0 && (
-            <span className="mc-outpost-world-chip">{group.toClear} left to clear</span>
+          {ptsToSpend > 0 && (
+            <span className="mc-outpost-world-chip mc-outpost-world-chip--pts">{ptsToSpend} PTS to spend</span>
           )}
           {commanderAdvice?.needsMove && (
             <span className="mc-outpost-world-chip mc-outpost-world-chip--notice tooltip-anchor">
@@ -206,10 +280,16 @@ export default function RoyalOutposts({ snapshot }) {
     return <p>Re-import your save to see your outposts.</p>
   }
 
+  // "done / goal" while there's work left, then a single green number
+  const progressStat = (label, done, goal) => (done >= goal
+    ? { label, value: done, done: true }
+    : { label, value: `${done} / ${goal}` })
+
   const stats = [
-    { label: 'Outposts', value: summary.total },
-    summary.glorifyUnlocked && { label: 'Glorified', value: `${summary.glorified} / ${summary.total}` },
-    summary.purityUnlocked && { label: 'Purified', value: `${summary.purified} / ${summary.total}` },
+    // Built / every map the Kingdom has expanded into
+    progressStat('Outposts', summary.total, summary.total + summary.toClear),
+    summary.glorifyUnlocked && progressStat('Glorified', summary.glorified, summary.total),
+    summary.purityUnlocked && progressStat('Purified', summary.purified, summary.total),
   ].filter(Boolean)
 
   return (
@@ -226,7 +306,7 @@ export default function RoyalOutposts({ snapshot }) {
         {stats.map(s => (
           <span key={s.label} className="mc-outpost-stat">
             <span className="mc-outpost-stat-label">{s.label}</span>
-            <span className="mc-outpost-stat-value">{s.value}</span>
+            <span className={`mc-outpost-stat-value${s.done ? ' mc-outpost-stat-value--done' : ''}`}>{s.value}</span>
           </span>
         ))}
       </div>

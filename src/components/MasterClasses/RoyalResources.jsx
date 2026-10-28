@@ -115,8 +115,8 @@ export default function RoyalResources({ snapshot, imageFolder }) {
       <InfoPanel
         intro="Your Kingdom's resources and the best overnight connections for your Resource Depots."
         items={[
-          'Per day assumes every node is drained once a day, like they are in your save.',
-          'Overnight setup: which depot should connect to which node so the biggest nodes are collected while you\'re away. Faded nodes are already connected.',
+          'Per day assumes every node is drained once a day.',
+          'Overnight setup: which depot should connect to which node so the biggest nodes are collected while you\'re away.',
         ]}
       />
 
