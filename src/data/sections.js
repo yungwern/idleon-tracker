@@ -1,10 +1,28 @@
+// Sidebar groups. Empty groups are hidden until they get a section.
 export const sections = {
-  Global: ['MasterClasses', 'Minibosses', 'BiS Setups'],
-  World1: ['Statues'],
-  World2: ['Obols'],
-  World3: ['Construction', 'Shrines', 'Worship', 'Bubba'],
-  World4: ['Cooking', 'Breeding'],
-  World5: [],
-  World6: ['Farming'],
-  World7: ['Spelunking'],
+  'Global': ['MasterClasses', 'Minibosses', 'BiS Setups'],
+  'World 1': ['Statues'],
+  'World 2': ['Obols'],
+  'World 3': ['Construction', 'Shrines', 'Worship', 'Bubba'],
+  'World 4': ['Cooking', 'Breeding'],
+  'World 5': [],
+  'World 6': ['Farming'],
+  'World 7': ['Spelunking'],
+}
+
+// Small sprite shown next to each section in the sidebar (paths without a leading slash)
+export const sectionIcons = {
+  'MasterClasses': 'images/class icons/mage/arcanecultist.png',
+  'Minibosses': 'images/mobs/Glunko_The_Massive.png',
+  'BiS Setups': 'images/premium gear/capes/EquipmentCape0.png',
+  'Statues': 'images/statues/EquipmentStatues1.png',
+  'Obols': 'images/obols/ObolPink0.png',
+  'Construction': 'images/skills/construction.png',
+  'Shrines': 'images/shrines/ConTowerB18.png',
+  'Worship': 'images/skills/worship.png',
+  'Bubba': 'images/bubba/Bubba.png',
+  'Cooking': 'images/skills/cooking.png',
+  'Breeding': 'images/skills/breeding.png',
+  'Farming': 'images/skills/farming.png',
+  'Spelunking': 'images/skills/spelunking.png',
 }

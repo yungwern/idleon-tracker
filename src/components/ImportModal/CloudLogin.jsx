@@ -11,11 +11,34 @@ import {
 
 const PROVIDERS = ['steam', 'google', 'email']
 
+// Dev server only (vite.config.js devRawSaveWriter): writes the synced save to IdleOn Resources/raw-save.json
+const DEV_RAW_SAVE_ENDPOINT = '/__dev/raw-save'
+
 // "Log in" tab of the Import Save modal. `cloud` is the useCloudSave() object from App.
 export default function CloudLogin({ cloud, cloudSavedAt, importedAt, isCloudSave }) {
   const [provider, setProvider] = useState('steam')
   const [busy, setBusy] = useState(false)
   const [formError, setFormError] = useState(null)
+  const [devStatus, setDevStatus] = useState(null)
+
+  // Dev only: sync, then save that fresh cloud save over IdleOn Resources/raw-save.json
+  async function handleDevWrite() {
+    setDevStatus(null)
+    const raw = await cloud.sync()
+    if (!raw) return
+    try {
+      const res = await fetch(DEV_RAW_SAVE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(raw),
+      })
+      const body = await res.json()
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`)
+      setDevStatus({ ok: true, text: `Saved to IdleOn Resources/raw-save.json at ${new Date().toLocaleTimeString()}` })
+    } catch (err) {
+      setDevStatus({ ok: false, text: `Couldn't write raw-save.json: ${err.message}` })
+    }
+  }
 
   // Shared runner for the three sign-ins: shows progress, then hands the session to useCloudSave
   async function runSignIn(signIn) {
@@ -56,6 +79,18 @@ export default function CloudLogin({ cloud, cloudSavedAt, importedAt, isCloudSav
             </button>
             <button className="modal-cancel" onClick={cloud.signOut}>Sign out</button>
           </div>
+          {import.meta.env.DEV && (
+            <>
+              <button className="modal-dev-load" onClick={handleDevWrite} disabled={cloud.syncing}>
+                🧪 Sync and save to IdleOn Resources/raw-save.json (dev only)
+              </button>
+              {devStatus && (
+                <div className={`modal-dev-status${devStatus.ok ? '' : ' modal-dev-status--error'}`}>
+                  {devStatus.text}
+                </div>
+              )}
+            </>
+          )}
         </div>
         {cloud.error && <div className="modal-error">{cloud.error}</div>}
       </div>
@@ -81,6 +116,10 @@ export default function CloudLogin({ cloud, cloudSavedAt, importedAt, isCloudSav
             }}
             disabled={busy}
           >
+            <span
+              className="provider-icon"
+              data-provider={p}
+            />
             {PROVIDER_LABELS[p]}
           </button>
         ))}

@@ -3,9 +3,10 @@ import { toClassSlug } from './utils/appUtils.js'
 import { getCharacterNotices } from './utils/characterNotices.js'
 import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
 import { getMinibossNoticeCount } from './utils/minibossNotices.js'
-import { sections, CLASS_BEST_FOR } from './data'
+import { sections, sectionIcons, CLASS_BEST_FOR } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import { useTomePoints } from './hooks/useTomePoints.js'
+import { useCollapsedGroups } from './hooks/useCollapsedGroups.js'
 import { useCloudSave } from './hooks/useCloudSave.js'
 import { PROVIDER_LABELS } from './lib/idleonCloud.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
@@ -35,6 +36,7 @@ export default function App() {
   const [showModal, setShowModal] = useState(false)
   const { snapshot, importFromJson, importFromText, clearSnapshot, importedAt, cloudSavedAt } = useSaveImport()
   const { tomePoints, setTomePoints } = useTomePoints()
+  const { isCollapsed, toggleGroup } = useCollapsedGroups()
   // Logged-in cloud save: auto-syncs only while the loaded save came from the cloud (or there is none),
   // so a pasted or test save is never overwritten behind the player's back
   const isCloudSave = snapshot?.source === 'cloud'
@@ -73,6 +75,36 @@ export default function App() {
     cloud.signOut()
     clearSnapshot()
     setSelected(null)
+  }
+
+  const characterNoticeTotal = mergedCharacters.reduce((sum, c) => sum + c.noticeCount, 0)
+
+  function renderNoticeBadge(count, where = '') {
+    if (!(count > 0)) return null
+    return (
+      <span
+        className="sidebar-notice-badge"
+        title={`${count} ${count === 1 ? 'notification' : 'notifications'}${where}`}
+      >
+        {count}
+      </span>
+    )
+  }
+
+  // Click a group name to fold it; a folded group still shows its notification total
+  function renderGroupHeader(group, noticeTotal) {
+    const collapsed = isCollapsed(group)
+    return (
+      <button
+        className={`sidebar-group-header${collapsed ? ' collapsed' : ''}`}
+        onClick={() => toggleGroup(group)}
+        aria-expanded={!collapsed}
+      >
+        <span className="sidebar-group-chevron">▾</span>
+        <span className="sidebar-group-name">{group}</span>
+        {collapsed && renderNoticeBadge(noticeTotal)}
+      </button>
+    )
   }
 
   function renderContent() {
@@ -127,92 +159,124 @@ export default function App() {
 
       {/* ── Sidebar ── */}
       <div className="sidebar">
-        <h1>⚔️ YungWern's IdleOn Hub</h1>
+        {/* Brand */}
+        <div className="sidebar-brand">
+          <img
+            className="sidebar-brand-logo"
+            src="images/brand/logo.png"
+            alt=""
+          />
+          <div className="sidebar-brand-text">
+            <span className="sidebar-brand-owner">YungWern's</span>
+            <span className="sidebar-brand-title">IdleOn Hub</span>
+          </div>
+        </div>
 
-        {/* Save Import */}
+        {/* Save Import: one compact row of actions, status underneath */}
         <div className="save-import">
-          <button className="import-btn" onClick={() => setShowModal(true)}>
-            📂 Import Save
-          </button>
-          <div className="import-status">
+          <div className="save-actions">
+            <button
+              className="save-action-btn save-action-import"
+              onClick={() => setShowModal(true)}
+              title="Import a save or log in"
+            >
+              <span className="save-action-icon">📂</span>
+              Import
+            </button>
             {cloud.account && (
-              <span className="import-cloud">
-                ☁️ {PROVIDER_LABELS[cloud.account.provider]} account{snapshot && !isCloudSave ? ' (paused)' : ''}
-              </span>
-            )}
-            {importedAt ? (
-              <span className="import-timestamp">
-                {isCloudSave ? 'Synced' : 'Last imported'}: {importedAt}
-              </span>
-            ) : (
-              <span className="import-timestamp no-save">No save imported</span>
-            )}
-            {cloud.account && (
-              <button className="sync-btn" onClick={cloud.sync} disabled={cloud.syncing}>
-                {cloud.syncing ? '⏳ Syncing…' : '🔄 Sync Save'}
+              <button
+                className="save-action-btn save-action-sync"
+                onClick={cloud.sync}
+                disabled={cloud.syncing}
+                title="Pull your latest save from your IdleOn account"
+              >
+                <span className="save-action-icon">{cloud.syncing ? '⏳' : '🔄'}</span>
+                {cloud.syncing ? 'Syncing' : 'Sync'}
               </button>
             )}
             {importedAt && (
               <button
-                className="clear-btn"
+                className="save-action-btn save-action-delete"
                 onClick={handleClearSave}
-                title={cloud.account ? 'Also signs you out of your IdleOn account' : undefined}
+                title={cloud.account ? 'Delete save (also signs you out of your IdleOn account)' : 'Delete save'}
               >
-                🗑️ Delete Save
+                <span className="save-action-icon">🗑️</span>
+                Delete
               </button>
+            )}
+          </div>
+          <div className="import-status">
+            {cloud.account && (
+              <span className="import-cloud">
+                <span
+                  className="provider-icon"
+                  data-provider={cloud.account.provider}
+                />
+                {PROVIDER_LABELS[cloud.account.provider]}{snapshot && !isCloudSave ? ' (paused)' : ''}
+              </span>
+            )}
+            {importedAt ? (
+              <span className="import-timestamp">
+                {isCloudSave ? 'Synced' : 'Imported'} {importedAt}
+              </span>
+            ) : (
+              <span className="import-timestamp import-timestamp-empty">No save imported</span>
             )}
             {cloud.error && <span className="import-error">{cloud.error}</span>}
           </div>
         </div>
 
         {/* Character List */}
-        <h2>Characters</h2>
-        {mergedCharacters.length === 0 && (
-          <p className="sidebar-empty">Import a save to see your characters</p>
-        )}
-        {mergedCharacters.map(c => (
-          <button
-            key={c.id}
-            className={current === c.name ? 'active' : ''}
-            data-class={toClassSlug(c.class)}
-            onClick={() => setSelected(c.name)}
-          >
-            {c.name}
-            <span className="sidebar-level">Lv {c.level || '?'}</span>
-            {c.noticeCount > 0 && (
-              <span
-                className="sidebar-notice-badge"
-                title={`${c.noticeCount} ${c.noticeCount === 1 ? 'notification' : 'notifications'} in Overview`}
-              >
-                {c.noticeCount}
-              </span>
-            )}
-          </button>
-        ))}
+        <div className="sidebar-group">
+          {renderGroupHeader('Characters', characterNoticeTotal)}
+          {!isCollapsed('Characters') && (
+            <>
+              {mergedCharacters.length === 0 && (
+                <p className="sidebar-empty">Import a save to see your characters</p>
+              )}
+              {mergedCharacters.map(c => (
+                <button
+                  key={c.id}
+                  className={`sidebar-nav-btn${current === c.name ? ' active' : ''}`}
+                  data-class={toClassSlug(c.class)}
+                  onClick={() => setSelected(c.name)}
+                >
+                  <span className="sidebar-nav-label">{c.name}</span>
+                  {/* Notifications take the spot; with none left, show the level instead */}
+                  {renderNoticeBadge(c.noticeCount, ' in Overview') ?? (
+                    <span className="sidebar-level">Lv {c.level || '?'}</span>
+                  )}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
 
-        {/* Other Sections */}
-        {Object.entries(sections).map(([category, items]) => (
-          <div key={category}>
-            <h2>{category}</h2>
-            {items.map(item => (
-              <button
-                key={item}
-                className={current === item ? 'active' : ''}
-                onClick={() => setSelected(item)}
-              >
-                {item}
-                {sectionNotices[item] > 0 && (
-                  <span
-                    className="sidebar-notice-badge"
-                    title={`${sectionNotices[item]} ${sectionNotices[item] === 1 ? 'notification' : 'notifications'}`}
-                  >
-                    {sectionNotices[item]}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        ))}
+        {/* Other Sections (groups with nothing in them yet are hidden) */}
+        {Object.entries(sections)
+          .filter(([, items]) => items.length > 0)
+          .map(([category, items]) => (
+            <div key={category} className="sidebar-group">
+              {renderGroupHeader(category, items.reduce((sum, item) => sum + (sectionNotices[item] ?? 0), 0))}
+              {!isCollapsed(category) && items.map(item => (
+                <button
+                  key={item}
+                  className={`sidebar-nav-btn${current === item ? ' active' : ''}`}
+                  onClick={() => setSelected(item)}
+                >
+                  {sectionIcons[item] && (
+                    <img
+                      className="sidebar-nav-icon"
+                      src={sectionIcons[item]}
+                      alt=""
+                    />
+                  )}
+                  <span className="sidebar-nav-label">{item}</span>
+                  {renderNoticeBadge(sectionNotices[item])}
+                </button>
+              ))}
+            </div>
+          ))}
       </div>
 
       {/* ── Main Content ── */}

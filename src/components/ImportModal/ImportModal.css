@@ -111,9 +111,23 @@
   cursor: pointer;
 }
 
-.modal-dev-load:hover {
+.modal-dev-load:hover:not(:disabled) {
   color: #c084fc;
   border-color: #c084fc;
+}
+
+.modal-dev-load:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.modal-dev-status {
+  font-size: 12px;
+  color: #4ade80;
+}
+
+.modal-dev-status--error {
+  color: #f87171;
 }
 
 .modal-import:disabled,
@@ -136,6 +150,10 @@
 
 .cloud-login-provider {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: #111827;
   border: 1px solid #374151;
   border-radius: 8px;

@@ -23,7 +23,7 @@ src/
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
-│                       # sections.js = sidebar sections; statueWorlds lives in statueMap.js
+│                       # sections.js = sidebar groups (empty ones hidden) + sectionIcons (sidebar sprite per section); statueWorlds lives in statueMap.js
 │                       # Item names → itemMap.js; fixed UQ stats (keychains, etc.) → equipmentMap.js
 │                       # labChipMap.js, foodMap.js (golden/boost/potion/health): { name, img, effect }.
 │                       # fishingMap.js: toolkit weights + lines (depth/exp/speed/power) and fish.
@@ -117,6 +117,9 @@ src/
                         #   source (Arctis, Symbols, family, Equinox...), checked against Toolbox (246 on Eli's save).
                         #   New bonus sources go in their system's util, never in the page that uses them.
 
+public/images/brand/    # Site logo (logo.png = sidebar + favicon; 16px art at 12x, options + generator in
+                        #   IdleOn Resources/logo-options/) and login marks (steam/google/email.svg, used as CSS
+                        #   masks via .provider-icon in global.css)
 public/images/          # Game sprites — Vite serves public/ at the site root, so code uses /images/...
                         # Data source of truth: the IdleonToolbox repo (github.com/Morta1/IdleonToolbox) —
                         #   data/website-data/*.json (items, cards, shared-data: chips, cardSets…). Eli
@@ -186,10 +189,13 @@ LV from 20 to 30. Menagerie unlock names/tooltips are Toolbox research.json [56]
 Territories can unlock out of order (16 open while 14 locked). A Converter keep also keeps the spices to claim, so a
 batch can be claimed again (counted as ~2 claims per batch).
 
-**Adding new pages**: register the section in `data/sections.js` and wire up the component in `App.jsx`
+**Adding new pages**: register the section (and its sidebar icon in `sectionIcons`) in `data/sections.js` and wire up the component in `App.jsx`
 
 **Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components.
 Snapshots carry `source`: 'paste', 'cloud' or 'dev' (Paste Save tab's dev-only "Load IdleOn Resources/raw-save.json" button).
+Dev-only "Sync and save to raw-save.json" (Log In tab, signed in) POSTs the synced cloud bundle to `/__dev/raw-save`
+(vite.config.js devRawSaveWriter), which overwrites raw-save.json but keeps guildData/tournament/accountCreateTime/extraData
+from the old file (cloud has none of them, so those go stale until Eli re-exports from Toolbox). `savedFrom: 'cloud'` marks it.
 **Cloud login** (Import Save > Log In; Paste Save always stays): `lib/idleonCloud.js` signs in to the game's own Firebase
 project (idlemmo) with plain REST, no Firebase SDK, the same way Toolbox/Idleoneer do. Steam = OpenID to
 legendsofidleon.com/steamsso, player pastes that URL, game function `asil` returns a custom token → signInWithCustomToken

@@ -65,7 +65,7 @@ export function useCloudSave(onSave, autoSync) {
   }
 
   const sync = useCallback(async (current = loadAccount()) => {
-    if (!current || syncingRef.current) return
+    if (!current || syncingRef.current) return null
     syncingRef.current = true
     setSyncing(true)
     setError(null)
@@ -83,9 +83,11 @@ export function useCloudSave(onSave, autoSync) {
       }
       onSaveRef.current(raw)
       lastSyncRef.current = Date.now()
+      return raw
     } catch (err) {
       if (err instanceof CloudError && err.expired) signOut()
       setError(err.message || 'Cloud sync failed.')
+      return null
     } finally {
       syncingRef.current = false
       setSyncing(false)

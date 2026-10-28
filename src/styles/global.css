@@ -533,3 +533,32 @@ body {
 .dropdown-panel-body {
   padding: 4px 12px 12px;
 }
+
+/* ============================================================
+   LOGIN PROVIDER ICONS
+   <span className="provider-icon" data-provider="steam|google|email" />
+   Drawn as a mask so the icon takes the surrounding text color.
+   Steam/Google marks are from Simple Icons (CC0); trademarks belong to their owners.
+   ============================================================ */
+.provider-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  mask-size: contain;
+  mask-position: center;
+  mask-repeat: no-repeat;
+}
+
+.provider-icon[data-provider="steam"] {
+  mask-image: url("/images/brand/steam.svg");
+}
+
+.provider-icon[data-provider="google"] {
+  mask-image: url("/images/brand/google.svg");
+}
+
+.provider-icon[data-provider="email"] {
+  mask-image: url("/images/brand/email.svg");
+}
