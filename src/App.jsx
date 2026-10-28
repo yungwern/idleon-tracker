@@ -3,7 +3,8 @@ import { toClassSlug } from './utils/appUtils.js'
 import { getCharacterNotices } from './utils/characterNotices.js'
 import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
 import { getMinibossNoticeCount } from './utils/minibossNotices.js'
-import { sections, sectionIcons, CLASS_BEST_FOR } from './data'
+import { getClassRoles } from './utils/characterUtils.js'
+import { sections, sectionIcons } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
 import { useTomePoints } from './hooks/useTomePoints.js'
 import { useCollapsedGroups } from './hooks/useCollapsedGroups.js'
@@ -52,7 +53,7 @@ export default function App() {
       name:    c.name,
       class:   c.class,
       level:   c.level,
-      bestFor: CLASS_BEST_FOR[c.class] ?? [],
+      roles:   getClassRoles(c.class),
       nametag: nametagId !== 'Blank' ? { id: nametagId, equipped: true } : null,
       trophy:  trophyId  !== 'Blank' ? { id: trophyId,  equipped: true } : null,
       superTalentPresets: c.superTalentPresets ?? null,

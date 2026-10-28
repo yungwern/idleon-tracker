@@ -1,5 +1,5 @@
 // ── Shared / Global ───────────────────────────────────────────────────────────
-export { CLASS_NAMES, CLASS_BEST_FOR, CLASS_TALENT_TABS, CLASS_FAMILY_BONUSES, getClassName } from './classes'
+export { CLASS_NAMES, CLASS_TAB_ROLES, CLASS_TALENT_TABS, CLASS_FAMILY_BONUSES, getClassName } from './classes'
 export { sections, sectionIcons } from './sections'
 export { talentMap, talentGrowthMap } from './talentMap'
 export { MASTERCLASSES } from './masterClasses'

@@ -164,11 +164,28 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
         </div>
       </div>
 
-      {/* ── Best For Bar ── */}
-      {character.bestFor.length > 0 && (
-        <div className="best-for-bar">
-          {character.bestFor.map(b => (
-            <span key={b} className="best-for-pill">{b}</span>
+      {/* ── Class Roles ── */}
+      {character.roles.length > 0 && (
+        <div className="class-roles-bar">
+          {character.roles.map(role => (
+            <span
+              key={`${role.source}-${role.label}`}
+              className="class-role-pill tooltip-anchor"
+            >
+              {role.label}
+              {role.allChars && <span className="class-role-account" aria-label="Works for all characters">✦</span>}
+              <span className="tooltip tooltip--wrap buff-tooltip class-role-tooltip">
+                <span className="buff-tooltip-name">{role.label}</span>
+                <span className="buff-tooltip-source">
+                  {role.own ? role.source : `From ${role.source} tab`}
+                </span>
+                <span className="buff-tooltip-line">{role.text}</span>
+                <span className="class-role-talents">{role.talents.join(' · ')}</span>
+                <span className={`class-role-scope${role.allChars ? ' class-role-scope--account' : ''}`}>
+                  {role.allChars ? '✦ Works for all characters' : 'This character only'}
+                </span>
+              </span>
+            </span>
           ))}
         </div>
       )}
@@ -233,4 +250,4 @@ export default function CharacterCard({ character, charIndex, snapshot }) {
       </div>
     </div>
   )
-}
+}

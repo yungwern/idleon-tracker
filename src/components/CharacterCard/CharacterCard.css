@@ -120,25 +120,64 @@
   image-rendering: pixelated;
 }
 
-/* ── Best For Bar ── */
-.best-for-bar {
-  background: rgba(255, 255, 255, 0.03);
-  padding: 8px 24px;
+/* ── Class Roles ── */
+/* ✦ = the talents work for every character. Tooltips are positioned against the whole bar
+   (pills are position: static), so they always open below the row starting at its left edge
+   and never get clipped by the card's overflow: hidden. */
+.class-roles-bar {
+  position: relative;
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.03);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.best-for-pill {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: bold;
-  color: #d1d5db;
+.class-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
   border: 1px solid var(--class-color);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--class-color) 18%, transparent);
+  color: #f3f4f6;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.class-role-account {
+  font-size: 9px;
+  color: #fcd34d;
+}
+
+.class-role-pill .class-role-tooltip {
+  top: calc(100% + 4px);
+  bottom: auto;
+  left: 14px;
+  transform: none;
+  max-width: min(420px, calc(100% - 28px));
+}
+
+.class-role-talents {
+  display: block;
+  margin-top: 4px;
+  color: #d1d5db;
+  font-style: italic;
+}
+
+.class-role-scope {
+  display: block;
+  margin-top: 4px;
+  color: #6b7280;
+}
+
+.class-role-scope--account {
+  color: #fcd34d;
 }
 
 /* ============================================================

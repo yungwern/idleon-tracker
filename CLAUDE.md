@@ -214,7 +214,9 @@ added talent levels) use `getActiveCharacter` (newest PTimeAway_i).
 
 **Characters come from the save**: names from `playerNames`, classes from `CharacterClass_N` (IDs mapped in
 `data/classes.js`). Character count is whatever the save has, so never hard-code 10 or 11. `snapshot.characters[i]`
-lines up with every `_i` save key. Class "best for" pills live in `CLASS_BEST_FOR` in `data/classes.js`.
+lines up with every `_i` save key. Card role pills ("Used for") = `CLASS_TAB_ROLES` in `data/classes.js`, keyed by
+talent tab and built from that tab's talents (Toolbox talents.json); `characterUtils getClassRoles` walks the class line
+(`CLASS_TALENT_TABS`), own tab first, earlier tabs shown dimmer.
 
 **Notifications**: each count has one source so every badge agrees. `utils/characterNotices.js` (character
 Overview), `utils/masterclassNotices.js` (returns `{ masterclassId: { sectionId: count } }`, feeding the sidebar
