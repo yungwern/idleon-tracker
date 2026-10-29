@@ -13,6 +13,30 @@ import { DB_MOB_PROGRESSION, WW_MOB_PROGRESSION, AC_MOB_PROGRESSION } from './mo
 // ============================================================
 
 export const MASTERCLASSES = [
+    {
+    id: 'royal-guardian',
+    name: 'Royal Guardian',
+    color: '#fbbf24',
+    imageFolder: 'masterclass/royal guardian',
+    headerItem: 'Orblet',
+    sections: [
+      {
+        id: 'marbles',
+        title: 'Marbles',
+        sectionType: 'royal-statues',
+      },
+      {
+        id: 'outposts',
+        title: 'Outposts',
+        sectionType: 'royal-outposts',
+      },
+      {
+        id: 'resources',
+        title: 'Resources',
+        sectionType: 'royal-resources',
+      },
+    ],
+  },
   {
     id: 'death-bringer',
     name: 'Death Bringer',
@@ -82,30 +106,6 @@ export const MASTERCLASSES = [
         title: 'Mob Progression',
         sectionType: 'mob-progression',
         rows: AC_MOB_PROGRESSION,
-      },
-    ],
-  },
-  {
-    id: 'royal-guardian',
-    name: 'Royal Guardian',
-    color: '#fbbf24',
-    imageFolder: 'masterclass/royal guardian',
-    headerItem: 'Orblet',
-    sections: [
-      {
-        id: 'marbles',
-        title: 'Marbles',
-        sectionType: 'royal-statues',
-      },
-      {
-        id: 'outposts',
-        title: 'Outposts',
-        sectionType: 'royal-outposts',
-      },
-      {
-        id: 'resources',
-        title: 'Resources',
-        sectionType: 'royal-resources',
       },
     ],
   },
