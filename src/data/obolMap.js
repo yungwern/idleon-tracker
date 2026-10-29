@@ -306,6 +306,49 @@ export const endgameAccountBoard = [
   'ObolSilverPop', 'ObolSilverPop', 'ObolKnight', 'ObolSilverPop', 'ObolSilverPop',
 ]
 
+// Endgame Ideal with every Silver Pop → Hyper Obol of Lucky Rolls (circle) and every Knight → Hyper Obol of Rare Drops (square)
+export const endgameBisAccountBoard = [
+  'ObolHyper0', 'ObolHyper0', 'ObolHyperB0', 'ObolHyper0', 'ObolHyper0',
+  'ObolHyper0', 'ObolLava', 'ObolPinkLuck', 'ObolLava', 'ObolHyper0',
+  'ObolHyperB0', 'ObolPinkLuck', 'ObolPinkLuck', 'ObolHyperB0',
+  'ObolHyper0', 'ObolLava', 'ObolPinkLuck', 'ObolLava', 'ObolHyper0',
+  'ObolHyper0', 'ObolHyper0', 'ObolHyperB0', 'ObolHyper0', 'ObolHyper0',
+]
+
+// ── Board layouts ─────────────────────────────────────────────────────────────
+// Slot shapes in reading order (left to right, top to bottom), sizing each slot to its socket on the board art
+// (images/obols/board/). Each socket's position is a class in ObolBoard.css (obol-pos--char-N / fam-N).
+// Character board: rows of 5 / 4 / 3 / 4 / 5. Save order (ObolEqO0_i) differs from reading order on the
+// bottom half, CHAR_OBOL_SAVE_TO_DISPLAY maps it (same swap as Toolbox calculateWeirdObolIndex).
+export const CHAR_OBOL_SHAPES = [
+  'square', 'circle', 'hexagon', 'circle', 'square',
+  'circle', 'circle', 'circle', 'circle',
+  'square', 'sparkle', 'square',
+  'circle', 'circle', 'circle', 'circle',
+  'square', 'circle', 'hexagon', 'circle', 'square',
+]
+
+// Character save index → reading-order index (indexes not listed stay the same)
+export const CHAR_OBOL_SAVE_TO_DISPLAY = {
+  12: 13,
+  13: 14,
+  14: 12,
+  15: 17,
+  16: 19,
+  17: 15,
+  18: 16,
+  19: 18,
+}
+
+// Family board: rows of 5 / 5 / 4 / 5 / 5. Save order (ObolEqO1) is already reading order.
+export const FAMILY_OBOL_SHAPES = [
+  'circle', 'circle', 'square', 'circle', 'circle',
+  'circle', 'hexagon', 'sparkle', 'hexagon', 'circle',
+  'square', 'sparkle', 'sparkle', 'square',
+  'circle', 'hexagon', 'sparkle', 'hexagon', 'circle',
+  'circle', 'circle', 'square', 'circle', 'circle',
+]
+
 // Family board setups shown on Obols > Example Boards > Family Boards (one at a time, picked by label).
 // Add a setup here: { label, slots } with 24 slots in on-screen order.
 export const familyBoards = {
@@ -317,46 +360,43 @@ export const familyBoards = {
     label: 'Endgame Ideal',
     slots: endgameAccountBoard,
   },
+  endgameBis: {
+    label: 'Endgame BiS',
+    slots: endgameBisAccountBoard,
+  },
 }
 
 // Character board setups shown on Obols > Example Boards > Personal Boards (one at a time).
+// Slots are in in-game reading order: rows of 5 / 4 / 3 / 4 / 5 (see CHAR_OBOL_LAYOUT).
 export const characterBoards = {
   dr: {
     label: 'Drop Rate',
     slots: [
-      'ObolGoldLuck', 'ObolPlatinumLuck', 'ObolGoldLuck',
-      'ObolSilverPop', 'ObolSilverPop',
-      'ObolSilverPop', 'ObolSilverPop',
-      'ObolSilverPop', 'ObolSilverPop',
+      'ObolGoldLuck', 'ObolSilverPop', 'ObolPlatinumLuck', 'ObolSilverPop', 'ObolGoldLuck',
+      'ObolSilverPop', 'ObolSilverPop', 'ObolSilverPop', 'ObolSilverPop',
       'ObolGoldLuck', 'ObolPinkLuck', 'ObolGoldLuck',
-      'ObolSilverPop', 'ObolSilverPop',
-      'ObolSilverPop', 'ObolSilverPop',
-      'ObolSilverPop', 'ObolSilverPop',
-      'ObolGoldLuck', 'ObolPlatinumLuck', 'ObolGoldLuck',
-    ] },
+      'ObolSilverPop', 'ObolSilverPop', 'ObolSilverPop', 'ObolSilverPop',
+      'ObolGoldLuck', 'ObolSilverPop', 'ObolPlatinumLuck', 'ObolSilverPop', 'ObolGoldLuck',
+    ],
+  },
   skilling: {
     label: 'Skilling',
     slots: [
-      'ObolGoldMining', 'ObolSlush', 'ObolGoldMining',
-      'ObolSilverMining', 'ObolSilverMining',
-      'ObolSilverMining', 'ObolSilverMining',
-      'ObolSilverMining', 'ObolSilverMining',
+      'ObolGoldMining', 'ObolSilverMining', 'ObolSlush', 'ObolSilverMining', 'ObolGoldMining',
+      'ObolSilverMining', 'ObolSilverMining', 'ObolSilverMining', 'ObolSilverMining',
       'ObolGoldMining', 'ObolPinkMining', 'ObolGoldMining',
-      'ObolSilverMining', 'ObolSilverMining',
-      'ObolSilverMining', 'ObolSilverMining',
-      'ObolSilverMining', 'ObolSilverMining',
-      'ObolGoldMining', 'ObolSlush', 'ObolGoldMining',
-    ] },
+      'ObolSilverMining', 'ObolSilverMining', 'ObolSilverMining', 'ObolSilverMining',
+      'ObolGoldMining', 'ObolSilverMining', 'ObolSlush', 'ObolSilverMining', 'ObolGoldMining',
+    ],
+  },
   construction: {
     label: 'Construction',
     slots: [
-      'ObolGoldCons', 'ObolPlatinumCons', 'ObolGoldCons',
-      'ObolSilverCons', 'ObolSilverCons',
-      'ObolSilverCons', 'ObolSilverCons',
-      'ObolSilverCons', 'ObolSilverCons',
+      'ObolGoldCons', 'ObolSilverCons', 'ObolPlatinumCons', 'ObolSilverCons', 'ObolGoldCons',
+      'ObolSilverCons', 'ObolSilverCons', 'ObolSilverCons', 'ObolSilverCons',
       'ObolGoldCons', 'ObolPinkCons', 'ObolGoldCons',
-      'ObolSilverCons', 'ObolSilverCons',
-      'ObolSilverCons', 'ObolSilverCons',
-      'ObolSilverCons', 'ObolSilverCons',
-      'ObolGoldCons', 'ObolPlatinumCons', 'ObolGoldCons',
-    ] } }
+      'ObolSilverCons', 'ObolSilverCons', 'ObolSilverCons', 'ObolSilverCons',
+      'ObolGoldCons', 'ObolSilverCons', 'ObolPlatinumCons', 'ObolSilverCons', 'ObolGoldCons',
+    ],
+  },
+}

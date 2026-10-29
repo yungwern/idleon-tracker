@@ -700,31 +700,6 @@
 }
 
 /* 50 / 75 / 90 / 95 / 99% milestone chips (hover for the level needed) */
-.spelunk-chapter-milestones {
-  display: flex;
-  flex-shrink: 0;
-  gap: 3px;
-}
-
-.spelunk-milestone {
-  position: relative;
-  min-width: 22px;
-  padding: 1px 4px;
-  font-size: 10px;
-  font-weight: 700;
-  text-align: center;
-  color: #6b7280;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  cursor: default;
-}
-
-.spelunk-milestone--reached {
-  color: #111827;
-  background: #22d3ee;
-  border-color: #22d3ee;
-}
-
 /* ── Chapter read sizes and pages owned ── */
 .spelunk-chapter-read {
   display: flex;

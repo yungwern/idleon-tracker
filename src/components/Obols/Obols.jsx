@@ -19,6 +19,7 @@ import { AccountBoard, CharacterBoard } from './ObolBoard'
 import {
   OBOL_CHECK_MODES,
   passesObolCheck,
+  getEffectiveRolls,
   getObolNoticeTitle,
   getFamilyMainStat,
 } from './ObolUtils'
@@ -32,7 +33,7 @@ import './Obols.css'
 function buildUpgradedIds(accountObols = [], checkMode) {
   return new Set(
     accountObols
-      .filter(slot => slot.rawName !== 'Blank' && passesObolCheck(slot.stoneData, checkMode, getFamilyMainStat()))
+      .filter(slot => slot.rawName !== 'Blank' && passesObolCheck(getEffectiveRolls(slot.rawName, slot.stoneData), checkMode, getFamilyMainStat()))
       .map(slot => slot.rawName)
   )
 }
@@ -225,7 +226,7 @@ function PersonalBoardsTab({ hasSave, failedByCharacter, checkMode, onOpenCharac
       />
       <div className="obols-char-boards-row">
         <div className="obols-char-board-group">
-          <div className="obols-section-label">{setup.label}</div>
+          <div className="obols-section-label">{setup.label} Board</div>
           <CharacterBoard slots={setup.slots} />
         </div>
       </div>

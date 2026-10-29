@@ -61,11 +61,11 @@ function ChapterBonus({ bonus, index }) {
             <span className="spelunk-chapter-note">
               {Math.floor(bonus.progress * 100)}% of cap ({amountText(bonus.name, bonus.cap)})
             </span>
-            <span className="spelunk-chapter-milestones">
+            <span className="milestone-row">
               {bonus.milestones.map(milestone => (
                 <span
                   key={milestone.percent}
-                  className={`spelunk-milestone tooltip-anchor${milestone.reached ? ' spelunk-milestone--reached' : ''}`}
+                  className={`milestone tooltip-anchor${milestone.reached ? ' milestone--reached' : ''}`}
                 >
                   {milestone.percent}
                   <span className="tooltip tooltip--right">

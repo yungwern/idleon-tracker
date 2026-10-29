@@ -1,6 +1,7 @@
 // ── Obol Utilities ────────────────────────────────────────────────────────────
 // Separated from ObolBoard.jsx to avoid Vite HMR Fast Refresh conflicts.
 // ObolBoard.jsx must only export React components.
+import { obolByRawName } from '../../data'
 
 // ── Roll checks ───────────────────────────────────────────────────────────────
 // stoneData = the obol's reroll entry (ObolEqMAP_i / ObolEqMAPz1), the change from the obol's base
@@ -55,6 +56,31 @@ function rollValue(stoneData, key) {
   return typeof val === 'number' ? val : 0
 }
 
+// Reroll key → obolMap base stat key. Speed/Reach have no base value on any obol.
+const ROLL_BASE_KEYS = {
+  STR: 'STR',
+  AGI: 'AGI',
+  WIS: 'WIS',
+  LUK: 'LUK',
+  Defence: 'def',
+  Weapon_Power: 'wp',
+}
+
+// The rolls that actually do something. A negative roll on a stat the obol doesn't have (e.g. AGI -1 on a
+// Silver Pop, base LUK/DEF/DR) is in the save but the stat can't drop below 0, so the game ignores it.
+// Use this before any check or tooltip. Positive rolls on new stats are real and kept.
+export function getEffectiveRolls(rawName, stoneData) {
+  if (!stoneData || typeof stoneData !== 'object') return stoneData
+  const base = obolByRawName[rawName] ?? {}
+  return Object.fromEntries(
+    Object.entries(stoneData).filter(([key, val]) => {
+      if (typeof val !== 'number' || val >= 0 || key.startsWith('UQ')) return true
+      const baseKey = ROLL_BASE_KEYS[key]
+      return baseKey ? (base[baseKey] ?? 0) > 0 : false
+    })
+  )
+}
+
 // UQ values that are real bonuses (the txt key holds a bonus name)
 function uqRolls(stoneData) {
   return ['UQ1', 'UQ2']
@@ -62,6 +88,7 @@ function uqRolls(stoneData) {
     .map(uq => rollValue(stoneData, `${uq}val`))
 }
 
+// stoneData: pass getEffectiveRolls(rawName, stoneData), not the raw save entry.
 // mainStat: 'STR' | 'AGI' | 'WIS' | 'LUK' (family board: FAMILY_MAIN_STAT). With null, BiS accepts any stat.
 export function passesObolCheck(stoneData, mode = DEFAULT_OBOL_CHECK_MODE, mainStat = null) {
   if (!stoneData || typeof stoneData !== 'object') return false
@@ -120,11 +147,83 @@ export function getFailedObols(obols = [], mode = DEFAULT_OBOL_CHECK_MODE, mainS
   const counts = {}
   obols.forEach(({ rawName, stoneData }) => {
     if (!rawName || rawName === 'Blank') return
-    if (!passesObolCheck(stoneData, mode, mainStat)) {
+    if (!passesObolCheck(getEffectiveRolls(rawName, stoneData), mode, mainStat)) {
       counts[rawName] = (counts[rawName] ?? 0) + 1
     }
   })
   return Object.entries(counts).map(([rawName, count]) => ({ rawName, count }))
+}
+
+// ── Board totals ("What it gives") ────────────────────────────────────────────
+// Game TotalStats: each obol's stat = base + roll, only counted when positive. The Silver Jellyfish multiplies
+// the MISC bonuses of all obols = the UQ1/UQ2 unique bonuses (in-game text; Eli). Toolbox applies it to
+// Weapon Power / Defence instead, which doesn't match the game's wording. A Weapon Power roll on a skilling
+// obol goes to that obol's skill power (Toolbox getPowerType).
+// Returns rows in display order: [{ key, label, value, percent, misc }]
+function uqStatLabel(txt) {
+  return txt
+    .replace(/^%_?|^_/, '')
+    .replace(/DROP_CHANCE/i, 'DROP_RATE')
+    .split('_')
+    .filter(Boolean)
+    .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
+export function getObolBoardStats(obols = [], miscMulti = 1) {
+  const totals = {}
+  const add = (key, label, value, extra = {}) => {
+    if (!(value > 0)) return
+    totals[key] = {
+      key,
+      label,
+      percent: false,
+      misc: false,
+      ...extra,
+      value: (totals[key]?.value ?? 0) + value,
+    }
+  }
+
+  obols.forEach(({ rawName, stoneData }) => {
+    if (!rawName || rawName === 'Blank') return
+    const base = obolByRawName[rawName] ?? {}
+    const rolls = getEffectiveRolls(rawName, stoneData) ?? {}
+    const roll = key => rollValue(rolls, key)
+
+    const skills = Object.entries(base.skillPower ?? {}).filter(([, val]) => val > 0)
+    if (skills.length > 0) {
+      skills.forEach(([skill, val], i) => {
+        add(`power_${skill}`, `${skill} Power`, val + (i === 0 ? roll('Weapon_Power') : 0))
+      })
+      add('Weapon_Power', 'Weapon Power', base.wp ?? 0)
+    } else {
+      add('Weapon_Power', 'Weapon Power', (base.wp ?? 0) + roll('Weapon_Power'))
+    }
+    BASE_STATS.forEach(stat => add(stat, stat, (base[stat] ?? 0) + roll(stat)))
+    add('Defence', 'Defence', (base.def ?? 0) + roll('Defence'))
+
+    ;[1, 2].forEach(n => {
+      const txt = base[`uq${n}`]
+      if (!txt) return
+      const rolled = typeof rolls[`UQ${n}txt`] === 'string' ? roll(`UQ${n}val`) : 0
+      const key = `uq_${uqStatLabel(txt)}`
+      add(key, uqStatLabel(txt), (base[`uq${n}val`] ?? 0) + rolled, {
+        percent: txt.startsWith('%'),
+        misc: true,
+      })
+    })
+  })
+
+  const order = row => {
+    if (row.key === 'Weapon_Power') return 0
+    if (row.key.startsWith('power_')) return 1
+    if (BASE_STATS.includes(row.key)) return 2 + BASE_STATS.indexOf(row.key)
+    if (row.key === 'Defence') return 6
+    return 7
+  }
+  return Object.values(totals)
+    .map(row => (row.misc ? { ...row, value: row.value * miscMulti } : row))
+    .sort((a, b) => order(a) - order(b))
 }
 
 // Notification title, e.g. "2 obols have no bonus stat" / "2 obols fail the Min/Max check"

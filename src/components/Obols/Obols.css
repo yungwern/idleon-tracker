@@ -74,7 +74,7 @@
   background: rgba(251, 191, 36, 0.1);
 }
 
-/* Label for the player's own board (vs the example boards next to it) */
+/* Label for the player's own board (vs the example board next to it) */
 .obols-section-label--own {
   color: #a0c4ff;
 }

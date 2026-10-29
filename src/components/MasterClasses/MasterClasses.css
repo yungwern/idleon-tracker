@@ -616,53 +616,20 @@
   font-style: italic;
 }
 
-/* ── Flip card: both faces share one grid cell, so the card is as tall as its taller side ── */
-.mc-statue-flip {
-  display: grid;
-  transition: transform 0.5s ease;
-  transform-style: preserve-3d;
+/* ── Marble sub-tabs: accent in the masterclass color ── */
+.mc-marble-tabs {
+  --tab-color: var(--class-color);
+  margin-bottom: 0;
 }
 
-.mc-statue-flip--flipped {
-  transform: rotateY(180deg);
+/* ── Statue Flair tab ── */
+/* Cards keep their own height (W1/W2 cover more statues), so short cards don't stretch to match */
+.mc-flair-grid {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-items: start;
 }
 
-.mc-statue-face {
-  grid-area: 1 / 1;
-  backface-visibility: hidden;
-}
-
-.mc-statue-face--back {
-  transform: rotateY(180deg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mc-statue-flip {
-    transition: none;
-  }
-}
-
-.mc-statue-flip-btn {
-  margin-top: auto;
-  padding: 6px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.03);
-  color: #9ca3af;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.mc-statue-flip-btn:hover {
-  border-color: var(--class-color);
-  color: var(--class-color);
-}
-
-/* ── Statue Flair (card back) ── */
 .mc-flair {
-  display: flex;
-  flex-direction: column;
   gap: 6px;
 }
 

@@ -27,8 +27,36 @@
   height: 62px;
 }
 
-.obol-slot--empty {
-  opacity: 0.2;
+/* Board slots sit on the board art's sockets: no box, sized to the socket, obol art just over it.
+   Empty sockets are already drawn on the board, so an empty slot shows nothing. */
+.obol-slot--socket {
+  border: none;
+  border-radius: 0;
+  background: none;
+}
+
+.obol-slot--socket.obol-slot--circle {
+  width: 52px;
+  height: 52px;
+}
+
+.obol-slot--socket.obol-slot--square {
+  width: 56px;
+  height: 56px;
+}
+
+.obol-slot--socket.obol-slot--hexagon {
+  width: 64px;
+  height: 64px;
+}
+
+.obol-slot--socket.obol-slot--sparkle {
+  width: 68px;
+  height: 68px;
+}
+
+.obol-slot--socket.obol-slot--empty {
+  opacity: 1;
 }
 
 /* Obol art is 36px pixel art saved at 4x (144px files). The browser smoothly
@@ -45,6 +73,14 @@
   height: 54px;
 }
 
+/* Every obol PNG is 144px (36px art at 4x) with shape padding that matches the board art's scale, so all shapes
+   draw at 72px (the board's 2x) and cover their socket by a couple of pixels, like in game. */
+.obol-slot--socket .obol-slot-img {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
 .obol-slot--upgraded .obol-slot-img {
   filter: drop-shadow(0 0 3px rgba(250, 204, 21, 0.6)) drop-shadow(0 0 6px rgba(202, 138, 4, 0.4));
 }
@@ -55,64 +91,384 @@
   background: rgba(248, 113, 113, 0.08);
 }
 
-/* ── Account Board ── */
-.obol-board {
+/* On the light board art a soft glow disappears, so board slots get a solid outline that follows the obol's
+   shape (four 2px offset shadows): gold = passes the roll check, red = fails. Failing ones also get a "!" flag. */
+.obol-slot--socket.obol-slot--upgraded .obol-slot-img {
+  filter:
+    drop-shadow(2px 0 0 #f59e0b)
+    drop-shadow(-2px 0 0 #f59e0b)
+    drop-shadow(0 2px 0 #f59e0b)
+    drop-shadow(0 -2px 0 #f59e0b);
+}
+
+.obol-slot--socket.obol-slot--no-bonus {
+  background: none;
+}
+
+.obol-slot--socket.obol-slot--no-bonus .obol-slot-img {
+  filter:
+    drop-shadow(2px 0 0 #dc2626)
+    drop-shadow(-2px 0 0 #dc2626)
+    drop-shadow(0 2px 0 #dc2626)
+    drop-shadow(0 -2px 0 #dc2626)
+    drop-shadow(0 0 4px rgba(220, 38, 38, 0.8));
+}
+
+/* "Replace or reroll me" flag on failing obols */
+.obol-slot-flag {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fef2f2;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* ── Boards ──
+   Empty board art (images/obols/board/, 356x344) with each obol centred on its socket.
+   Socket centres were measured from that art, in reading order (left to right, top to bottom), matching
+   CHAR_OBOL_SHAPES / FAMILY_OBOL_SHAPES in obolMap.js. */
+.obol-board-map {
+  position: relative;
+  flex-shrink: 0;
+  width: 356px;
+  height: 344px;
+}
+
+.obol-board-map--char {
+  background: url("/images/obols/board/character.png") no-repeat;
+}
+
+.obol-board-map--fam {
+  background: url("/images/obols/board/family.png") no-repeat;
+}
+
+.obol-board-pos {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+/* Hovered slot's tooltip stays above its neighbours */
+.obol-board-pos:hover {
+  z-index: 5;
+}
+
+/* Top two rows: tooltip opens below the obol (see ObolBoardMap getTooltipPlacement) */
+.obol-board-pos--below .obol-tooltip {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+
+/* Outer columns: tooltip lines up with the board's edge instead of centring past it */
+.obol-board-pos--left .obol-tooltip {
+  left: 0;
+  transform: none;
+}
+
+.obol-board-pos--right .obol-tooltip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* Character board: rows of 5 / 4 / 3 / 4 / 5 */
+.obol-pos--char-0 {
+  left: 44px;
+  top: 45px;
+}
+
+.obol-pos--char-1 {
+  left: 110px;
+  top: 65px;
+}
+
+.obol-pos--char-2 {
+  left: 178px;
+  top: 45px;
+}
+
+.obol-pos--char-3 {
+  left: 246px;
+  top: 65px;
+}
+
+.obol-pos--char-4 {
+  left: 312px;
+  top: 45px;
+}
+
+.obol-pos--char-5 {
+  left: 66px;
+  top: 107px;
+}
+
+.obol-pos--char-6 {
+  left: 126px;
+  top: 123px;
+}
+
+.obol-pos--char-7 {
+  left: 230px;
+  top: 123px;
+}
+
+.obol-pos--char-8 {
+  left: 292px;
+  top: 107px;
+}
+
+.obol-pos--char-9 {
+  left: 54px;
+  top: 171px;
+}
+
+.obol-pos--char-10 {
+  left: 178px;
+  top: 171px;
+}
+
+.obol-pos--char-11 {
+  left: 302px;
+  top: 171px;
+}
+
+.obol-pos--char-12 {
+  left: 66px;
+  top: 235px;
+}
+
+.obol-pos--char-13 {
+  left: 126px;
+  top: 219px;
+}
+
+.obol-pos--char-14 {
+  left: 230px;
+  top: 219px;
+}
+
+.obol-pos--char-15 {
+  left: 292px;
+  top: 235px;
+}
+
+.obol-pos--char-16 {
+  left: 44px;
+  top: 297px;
+}
+
+.obol-pos--char-17 {
+  left: 110px;
+  top: 277px;
+}
+
+.obol-pos--char-18 {
+  left: 178px;
+  top: 297px;
+}
+
+.obol-pos--char-19 {
+  left: 246px;
+  top: 277px;
+}
+
+.obol-pos--char-20 {
+  left: 312px;
+  top: 297px;
+}
+
+/* Family board: rows of 5 / 5 / 4 / 5 / 5 */
+.obol-pos--fam-0 {
+  left: 42px;
+  top: 43px;
+}
+
+.obol-pos--fam-1 {
+  left: 112px;
+  top: 39px;
+}
+
+.obol-pos--fam-2 {
+  left: 178px;
+  top: 45px;
+}
+
+.obol-pos--fam-3 {
+  left: 244px;
+  top: 39px;
+}
+
+.obol-pos--fam-4 {
+  left: 314px;
+  top: 43px;
+}
+
+.obol-pos--fam-5 {
+  left: 40px;
+  top: 111px;
+}
+
+.obol-pos--fam-6 {
+  left: 104px;
+  top: 103px;
+}
+
+.obol-pos--fam-7 {
+  left: 178px;
+  top: 115px;
+}
+
+.obol-pos--fam-8 {
+  left: 252px;
+  top: 103px;
+}
+
+.obol-pos--fam-9 {
+  left: 316px;
+  top: 111px;
+}
+
+.obol-pos--fam-10 {
+  left: 64px;
+  top: 173px;
+}
+
+.obol-pos--fam-11 {
+  left: 136px;
+  top: 173px;
+}
+
+.obol-pos--fam-12 {
+  left: 220px;
+  top: 173px;
+}
+
+.obol-pos--fam-13 {
+  left: 292px;
+  top: 173px;
+}
+
+.obol-pos--fam-14 {
+  left: 40px;
+  top: 235px;
+}
+
+.obol-pos--fam-15 {
+  left: 104px;
+  top: 241px;
+}
+
+.obol-pos--fam-16 {
+  left: 178px;
+  top: 233px;
+}
+
+.obol-pos--fam-17 {
+  left: 252px;
+  top: 241px;
+}
+
+.obol-pos--fam-18 {
+  left: 316px;
+  top: 235px;
+}
+
+.obol-pos--fam-19 {
+  left: 42px;
+  top: 299px;
+}
+
+.obol-pos--fam-20 {
+  left: 112px;
+  top: 305px;
+}
+
+.obol-pos--fam-21 {
+  left: 178px;
+  top: 303px;
+}
+
+.obol-pos--fam-22 {
+  left: 244px;
+  top: 305px;
+}
+
+.obol-pos--fam-23 {
+  left: 314px;
+  top: 299px;
+}
+
+/* ── Board Totals ("What it gives") ── */
+.obol-stats {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  gap: 6px;
+  width: 240px;
+  padding: 14px 16px;
+  border: 1px solid #3f3f46;
+  border-radius: 10px;
+  background: #141417;
+  box-sizing: border-box;
 }
 
-.obol-board-row {
-  display: flex;
-  gap: 4px;
-}
-
-.obol-board-row--centered {
-  justify-content: center;
-}
-
-/* ── Character Board ── */
-.obol-char-board {
+.obol-stats-head {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 2px;
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.obol-char-board-row {
+.obol-stats-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #a0c4ff;
+}
+
+.obol-stats-sub {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.obol-stats-row {
   display: flex;
-  gap: 4px;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
 }
 
-/* Small rows — diamond pattern */
-.obol-char-board .obol-char-board-row--small:nth-child(2) {
-  gap: 10px;
+.obol-stats-label {
+  color: #d1d5db;
 }
 
-.obol-char-board .obol-char-board-row--small:nth-child(3) {
-  gap: 100px;
-  margin-top: -23px;
-  margin-bottom: -23px;
+.obol-stats-star {
+  margin-left: 2px;
+  color: #9ca3af;
 }
 
-.obol-char-board .obol-char-board-row--small:nth-child(4) {
-  gap: 10px;
+.obol-stats-value {
+  color: #f3f4f6;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.obol-char-board .obol-char-board-row--small:nth-child(6) {
-  gap: 10px;
-}
-
-.obol-char-board .obol-char-board-row--small:nth-child(7) {
-  gap: 100px;
-  margin-top: -23px;
-  margin-bottom: -23px;
-}
-
-.obol-char-board .obol-char-board-row--small:nth-child(8) {
-  gap: 10px;
+.obol-stats-empty,
+.obol-stats-note {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #6b7280;
 }
 
 /* ── Obol Tooltip ── */

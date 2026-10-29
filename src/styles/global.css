@@ -706,3 +706,41 @@ body {
 .provider-icon[data-provider="email"] {
   mask-image: url("/images/brand/email.svg");
 }
+
+/* ============================================================
+   MILESTONE CHIPS
+   % of cap breakpoints (Lore chapter bonuses, Exotic Market):
+   <span class="milestone-row"><span class="milestone tooltip-anchor milestone--reached">50 ...</span></span>
+   Set --milestone-color on a parent to recolor. --soon = reached after a planned buy.
+   ============================================================ */
+
+.milestone-row {
+  display: flex;
+  flex-shrink: 0;
+  gap: 3px;
+}
+
+.milestone {
+  --milestone-color: #22d3ee;
+  position: relative;
+  min-width: 22px;
+  padding: 1px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  color: #6b7280;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  cursor: default;
+}
+
+.milestone--reached {
+  color: #111827;
+  background: var(--milestone-color);
+  border-color: var(--milestone-color);
+}
+
+.milestone--soon {
+  color: var(--milestone-color);
+  border-color: var(--milestone-color);
+}

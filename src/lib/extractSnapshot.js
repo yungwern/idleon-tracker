@@ -1030,11 +1030,13 @@ function parseResearch(json, optLacc) {
 
 // ── Luminous Menagerie (W7) ───────────────────────────────────────────────────
 // Menagerie[2][i] = 1 once unlock i is owned, Menagerie[3][i] = level of boost i (see utils/menagerieUtils.js)
+// Menagerie[0][9] = Silver Jellyfish obol MISC upgrade level (Toolbox silverLevels[0], getMenagerieObolMulti)
 function parseMenagerie(json) {
   const menagerie = parseRaw(json['Menagerie']) ?? []
   return {
     unlocks: (menagerie[2] ?? []).map(value => Number(value) >= 1),
     boostLevels: (menagerie[3] ?? []).map(value => Number(value) || 0),
+    obolMiscLevel: Number(menagerie[0]?.[9]) || 0,
   }
 }
 

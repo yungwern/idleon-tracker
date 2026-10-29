@@ -423,8 +423,7 @@ function formatChance(n) {
   return `1 in ${n.toLocaleString()} (${pct >= 1 ? pct.toFixed(1) : pct.toFixed(2)}%)`
 }
 
-function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFolder, rg }) {
-  const [flipped, setFlipped] = useState(false)
+function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFolder }) {
   const name = itemMap[statue.marble] ?? statue.marble
   const released = statue.bonus !== null
   const locked = level === 0
@@ -435,8 +434,7 @@ function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFol
   const next = royalStatueBonus(statue, level + 1, royalReverenceLevel)
 
   return (
-    <div className={`mc-statue-flip${flipped ? ' mc-statue-flip--flipped' : ''}`}>
-    <div className={`mc-statue-card mc-statue-face${locked ? ' mc-statue-card--locked' : ''}`} aria-hidden={flipped}>
+    <div className={`mc-statue-card${locked ? ' mc-statue-card--locked' : ''}`}>
       <div className="mc-statue-top">
         <img src={`images/${imageFolder}/${frontImg}.png`} alt={name} className="mc-item-img" />
         <div className="mc-statue-title">
@@ -479,24 +477,13 @@ function RoyalStatueCard({ statue, level, royalReverenceLevel, marbles, imageFol
           </div>
         </div>
       )}
-      <button className="mc-statue-flip-btn" onClick={() => setFlipped(true)}>
-        Statue Flair ↻
-      </button>
-    </div>
-
-    {/* ── Back: Statue Flair for every statue this marble upgrades ── */}
-    <div className="mc-statue-card mc-statue-face mc-statue-face--back" aria-hidden={!flipped}>
-      <StatueFlairBack statue={statue} name={name} marbles={marbles} imageFolder={imageFolder} rg={rg} />
-      <button className="mc-statue-flip-btn" onClick={() => setFlipped(false)}>
-        ↺ Back to statue
-      </button>
-    </div>
     </div>
   )
 }
 
-// Back of a marble card: the regular statues this marble flairs, their EXP multi, and next cost
-function StatueFlairBack({ statue, name, marbles, imageFolder, rg }) {
+// Statue Flair card: the regular statues this marble flairs, their EXP multi, and next cost
+function StatueFlairCard({ statue, marbles, imageFolder, rg }) {
+  const name = itemMap[statue.marble] ?? statue.marble
   const maxLevel = rg?.flairMaxLevel ?? 3
   const statueIds = STATUE_FLAIR_MARBLE
     .map((marbleIndex, statueId) => (marbleIndex === statue.index ? statueId : null))
@@ -514,18 +501,14 @@ function StatueFlairBack({ statue, name, marbles, imageFolder, rg }) {
   const totalNext = rows.reduce((sum, r) => sum + (r.cost ?? 0), 0)
 
   return (
-    <div className="mc-flair">
+    <div className="mc-statue-card mc-flair">
       <div className="mc-statue-top">
         <img src={`images/${imageFolder}/${statue.marble}.png`} alt={name} className="mc-item-img" />
         <div className="mc-statue-title">
-          <span className="mc-item-name">Statue Flair</span>
-          <span className="mc-statue-owned">{name}s owned: {marbles.toLocaleString()}</span>
+          <span className="mc-item-name">{name}</span>
+          <span className="mc-statue-owned">Owned: {marbles.toLocaleString()}</span>
         </div>
       </div>
-
-      {rg && !rg.flairUnlocked && (
-        <p className="mc-statue-note">Statue Flair isn't unlocked yet (Armory).</p>
-      )}
 
       <div className="mc-flair-head">
         <span>Statue</span>
@@ -553,39 +536,82 @@ function StatueFlairBack({ statue, name, marbles, imageFolder, rg }) {
   )
 }
 
+// Marble section sub-tabs (same shared .page-tabs--sub as Obols > Example Boards)
+const MARBLE_TABS = [
+  { id: 'statues', label: 'Royal Statues' },
+  { id: 'flair',   label: 'Statue Flair' },
+]
+
 function RoyalStatues({ snapshot, imageFolder }) {
+  const [marbleTab, setMarbleTab] = useState('statues')
   const rg = snapshot?.royalGuardian
   const parchments = accountItemTotal(snapshot, PARCHMENT_KEY)
 
   return (
     <div className="mc-statues">
       <InfoPanel
-        intro="Each marble restores one Royal Statue. Restoring and upgrading are both a chance per try, not a guarantee."
+        intro="Marbles have two uses: restoring Royal Statues and flairing regular statues. Restoring and upgrading are both a chance per try, not a guarantee."
         items={[
           'Locked statues cost 1 of their marble per try to unlock.',
           'Unlocked statues cost 1 Parchment of Enchantment per try to level up, and the chance drops as the level rises.',
+          'Statue Flair spends marbles to raise the EXP multi of regular statues. Each marble covers its own set of statues.',
         ]}
       />
       {snapshot && !rg && (
         <p>Re-import your save to see Royal Statue progress.</p>
       )}
-      <div className="mc-statue-parchments">
-        <img src={`images/${imageFolder}/${PARCHMENT_KEY}.png`} alt="Parchment of Enchantment" className="mc-statue-parchment-img" />
-        <span>Parchments of Enchantment: <strong>{parchments.toLocaleString()}</strong></span>
-      </div>
-      <div className="mc-statue-grid">
-        {ROYAL_STATUES.map(statue => (
-          <RoyalStatueCard
-            key={statue.index}
-            statue={statue}
-            level={rg?.statueLevels?.[statue.index] ?? 0}
-            royalReverenceLevel={rg?.royalReverenceLevel ?? 0}
-            marbles={accountItemTotal(snapshot, statue.marble)}
-            imageFolder={imageFolder}
-            rg={rg}
-          />
+
+      <div className="page-tabs page-tabs--sub mc-marble-tabs">
+        {MARBLE_TABS.map(tab => (
+          <button
+            key={tab.id}
+            className={`page-tab-btn${marbleTab === tab.id ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setMarbleTab(tab.id)}
+          >
+            {tab.label}
+          </button>
         ))}
       </div>
+
+      {marbleTab === 'statues' && (
+        <>
+          <div className="mc-statue-parchments">
+            <img src={`images/${imageFolder}/${PARCHMENT_KEY}.png`} alt="Parchment of Enchantment" className="mc-statue-parchment-img" />
+            <span>Parchments of Enchantment: <strong>{parchments.toLocaleString()}</strong></span>
+          </div>
+          <div className="mc-statue-grid">
+            {ROYAL_STATUES.map(statue => (
+              <RoyalStatueCard
+                key={statue.index}
+                statue={statue}
+                level={rg?.statueLevels?.[statue.index] ?? 0}
+                royalReverenceLevel={rg?.royalReverenceLevel ?? 0}
+                marbles={accountItemTotal(snapshot, statue.marble)}
+                imageFolder={imageFolder}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {marbleTab === 'flair' && (
+        <>
+          {rg && !rg.flairUnlocked && (
+            <p className="mc-statue-note">Statue Flair isn't unlocked yet (Armory).</p>
+          )}
+          <div className="mc-statue-grid mc-flair-grid">
+            {ROYAL_STATUES.map(statue => (
+              <StatueFlairCard
+                key={statue.index}
+                statue={statue}
+                marbles={accountItemTotal(snapshot, statue.marble)}
+                imageFolder={imageFolder}
+                rg={rg}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

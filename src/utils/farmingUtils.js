@@ -4,6 +4,7 @@ import {
   calcRankBonus,
   getSeedByCropId,
   seedInfo,
+  marketMap,
 } from '../data'
 import { getLegendTalentMulti, getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { getAccountTalentBonus, getAccountTalentLevel } from './talentUtils'
@@ -24,12 +25,13 @@ import { getLampBonus, getMonumentBonus } from './cavernUtils'
 import { getStarSignBonus } from './starSignUtils'
 import { getActiveCharacterIndex } from './characterUtils'
 import { getButtonBonus } from './buttonUtils'
-import { getStickerBonus } from './researchUtils'
+import { getStickerBonus, getResearchGridBonus } from './researchUtils'
 import { countClearedMaps, WORLD_6_FIRST_MAP, WORLD_6_MAP_COUNT } from './mapUtils'
-import { getExoticBonus } from './exoticUtils'
+import { getExoticBonus, isOrganicExotic } from './exoticUtils'
 import { getEmperorBonus } from './emperorUtils'
 import { getGemShopPurchases } from './gemShopUtils'
-import { isJadeUnlocked } from './sneakingUtils'
+import { isJadeUnlocked, getCharmBonus } from './sneakingUtils'
+import { getMeritBonus } from './meritUtils'
 import { getAssumedMainframeBonus, LAB_BONUSES } from './labUtils'
 
 // Farming math, checked against IdleonToolbox parsers/world-6/farming.ts.
@@ -39,12 +41,15 @@ import { getAssumedMainframeBonus, LAB_BONUSES } from './labUtils'
 
 export const BEAN_IMG = 'images/farming/FarmCropBean.png'
 
-// Medal seeds (seedId 6) all share one sprite
-export function cropImgPath(cropId) {
+// Crop name by its place in its seed's line, e.g. crop 15 = "Basic 16"
+export function cropName(cropId) {
   const seed = getSeedByCropId(cropId)
-  if (!seed) return null
-  const imgId = seed.seedId === 6 ? 230 : Math.round(cropId)
-  return `images/farming/FarmCrop${imgId}.png`
+  return seed ? `${seed.name} ${Math.round(cropId) - seed.cropIdMin + 1}` : `Crop ${cropId}`
+}
+
+export function cropImgPath(cropId) {
+  if (!getSeedByCropId(cropId)) return null
+  return `images/farming/FarmCrop${Math.round(cropId)}.png`
 }
 
 // Big multipliers in scientific notation (3.94e10), small ones as normal numbers
@@ -103,6 +108,16 @@ const MARKET_COST_FLOOR_BELOW = 1e8
 
 export const isNightMarket = upgrade => upgrade.index >= 8
 
+// Research grid square 171 (Day 'N' Nite) raises every market upgrade's max LV, except the
+// one-time unlocks: Land Plots, Overgrowth and Land Rank (Toolbox parseFarming effectiveMaxLvl)
+const MARKET_MAX_LV_SQUARE = 171
+const HARD_CAPPED_MARKET = [0, 8, 13]
+
+export function marketMaxLevel(snapshot, upgrade) {
+  if (HARD_CAPPED_MARKET.includes(upgrade.index)) return upgrade.maxLvl
+  return Math.floor(upgrade.maxLvl + getResearchGridBonus(snapshot, MARKET_MAX_LV_SQUARE))
+}
+
 // Emperor market discount (bonus 2) × Better Day I/II (exotic 34/35) or Better Night I/II (36/37)
 const EMPEROR_MARKET_DISCOUNT = 2
 
@@ -130,17 +145,18 @@ export function marketCropId(upgrade, level) {
   return Math.floor(cropId + cropIdIncrement * steps)
 }
 
-// Upcoming costs from the current level, as [{ cropId, cost }].
-// Day Market: levels grouped by crop, up to 4 crops (several levels often share one crop).
-// Night Market: the next 4 levels one by one, all paid in magic beans (cropId null).
+// Upcoming costs from the current level, as [{ cropId, cost, levels }].
+// Day Market: levels grouped by crop, up to 5 crops (several levels often share one crop).
+// Night Market: the next 5 levels one by one, all paid in magic beans (cropId null).
 export function marketUpcomingCosts(upgrade, level, costMulti = 1) {
   const costs = []
 
   if (isNightMarket(upgrade)) {
-    for (let lv = level; lv < upgrade.maxLvl && costs.length < 4; lv++) {
+    for (let lv = level; lv < upgrade.maxLvl && costs.length < 5; lv++) {
       costs.push({
         cropId: null,
         cost: marketLevelCost(upgrade, lv, costMulti),
+        levels: 1,
       })
     }
     return costs
@@ -149,14 +165,34 @@ export function marketUpcomingCosts(upgrade, level, costMulti = 1) {
   const byCrop = new Map()
   for (let lv = level; lv < upgrade.maxLvl; lv++) {
     const cropId = marketCropId(upgrade, lv)
-    if (!byCrop.has(cropId) && byCrop.size === 4) break
-    byCrop.set(cropId, (byCrop.get(cropId) ?? 0) + marketLevelCost(upgrade, lv, costMulti))
+    if (!byCrop.has(cropId) && byCrop.size === 5) break
+    const group = byCrop.get(cropId) ?? { cost: 0, levels: 0 }
+    byCrop.set(cropId, {
+      cost: group.cost + marketLevelCost(upgrade, lv, costMulti),
+      levels: group.levels + 1,
+    })
   }
-  byCrop.forEach((cost, cropId) => costs.push({
+  byCrop.forEach(({ cost, levels }, cropId) => costs.push({
     cropId,
     cost,
+    levels,
   }))
   return costs
+}
+
+// Levels you can buy in a row right now. Each level spends its own crop (beans at night),
+// so levels that share a crop add up against the same stack.
+export function marketAffordableLevels(upgrade, level, costMulti, haveOf) {
+  const spent = new Map()
+  let count = 0
+  for (let lv = level; lv < upgrade.maxLvl; lv++) {
+    const cropId = isNightMarket(upgrade) ? null : marketCropId(upgrade, lv)
+    const total = (spent.get(cropId) ?? 0) + marketLevelCost(upgrade, lv, costMulti)
+    if (total > haveOf(cropId)) break
+    spent.set(cropId, total)
+    count++
+  }
+  return count
 }
 
 // ── Exotic Market ─────────────────────────────────────────────────────────────
@@ -181,9 +217,23 @@ function lavaRand(seed) {
   return (1073741823 & (s1 << 16) + s2) % 10007 / 10007
 }
 
+// Weeks count from the Unix epoch, so each rotation starts Thursday 00:00 UTC
+export function getExoticWeek(unixSeconds) {
+  return Math.floor(unixSeconds / WEEK_SECONDS)
+}
+
+export function exoticWeekStart(week) {
+  return new Date(week * WEEK_SECONDS * 1000)
+}
+
 // The 8 exotic upgrade indices (0–59) on sale during the week containing `unixSeconds`
 export function getExoticRotation(unixSeconds) {
-  const seed = Math.round(100 * Math.floor(unixSeconds / WEEK_SECONDS))
+  return rollExoticWeek(getExoticWeek(unixSeconds))
+}
+
+// Same roll as Toolbox rollExoticMarketWeek (checked identical for 2,000 weeks)
+export function rollExoticWeek(week) {
+  const seed = Math.round(100 * week)
   const selected = []
   for (let i = 0; i < 8; i++) {
     let attempts = 0
@@ -197,6 +247,53 @@ export function getExoticRotation(unixSeconds) {
   return selected
 }
 
+// The next `count` rotations after the current one: [{ offset, week, start, upgrades }]
+export function getUpcomingExoticRotations(unixSeconds, count) {
+  const currentWeek = getExoticWeek(unixSeconds)
+  return Array.from({ length: count }, (_, i) => {
+    const week = currentWeek + i + 1
+    return {
+      offset: i + 1,
+      week,
+      start: exoticWeekStart(week),
+      upgrades: rollExoticWeek(week),
+    }
+  })
+}
+
+// Future weeks that sell `exoticIndex`, up to `maxResults`, searching `lookaheadWeeks` ahead
+export const EXOTIC_SEARCH_WEEKS = 520
+
+export function findExoticWeeks(exoticIndex, unixSeconds, maxResults = 10, lookaheadWeeks = EXOTIC_SEARCH_WEEKS) {
+  const currentWeek = getExoticWeek(unixSeconds)
+  const found = []
+  for (let offset = 1; offset <= lookaheadWeeks && found.length < maxResults; offset++) {
+    const upgrades = rollExoticWeek(currentWeek + offset)
+    if (upgrades.includes(exoticIndex)) {
+      found.push({
+        offset,
+        week: currentWeek + offset,
+        start: exoticWeekStart(currentWeek + offset),
+        upgrades,
+      })
+    }
+  }
+  return found
+}
+
+// Weeks until each upgrade is next sold (after the current week), as Map(index → offset).
+// Upgrades not found within lookaheadWeeks are missing from the map.
+export function getNextExoticOffsets(unixSeconds, lookaheadWeeks = EXOTIC_SEARCH_WEEKS) {
+  const currentWeek = getExoticWeek(unixSeconds)
+  const next = new Map()
+  for (let offset = 1; offset <= lookaheadWeeks && next.size < 60; offset++) {
+    for (const index of rollExoticWeek(currentWeek + offset)) {
+      if (!next.has(index)) next.set(index, offset)
+    }
+  }
+  return next
+}
+
 export function rotationTimeLeft(unixSeconds) {
   const secondsLeft = Math.floor(WEEK_SECONDS - (unixSeconds % WEEK_SECONDS))
   const d = Math.floor(secondsLeft / 86400)
@@ -208,14 +305,34 @@ export function rotationTimeLeft(unixSeconds) {
 // Legend talent "Buy One Get One Free": }x more LVs when buying Exotic Market upgrades
 export const BUY_ONE_GET_ONE_TALENT = 8
 
-// How many exotic levels a crop stack buys, after Better Exotic (exotic 38)
-// and the Buy One Get One Free legend talent.
-export function exoticLevelsFromCrops(cropQty, farming, legendTalentLevel) {
-  const betterExotic = getExoticBonus(farming, 38)
-  const totalMulti = (1 + betterExotic / 100) * getLegendTalentMulti(BUY_ONE_GET_ONE_TALENT, legendTalentLevel)
-  const baseQty = cropQty / totalMulti
-  if (baseQty <= 1) return 0
-  return Math.floor(Math.log10(baseQty) * 10.36 + 1)
+// An Organic Label also gives 1.5x LVs when buying that upgrade (matched in game on two
+// labelled upgrades; the 2x on its bonus is separate, in calcExoticBonus).
+const ORGANIC_LVS_MULTI = 1.5
+
+// Game FarmingStuffs ExoticLVQTY: LVs = ceil((log2(crops) / 2 + log10(crops)) × multi), the whole
+// stack is spent. multi = Better Exotic (exotic 38) × Buy One Get One Free × the organic label.
+// Matched all 8 upgrades of a rotation in game (e.g. 18.8T crops → +473 LV).
+const EXOTIC_LVS_PER_LOG10 = Math.log2(10) / 2 + 1
+
+function exoticBuyMulti(farming, legendTalentLevel, organic) {
+  return (1 + getExoticBonus(farming, 38) / 100)
+    * getLegendTalentMulti(BUY_ONE_GET_ONE_TALENT, legendTalentLevel)
+    * (organic ? ORGANIC_LVS_MULTI : 1)
+}
+
+export function exoticLevelsFromCrops(cropQty, farming, legendTalentLevel, exoticIndex) {
+  if (cropQty <= 1) return 0
+  const multi = exoticBuyMulti(farming, legendTalentLevel, isOrganicExotic(farming, exoticIndex))
+  return Math.ceil(EXOTIC_LVS_PER_LOG10 * Math.log10(cropQty) * multi)
+}
+
+// Fewest crops that buy targetLevels in one purchase (inverse of exoticLevelsFromCrops).
+// organic is passed in so the page can also show what a label would need.
+export function cropsForExoticLevels(targetLevels, farming, legendTalentLevel, organic) {
+  if (targetLevels <= 0) return 0
+  const multi = exoticBuyMulti(farming, legendTalentLevel, organic)
+  // Exactly at the boundary the round-up gives targetLevels - 1, so step just past it
+  return 10 ** ((targetLevels - 1) / (EXOTIC_LVS_PER_LOG10 * multi) + 1e-9)
 }
 
 // ── Land Rank Database ────────────────────────────────────────────────────────
@@ -302,13 +419,17 @@ function getPlotContext(farming) {
 }
 
 // Everything in a plot's crop multiplier that land ranks don't touch (game: CropsBonusValue)
-function cropValueParts(farming) {
+// `skip` leaves sources out, to test whether they matter: { productDoubler, doublePetal, valueGmo }
+function cropValueParts(farming, skip = {}) {
   const market = farming?.marketLevels ?? []
   const counts = farming?.gmoCropCounts ?? {}
   const superGmo = 1 + (market[15] ?? 0) * 0.5 * (counts[100000] ?? 0) / 100
-  const valueGmo = superGmo * (1 + (market[14] ?? 0) * 0.02 * (counts[10000] ?? 0) / 100)
-  // Product Doubler (market 5): +3% per level, every full 100% is another 1x
-  const productDoubler = Math.max(1, Math.floor(1 + (market[5] ?? 0) * 3 / 100))
+  const valueGmo = skip.valueGmo ? 1 : superGmo * (1 + (market[14] ?? 0) * 0.02 * (counts[10000] ?? 0) / 100)
+  // Harvest roll: floor(1 + (Product Doubler + Double Petal I + II)% / 100 + random), so every
+  // full 100% is a guaranteed 1x more. Only the guaranteed part counts toward the cap.
+  const doubleChance = (skip.productDoubler ? 0 : (market[5] ?? 0) * 3)
+    + (skip.doublePetal ? 0 : getExoticBonus(farming, 28) + getExoticBonus(farming, 29))
+  const productDoubler = Math.max(1, Math.floor(1 + doubleChance / 100))
   return {
     constant: productDoubler * Math.max(1, valueGmo),
     cap: 1e4 * (1 + (getExoticBonus(farming, 23) + getExoticBonus(farming, 24) + getExoticBonus(farming, 25)) / 100),
@@ -321,9 +442,11 @@ function goalScore(goal, b, ctx) {
   const { plotRanks, plotPrevRanks, cropValueConstant, cropValueCap } = ctx
   const sumPlots = fn => Math.log(plotRanks.reduce((sum, rank, i) => sum + fn(rank, i), 0))
   if (goal === 'evolution') {
+    // With a crop target, evolution past what that crop needs scores nothing (evoCap per plot)
     if (!plotRanks.length) return 0
+    const cap = ctx.evoCap ?? Infinity
     const shared = (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100)
-    return sumPlots(rank => shared * (1 + b(0) * rank / 100))
+    return sumPlots(rank => Math.min(cap, shared * (1 + b(0) * rank / 100)))
   }
   if (goal === 'cropValue') {
     // Past the cap a plot gains nothing, so capped value is what gets scored
@@ -399,18 +522,168 @@ function greedyAllocate(goals, points, levels, rankMulti, ctx, totalRankPoints) 
   return left
 }
 
-// Plans where plot rank points should go. Points can only come back out of the database
+// ── Overgrowth ────────────────────────────────────────────────────────────────
+// A crop on the vine rolls for its next OG every growth: chance = 0.4^(OG + 1) × OG multi (Toolbox
+// farming.ts newPlot). Each OG doubles the crop, up to OG 30. The land ranks are one part of the
+// multi and level off, so the optimizer gives OG only what changes the OG a crop reliably reaches
+// in a day (OG_RELIABILITY), works for any account's OG range.
+
+const OG_FERTILIZER = 11 // Night Market
+const OG_ACHIEVEMENT = 365
+const OG_MERIT = [5, 2] // W6 merit: +2% Farming EXP and OG chance per level
+const EVERGROW = [26, 27] // Evergrow I / II exotics
+export const OG_CHECK_SECONDS = 86400 // the optimizer aims for the best OG within a day of growing
+export const OG_RELIABILITY = 0.8 // ...that a crop reaches in at least 4 of 5 plantings
+
+// Every OG chance multiplier except the land ranks (Toolbox ogMultiplier)
+export function getOgChanceMulti(snapshot) {
+  const farming = snapshot?.farming
+  const fertilizer = 1 + (farming?.marketLevels?.[OG_FERTILIZER] ?? 0) * marketMap[OG_FERTILIZER].bonusPerLvl / 100
+  const starSign = getStarSignBonus(snapshot, 'OG_Chance', getActiveCharacterIndex(snapshot)).value
+  return Math.max(1, fertilizer)
+    * (1 + getCharmBonus(snapshot?.sneaking, 'Taffy Disc') / 100)
+    * (1 + starSign / 100)
+    * (1 + getMeritBonus(snapshot?.merits, ...OG_MERIT) / 100)
+    * (1 + (isAchievementComplete(snapshot?.achievements, OG_ACHIEVEMENT) ? 15 : 0) / 100)
+    * EVERGROW.reduce((product, i) => product * (1 + getExoticBonus(farming, i) / 100), 1)
+}
+
+// What the OG plan needs: the multi outside land ranks, one growth's length for the seed most
+// plots are growing (Basic when nothing is planted), and every seed you can plant. Land ranks are
+// rarely reset but seeds change often, so the optimizer covers the most demanding of `seeds`.
+// Medal is left out: its growth is a fixed 7 h, so OG barely moves on it.
+export function getOgContext(snapshot) {
+  const farming = snapshot?.farming
+  const plots = (farming?.plots ?? []).filter(p => p.seedType !== -1)
+  const counts = plots.reduce((acc, p) => ({ ...acc, [p.seedType]: (acc[p.seedType] ?? 0) + 1 }), {})
+  const seedType = Number(Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0] ?? 0)
+  const depot = farming?.cropDepot ?? {}
+  // A seed counts once any of its crops is in the depot
+  const owned = seedInfo.filter(seed => seed.seedId !== MEDAL_SEED
+    && Object.keys(depot).some(id => Number(id) >= seed.cropIdMin && Number(id) <= seed.cropIdMax))
+  return {
+    otherMulti: getOgChanceMulti(snapshot),
+    cycleSeconds: getGrowthSeconds(snapshot, seedType),
+    seed: seedInfo[seedType],
+    seeds: (owned.length ? owned : [seedInfo[0]]).map(seed => ({
+      seed,
+      cycleSeconds: getGrowthSeconds(snapshot, seed.seedId),
+    })),
+  }
+}
+
+const ogLandBonus = (levels, rankMulti) => {
+  const b = bonusesAt(levels, rankMulti)
+  return b(7) + b(11) + b(18)
+}
+
+// Average seconds from a fresh plant to each OG: seconds[k] = time to reach OG k
+export function ogClimbSeconds(totalMulti, cycleSeconds) {
+  const seconds = [0]
+  for (let og = 0; og < OG_MAX; og++) {
+    seconds.push(seconds[og] + cycleSeconds / Math.min(1, Math.pow(0.4, og + 1) * totalMulti))
+  }
+  return seconds
+}
+
+// Chance a fresh plant reaches OG `target` within `withinSeconds`. Each step's wait is close to
+// exponential (rate −ln(1 − p) per growth), and each step is 2.5x slower than the last, so the
+// total is a sum of exponentials with distinct rates (hypoexponential CDF). Steps that are sure,
+// or tiny next to the window, are counted at their average.
+export function ogReachChance(totalMulti, cycleSeconds, target, withinSeconds) {
+  let fixed = 0
+  const rates = []
+  for (let og = 0; og < target; og++) {
+    const p = Math.min(1, Math.pow(0.4, og + 1) * totalMulti)
+    const mean = cycleSeconds / p
+    if (p >= 1 || mean < withinSeconds / 100) fixed += mean
+    else rates.push(-Math.log(1 - p) / cycleSeconds)
+  }
+  const left = withinSeconds - fixed
+  if (left < 0) return 0
+  if (!rates.length) return 1
+  const notYet = rates.reduce((sum, rate, i) => {
+    const weight = rates.reduce((product, other, j) => (j === i ? product : product * other / (other - rate)), 1)
+    return sum + weight * Math.exp(-rate * left)
+  }, 0)
+  return Math.min(1, Math.max(0, 1 - notYet))
+}
+
+// Highest OG a fresh plant reaches within `withinSeconds` in at least OG_RELIABILITY of plantings
+export function ogReachedWithin(totalMulti, cycleSeconds, withinSeconds) {
+  let og = 0
+  while (og < OG_MAX && ogReachChance(totalMulti, cycleSeconds, og + 1, withinSeconds) >= OG_RELIABILITY) og++
+  return og
+}
+
+// Overgrowth at a set of land rank levels: total multi, the OG reliably reached in a day (and the
+// chance of that and of the next OG), and the average climb times
+export function getOgOutlook(levels, rankMulti, ogContext) {
+  const totalMulti = ogContext.otherMulti * (1 + ogLandBonus(levels, rankMulti) / 100)
+  const ogInDay = ogReachedWithin(totalMulti, ogContext.cycleSeconds, OG_CHECK_SECONDS)
+  return {
+    totalMulti,
+    ogInDay,
+    chanceInDay: ogReachChance(totalMulti, ogContext.cycleSeconds, ogInDay, OG_CHECK_SECONDS),
+    nextChanceInDay: ogInDay < OG_MAX ? ogReachChance(totalMulti, ogContext.cycleSeconds, ogInDay + 1, OG_CHECK_SECONDS) : null,
+    climbSeconds: ogClimbSeconds(totalMulti, ogContext.cycleSeconds),
+  }
+}
+
+// Fewest OG points (added on top of `levels`) that still reliably reach the OG a crop would reach
+// in a day with every remaining point in OG. Spends them into `levels`; returns the plan details.
+function allocateOg(levels, points, rankMulti, ogContext, totalRankPoints) {
+  const ogUpgrades = LAND_RANK_GOALS.overgrowth.upgrades.filter(i => totalRankPoints >= landRankMap[i].unlockAt)
+  const addOne = lv => {
+    let best = null
+    let bestGain = 0
+    const before = ogLandBonus(lv, rankMulti)
+    for (const i of ogUpgrades) {
+      lv[i]++
+      const gain = ogLandBonus(lv, rankMulti) - before
+      lv[i]--
+      if (gain > bestGain) {
+        bestGain = gain
+        best = i
+      }
+    }
+    if (best === null) return false
+    lv[best]++
+    return true
+  }
+  // Best case: every point in OG
+  const all = [...levels]
+  let allSpent = 0
+  while (allSpent < points && addOne(all)) allSpent++
+  const best = getOgOutlook(all, rankMulti, ogContext)
+  // Smallest share that still gets there
+  let spent = 0
+  while (spent < points && getOgOutlook(levels, rankMulti, ogContext).ogInDay < best.ogInDay && addOne(levels)) spent++
+  return {
+    spent,
+    best,
+  }
+}
+
+// Plans where plot rank points should go. evoCap (from getEvoTarget) stops evolution at the
+// land rank multi a target crop needs, so the rest goes to the other goals. `target` in the
+// result says whether that was reachable ({ reachable, bestLandMulti }, null without a target). Points can only come back out of the database
 // by resetting all of them, so there are two modes:
 // - spend (default): only the unspent points, added on top of the current levels
 // - fullReset: every point from scratch
-// Either way: seed ranks (5th column) up to `seedLevel` first, then the points reserved for
-// Farming EXP, then everything else to whatever raises Crop Evolution × Crop Value × Rank EXP
-// × Overgrowth the most (Toolbox's "all" goal, which also stops buying crop value once every
-// plot is capped). Returns { levels, leftover } with levels indexed like landRankMap.
-export function optimizeLandRanks(farming, rankMulti, { seedLevel, farmExpPoints, fullReset = false }) {
+// Either way: seed ranks (5th column) up to `seedLevel` first, then a crop target (if set), then
+// Overgrowth's share (allocateOg, for the most demanding seed), then everything else to whatever
+// raises Crop Evolution × Crop Value × Rank EXP the most (× Farming EXP with includeFarmingExp).
+// Every goal levels off, so a goal only takes points while they're worth more there. Crop value
+// stops once every plot is capped. Returns { levels, leftover, target, og }, levels indexed like
+// landRankMap.
+export function optimizeLandRanks(farming, rankMulti, { seedLevel, includeFarmingExp = false, fullReset = false, evoCap = Infinity, ogContext = null }) {
   const totalRankPoints = farming?.totalRankPoints ?? 0
   const currentLevels = farming?.upgradesLevels ?? []
-  const ctx = getPlotContext(farming)
+  const ctx = {
+    ...getPlotContext(farming),
+    evoCap,
+  }
   const levels = landRankMap.map((_, i) => (fullReset ? 0 : currentLevels[i] ?? 0))
   const spent = levels.reduce((sum, level) => sum + level, 0)
   let left = Math.max(0, totalRankPoints - spent)
@@ -422,14 +695,65 @@ export function optimizeLandRanks(farming, rankMulti, { seedLevel, farmExpPoints
     left -= add
   }
 
-  const farmExpPool = Math.min(Math.max(0, farmExpPoints), left)
-  left -= farmExpPool
-  left += greedyAllocate(['farmingExp'], farmExpPool, levels, rankMulti, ctx, totalRankPoints)
-  left = greedyAllocate(['evolution', 'cropValue', 'rankExp', 'overgrowth'], left, levels, rankMulti, ctx, totalRankPoints)
+  // A crop target is a requirement, not a preference: evolution is filled until every plot
+  // reaches it before the other goals get a say. If even every point can't get there, the
+  // target is dropped (planned as if unset) instead of sinking all points into evolution.
+  let target = null
+  if (Number.isFinite(evoCap)) {
+    const trial = [...levels]
+    const trialLeft = greedyAllocate(['evolution'], left, trial, rankMulti, ctx, totalRankPoints)
+    const lowestLand = Math.min(...ctx.plotRanks.map(rank => landEvoMulti(trial, rankMulti, rank)))
+    target = {
+      reachable: lowestLand >= evoCap,
+      // Best land rank evo multi on the lowest plot with every remaining point in evolution
+      bestLandMulti: lowestLand,
+    }
+    if (target.reachable) {
+      trial.forEach((level, i) => {
+        levels[i] = level
+      })
+      left = trialLeft
+    } else {
+      ctx.evoCap = Infinity
+    }
+  }
+  // Overgrowth gets just enough for the best OG within a day (see allocateOg), then stays out of
+  // the split. Without an OG context it's scored like the other goals instead.
+  let og = null
+  if (ogContext) {
+    // Every seed's OG share is the same greedy order, so the largest one covers them all
+    const seedPlans = (ogContext.seeds ?? [{ seed: ogContext.seed, cycleSeconds: ogContext.cycleSeconds }])
+      .map(entry => {
+        const seedContext = { ...ogContext, ...entry }
+        return {
+          seedContext,
+          spent: allocateOg([...levels], left, rankMulti, seedContext, totalRankPoints).spent,
+        }
+      })
+    const { seedContext } = seedPlans.reduce((most, plan) => (plan.spent > most.spent ? plan : most))
+    const { spent, best } = allocateOg(levels, left, rankMulti, seedContext, totalRankPoints)
+    left -= spent
+    og = {
+      spent,
+      best,
+      seed: seedContext.seed,
+      plan: getOgOutlook(levels, rankMulti, seedContext),
+    }
+  }
+  const goals = [
+    'evolution',
+    'cropValue',
+    'rankExp',
+    ...(ogContext ? [] : ['overgrowth']),
+    ...(includeFarmingExp ? ['farmingExp'] : []),
+  ]
+  left = greedyAllocate(goals, left, levels, rankMulti, ctx, totalRankPoints)
 
   return {
     levels,
     leftover: left,
+    target,
+    og,
   }
 }
 
@@ -443,6 +767,117 @@ export function compareLandRankPlans(farming, rankMulti, before, after) {
     label: LAND_RANK_GOALS[goal].label,
     change: 100 * (Math.exp(goalScore(goal, scoreAfter, ctx) - goalScore(goal, scoreBefore, ctx)) - 1),
   }))
+}
+
+// Land rank evolution multi on one plot: the shared total × (1 + Evolution Boost × plot rank)
+function landEvoMulti(levels, rankMulti, rank) {
+  const b = bonusesAt(levels, rankMulti)
+  return (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100) * (1 + b(0) * rank / 100)
+}
+
+// What a crop evolution target asks of the land ranks. Evolving into a crop is one roll from the
+// tier below it: chance = 30% × decay^(tier − 1) × total evo multi (see getCropPushOutlook).
+// Everything outside the land ranks stays fixed, so the land ranks must make up the rest:
+//   needTotal   total evo multi for `chancePct` on that roll
+//   otherMulti  every evo source except the two land rank ones (evo = getCropEvolutionBreakdown)
+//   landNeeded  land rank multi each plot needs (evoCap for optimizeLandRanks)
+//   plotsMet    plots whose current land rank multi already reaches it, of scoredPlots
+export function getEvoTarget(farming, rankMulti, evo, cropId, chancePct) {
+  const seed = getSeedByCropId(cropId)
+  if (!seed || !evo) return null
+  const tier = cropId - seed.cropIdMin
+  const needTotal = tier > 0
+    ? (chancePct / 100) / (EVO_BASE_CHANCE * Math.pow(seed.nextCropDecay, tier - 1))
+    : 0
+  const landSources = evo.sources.filter(s => s.id === 'landRankTotal' || s.id === 'landRankPlot')
+  const otherMulti = evo.total / landSources.reduce((product, s) => product * s.multi, 1)
+  const landNeeded = needTotal / otherMulti
+  return {
+    cropId,
+    seed,
+    tier,
+    chancePct,
+    needTotal,
+    otherMulti,
+    landNeeded,
+    ...countPlotsMet(farming, rankMulti, farming?.upgradesLevels ?? [], landNeeded),
+  }
+}
+
+// Scored plots (see getPlotContext) whose land rank evo multi reaches `landNeeded` at `levels`
+export function countPlotsMet(farming, rankMulti, levels, landNeeded) {
+  const { plotRanks } = getPlotContext(farming)
+  return {
+    plotsMet: plotRanks.filter(rank => landEvoMulti(levels, rankMulti, rank) >= landNeeded).length,
+    scoredPlots: plotRanks.length,
+  }
+}
+
+// ── Low value upgrades ────────────────────────────────────────────────────────
+// Exotic and market upgrades the save shows would do nothing more for you right now, with why.
+// Only cases that can be proven are flagged; "Not Farming Related" exotics are never judged.
+
+// True when every scored plot stays at the crop value cap even with `skip` left out
+function cropValueCappedWithout(farming, rankMulti, skip) {
+  const b = bonusesAt(farming?.upgradesLevels ?? [], rankMulti)
+  const { plotRanks } = getPlotContext(farming)
+  const { constant, cap } = cropValueParts(farming, skip)
+  const shared = constant * (1 + (b(8) + b(17)) / 100)
+  return plotRanks.length > 0 && plotRanks.every(rank => Math.round(shared * (1 + b(1) * rank / 100)) >= cap)
+}
+
+const BEAN_EXOTICS = [16, 17, 18, 19, 20]
+const FREEXOTIC = 39
+const FREEXOTIC_CAP = 50
+
+// { exotic: Map(index → reason), market: Map(index → reason) }
+export function getLowValueUpgrades(snapshot, rankMulti) {
+  const farming = snapshot?.farming
+  const exotic = new Map()
+  const market = new Map()
+  const levels = farming?.marketLevels ?? []
+  const isMaxed = upgrade => (levels[upgrade.index] ?? 0) >= marketMaxLevel(snapshot, upgrade)
+  const dayMaxed = marketMap.slice(0, 8).every(isMaxed)
+  const nightMaxed = marketMap.slice(8).every(isMaxed)
+
+  if (cropValueCappedWithout(farming, rankMulti, { doublePetal: true })) {
+    const why = 'Crop value is at the cap on every plot even without Double Petal, so more does nothing'
+    exotic.set(28, why)
+    exotic.set(29, why)
+  }
+  if (getExoticBonus(farming, FREEXOTIC) >= FREEXOTIC_CAP) {
+    exotic.set(FREEXOTIC, `Already at the ${FREEXOTIC_CAP}% cap`)
+  }
+  if (dayMaxed) {
+    ;[34, 35].forEach(i => exotic.set(i, 'Every Day Market upgrade is maxed'))
+  }
+  if (nightMaxed) {
+    ;[36, 37].forEach(i => exotic.set(i, 'Every Night Market upgrade is maxed'))
+    BEAN_EXOTICS.forEach(i => exotic.set(i, 'Every Night Market upgrade is maxed, so beans have nothing left to buy'))
+  }
+  const farmingLevel = getSkillLevel(snapshot?.characters?.[getActiveCharacterIndex(snapshot)], 'farming')
+  geneologies.forEach(({ exotic: i, above }) => {
+    if (farmingLevel <= above) exotic.set(i, `Only counts Farming LV above ${above} (yours is ${farmingLevel})`)
+  })
+  if (getUndiscoveredCrops(farming).length === 0) {
+    ;[...sproutlucks, ...geneologies.map(g => g.exotic)].forEach(i => exotic.set(i, 'Every crop is found, so crop evolution has nothing left to reach'))
+  }
+
+  if ((levels[5] ?? 0) < marketMaxLevel(snapshot, marketMap[5])
+    && cropValueCappedWithout(farming, rankMulti, { productDoubler: true })) {
+    market.set(5, 'Crop value is at the cap on every plot even without Product Doubler, so more does nothing')
+  }
+  if ((levels[14] ?? 0) < marketMaxLevel(snapshot, marketMap[14])
+    && cropValueCappedWithout(farming, rankMulti, { valueGmo: true })) {
+    market.set(14, 'Crop value is at the cap on every plot even without Value GMO, so more does nothing')
+  }
+  if (nightMaxed && !isMaxed(marketMap[6])) {
+    market.set(6, 'Every Night Market upgrade is maxed, so beans have nothing left to buy')
+  }
+  return {
+    exotic,
+    market,
+  }
 }
 
 // ── Crop Evolution Multi ──────────────────────────────────────────────────────
@@ -669,12 +1104,13 @@ function plotMulti(evo, rank) {
   return evo.total / avgTerm * (1 + evo.perRankBonus * rank / 100)
 }
 
-// Unlocked plots grouped by (rank, starting tier), planted with `seed`: plots already growing it
-// keep their tier, the rest start fresh
+// Plots grouped by (rank, starting tier), planted with `seed`: plots already growing it keep
+// their tier, the rest start fresh. Locked plots (FarmPlot[3], locked so they stop evolving)
+// count too: pushing for a crop means unlocking them, and skipping them left nothing to plan with.
 function plotGroups(farming, seed) {
   const ranks = farming?.farmingRanks ?? []
   const groups = new Map()
-  ;(farming?.plots ?? []).filter(plot => !plot.isLocked).forEach(plot => {
+  ;(farming?.plots ?? []).forEach(plot => {
     const rank = ranks[plot.index] ?? 0
     const start = plot.seedType === seed.seedId ? plot.cropType : 0
     const key = `${rank}|${start}`

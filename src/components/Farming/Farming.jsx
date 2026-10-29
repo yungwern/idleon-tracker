@@ -1,11 +1,13 @@
-import { useState, useMemo } from 'react'
-import { marketMap, exoticMarketMap, landRankMap, calcExoticBonus, exoticCap, calcRankBonus, getSeedByCropId } from '../../data'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { marketMap, exoticMarketMap, landRankMap, calcExoticBonus, exoticCap, calcRankBonus, getSeedByCropId, seedInfo } from '../../data'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import { getLegendTalentLevel } from '../../utils/legendTalentUtils'
+import { getOrganicLabels, getExoticMilestones } from '../../utils/exoticUtils'
 import { formatBigNumber } from '../../utils/cogBoardUtils'
 import {
   BEAN_IMG,
   cropImgPath,
+  cropName,
   formatDecimal,
   formatMulti,
   fillBonusText,
@@ -14,10 +16,20 @@ import {
   marketLevelCost,
   marketCropId,
   marketUpcomingCosts,
+  marketAffordableLevels,
+  marketMaxLevel,
+  getLowValueUpgrades,
   getExoticRotation,
+  getUpcomingExoticRotations,
+  findExoticWeeks,
+  getNextExoticOffsets,
+  getExoticWeek,
+  exoticWeekStart,
+  EXOTIC_SEARCH_WEEKS,
   rotationTimeLeft,
   BUY_ONE_GET_ONE_TALENT,
   exoticLevelsFromCrops,
+  cropsForExoticLevels,
   OG_MAX,
   PER_PLOT_RANKS,
   getRankMulti,
@@ -25,6 +37,11 @@ import {
   getLandRankTotals,
   optimizeLandRanks,
   compareLandRankPlans,
+  getEvoTarget,
+  getOgContext,
+  getOgOutlook,
+  OG_RELIABILITY,
+  countPlotsMet,
   getCropEvolutionBreakdown,
   getCropPushOutlook,
   getInstaGrows,
@@ -47,6 +64,8 @@ const TABS = [
 ]
 
 
+const ORGANIC_LABEL_IMG = 'images/menagerie/OrganicLabel.png'
+
 const hideBrokenImg = e => {
   e.currentTarget.style.display = 'none'
 }
@@ -59,9 +78,27 @@ function SeedTag({ seed }) {
   )
 }
 
-function StatChip({ label, value, valueClass = '', tooltip }) {
+// "Low value" pill next to an upgrade name; `reason` from getLowValueUpgrades
+function LowValueBadge({ reason }) {
+  if (!reason) return null
+  return (
+    <span className="farming-low-value tooltip-anchor">
+      Low value
+      <span className="tooltip tooltip--wrap">{reason}</span>
+    </span>
+  )
+}
+
+function StatChip({ label, value, valueClass = '', tooltip, icon }) {
   return (
     <div className={`farming-chip${tooltip ? ' tooltip-anchor' : ''}`}>
+      {icon && (
+        <img
+          src={icon}
+          alt=""
+          className="farming-chip-icon"
+        />
+      )}
       <span className="farming-chip-label">{label}</span>
       <span className={`farming-chip-value ${valueClass}`}>{value}</span>
       {tooltip && <span className="tooltip tooltip--wrap">{tooltip}</span>}
@@ -73,9 +110,9 @@ function StatChip({ label, value, valueClass = '', tooltip }) {
 // LAND RANKS TAB
 // ============================================================
 
-function RankCard({ rank, level, locked, badge, children }) {
+function RankCard({ rank, level, locked, badge, unchanged, children }) {
   return (
-    <div className={`rank-upg-card${locked ? ' rank-upg-card--locked' : ''}${badge ? ' rank-upg-card--planned' : ''}`}>
+    <div className={`rank-upg-card${locked ? ' rank-upg-card--locked' : ''}${badge ? ' rank-upg-card--planned' : ''}${unchanged ? ' rank-upg-card--unchanged' : ''}`}>
       {badge}
       <img
         src={`images/farming/RankUpg${rank.index}.png`}
@@ -96,8 +133,137 @@ function changeClass(before, after) {
   return 'rank-change--same'
 }
 
-function LandRanksTab({ snapshot, farming }) {
-  const upgradesLevels = farming.upgradesLevels ?? []
+// Searchable crop picker for the evolution target, in crop order with seed headers. Each crop
+// shows your chance per roll of evolving into it now, and whether it's in your depot yet.
+function CropTargetPicker({ cropId, onChange, farming, evoTotal }) {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const boxRef = useRef(null)
+  const listRef = useRef(null)
+  const depot = useMemo(() => farming?.cropDepot ?? {}, [farming])
+
+  const crops = useMemo(() => seedInfo.flatMap(seed => (
+    Array.from({ length: seed.cropIdMax - seed.cropIdMin + 1 }, (_, i) => {
+      const id = seed.cropIdMin + i
+      return {
+        id,
+        seed,
+        name: cropName(id),
+        found: Boolean(depot[String(id)]),
+        chance: i === 0 ? 1 : Math.min(1, seedInfo[0].nextCropChance * Math.pow(seed.nextCropDecay, i - 1) * evoTotal),
+      }
+    })
+  )), [depot, evoTotal])
+  const nextNew = crops.find(c => !c.found)?.id ?? null
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return q ? crops.filter(c => c.name.toLowerCase().includes(q)) : crops
+  }, [crops, query])
+
+  useEffect(() => {
+    if (!open) return undefined
+    const onDown = e => {
+      if (!boxRef.current?.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
+
+  // Open on the chosen crop, or the next one you haven't found
+  useEffect(() => {
+    if (!open || query) return
+    const focusId = cropId ?? nextNew
+    listRef.current?.querySelector(`[data-crop="${focusId}"]`)?.scrollIntoView({ block: 'center' })
+  }, [open, query, cropId, nextNew])
+
+  function choose(id) {
+    onChange(id)
+    setQuery('')
+    setOpen(false)
+  }
+
+  return (
+    <div
+      ref={boxRef}
+      className="exotic-search evo-target"
+    >
+      {cropId !== null && !open && (
+        <img
+          src={cropImgPath(cropId)}
+          alt=""
+          className="evo-target-input-img"
+          onError={hideBrokenImg}
+        />
+      )}
+      <input
+        type="text"
+        className={`farming-input exotic-search-input${cropId !== null && !open ? ' evo-target-input--picked' : ''}`}
+        placeholder="Pick a crop"
+        value={open ? query : (cropId === null ? '' : cropName(cropId))}
+        onMouseDown={() => setOpen(true)}
+        onFocus={() => setOpen(true)}
+        onChange={e => {
+          setQuery(e.target.value)
+          setOpen(true)
+        }}
+        onKeyDown={e => {
+          if (e.key === 'Escape') setOpen(false)
+          if (e.key === 'Enter' && matches[0]) choose(matches[0].id)
+        }}
+      />
+      {cropId !== null && (
+        <button
+          type="button"
+          className="exotic-search-clear"
+          aria-label="Clear target"
+          onMouseDown={e => e.preventDefault()}
+          onClick={() => onChange(null)}
+        >
+          ×
+        </button>
+      )}
+      {open && (
+        <div
+          ref={listRef}
+          className="exotic-search-list"
+        >
+          {matches.length === 0 && (
+            <div className="exotic-search-empty">No crops match</div>
+          )}
+          {matches.map((crop, i) => (
+            <div key={crop.id}>
+              {(i === 0 || matches[i - 1].seed !== crop.seed) && (
+                <div className={`evo-target-seed-head farming-seed--${crop.seed.name.toLowerCase()}`}>{crop.seed.name}</div>
+              )}
+              <div
+                data-crop={crop.id}
+                className={`evo-target-option${crop.id === cropId ? ' exotic-search-option--selected' : ''}${crop.found ? ' evo-target-option--found' : ''}`}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => choose(crop.id)}
+              >
+                <img
+                  src={cropImgPath(crop.id)}
+                  alt=""
+                  className="evo-target-option-img"
+                  onError={hideBrokenImg}
+                />
+                <span className="exotic-search-option-name">{crop.name}</span>
+                <span className="evo-target-option-chance">
+                  {crop.id === nextNew && <span className="evo-target-next">next</span>}
+                  {formatChance(crop.chance)} / roll
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function LandRanksTab({ snapshot, farming, tomePoints }) {
+  const upgradesLevels = useMemo(() => farming.upgradesLevels ?? [], [farming.upgradesLevels])
   const totalRankPoints = farming.totalRankPoints ?? 0
   const usedRankPoints = farming.usedRankPoints ?? 0
   const freePoints = totalRankPoints - usedRankPoints
@@ -106,10 +272,26 @@ function LandRanksTab({ snapshot, farming }) {
   const lowestPlotRank = farmingRanks.length ? Math.min(...farmingRanks) : 0
   const seedLevel = getSeedRankMaxLevel(snapshot)
 
-  const [farmExpPoints, setFarmExpPoints] = useState('')
+  const [includeFarmExp, setIncludeFarmExp] = useState(false)
   const [plan, setPlan] = useState(null)
+  const [targetCrop, setTargetCrop] = useState(null)
+  const [targetChance, setTargetChance] = useState('100')
 
   const rankMulti = getRankMulti(snapshot)
+  const evo = useMemo(
+    () => getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints }),
+    [snapshot, rankMulti, tomePoints]
+  )
+  const ogContext = useMemo(() => getOgContext(snapshot), [snapshot])
+  const ogNow = useMemo(
+    () => getOgOutlook(upgradesLevels, rankMulti, ogContext),
+    [upgradesLevels, rankMulti, ogContext]
+  )
+  const chancePct = Math.min(100, Math.max(0, parseFloat(targetChance) || 0))
+  const evoTarget = useMemo(
+    () => (targetCrop === null || chancePct <= 0 ? null : getEvoTarget(farming, rankMulti, evo, targetCrop, chancePct)),
+    [farming, rankMulti, evo, targetCrop, chancePct]
+  )
   const totals = useMemo(
     () => getLandRankTotals(farming, rankMulti),
     [farming, rankMulti]
@@ -121,28 +303,38 @@ function LandRanksTab({ snapshot, farming }) {
   }
 
   function runOptimizer(fullReset) {
-    const { levels, leftover } = optimizeLandRanks(farming, rankMulti, {
+    const { levels, leftover, target, og } = optimizeLandRanks(farming, rankMulti, {
       seedLevel,
-      farmExpPoints: parseInt(farmExpPoints) || 0,
+      includeFarmingExp: includeFarmExp,
       fullReset,
+      evoCap: evoTarget?.landNeeded ?? Infinity,
+      ogContext,
     })
     setPlan({
       fullReset,
       levels,
       leftover,
+      og,
+      target: evoTarget && {
+        ...evoTarget,
+        ...countPlotsMet(farming, rankMulti, levels, evoTarget.landNeeded),
+        reachable: target?.reachable ?? true,
+        bestLandMulti: target?.bestLandMulti,
+      },
       changes: compareLandRankPlans(farming, rankMulti, upgradesLevels, levels)
         .filter(({ change }) => Math.abs(change) >= 0.005),
     })
   }
 
-  const planRows = plan && landRankMap
-    .map(rank => ({
-      rank,
-      before: upgradesLevels[rank.index] ?? 0,
-      after: plan.levels[rank.index],
-    }))
-    // Spending only adds, so just show what changes; a reset shows the whole layout
-    .filter(({ before, after }) => (plan.fullReset ? before > 0 || after > 0 : after !== before))
+  const ogChange = plan?.changes.find(({ goal }) => goal === 'overgrowth')
+
+  // Every upgrade in game order (rows of 5, each ending on a Seed upgrade) so the plan lines up
+  // with the in-game database; unchanged ones are dimmed
+  const planRows = plan && landRankMap.map(rank => ({
+    rank,
+    before: upgradesLevels[rank.index] ?? 0,
+    after: plan.levels[rank.index],
+  }))
 
   return (
     <div className="farming-tab">
@@ -218,6 +410,11 @@ function LandRanksTab({ snapshot, farming }) {
             tooltip={`Lowest plot: ${totals.lowestCropValue.toLocaleString()} / ${Math.round(totals.cropValueCap).toLocaleString()} crop value`}
           />
           <StatChip
+            label="OG in a Day"
+            value={`${ogNow.ogInDay}`}
+            tooltip={`A fresh ${ogContext.seed.name} plant reaches OG ${ogNow.ogInDay} within a day ${Math.round(ogNow.chanceInDay * 100)}% of the time${ogNow.nextChanceInDay !== null ? ` (OG ${ogNow.ogInDay + 1}: ${Math.round(ogNow.nextChanceInDay * 100)}%)` : ''}, with your current land ranks.`}
+          />
+          <StatChip
             label="Highest OG"
             value={`${totals.highestOg}/${OG_MAX}`}
             valueClass={totals.highestOg >= OG_MAX ? 'farming-chip-value--good' : ''}
@@ -230,18 +427,15 @@ function LandRanksTab({ snapshot, farming }) {
       <section className="farming-section">
         <div className="farming-group-label">Point Distribution Optimizer</div>
         <div className="farming-input-row">
-          <span className="farming-input-label tooltip-anchor">
-            Farm EXP Points
-            <span className="tooltip tooltip--wrap">Reserved for Farming EXP ranks before the rest is planned</span>
-          </span>
-          <input
-            type="number"
-            min="0"
-            className="farming-input"
-            placeholder="e.g. 0"
-            value={farmExpPoints}
-            onChange={e => setFarmExpPoints(e.target.value)}
-          />
+          <label className="farming-check tooltip-anchor">
+            <input
+              type="checkbox"
+              checked={includeFarmExp}
+              onChange={e => setIncludeFarmExp(e.target.checked)}
+            />
+            Include Farming EXP
+            <span className="tooltip tooltip--wrap">Adds the Farming EXP ranks to the split. They only get points while those points are worth more there than in crop evolution or rank EXP. Farming EXP levels off fast, so a big share would mostly waste points.</span>
+          </label>
           <button
             className="farming-btn"
             onClick={() => runOptimizer(false)}
@@ -258,11 +452,46 @@ function LandRanksTab({ snapshot, farming }) {
             <span className="tooltip tooltip--wrap">Replans all {totalRankPoints.toLocaleString()} points, as if you reset them in game</span>
           </button>
         </div>
+        <div className="farming-input-row">
+          <span className="farming-input-label tooltip-anchor">
+            Crop Evo Target
+            <span className="tooltip tooltip--wrap">Stops adding crop evolution once every plot reaches this chance of evolving into the chosen crop, so the rest goes to crop value, rank EXP and Overgrowth</span>
+          </span>
+          <CropTargetPicker
+            cropId={targetCrop}
+            onChange={setTargetCrop}
+            farming={farming}
+            evoTotal={evo.total}
+          />
+          <input
+            type="number"
+            min="0"
+            max="100"
+            className="farming-input evo-target-chance"
+            value={targetChance}
+            onChange={e => setTargetChance(e.target.value)}
+            disabled={targetCrop === null}
+          />
+          <span className="farming-input-hint">% chance</span>
+        </div>
+        {evoTarget && (
+          <p className="farming-note">
+            {evoTarget.tier === 0
+              ? <>{cropName(evoTarget.cropId)} is the first {evoTarget.seed.name} crop, so it needs no evolution.</>
+              : <>
+                  {cropName(evoTarget.cropId)} at {formatDecimal(evoTarget.chancePct, 2)}% needs {formatMulti(evoTarget.needTotal)}x crop evolution.
+                  Everything outside land ranks gives {formatMulti(evoTarget.otherMulti)}x, so land ranks must give{' '}
+                  <span className="farming-note-highlight">{formatMulti(Math.max(1, evoTarget.landNeeded))}x</span> on every plot.
+                  {' '}{evoTarget.plotsMet} / {evoTarget.scoredPlots} plots get there now.
+                </>}
+          </p>
+        )}
         <p className="farming-note">
           {freePoints > 0
             ? <>Spend adds your <span className="farming-note-highlight">{freePoints.toLocaleString()}</span> unspent points on top of your current levels and never removes any. </>
             : <>No unspent points right now. </>}
           Full Reset replans all {totalRankPoints.toLocaleString()} points from scratch. Seed ranks are filled to Lv. {seedLevel} first.
+          {' '}Overgrowth only gets what it needs for the best OG a crop reaches within a day in {Math.round(OG_RELIABILITY * 100)}% of plantings (more points level off and rarely add an OG); the rest goes to crop evolution, rank EXP and crop value.
         </p>
 
         {plan && (
@@ -279,7 +508,8 @@ function LandRanksTab({ snapshot, farming }) {
                   valueClass={plan.fullReset ? 'farming-chip-value--good' : ''}
                 />
               )}
-              {plan.changes.map(({ goal, label, change }) => (
+              {/* Overgrowth gets its own chip below, with its % change in the tooltip */}
+              {plan.changes.filter(({ goal }) => !(plan.og && goal === 'overgrowth')).map(({ goal, label, change }) => (
                 <StatChip
                   key={goal}
                   label={label}
@@ -287,6 +517,24 @@ function LandRanksTab({ snapshot, farming }) {
                   valueClass={change > 0 ? 'farming-chip-value--good' : 'farming-chip-value--bad'}
                 />
               ))}
+              {plan.og && (
+                <StatChip
+                  label="Overgrowth"
+                  value={`OG ${plan.og.plan.ogInDay} in a day`}
+                  valueClass="farming-chip-value--good"
+                  tooltip={`Overgrowth gets the fewest points that still reach OG ${plan.og.plan.ogInDay} within a day of growing in ${Math.round(plan.og.plan.chanceInDay * 100)}% of ${plan.og.seed.name} plantings (${plan.og.seed.name} needs the most of your seeds, so every seed you plant is covered). Even every point in Overgrowth would reach OG ${plan.og.best.ogInDay + 1} in a day only ${Math.round((plan.og.best.nextChanceInDay ?? 0) * 100)}% of the time, so the rest went to crop evolution, rank EXP and crop value.${ogChange ? ` OG chance ${ogChange.change > 0 ? '+' : ''}${formatDecimal(ogChange.change, 2)}% vs your current levels.` : ''}`}
+                />
+              )}
+              {plan.target && plan.target.tier > 0 && (
+                <StatChip
+                  label={`${cropName(plan.target.cropId)} Target`}
+                  value={plan.target.reachable ? `${plan.target.plotsMet} / ${plan.target.scoredPlots} plots` : 'Out of reach'}
+                  valueClass={plan.target.reachable ? 'farming-chip-value--good' : 'farming-chip-value--bad'}
+                  tooltip={plan.target.reachable
+                    ? 'Every plot reaches the target. Points past it went to the other goals.'
+                    : `Even with every point in crop evolution, land ranks reach ${formatMulti(plan.target.bestLandMulti)}x on your lowest plot, short of the ${formatMulti(plan.target.landNeeded)}x needed. Planned as if no target was set.`}
+                />
+              )}
               {plan.leftover > 0 && (
                 <StatChip
                   label="Unused Points"
@@ -304,6 +552,7 @@ function LandRanksTab({ snapshot, farming }) {
                     rank={rank}
                     level={after}
                     locked={totalRankPoints < rank.unlockAt}
+                    unchanged={before === after}
                     badge={(
                       <span className={`rank-change-badge ${changeClass(before, after)}`}>
                         {before} → {after}
@@ -331,78 +580,98 @@ function LandRanksTab({ snapshot, farming }) {
 // MARKET TAB
 // ============================================================
 
-function CostRow({ cropId, have, cost }) {
-  return (
-    <div className="market-cost-row">
-      <img
-        src={cropId === null ? BEAN_IMG : cropImgPath(cropId)}
-        alt=""
-        className="market-cost-img"
-        onError={hideBrokenImg}
-      />
-      <span className="market-cost-text">
-        <span className={have >= cost ? 'market-cost-have' : 'market-cost-need'}>
-          {formatBigNumber(have)}
-        </span>
-        {' / '}
-        <span className="market-cost-amount">{formatBigNumber(cost)}</span>
-      </span>
-    </div>
-  )
-}
+const cropLabel = cropId => cropId === null ? 'Magic Beans' : cropName(cropId)
+const costImg = cropId => cropId === null ? BEAN_IMG : cropImgPath(cropId)
 
-function MarketCard({ upgrade, level, costMulti, haveOf }) {
+function MarketRow({ upgrade, level, costMulti, haveOf, lowValue }) {
   const isMaxed = level >= upgrade.maxLvl
   const night = isNightMarket(upgrade)
-  const headerCropId = marketCropId(upgrade, Math.min(level, upgrade.maxLvl - 1))
-  const nextCropId = night ? null : marketCropId(upgrade, level)
-  const upcoming = isMaxed ? [] : marketUpcomingCosts(upgrade, level, costMulti)
-  // Night costs are one level per row, so the first row is the next level again
-  const laterCosts = night ? upcoming.slice(1) : upcoming
+  const nextCropId = night ? null : marketCropId(upgrade, Math.min(level, upgrade.maxLvl - 1))
+  const nextCost = isMaxed ? 0 : marketLevelCost(upgrade, level, costMulti)
+  const have = haveOf(nextCropId)
+  const affordable = isMaxed ? 0 : marketAffordableLevels(upgrade, level, costMulti, haveOf)
+  // The first group is the crop the next level costs, already shown in its own column
+  const later = isMaxed ? [] : marketUpcomingCosts(upgrade, level, costMulti).slice(1)
+  const seedClass = night
+    ? 'farming-seed--bean'
+    : `farming-seed--${getSeedByCropId(nextCropId)?.name?.toLowerCase() ?? 'unknown'}`
+  const rowClass = [
+    'market-row',
+    isMaxed ? 'market-row--maxed' : seedClass,
+  ].join(' ')
 
   return (
-    <div className={`market-card${isMaxed ? ' market-card--maxed' : ''}`}>
-      <div className="market-card-header">
+    <div className={rowClass}>
+      <span className="exotic-crop tooltip-anchor">
         <img
-          src={night ? BEAN_IMG : cropImgPath(headerCropId)}
+          src={costImg(nextCropId)}
           alt=""
-          className="market-crop-img"
+          className="market-row-img"
           onError={hideBrokenImg}
         />
-        <div className="market-card-title">
-          <span className="market-card-name">{upgrade.label}</span>
-          <span className="market-card-level">
-            <span>{level}</span> / {upgrade.maxLvl}
-          </span>
-        </div>
-      </div>
-      <div className="market-card-body">
-        <span className="market-card-bonus">
+        <span className="tooltip">{cropLabel(nextCropId)}</span>
+      </span>
+      <div className="market-row-info">
+        <span className="market-row-name">
+          {upgrade.label}
+          <LowValueBadge reason={lowValue} />
+        </span>
+        <span className="market-row-bonus">
           {fillBonusText(upgrade.bonusText, level * upgrade.bonusPerLvl)}
         </span>
+      </div>
+      <div className="market-row-level">
+        <span className="market-row-level-text">
+          Lv <span>{level}</span> / {upgrade.maxLvl}
+        </span>
+        <div className="exotic-progress">
+          <div
+            className="exotic-progress-fill"
+            style={{ width: `${Math.min(100, (level / upgrade.maxLvl) * 100)}%` }}
+          />
+        </div>
+      </div>
+      <div className="market-row-next">
         {isMaxed ? (
-          <span className="market-card-maxed-text">Maxed</span>
+          <span className="market-row-maxed">Maxed</span>
         ) : (
-          <div className="market-costs">
-            <span className="market-cost-label">Next level</span>
-            <CostRow
-              cropId={nextCropId}
-              have={haveOf(nextCropId)}
-              cost={marketLevelCost(upgrade, level, costMulti)}
-            />
-            {laterCosts.length > 0 && (
-              <span className="market-cost-label">{night ? 'Following levels' : 'Upcoming crops'}</span>
-            )}
-            {laterCosts.map(({ cropId, cost }, i) => (
-              <CostRow
-                key={i}
-                cropId={cropId}
-                have={haveOf(cropId)}
-                cost={cost}
-              />
-            ))}
-          </div>
+          <>
+            <span className="market-row-cost">
+              <span className={have >= nextCost ? 'market-cost-have' : 'market-cost-need'}>
+                {formatBigNumber(have)}
+              </span>
+              {' / '}
+              {formatBigNumber(nextCost)}
+            </span>
+            <span className="market-row-afford">
+              {affordable > 0 ? `+${affordable} LV affordable now` : cropLabel(nextCropId)}
+            </span>
+          </>
         )}
+      </div>
+      <div className="market-row-later">
+        {later.map(({ cropId, cost, levels }, i) => {
+          const laterHave = haveOf(cropId)
+          return (
+            <span
+              key={i}
+              className={`market-later tooltip-anchor${laterHave >= cost ? ' market-later--have' : ''}`}
+            >
+              <img
+                src={costImg(cropId)}
+                alt=""
+                className="market-later-img"
+                onError={hideBrokenImg}
+              />
+              <span className="market-later-cost">{formatBigNumber(cost)}</span>
+              <span className="tooltip tooltip--right">
+                {night
+                  ? `LV ${level + i + 2}: ${formatBigNumber(laterHave)} / ${formatBigNumber(cost)} beans`
+                  : `${cropLabel(cropId)} · ${levels} LV${levels > 1 ? 's' : ''}: ${formatBigNumber(laterHave)} / ${formatBigNumber(cost)}`}
+              </span>
+            </span>
+          )
+        })}
       </div>
     </div>
   )
@@ -414,12 +683,20 @@ function MarketTab({ snapshot, farming }) {
   const cropDepot = farming.cropDepot ?? {}
   const night = activeMarket === 'night'
   const costMulti = marketCostMulti(snapshot, night)
-  const upgrades = night ? marketMap.slice(8) : marketMap.slice(0, 8)
+  // maxLvl here includes the research grid raise, so every cost helper stops at the real cap
+  const upgrades = (night ? marketMap.slice(8) : marketMap.slice(0, 8))
+    .map(upgrade => ({
+      ...upgrade,
+      maxLvl: marketMaxLevel(snapshot, upgrade),
+    }))
 
   // Night Market costs magic beans (cropId null)
   const haveOf = cropId => cropId === null
     ? farming.beans ?? 0
     : cropDepot[String(cropId)]?.qty ?? 0
+
+  const maxedCount = upgrades.filter(u => (marketLevels[u.index] ?? 0) >= u.maxLvl).length
+  const lowValue = useMemo(() => getLowValueUpgrades(snapshot, getRankMulti(snapshot)), [snapshot])
 
   return (
     <div className="farming-tab">
@@ -434,17 +711,45 @@ function MarketTab({ snapshot, farming }) {
           </button>
         ))}
       </div>
-      <div className="market-grid">
-        {upgrades.map(upgrade => (
-          <MarketCard
-            key={upgrade.index}
-            upgrade={upgrade}
-            level={marketLevels[upgrade.index] ?? 0}
-            costMulti={costMulti}
-            haveOf={haveOf}
+      <section className="farming-section">
+        <div className="farming-chip-row">
+          <StatChip
+            label="Costs"
+            value={`${formatDecimal((1 - costMulti) * 100, 1)}% off`}
+            tooltip={`Emperor discount × Better ${night ? 'Night' : 'Day'} I and II exotics. Every cost below already includes it.`}
           />
-        ))}
-      </div>
+          {night && (
+            <StatChip
+              icon={BEAN_IMG}
+              label="Magic Beans"
+              value={formatBigNumber(farming.beans ?? 0)}
+            />
+          )}
+          <StatChip
+            label="Maxed"
+            value={`${maxedCount} / ${upgrades.length}`}
+          />
+        </div>
+        <div className="market-list">
+          <div className="market-list-head">
+            <span />
+            <span>Upgrade</span>
+            <span>Level</span>
+            <span>Next level · have / need</span>
+            <span>{night ? 'Following levels' : 'Upcoming crops'}</span>
+          </div>
+          {upgrades.map(upgrade => (
+            <MarketRow
+              key={upgrade.index}
+              upgrade={upgrade}
+              level={marketLevels[upgrade.index] ?? 0}
+              costMulti={costMulti}
+              haveOf={haveOf}
+              lowValue={lowValue.market.get(upgrade.index)}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   )
 }
@@ -453,49 +758,357 @@ function MarketTab({ snapshot, farming }) {
 // EXOTIC MARKET TAB
 // ============================================================
 
-function ExoticCard({ upgrade, inRotation }) {
+const UPCOMING_WEEKS = 10
+
+// Rotation row badges: amber when the upgrade won't be sold again for longer than
+// LONG_ABSENCE_WEEKS, green when it's back within RETURNS_SOON_WEEKS
+const LONG_ABSENCE_WEEKS = 12
+const RETURNS_SOON_WEEKS = 3
+
+// "Wed, Nov 4, 2026, 5:00 PM" in the viewer's own time zone
+const formatWeekStart = date => date.toLocaleString('en-US', {
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+})
+
+const weeksAway = offset => offset === 1 ? 'Next week' : `In ${offset} weeks`
+
+function ExoticRow({ upgrade, buy, returnsIn, now, lowValue }) {
   const value = calcExoticBonus(upgrade, upgrade.level, upgrade.organic)
   // Type 1 bonuses approach their cap; type 0 grow without one
   const capPct = upgrade.type === 1 ? (value / exoticCap(upgrade, upgrade.organic)) * 100 : null
+  const milestones = getExoticMilestones(upgrade, upgrade.level, upgrade.organic, buy?.levels ?? 0)
+  const seed = getSeedByCropId(upgrade.cropCostId)
+  const rowClass = [
+    'exotic-row',
+    `farming-seed--${seed?.name?.toLowerCase() ?? 'unknown'}`,
+  ].filter(Boolean).join(' ')
+
+  const awayLong = returnsIn === undefined || returnsIn > LONG_ABSENCE_WEEKS
+  const backSoon = returnsIn !== undefined && returnsIn <= RETURNS_SOON_WEEKS
 
   return (
-    <div className={`exotic-card${inRotation ? ' exotic-card--rotation' : ''}`}>
-      <div className="exotic-card-header">
+    <div className={rowClass}>
+      {backSoon && (
+        <span className="notice-badge exotic-away exotic-away--soon tooltip-anchor">
+          {returnsIn}w
+          <span className="tooltip tooltip--right">
+            Back {weeksAway(returnsIn).toLowerCase()} ({formatWeekStart(exoticWeekStart(getExoticWeek(now) + returnsIn))})
+          </span>
+        </span>
+      )}
+      {awayLong && (
+        <span className="notice-badge exotic-away tooltip-anchor">
+          {returnsIn === undefined ? '10y+' : `${returnsIn}w`}
+          <span className="tooltip tooltip--right">
+            {returnsIn === undefined
+              ? `Not back for over ${EXOTIC_SEARCH_WEEKS / 52} years`
+              : `Not back for ${returnsIn} weeks (${formatWeekStart(exoticWeekStart(getExoticWeek(now) + returnsIn))})`}
+          </span>
+        </span>
+      )}
+      <span className="exotic-crop tooltip-anchor">
         <img
           src={cropImgPath(upgrade.cropCostId)}
           alt=""
           className="exotic-crop-img"
           onError={hideBrokenImg}
         />
-        <span className="exotic-card-name">{upgrade.label}</span>
-        {upgrade.organic && (
-          <span className="exotic-card-organic">Organic 2x</span>
+        <span className="tooltip">{cropName(upgrade.cropCostId)}</span>
+      </span>
+      <div className="exotic-row-info">
+        <span className="exotic-row-name">
+          {upgrade.label}
+          {upgrade.organic && (
+            <img
+              src={ORGANIC_LABEL_IMG}
+              alt="Organic Label"
+              className="exotic-organic-img"
+            />
+          )}
+          <LowValueBadge reason={lowValue} />
+        </span>
+        <span className="exotic-row-bonus">
+          {fillBonusText(upgrade.bonusText, value)}
+        </span>
+      </div>
+      <span className="exotic-row-level">
+        Lv <span>{upgrade.level}</span>
+      </span>
+      <div className="exotic-row-cap">
+        {capPct !== null ? (
+          <>
+            <span className="exotic-row-cap-text">{capPct.toFixed(1)}% of cap</span>
+            <div className="exotic-progress">
+              <div
+                className="exotic-progress-fill"
+                style={{ width: `${Math.min(100, capPct)}%` }}
+              />
+            </div>
+            <span className="milestone-row">
+              {milestones.map(milestone => (
+                <span
+                  key={milestone.percent}
+                  className={`milestone tooltip-anchor${milestone.reached ? ' milestone--reached' : ''}${milestone.reachedAfterBuy ? ' milestone--soon' : ''}`}
+                >
+                  {milestone.percent}
+                  <span className="tooltip">
+                    {milestone.percent}% of cap at Lv {milestone.level.toLocaleString('en-US')}
+                    {milestone.reached
+                      ? ' ✓'
+                      : ` (${(milestone.level - upgrade.level).toLocaleString('en-US')} to go${milestone.reachedAfterBuy ? ', this buy gets it' : ''})`}
+                  </span>
+                </span>
+              ))}
+            </span>
+          </>
+        ) : (
+          <span className="exotic-row-cap-text">No cap</span>
         )}
       </div>
-      <span className="exotic-card-level">
-        Lv. <span>{upgrade.level}</span>
-      </span>
-      <span className="exotic-card-bonus">
-        {fillBonusText(upgrade.bonusText, value)}
-      </span>
-      {capPct !== null && (
-        <>
-          <div className="exotic-card-progress">
-            <div
-              className="exotic-card-progress-fill"
-              style={{ width: `${Math.min(100, capPct)}%` }}
-            />
-          </div>
-          <span className="exotic-card-pct">{capPct.toFixed(1)}% of cap</span>
-        </>
+      {buy && (
+        <div className="exotic-row-buy">
+          <span className="exotic-row-buy-lvls">+{buy.levels} LV</span>
+          <span className="exotic-row-buy-qty">{formatBigNumber(buy.haveQty)} crops</span>
+          {buy.target && (
+            <span className={`exotic-row-target${buy.haveQty >= buy.target.need ? ' exotic-row-target--ready' : ''}`}>
+              {buy.target.levels} LV: {buy.haveQty >= buy.target.need ? 'ready' : `${formatBigNumber(buy.target.need)} crops`}
+            </span>
+          )}
+        </div>
       )}
-      <SeedTag seed={getSeedByCropId(upgrade.cropCostId)} />
     </div>
   )
 }
 
-function ExoticMarketTab({ farming, legendTalents }) {
+function UpcomingChip({ upgrade, highlighted, lowValue }) {
+  const seed = getSeedByCropId(upgrade.cropCostId)
+  const value = calcExoticBonus(upgrade, upgrade.level, false)
+  const capPct = upgrade.type === 1 ? (value / exoticCap(upgrade, false)) * 100 : null
+  const chipClass = [
+    'exotic-chip',
+    `farming-seed--${seed?.name?.toLowerCase() ?? 'unknown'}`,
+    highlighted ? 'exotic-chip--highlight' : '',
+  ].filter(Boolean).join(' ')
+
+  return (
+    <div className={chipClass}>
+      <span className="exotic-crop tooltip-anchor">
+        <img
+          src={cropImgPath(upgrade.cropCostId)}
+          alt=""
+          className="exotic-chip-img"
+          onError={hideBrokenImg}
+        />
+        <span className="tooltip">{cropName(upgrade.cropCostId)}</span>
+      </span>
+      <div className="exotic-chip-info">
+        <span className="exotic-chip-name">
+          {upgrade.label}
+          <LowValueBadge reason={lowValue} />
+        </span>
+        <span className="exotic-chip-meta">
+          Lv {upgrade.level.toLocaleString('en-US')}
+          {capPct !== null && ` · ${capPct.toFixed(1)}% of cap`}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// Searchable upgrade picker (a native <select> can't be styled dark on Windows)
+function UpgradeSearch({ upgrades, nextOffsets, value, onChange }) {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const [active, setActive] = useState(0)
+  const listRef = useRef(null)
+  const boxRef = useRef(null)
+  const selected = upgrades.find(u => u.index === value)
+
+  // Close on any click outside the picker (blur alone misses some clicks)
+  useEffect(() => {
+    if (!open) return undefined
+    const onDown = e => {
+      if (!boxRef.current?.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return upgrades.filter(u => !q
+      || u.label.toLowerCase().includes(q)
+      || u.bonusText.toLowerCase().includes(q))
+  }, [upgrades, query])
+
+  function choose(upgrade) {
+    onChange(upgrade.index)
+    setQuery('')
+    setOpen(false)
+  }
+
+  function moveActive(step) {
+    const next = Math.max(0, Math.min(matches.length - 1, active + step))
+    setActive(next)
+    listRef.current?.children[next]?.scrollIntoView({ block: 'nearest' })
+  }
+
+  function onKeyDown(e) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (!open) setOpen(true)
+      else moveActive(1)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      moveActive(-1)
+    } else if (e.key === 'Enter' && open && matches[active]) {
+      e.preventDefault()
+      choose(matches[active])
+    } else if (e.key === 'Escape') {
+      setOpen(false)
+    }
+  }
+
+  return (
+    <div
+      ref={boxRef}
+      className="exotic-search"
+    >
+      <input
+        type="text"
+        className="farming-input exotic-search-input"
+        placeholder={selected ? selected.label : 'Filter by upgrade'}
+        value={open ? query : (selected?.label ?? '')}
+        onFocus={() => {
+          setOpen(true)
+          setActive(0)
+        }}
+        onMouseDown={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        onChange={e => {
+          setQuery(e.target.value)
+          setActive(0)
+          setOpen(true)
+        }}
+        onKeyDown={onKeyDown}
+      />
+      {selected && (
+        <button
+          type="button"
+          className="exotic-search-clear"
+          aria-label="Clear filter"
+          onMouseDown={e => e.preventDefault()}
+          onClick={() => onChange(null)}
+        >
+          ×
+        </button>
+      )}
+      {open && (
+        <div
+          ref={listRef}
+          className="exotic-search-list"
+        >
+          {matches.length === 0 && (
+            <div className="exotic-search-empty">No upgrades match</div>
+          )}
+          {matches.map((upgrade, i) => {
+            const offset = nextOffsets.get(upgrade.index)
+            const value = calcExoticBonus(upgrade, upgrade.level, upgrade.organic)
+            return (
+              <div
+                key={upgrade.index}
+                className={`exotic-search-option${i === active ? ' exotic-search-option--active' : ''}${upgrade.index === selected?.index ? ' exotic-search-option--selected' : ''}`}
+                onMouseDown={e => e.preventDefault()}
+                onMouseEnter={() => setActive(i)}
+                onClick={() => choose(upgrade)}
+              >
+                <span className="exotic-search-option-name">{upgrade.label}</span>
+                <span className="exotic-search-option-next">
+                  {offset ? weeksAway(offset).toLowerCase() : 'not soon'}
+                </span>
+                <span className="exotic-search-option-bonus">{fillBonusText(upgrade.bonusText, value)}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function UpcomingRotations({ upgrades, nextOffsets, now, lowValue }) {
+  const [filterIndex, setFilterIndex] = useState(null)
+
+  const byIndex = useMemo(() => new Map(upgrades.map(u => [u.index, u])), [upgrades])
+  // Upgrade order, like the in-game market and Toolbox's filter
+  const options = useMemo(() => [...upgrades].sort((a, b) => a.index - b.index), [upgrades])
+
+  const weeks = useMemo(() => filterIndex === null
+    ? getUpcomingExoticRotations(now, UPCOMING_WEEKS)
+    : findExoticWeeks(filterIndex, now, UPCOMING_WEEKS),
+  [filterIndex, now])
+
+  const nextOffset = filterIndex === null ? null : nextOffsets.get(filterIndex)
+  const hint = filterIndex === null
+    ? `The next ${UPCOMING_WEEKS} weekly rotations`
+    : nextOffset
+      ? `Next sold ${weeksAway(nextOffset).toLowerCase()}, ${formatWeekStart(weeks[0].start)}. Showing its next ${weeks.length} rotations.`
+      : `Not sold in the next ${EXOTIC_SEARCH_WEEKS / 52} years`
+
+  return (
+    <section className="farming-section">
+      <div className="farming-group-label">Upcoming Rotations</div>
+      <div className="farming-input-row">
+        <span className="farming-input-label">Find an Upgrade</span>
+        <UpgradeSearch
+          upgrades={options}
+          nextOffsets={nextOffsets}
+          value={filterIndex}
+          onChange={setFilterIndex}
+        />
+        <span className="farming-input-hint">{hint}</span>
+      </div>
+      <div className="exotic-weeks">
+        {weeks.map(week => (
+          <div
+            key={week.week}
+            className="exotic-week"
+          >
+            <div className="exotic-week-head">
+              <span className="exotic-week-title">{weeksAway(week.offset)}</span>
+              <span className="exotic-week-date">{formatWeekStart(week.start)}</span>
+            </div>
+            <div className="exotic-week-grid">
+              {week.upgrades
+                .map(i => byIndex.get(i))
+                .filter(Boolean)
+                .sort((a, b) => a.cropCostId - b.cropCostId)
+                .map(upgrade => (
+                  <UpcomingChip
+                    key={upgrade.index}
+                    upgrade={upgrade}
+                    highlighted={upgrade.index === filterIndex}
+                    lowValue={lowValue.exotic.get(upgrade.index)}
+                  />
+                ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function ExoticMarketTab({ snapshot, farming }) {
   const { exoticLevels, organicExotics, cropDepot } = farming
+  const legendTalents = snapshot?.legendTalents
+  const organicLabels = getOrganicLabels(snapshot)
+  const lowValue = useMemo(() => getLowValueUpgrades(snapshot, getRankMulti(snapshot)), [snapshot])
   const buyOneGetOneLevel = getLegendTalentLevel(legendTalents, BUY_ONE_GET_ONE_TALENT)
   const [target, setTarget] = useState('')
   const targetLevels = parseInt(target) || 0
@@ -503,7 +1116,9 @@ function ExoticMarketTab({ farming, legendTalents }) {
   // The rotation follows the real clock, so it stays right even with an old save
   const [now] = useState(() => Date.now() / 1000)
 
-  const { onSale, offSale } = useMemo(() => {
+  const nextOffsets = useMemo(() => getNextExoticOffsets(now), [now])
+
+  const { upgrades, onSale } = useMemo(() => {
     const rotation = getExoticRotation(now)
     const upgrades = exoticMarketMap
       .filter(Boolean)
@@ -513,20 +1128,29 @@ function ExoticMarketTab({ farming, legendTalents }) {
         organic: (organicExotics ?? []).includes(u.index),
       }))
     return {
+      upgrades,
       onSale: rotation.map(i => upgrades.find(u => u.index === i)),
-      offSale: upgrades.filter(u => !rotation.includes(u.index)),
     }
   }, [now, exoticLevels, organicExotics])
 
+  // This week's upgrades in crop order, which is the order you grow them in
   const growOrder = useMemo(() => onSale
     .map(upgrade => {
       const haveQty = cropDepot?.[String(upgrade.cropCostId)]?.qty ?? 0
-      const levels = exoticLevelsFromCrops(haveQty, farming, buyOneGetOneLevel)
+      const levels = exoticLevelsFromCrops(haveQty, farming, buyOneGetOneLevel, upgrade.index)
+      const target = targetLevels > 0
+        ? {
+            levels: targetLevels,
+            need: cropsForExoticLevels(targetLevels, farming, buyOneGetOneLevel, upgrade.organic),
+          }
+        : null
       return {
         upgrade,
-        haveQty,
-        levels,
-        status: targetLevels > 0 ? (levels >= targetLevels ? 'done' : 'needed') : null,
+        buy: {
+          haveQty,
+          levels,
+          target,
+        },
       }
     })
     .sort((a, b) => a.upgrade.cropCostId - b.upgrade.cropCostId),
@@ -535,77 +1159,64 @@ function ExoticMarketTab({ farming, legendTalents }) {
   return (
     <div className="farming-tab">
 
-      {/* ── Crop Grow Order ── */}
-      <section className="farming-section">
-        <div className="farming-group-label">Rotation Crop Grow Order</div>
-        <div className="farming-input-row">
-          <span className="farming-input-label">Target Levels per Upgrade</span>
-          <input
-            type="number"
-            className="farming-input"
-            placeholder="e.g. 130"
-            value={target}
-            onChange={e => setTarget(e.target.value)}
-          />
-          <span className="farming-input-hint">
-            {targetLevels > 0
-              ? `Highlights crops that can't buy ${targetLevels} levels yet`
-              : 'Set a target to see which crops still need growing'}
-          </span>
-        </div>
-        <div className="crop-path-list">
-          {growOrder.map(({ upgrade, haveQty, levels, status }) => (
-            <div
-              key={upgrade.index}
-              className={`crop-path-item${status ? ` crop-path-item--${status}` : ''}`}
-            >
-              <img
-                src={cropImgPath(upgrade.cropCostId)}
-                alt=""
-                className="crop-path-crop-img"
-                onError={hideBrokenImg}
-              />
-              <div className="crop-path-info">
-                <span className="crop-path-upgrade-name">{upgrade.label}</span>
-                <span className="crop-path-qty">
-                  {formatBigNumber(haveQty)} · {levels} lvls
-                </span>
-              </div>
-              <SeedTag seed={getSeedByCropId(upgrade.cropCostId)} />
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── This Week's Rotation ── */}
       <section className="farming-section">
         <div className="farming-group-label">
           This Week's Rotation
           <span className="farming-group-label-note">resets in {rotationTimeLeft(now)}</span>
         </div>
-        <div className="exotic-grid">
-          {onSale.map(upgrade => (
-            <ExoticCard
+        {organicLabels.owned > 0 && (
+          <div className="farming-chip-row">
+            <StatChip
+              icon={ORGANIC_LABEL_IMG}
+              label="Organic Labels"
+              value={`${organicLabels.left} left · ${organicLabels.placed} / ${organicLabels.owned} placed`}
+              tooltip="Labels can only go on upgrades in this week's rotation. A labelled upgrade gets 2x its bonus, and each purchase gives 1.5x as many LVs as it would without the label."
+            />
+          </div>
+        )}
+        <div className="farming-input-row">
+          <span className="farming-input-label">Target LVs per Buy</span>
+          <input
+            type="number"
+            className="farming-input"
+            placeholder="e.g. 800"
+            value={target}
+            onChange={e => setTarget(e.target.value)}
+          />
+          <span className="farming-input-hint">
+            {targetLevels > 0
+              ? `Crops each upgrade needs to get +${targetLevels} LV in one buy`
+              : 'Enter LVs to see how many crops each buy needs'}
+          </span>
+        </div>
+        <div className="exotic-list">
+          <div className="exotic-list-head">
+            <span />
+            <span>Upgrade · in grow order</span>
+            <span>Level</span>
+            <span>Cap</span>
+            <span>Your crops buy</span>
+          </div>
+          {growOrder.map(({ upgrade, buy }) => (
+            <ExoticRow
               key={upgrade.index}
               upgrade={upgrade}
-              inRotation
+              buy={buy}
+              returnsIn={nextOffsets.get(upgrade.index)}
+              now={now}
+              lowValue={lowValue.exotic.get(upgrade.index)}
             />
           ))}
         </div>
       </section>
 
-      {/* ── Off-Rotation ── */}
-      <section className="farming-section">
-        <div className="farming-group-label">Off-Rotation Upgrades</div>
-        <div className="exotic-grid">
-          {offSale.map(upgrade => (
-            <ExoticCard
-              key={upgrade.index}
-              upgrade={upgrade}
-            />
-          ))}
-        </div>
-      </section>
+      <UpcomingRotations
+        upgrades={upgrades}
+        nextOffsets={nextOffsets}
+        now={now}
+        lowValue={lowValue}
+      />
 
     </div>
   )
@@ -888,9 +1499,9 @@ export default function Farming({ snapshot, tomePoints }) {
           'Land rank bonuses use Dank Ranks from your save, with every added talent level your played character gets.',
           'Spend plans only your unspent points on top of your current levels, since the game can only take points back by resetting all of them. Full Reset replans every point from scratch.',
           'Both score each plot the way IdleOn Toolbox does: seed ranks go to their max level, Farm EXP gets the points you reserve, and every other point goes where it raises Crop Evolution × Crop Value × Rank EXP × Overgrowth the most. Crop value stops getting points once every plot is at the cap.',
-          'Market costs include your Emperor discount and Better Day / Better Night exotics. Night Market upgrades cost magic beans.',
-          'The Exotic Market rotation follows the real weekly reset. Set a target in the grow order to see which on-sale crops you still need — it accounts for Better Exotic and the Buy One Get One Free legend talent.',
-          'Crop Evolution: each growth, every plot rolls once to evolve one crop up its seed (30% × the seed\'s decay per crop × your evo multi). A fresh plant climbs one crop per growth even when every roll is sure, so pushing for a new crop always costs that climb. Timings assume every unlocked plot is planted with the next crop\'s seed. Insta grows count as one extra roll each, all spent on one plot: it climbs fastest, and after that each one is another roll at the new crop. With Mass Irrigation an insta grow also grows every plot above and below, so they go on one column and roll for all of its plots.',
+          'Market costs include your Emperor discount and Better Day / Better Night exotics, and max levels include the Research grid raise. Night Market upgrades cost magic beans.',
+          'The Exotic Market rotation follows the real weekly reset (Thursday 00:00 UTC). Enter a target to see how many crops each buy needs for that many levels, and use Upcoming Rotations to find when any upgrade is sold again.',
+          'Crop Evolution: each growth, every plot rolls once to evolve one crop up its seed (30% × the seed\'s decay per crop × your evo multi). A fresh plant climbs one crop per growth even when every roll is sure, so pushing for a new crop always costs that climb. Timings assume every plot is planted with the next crop\'s seed and unlocked. Insta grows count as one extra roll each, all spent on one plot: it climbs fastest, and after that each one is another roll at the new crop. With Mass Irrigation an insta grow also grows every plot above and below, so they go on one column and roll for all of its plots.',
         ]}
       />
 
@@ -906,9 +1517,9 @@ export default function Farming({ snapshot, tomePoints }) {
         ))}
       </div>
 
-      {activeTab === 'landranks' && <LandRanksTab snapshot={snapshot} farming={farming} />}
+      {activeTab === 'landranks' && <LandRanksTab snapshot={snapshot} farming={farming} tomePoints={tomePoints} />}
       {activeTab === 'market' && <MarketTab snapshot={snapshot} farming={farming} />}
-      {activeTab === 'exotic' && <ExoticMarketTab farming={farming} legendTalents={snapshot?.legendTalents} />}
+      {activeTab === 'exotic' && <ExoticMarketTab snapshot={snapshot} farming={farming} />}
       {activeTab === 'cropEvo' && <CropEvolutionTab
         snapshot={snapshot}
         tomePoints={tomePoints}

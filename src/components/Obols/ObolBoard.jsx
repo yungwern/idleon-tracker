@@ -1,5 +1,10 @@
-import { obolByRawName } from '../../data'
-import { passesObolCheck, getObolRollNeeds } from './ObolUtils'
+import {
+  obolByRawName,
+  CHAR_OBOL_SHAPES,
+  FAMILY_OBOL_SHAPES,
+} from '../../data'
+import { passesObolCheck, getObolRollNeeds, getEffectiveRolls, getObolBoardStats } from './ObolUtils'
+import { getObolMiscMulti } from '../../utils/menagerieUtils.js'
 import './ObolBoard.css'
 
 // ── Obol Slot ─────────────────────────────────────────────────────────────────
@@ -72,11 +77,18 @@ function StatChip({ label, value }) {
 
 // stoneData is only passed for a player's real board (example boards have none).
 // checkMode / mainStat: roll check (ObolUtils passesObolCheck). Passing obols glow, failing ones are marked.
-export function ObolSlot({ rawName, stoneData, size = 'md', checkMode, mainStat = null }) {
+// shape: 'circle' | 'square' | 'hexagon' | 'sparkle' (board slots, size 'socket'). Empty board slots show nothing,
+// since the board art already has the socket.
+export function ObolSlot({ rawName, stoneData: savedRolls, size = 'md', shape, checkMode, mainStat = null }) {
+  const shapeClass = shape ? ` obol-slot--${shape}` : ''
   if (!rawName || rawName === 'Blank') {
-    return <div className={`obol-slot obol-slot--empty obol-slot--${size}`} />
+    return (
+      <div className={`obol-slot obol-slot--empty obol-slot--${size}${shapeClass}`} />
+    )
   }
   const entry = obolByRawName[rawName]
+  // Negative rolls on stats this obol doesn't have do nothing in game, so they're dropped here
+  const stoneData = getEffectiveRolls(rawName, savedRolls)
   const checked = stoneData !== undefined
   const passes = checked && passesObolCheck(stoneData, checkMode, mainStat)
   const slotState = checked ? (passes ? ' obol-slot--upgraded' : ' obol-slot--no-bonus') : ''
@@ -111,13 +123,14 @@ export function ObolSlot({ rawName, stoneData, size = 'md', checkMode, mainStat 
   ].filter(Boolean) : []
 
   return (
-    <div className={`obol-slot obol-slot--${size} tooltip-anchor${slotState}`}>
+    <div className={`obol-slot obol-slot--${size}${shapeClass} tooltip-anchor${slotState}`}>
       <img
         src={`images/obols/${rawName}.png`}
         alt={entry?.name ?? rawName}
         className="obol-slot-img"
         onError={e => { e.currentTarget.style.display = 'none' }}
       />
+      {checked && !passes && <span className="obol-slot-flag">!</span>}
       <div className="obol-tooltip">
         <span className="obol-tooltip-name">{entry?.name ?? rawName}</span>
         {(statChips.length > 0 || otherStats.length > 0) && (
@@ -141,83 +154,121 @@ export function ObolSlot({ rawName, stoneData, size = 'md', checkMode, mainStat 
   )
 }
 
-// ── Account Board ─────────────────────────────────────────────────────────────
-const ACCOUNT_BOARD_ROWS = [5, 5, 4, 5, 5]
+// ── Board Totals ("What it gives") ────────────────────────────────────────────
+// Sum of every equipped obol on one board (ObolUtils getObolBoardStats). obols: save-order slots.
 
-function buildAccountRows(slots) {
-  const rows = []
-  let idx = 0
-  for (const count of ACCOUNT_BOARD_ROWS) {
-    rows.push(slots.slice(idx, idx + count))
-    idx += count
-  }
-  return rows
+function formatTotal(value, percent) {
+  const rounded = Math.round(value * 10) / 10
+  return `+${rounded.toLocaleString()}${percent ? '%' : ''}`
 }
 
-export function AccountBoard({ slots, stoneDataMap = {}, checkMode, mainStat = null }) {
-  const rows = buildAccountRows(slots)
+export function ObolStatsPanel({ obols, menagerie }) {
+  const multi = getObolMiscMulti(menagerie)
+  const rows = getObolBoardStats(obols, multi.value)
+  const filled = obols.filter(slot => slot.rawName && slot.rawName !== 'Blank').length
+  const hasMisc = rows.some(row => row.misc)
+
   return (
-    <div className="obol-board">
-      {rows.map((row, rowIdx) => (
+    <div className="obol-stats">
+      <div className="obol-stats-head">
+        <span className="obol-stats-title">What it gives</span>
+        <span className="obol-stats-sub">{filled}/{obols.length} slots filled</span>
+      </div>
+      {rows.length === 0 && <p className="obol-stats-empty">No stats from obols</p>}
+      {rows.map(row => (
+        <div key={row.key} className="obol-stats-row">
+          <span className="obol-stats-label">
+            {row.label}
+            {row.misc && multi.level > 0 && <span className="obol-stats-star">*</span>}
+          </span>
+          <span className="obol-stats-value">{formatTotal(row.value, row.percent)}</span>
+        </div>
+      ))}
+      {hasMisc && multi.level > 0 && (
+        <p className="obol-stats-note">* includes Silver Jellyfish ×{Math.round(multi.value * 100) / 100} (LV {multi.level})</p>
+      )}
+      {hasMisc && multi.missing && (
+        <p className="obol-stats-note">Re-import your save to include the Silver Jellyfish bonus</p>
+      )}
+    </div>
+  )
+}
+
+// ── Boards ────────────────────────────────────────────────────────────────────
+// Slots sit at their in-game positions (obol-pos--char-N / fam-N in ObolBoard.css), in reading order.
+// slots: rawNames in reading order; stoneDataMap: { readingIndex: stoneData } for a player's real board.
+
+// Tooltip placement, so a container with overflow: hidden (the character card) can't clip them:
+//   topRowSlots: slots in the top two rows open below the obol
+//   edgeSlots: { left: [...], right: [...] } outer-column slots line the tooltip up with that side
+function getTooltipPlacement(i, topRowSlots, edgeSlots) {
+  return [
+    i < topRowSlots ? ' obol-board-pos--below' : '',
+    edgeSlots.left.includes(i) ? ' obol-board-pos--left' : '',
+    edgeSlots.right.includes(i) ? ' obol-board-pos--right' : '',
+  ].join('')
+}
+
+const CHAR_EDGE_SLOTS = {
+  left: [0, 5, 9, 12, 16],
+  right: [4, 8, 11, 15, 20],
+}
+
+const FAMILY_EDGE_SLOTS = {
+  left: [0, 5, 10, 14, 19],
+  right: [4, 9, 13, 18, 23],
+}
+
+function ObolBoardMap({ variant, shapes, topRowSlots, edgeSlots, slots, stoneDataMap, checkMode, mainStat }) {
+  return (
+    <div className={`obol-board-map obol-board-map--${variant}`}>
+      {shapes.map((shape, i) => (
         <div
-          key={rowIdx}
-          className={`obol-board-row${row.length === 4 ? ' obol-board-row--centered' : ''}`}
+          key={i}
+          className={`obol-board-pos obol-pos--${variant}-${i}${getTooltipPlacement(i, topRowSlots, edgeSlots)}`}
         >
-          {row.map((rawName, slotIdx) => {
-            const globalIdx = ACCOUNT_BOARD_ROWS.slice(0, rowIdx).reduce((a, b) => a + b, 0) + slotIdx
-            return (
-              <ObolSlot
-                key={slotIdx}
-                rawName={rawName}
-                stoneData={stoneDataMap[globalIdx]}
-                checkMode={checkMode}
-                mainStat={mainStat}
-              />
-            )
-          })}
+          <ObolSlot
+            rawName={slots[i] ?? 'Blank'}
+            stoneData={stoneDataMap[i]}
+            size="socket"
+            shape={shape}
+            checkMode={checkMode}
+            mainStat={mainStat}
+          />
         </div>
       ))}
     </div>
   )
 }
 
-// ── Character Board ───────────────────────────────────────────────────────────
-const CHAR_BOARD_ROWS = [3, 2, 2, 2, 3, 2, 2, 2, 3]
-
-function buildCharRows(slots) {
-  const rows = []
-  let idx = 0
-  for (const count of CHAR_BOARD_ROWS) {
-    rows.push(slots.slice(idx, idx + count))
-    idx += count
-  }
-  return rows
+// Family board: 24 slots, save order = reading order
+export function AccountBoard({ slots, stoneDataMap = {}, checkMode, mainStat = null }) {
+  return (
+    <ObolBoardMap
+      variant="fam"
+      shapes={FAMILY_OBOL_SHAPES}
+      topRowSlots={10}
+      edgeSlots={FAMILY_EDGE_SLOTS}
+      slots={slots}
+      stoneDataMap={stoneDataMap}
+      checkMode={checkMode}
+      mainStat={mainStat}
+    />
+  )
 }
 
+// Character board: 21 slots in reading order (convert save order with CHAR_OBOL_SAVE_TO_DISPLAY first)
 export function CharacterBoard({ slots, stoneDataMap = {}, checkMode, mainStat = null }) {
-  const rows = buildCharRows(slots)
   return (
-    <div className="obol-char-board">
-      {rows.map((row, rowIdx) => (
-        <div
-          key={rowIdx}
-          className={`obol-char-board-row obol-char-board-row--${row.length === 3 ? 'large' : 'small'}`}
-        >
-          {row.map((rawName, slotIdx) => {
-            const globalIdx = CHAR_BOARD_ROWS.slice(0, rowIdx).reduce((a, b) => a + b, 0) + slotIdx
-            return (
-              <ObolSlot
-                key={slotIdx}
-                rawName={rawName}
-                stoneData={stoneDataMap[globalIdx]}
-                size={row.length === 3 ? 'lg' : 'sm'}
-                checkMode={checkMode}
-                mainStat={mainStat}
-              />
-            )
-          })}
-        </div>
-      ))}
-    </div>
+    <ObolBoardMap
+      variant="char"
+      shapes={CHAR_OBOL_SHAPES}
+      topRowSlots={9}
+      edgeSlots={CHAR_EDGE_SLOTS}
+      slots={slots}
+      stoneDataMap={stoneDataMap}
+      checkMode={checkMode}
+      mainStat={mainStat}
+    />
   )
 }

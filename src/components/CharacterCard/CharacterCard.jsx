@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import AnvilProduction from '../AnvilProduction/AnvilProduction.jsx'
-import { CharacterBoard } from '../Obols/ObolBoard.jsx'
+import { CharacterBoard, ObolStatsPanel } from '../Obols/ObolBoard.jsx'
 import { getCharacterNotices } from '../../utils/characterNotices.js'
 import { getClassMainStat } from '../../utils/characterUtils.js'
 import { getObolNoticeTitle } from '../Obols/ObolUtils.js'
 import { prayerMap } from '../../data/prayerMap'
-import { obolByRawName } from '../../data'
+import { obolByRawName, CHAR_OBOL_SAVE_TO_DISPLAY } from '../../data'
 import './CharacterCard.css'
 
 import { toClassSlug } from '../../utils/appUtils.js'
@@ -51,19 +51,8 @@ function PrayerIcon({ prayerId, level }) {
   )
 }
 
-// Save stores slots in a mixed order — this maps visual position to save index
-const CHAR_OBOL_VISUAL_TO_SAVE = [
-  0, 2, 4,   // Row 1 large: save[0], save[2], save[4]
-  1, 3,      // Section 1 top pair: save[1], save[3]
-  5, 7,      // Section 1 mid pair: save[5], save[7]
-  6, 8,      // Section 1 bot pair: save[6], save[8]
-  9, 10, 11, // Row 2 large: save[9], save[10], save[11]
-  12, 13,    // Section 2 top pair: save[12], save[13]
-  14, 16,    // Section 2 mid pair: save[14], save[16]
-  15, 17,    // Section 2 bot pair: save[15], save[17]
-  18, 19, 20 // Row 3 large: save[18], save[19], save[20]
-]
-
+// Obols tab: the board at in-game positions with its totals ("What it gives") on the right.
+// The save's slot order differs from reading order on the bottom half (CHAR_OBOL_SAVE_TO_DISPLAY).
 function CharacterObolsTab({ charIndex, snapshot, obolCheckMode }) {
   const obols = snapshot?.characters?.[charIndex]?.obols ?? []
   const mainStat = getClassMainStat(snapshot?.characters?.[charIndex]?.class)
@@ -72,13 +61,12 @@ function CharacterObolsTab({ charIndex, snapshot, obolCheckMode }) {
     return <div className="char-obols-empty">No obol data available — import a save to see equipped obols.</div>
   }
 
-  // Remap from save order to visual order
-  const remapped = CHAR_OBOL_VISUAL_TO_SAVE.map(saveIdx => obols[saveIdx] ?? { rawName: 'Blank', stoneData: {} })
-
-  const slots = remapped.map(s => s.rawName)
+  const slots = []
   const stoneDataMap = {}
-  remapped.forEach((slot, idx) => {
-    stoneDataMap[idx] = slot.stoneData
+  obols.forEach((slot, saveIdx) => {
+    const displayIdx = CHAR_OBOL_SAVE_TO_DISPLAY[saveIdx] ?? saveIdx
+    slots[displayIdx] = slot.rawName
+    stoneDataMap[displayIdx] = slot.stoneData
   })
 
   return (
@@ -88,6 +76,10 @@ function CharacterObolsTab({ charIndex, snapshot, obolCheckMode }) {
         stoneDataMap={stoneDataMap}
         checkMode={obolCheckMode}
         mainStat={mainStat}
+      />
+      <ObolStatsPanel
+        obols={obols}
+        menagerie={snapshot?.menagerie}
       />
     </div>
   )
