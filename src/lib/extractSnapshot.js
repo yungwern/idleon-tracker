@@ -460,7 +460,8 @@ const MENAGERIE_UNLOCKS = 2
 const MENAGERIE_SHINY_UNLOCK = 11
 // Pets: slots 0-26 = fence yard, 27+ = territory teams (4 per territory, row i = spice i).
 // Each pet is [rawName, geneId, power, x]. PetsStored = pet storage, same shape.
-// Territory[i] = [barProgress, fills since last claim, ?, 'CookingSpice{i}' or 'Blank' if locked, spices to claim, ...]
+// Territory[i] = [barProgress, fills since last claim, ?, then 3 reward slots of (spice name or 'Blank', amount)].
+// The first slot reads 'CookingSpice{i}' only while spices wait to be claimed, so 'Blank' doesn't mean locked.
 const TERRITORY_TEAM_START = 27
 const TERRITORY_TEAM_SIZE = 4
 
@@ -500,9 +501,17 @@ function parseTerritories(json, petsRaw) {
     power: Number(entry[2]) || 0,
   })
 
-  // A locked territory has 'Blank' instead of its spice name. They don't always unlock in order
-  // (e.g. 16 can be open while 14 isn't), so keep every row up to the last unlocked one.
+  // Unlocked = it has spices to claim, any progress or fills, or a team on it. The spice name slot alone
+  // isn't enough: it goes back to 'Blank' after a claim (0 fills), even on an open territory with a team.
+  // They don't always unlock in order (e.g. 16 can be open while 14 isn't), so keep every row up to the
+  // last unlocked one.
+  const hasTeam = i => petsRaw
+    .slice(TERRITORY_TEAM_START + i * TERRITORY_TEAM_SIZE, TERRITORY_TEAM_START + (i + 1) * TERRITORY_TEAM_SIZE)
+    .some(entry => entry?.[0] && entry[0] !== 'none')
   const isUnlocked = (row, i) => row?.[3] === `CookingSpice${i}`
+    || Number(row?.[0]) > 0
+    || Number(row?.[1]) > 0
+    || hasTeam(i)
   const lastUnlocked = territoryRaw.reduce((last, row, i) => (isUnlocked(row, i) ? i : last), -1)
 
   const territories = territoryRaw.slice(0, lastUnlocked + 1).map((row, i) => {

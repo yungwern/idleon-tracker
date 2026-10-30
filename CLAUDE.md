@@ -191,7 +191,8 @@ Breeding uses it too (`breedingBuffMap` in breedingMap.js): W7 Menagerie unlock 
 LV from 20 to 30. Menagerie unlock names/tooltips are Toolbox research.json [56]/[62]; icons are MenaIconO<N>.png.
 
 **Spice territories**: Pets[27+4i..] = team on territory i (Pets[0-26] fence, PetsStored = storage), each pet
-[rawName, geneId, power]. Territory[i] = [bar progress, fills, ?, 'CookingSpice{i}' | 'Blank' if locked, spices to claim].
+[rawName, geneId, power]. Territory[i] = [bar progress, fills, ?, then 3 reward slots of (spice name | 'Blank', amount)]. The name
+slot goes 'Blank' after a claim (0 fills), so unlocked = name set, or any progress/fills, or a team on it.
 Territories can unlock out of order (16 open while 14 locked). A Converter keep also keeps the spices to claim, so a
 batch can be claimed again (counted as ~2 claims per batch).
 

@@ -22,11 +22,11 @@ HomePage -
     Matryoshka doll - troll with 20 dropdowns people have to click through
 
 CharacterCard -
-    Add ability to edit existing to-do list items
-    Obols
-    Class image in sidebar
+    
 
 Global -
+    Money - Ways to increase it and everything to spend it on
+
     Daily Checklist - W1 miniboss kills, bone dust dudes?, things that don't appear on IT
 
     MiniBosses - give info about maxing orb kills on daily reset with guaranteed crystals
