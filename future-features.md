@@ -16,76 +16,86 @@ javascript:for(let i=0;i<=10;i++){window.open(`https://idleontoolbox.com/data/Nj
 =================
 NEW FEATURE LIST
 =================
-HomePage -
-    Above Characters section in sidebar
-    Information about website - image credits to LavaFlame2
-    Matryoshka doll - troll with 20 dropdowns people have to click through
+To-Do List -
+    Image credits to LavaFlame2
 
-CharacterCard -
+    Any other credits needed to give ("stolen" code)
+
+    donation link
+
+    update info panels on just about every page
+
+HomePage - 
+    First time log ins / save imports are handled here until information is saved locally, then handled on sidebar like usual
+
+SideBar -
+    Lock import/sync/delete/import info so when you scroll it stays in view
     
+CharacterCard -
+    Anvil - can probably extract info on exp/speed/capacity for each character now
 
+    Golden food
+    
 Global -
-    Money - Ways to increase it and everything to spend it on
+    Money - Ways to increase it and everything to spend it on 
 
-    Daily Checklist - W1 miniboss kills, bone dust dudes?, things that don't appear on IT
+    Masterclasses - Zow/Chow/WoW Kills for DB
+                    POW 10 bones, dust, tachyons ever collected.
 
-    MiniBosses - give info about maxing orb kills on daily reset with guaranteed crystals
+Clickers -
+    Orion - Create page
+            Show bonuses and megafeathers
 
-    Card Setups - Multi set vs. % set for non endgame players, test sets for damage, drop rate to find best cards to display
+    Poppy - Create page
+            Show bonuses and megafish
 
-    Item Filter Guide?
-
-    Masterclasses-
-        Currency tracker for each currency type? added next to afk items at the top
-
-        Zow/Chow Kills for DB
-
+    Bubba - Show bonuses and megaflesh
 
 World 1 -
-    Orion? Megafeathers obtained?
+
 
 World 2 - 
-    Figure out a way to integrate weekly trophy boss
-    Poppy? Megafish obtained?
+    Alchemy - Bubbles
+                NBLB optimization
+              Vials
+              Sigils  
+
+    Weekly Trophy Boss - Check how idleoneer integrates it
 
     Killroy - Timer/Skull Ratio, arcade ball info
 
-    Obols -
-        Example boards of DR, etc...
-
 World 3 -
-    Construction
-        - Pull all cogs into optimal cog layout to check for correct placements
+    Printer - Display prints, optimization guide for covering refinery prints
 
-    Figure out how to integrate printer? (FML...)
-    Figure out how to integrate worship tower levels
+    Refinery - Optimizer for not overclicking
 
 World 4 -
-    InfoPanel for Breeding Shinies/PetFightingComps
+    Tome - Finish implementing any systems and checks to get the ability to automatically pull tome score
 
 World 5 -
-    Stuff from Hole? (Justice website link?)
-    Sailing stuff? Captains, boat levels, artifacts
-    Slab
+    Hole - Bravery, Justice, Wisdom
+           Grinding Section - collect all bonuses from various caverns that have an account grind to work towards
+           Optimizers for other various caverns?
+           Optimizer for Opals
+
+    Sailing - Captains, boat levels, artifacts
+
+    Slab?
 
 World 6 -
-    Farming
-        - Exotic Market growth optimizer. Find weekly purchases and then compare against crop depot to figure out growth order to optimize weekly grows
-        - Stickers?
-        -Day Market / Night Market 
-            1. Current / Max upgrade levels
-    Summoning 
-        - Boss locations
-    Sneaking 
-        - basic info about best flower setup
+    Farming - Stickers?
+    
+    Summoning - Boss locations, doubler guide
+
+    Sneaking - setups? Easiest inventory/character slot to upgrade
+    
     Beanstalk
+
        
 World 7 -
     Legend Talents
-    Super Talents
-        Tier lists for each characters best super talents
-    Spelunking Info
-    Bubba Info
+
+    Super Talents - Tier lists for each characters best super talents
 
 
 

@@ -47,14 +47,14 @@ export function getClassName(classId) {
 // cross-checked with the wiki's class specialties. allChars = the main talents work for every
 // character on the account, not just this one. Base tabs (Beginner, Warrior, Archer, Mage, the
 // Basics tabs) have no role talents, except Beginner's Extra Bags.
-// A few roles are play tricks rather than a talent's text (e.g. Arcane Cultist's Emperor skulls);
+// A few roles are tips and tricks rather than a talent's text (e.g. Arcane Cultist's Emperor skulls);
 // their text says so. Journeyman's drop/card talents are left out on purpose: nobody plays the
 // Beginner line for them.
 export const CLASS_TAB_ROLES = {
   'Beginner': [
     {
       label: 'Carry Capacity',
-      text: 'Up to +200% material carry capacity. Only the Beginner class gets this talent, which is why the Voidwalker is usually the material holder for upgrading stamp levels.',
+      text: 'Up to +200% material carry capacity. Essential for being able to hold the massive material costs of upgrading Stamps later on.',
       talents: ['Extra Bags'],
       allChars: false,
     },
@@ -62,13 +62,13 @@ export const CLASS_TAB_ROLES = {
   'Maestro': [
     {
       label: 'Skilling',
-      text: "Other characters get extra skill EXP and efficiency in any skill where they're below the Maestro.",
+      text: "Other characters get extra skill EXP and efficiency in any skill where they're level is below the Maestro.",
       talents: ['Left Hand of Learning', 'Right Hand of Action'],
       allChars: true,
     },
     {
       label: '3D Printer',
-      text: 'Prints hours of printer samples instantly, with a chance of no cooldown.',
+      text: 'Prints hours of printer samples instantly, with a chance of no cooldown. Can also use speedruns to take some big samples due to the multikill and mob respawn bonuses.',
       talents: ['Printer Go Brrr'],
       allChars: true,
     },
@@ -76,19 +76,19 @@ export const CLASS_TAB_ROLES = {
   'Voidwalker': [
     {
       label: 'Speedruns',
-      text: 'Void Trial Rerun starts a timed speedrun. Every portal you open from kills during the run gives Void (Tab 4) talent points, the main way to earn them. Master of the System gives every character more multikill per damage tier for every 5 maps in your best speedrun.',
+      text: 'Void Trial Rerun starts a timed speedrun. Every portal you open during the run gives Tab 4 talent points. Killing Nightmare bosses counts as 3 portals. Master of the System gives every character more multikill per tier for every 5 maps in your best speedrun.',
       talents: ['Void Trial Rerun', 'Master of the System', 'Bossing Vain', 'Void Radius'],
       allChars: true,
     },
     {
       label: 'Account Buffs',
-      text: 'Boosts every character on the account: base STR, AGI, WIS and LUK (plus higher max levels for each class\'s main stat talent), more Class EXP, stronger statue bonuses, and more damage for every 50 class levels a character has above 200.',
-      talents: ['Eternal STR/AGI/WIS/LUK', 'EXP Cultivation', 'Voodoo Statufication', 'Power Orb'],
+      text: 'Boosts every character on the account: base STR, AGI, WIS and LUK, more Class EXP, statue bonuses, and more damage for every 50 class levels a character has above 200. Enhancement Eclipse also provides various talents on other characters very strong bonuses.',
+      talents: ['Eternal STR/AGI/WIS/LUK', 'EXP Cultivation', 'Voodoo Statufication', 'Power Orb', 'Enhancement Eclipse'],
       allChars: true,
     },
     {
       label: 'Meal Speed',
-      text: 'Multiplicative meal cooking speed per total meal level on the Dinner Table Menu. The bonus caps at talent level 300 even though you can keep leveling it, so it\'s best to put points into other Void talents once you reach that level.',
+      text: 'Strongest Cooking speed multi in the game. The bonus caps at talent level 300 even though you can keep leveling it, so it\'s best to put points into other Void talents once you reach that level.',
       talents: ['Blood Marrow'],
       allChars: true,
     },
@@ -96,7 +96,7 @@ export const CLASS_TAB_ROLES = {
   'Barbarian': [
     {
       label: 'Fishing',
-      text: 'Better fishing on this character: more Fishing EXP and Fishing AFK gains, extra Fishing Power from your fishing minigame highscore, and a chance to catch fish instantly.',
+      text: 'Fishing EXP and Fishing AFK gains, extra Fishing Power from your fishing minigame highscore, and a chance to catch fish instantly.',
       talents: ['Worming Undercover', "Bobbin' Bobbers", 'All Fish Diet', "Catching Some ZZZ's"],
       allChars: false,
     },
@@ -110,7 +110,7 @@ export const CLASS_TAB_ROLES = {
     },
     {
       label: 'Construction',
-      text: 'Build speed from Redox Salts in storage and extra Construction EXP.',
+      text: 'Build speed per POW 10 Redox Salts in storage and Construction EXP gains.',
       talents: ['Redox Rates', 'Sharper Saws'],
       allChars: false,
     },
@@ -118,8 +118,8 @@ export const CLASS_TAB_ROLES = {
   'Blood Berserker': [
     {
       label: 'Cooking',
-      text: 'Cooking EXP and efficiency grow with each mob type you\'ve killed 1 million times, Cooking AFK gains are higher, and ladles used on this character give extra AFK time. Also, Taste Test instantly finishes every recipe in progress.',
-      talents: ['Taste Test', 'Apocalypse Chow', 'Waiting to Cool', 'Overflowing Ladle'],
+      text: 'Cooking EXP and Eff for each mob you\'ve killed over 1m times, Cooking AFK gains, and ladles used on this character give extra AFK time. Also, Taste Test instantly finishes every recipe in progress and chance to get an extra ribbon every day.',
+      talents: ['Taste Test', 'Apocalypse Chow', 'Waiting to Cool', 'Overflowing Ladle', 'Ribbon Winning'],
       allChars: false,
     },
   ],
@@ -140,7 +140,7 @@ export const CLASS_TAB_ROLES = {
   'Death Bringer': [
     {
       label: 'Wraith Form',
-      text: 'Wraith Form kills drop Bones, which you spend on Grimoire upgrades. Wraith Overlord also gives every character a damage multiplier based on your lifetime bones (it grows each time that total reaches the next power of 10).',
+      text: 'Collect bones in Wraith Form for Grimoire upgrades. Wraith Overlord also gives every character a damage multiplier per POW 10 wraith bones ever collected.',
       talents: ['Wraith Form', 'Grimoire', 'Graveyard Shift', 'Wraith Overlord'],
       allChars: true,
     },
@@ -152,8 +152,8 @@ export const CLASS_TAB_ROLES = {
     },
     {
       label: 'Gold Food',
-      text: 'Gold food effect for everyone for each monster killed 1 billion times on this class; also a chance at an extra ribbon each day.',
-      talents: ['Apocalypse Wow', 'Ribbon Winning'],
+      text: 'Gold food effect for each monster killed 1 billion times on this class.',
+      talents: ['Apocalypse Wow'],
       allChars: true,
     },
   ],
@@ -174,7 +174,7 @@ export const CLASS_TAB_ROLES = {
   'Bowman': [
     {
       label: 'Catching',
-      text: 'Better catching on this character: more Catching efficiency (from Oak Logs in storage and from AGI), more Catching EXP, and higher Catching AFK gains.',  
+      text: 'More Catching efficiency (from Oak Logs in storage and AGI), more Catching EXP, and higher Catching AFK gains.',  
       talents: ["Teleki'net'ic Logs", 'Briar Patch Runner', 'Bug Enthusiast', 'Sunset on the Hives'],
       allChars: false,
     },
@@ -182,7 +182,7 @@ export const CLASS_TAB_ROLES = {
   'Hunter': [
     {
       label: 'Trapping',
-      text: 'Eagle Eye collects and resets every trap and shares EXP with everyone; better shiny critter odds.',
+      text: 'Eagle Eye collects every trap and shares EXP with everyone. Trapping Eff per POW 10 Froge critters, Trapping EXP gains, and shiny critter multi per 10 Trapping LVs.',
       talents: ['Eagle Eye', 'Invasive Species', 'Shroom Bait', 'Reflective Eyesight'],
       allChars: true,
     },
@@ -204,27 +204,21 @@ export const CLASS_TAB_ROLES = {
   'Beast Master': [
     {
       label: 'Breeding',
-      text: 'Extra eggs from AFK claims. Breeding EXP and mob power, even when you hatch eggs on another character.',
-      talents: ['I Dream of Peace and Egg', 'Shining Beacon of Egg', 'Curviture of the Paw'],
+      text: 'Extra eggs from AFK claims. Breeding EXP and mob power, even when you hatch eggs on another character. Arena Spirit gives unlimited Mob Arena entries for a few minutes. ',
+      talents: ['I Dream of Peace and Egg', 'Shining Beacon of Egg', 'Curviture of the Paw', 'Arena Spirit'],
       allChars: true,
-    },
-    {
-      label: 'Mob Arena',
-      text: 'Unlimited Mob Arena entries for a few minutes.',
-      talents: ['Arena Spirit'],
-      allChars: false,
     },
   ],
   'Wind Walker': [
     {
       label: 'Tempest Form',
-      text: 'While in Tempest Form you collect Dust and can fight abominations; Dust is spent on Compass upgrades. Dustwalker also gives every character more coins from mobs, growing each time your lifetime Dust reaches the next power of 10.',
+      text: 'Collect Dust in Tempest Form for Compass upgrades. Dustwalker also gives every character more coins from mobs per POW 10 dust ever collected.',
       talents: ['Tempest Form', 'Compass', 'Eternal Hunt', 'Dustwalker'],
       allChars: true,
     },
     {
       label: 'Sneaking',
-      text: 'Cheaper Ninja Knowledge, Sneaking EXP for every ninja, and two extra gemstones with stronger bonuses.',
+      text: 'Cheaper Ninja Knowledge, Sneaking EXP for every ninja, two extra gemstones, and boost to all gemstone bonuses.',
       talents: ['Price Recession', 'Sneaky Skilling', 'Generational Gemstones'],
       allChars: true,
     },
@@ -238,15 +232,15 @@ export const CLASS_TAB_ROLES = {
   'Wizard': [
     {
       label: 'Worship',
-      text: 'Best character for Worship. Charge Syphon pulls Worship charge from all your other characters onto this one and raises its max charge for a minute (usually never worth doing). Also gives a faster charge rate, more Worship EXP, and more Worship efficiency each time the Forest Souls in your storage reach the next power of 10.',
-      talents: ['Charge Syphon', 'Soooouls', 'Bless Up', 'Nearby Outlet'],
+      text: ' Faster Worship charge rate, more Worship EXP, and more Worship efficiency per POW 10 Forest Souls in storage.',
+      talents: ['Soooouls', 'Bless Up', 'Nearby Outlet'],
       allChars: false,
     },
   ],
   'Shaman': [
     {
       label: 'Alchemy',
-      text: 'Cranium Cooking makes every kill add a few seconds of alchemy progress for a short time. Also gives faster brewing, more Alchemy EXP and better odds of finding new bubbles on this character, plus extra Alchemy EXP for anyone in the same cauldron.',
+      text: 'Cranium Cooking makes every kill give instant alchemy progress. Also faster brewing, more Alchemy EXP and better odds of finding new bubbles on this character, plus extra Alchemy EXP for anyone in the same cauldron.',
       talents: ['Cranium Cooking', "Busy Brewin'", 'Bubble Breakthrough', 'Sharing Some Smarts'],
       allChars: false,
     },
@@ -254,13 +248,13 @@ export const CLASS_TAB_ROLES = {
   'Elemental Sorcerer': [
     {
       label: 'Divinity',
-      text: "Links a second god (set by Polytheism's level; not needed with Doot pet) and gives Divinity EXP to everyone.",
+      text: "Links a second god (set by Polytheism's talent level; not needed with Doot pet.) Divinity EXP multi and DMG for all characters per GOD Rank.",
       talents: ['Polytheism', 'Shared Beliefs', 'Gods Chosen Children'],
       allChars: true,
     },
     {
       label: 'Wormhole Mobs',
-      text: 'Dimensional Wormhole spawns Wormhole mobs and makes normal mobs respawn faster. Each Wormhole kill stacks more EXP and drop rate, which makes it good for farming items from the first page of a mob\'s drops. Usually only worth it in niche cases, since active farming on a Royal Guardian with high drop rate tends to beat it. Wormhole Emperor gives every character more damage, growing each time your lifetime Wormhole kills reach the next power of 10.',
+      text: 'Wormhole kills stacks more EXP and drop rate, which makes it good for farming items from the first page of a mob\'s drop pool. Usually only worth it in niche cases. Wormhole Emperor gives every character DMG per POW 10 kills of Wormhole mobs.',
       talents: ['Dimensional Wormhole', 'Wormhole Emperor'],
       allChars: true,
     },
@@ -268,7 +262,7 @@ export const CLASS_TAB_ROLES = {
   'Bubonic Conjuror': [
     {
       label: 'Lab',
-      text: 'Lab tubes give line width and Lab EXP to neighbours in the lab, and Lab EXP is shared with your lowest Lab player.',
+      text: 'Lab EXP and Eff gains, extra line width and Lab EXP for other characters depending on positioning in Lab, and Lab EXP is shared with your lowest Lab player.',
       talents: ['Purple Tube', 'Green Tube', 'Essence Transferral', 'Upload Squared'],
       allChars: true,
     },
@@ -288,13 +282,13 @@ export const CLASS_TAB_ROLES = {
     },
     {
       label: 'Emperor Boss',
-      text: 'Damage trick for the W6 Emperor fight: stand on the highest platform so the skulls travel a much shorter distance, for far more damage uptime. Likely a quirk rather than intended.',
+      text: 'Damage trick for the W6 Emperor fight: stand on the highest platform so your skulls travel a much shorter distance. This leads to a massive damage increase, making AC by far the best class for the fight.',
       talents: ['Arcane Skulls', 'Sizzling Skull'],
       allChars: false,
     },
     {
       label: 'Prisma Bubbles',
-      text: 'Arcane mobs are much more likely to drop Prisma bubbles. No Bubble Left Behind, which levels up your lowest bubbles, also gets a chance to give +3 levels instead of +1, and that chance grows each time your collected Tachyons reach the next power of 10.',
+      text: 'Arcane mobs are much more likely to drop Prisma bubbles. No Bubble Left Behind has a chance to give +3 levels instead of +1, per POW 10 tacyons collected.',
       talents: ['Primo Prisma', 'Tachyon Truth'],
       allChars: true,
     },
