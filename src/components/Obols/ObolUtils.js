@@ -13,6 +13,8 @@ import { obolByRawName } from '../../data'
 //   standard — a positive STR/AGI/WIS/LUK, UQ1/UQ2 or Weapon Power roll (Defence never counts)
 //   minmax   — a positive UQ1/UQ2 roll
 //   bis      — minmax + a positive main stat roll (family board's main stat is STR, see FAMILY_MAIN_STAT)
+// Obols with no unique bonus (obolHasUq false, e.g. Platinum STR) can't roll one, so in minmax and bis a positive
+// main stat roll stands in for the UQ roll (Eli). Every other rule still applies to them.
 // Negative rolls: a negative UQ or main stat fails every mode; in bis any negative roll fails.
 export const OBOL_CHECK_MODES = [
   {
@@ -23,7 +25,7 @@ export const OBOL_CHECK_MODES = [
   {
     id: 'minmax',
     label: 'Min/Max',
-    description: 'Flags obols without a positive unique bonus roll (Drop Rate, Skill Efficiency...). Stat rolls alone aren\'t enough.',
+    description: 'Flags obols without a positive unique bonus roll (Drop Rate, Skill Efficiency...). Stat rolls alone aren\'t enough, except on obols with no unique bonus, which need a positive main stat roll.',
   },
   {
     id: 'bis',
@@ -81,6 +83,12 @@ export function getEffectiveRolls(rawName, stoneData) {
   )
 }
 
+// Whether the obol has a unique bonus it can roll (obolMap uq1/uq2). Pass to passesObolCheck / getObolRollNeeds.
+export function obolHasUq(rawName) {
+  const base = obolByRawName[rawName] ?? {}
+  return Boolean(base.uq1 || base.uq2)
+}
+
 // UQ values that are real bonuses (the txt key holds a bonus name)
 function uqRolls(stoneData) {
   return ['UQ1', 'UQ2']
@@ -90,7 +98,8 @@ function uqRolls(stoneData) {
 
 // stoneData: pass getEffectiveRolls(rawName, stoneData), not the raw save entry.
 // mainStat: 'STR' | 'AGI' | 'WIS' | 'LUK' (family board: FAMILY_MAIN_STAT). With null, BiS accepts any stat.
-export function passesObolCheck(stoneData, mode = DEFAULT_OBOL_CHECK_MODE, mainStat = null) {
+// hasUq: obolHasUq(rawName). False = a positive main stat roll replaces the UQ roll in minmax/bis.
+export function passesObolCheck(stoneData, mode = DEFAULT_OBOL_CHECK_MODE, mainStat = null, hasUq = true) {
   if (!stoneData || typeof stoneData !== 'object') return false
   const checkMode = isObolCheckMode(mode) ? mode : DEFAULT_OBOL_CHECK_MODE
   const uqs = uqRolls(stoneData)
@@ -106,33 +115,35 @@ export function passesObolCheck(stoneData, mode = DEFAULT_OBOL_CHECK_MODE, mainS
     if (anyNegative) return false
   }
 
-  const hasUq = uqs.some(val => val > 0)
+  const hasUqRoll = uqs.some(val => val > 0)
   const hasStat = stats.some(val => val > 0)
+  const hasMainStat = mainStat ? rollValue(stoneData, mainStat) > 0 : hasStat
 
-  if (checkMode === 'standard') return hasUq || hasStat || rollValue(stoneData, 'Weapon_Power') > 0
-  if (!hasUq) return false
+  if (checkMode === 'standard') return hasUqRoll || hasStat || rollValue(stoneData, 'Weapon_Power') > 0
+  if (!hasUq) return hasMainStat
+  if (!hasUqRoll) return false
   if (checkMode === 'minmax') return true
-  return mainStat ? rollValue(stoneData, mainStat) > 0 : hasStat
+  return hasMainStat
 }
 
 // What a roll still needs to pass the mode, for tooltip hints. Requirements already broken by a
 // negative roll (UQ or main stat) aren't listed, since that roll shows in red.
 // Returns [{ need: 'any' | 'uq' | 'mainStat' | 'anyStat', stat? }]
-export function getObolRollNeeds(stoneData, mode = DEFAULT_OBOL_CHECK_MODE, mainStat = null) {
+export function getObolRollNeeds(stoneData, mode = DEFAULT_OBOL_CHECK_MODE, mainStat = null, hasUq = true) {
   const sd = stoneData && typeof stoneData === 'object' ? stoneData : {}
   const checkMode = isObolCheckMode(mode) ? mode : DEFAULT_OBOL_CHECK_MODE
   const uqs = uqRolls(sd)
-  const hasUq = uqs.some(val => val > 0)
+  const hasUqRoll = uqs.some(val => val > 0)
   const negativeUq = uqs.some(val => val < 0)
   const hasStat = BASE_STATS.some(stat => rollValue(sd, stat) > 0)
   const needs = []
 
   if (checkMode === 'standard') {
-    if (!hasUq && !hasStat && !(rollValue(sd, 'Weapon_Power') > 0) && !negativeUq) needs.push({ need: 'any' })
+    if (!hasUqRoll && !hasStat && !(rollValue(sd, 'Weapon_Power') > 0) && !negativeUq) needs.push({ need: 'any' })
     return needs
   }
-  if (!hasUq && !negativeUq) needs.push({ need: 'uq' })
-  if (checkMode === 'bis') {
+  if (hasUq && !hasUqRoll && !negativeUq) needs.push({ need: 'uq' })
+  if (checkMode === 'bis' || !hasUq) {
     if (mainStat) {
       if (rollValue(sd, mainStat) === 0) needs.push({ need: 'mainStat', stat: mainStat })
     } else if (!hasStat) {
@@ -147,7 +158,7 @@ export function getFailedObols(obols = [], mode = DEFAULT_OBOL_CHECK_MODE, mainS
   const counts = {}
   obols.forEach(({ rawName, stoneData }) => {
     if (!rawName || rawName === 'Blank') return
-    if (!passesObolCheck(getEffectiveRolls(rawName, stoneData), mode, mainStat)) {
+    if (!passesObolCheck(getEffectiveRolls(rawName, stoneData), mode, mainStat, obolHasUq(rawName))) {
       counts[rawName] = (counts[rawName] ?? 0) + 1
     }
   })

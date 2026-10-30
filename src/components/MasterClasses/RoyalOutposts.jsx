@@ -224,24 +224,106 @@ function OutpostCard({ outpost, summary, optimizer }) {
   )
 }
 
+const COMMANDER_IMG = 'images/masterclass/royal guardian/RGcommander.png'
+
+function MobIcon({ mobKey }) {
+  if (!mobKey) return null
+  return <img src={`images/mobs/${mobKey}.png`} alt="" className="mc-outpost-mob-img" />
+}
+
+// Splits a world's unspent PTS into two notices:
+//   education: outposts that just spend everything on Education (one total, no outpost list needed)
+//   barracks: outposts that buy a Barracks level now or hold PTS for the next one (these need names)
+function worldPtsNotices(outposts, optimizer) {
+  const education = []
+  const buy = []
+  const save = []
+  outposts.forEach(outpost => {
+    const opt = optimizer.byMap.get(outpost.mapIndex)
+    const plan = opt?.ptsPlan
+    if (!plan || (plan.spend === 0 && !plan.saveFor)) return
+    const row = { outpost, opt, plan }
+    if (plan.now.some(step => step.upgrade === 'barracks')) buy.push(row)
+    else if (plan.saveFor) save.push(row)
+    else education.push(row)
+  })
+  // Closest to the next Barracks level first
+  save.sort((a, b) => (b.opt.pts.left - b.plan.spend) - (a.opt.pts.left - a.plan.spend))
+  return {
+    educationPts: education.reduce((sum, r) => sum + r.plan.spend, 0),
+    educationCount: education.length,
+    buy,
+    save,
+  }
+}
+
+// Education levels bought before the Barracks step, e.g. "+3 Education first"
+function educationFirst(plan) {
+  const first = plan.now[0]
+  return first?.upgrade === 'education' ? first.levels : 0
+}
+
+// Barracks tooltip lists at most this many outposts, so a world where many outposts hit a save
+// point together stays a few lines tall. The rest are marked on their own cards.
+const MAX_LISTED = 6
+
+function NameList({ rows, detail }) {
+  const shown = rows.slice(0, MAX_LISTED)
+  const hidden = rows.length - shown.length
+  return (
+    <>
+      {shown.map(({ outpost, opt, plan }, i) => (
+        <span key={outpost.mapIndex} className="mc-outpost-world-tip-name">
+          <strong>{outpost.name}</strong>
+          {detail?.(opt, plan)}
+          {educationFirst(plan) > 0 && ` (+${educationFirst(plan)} Edu first)`}
+          {(i < shown.length - 1 || hidden > 0) && ', '}
+        </span>
+      ))}
+      {hidden > 0 && <span className="mc-outpost-world-tip-more">+{hidden} more</span>}
+    </>
+  )
+}
+
+// Hold-PTS line. When most of the world is saving, naming the few that aren't is shorter.
+function SaveList({ save, outposts }) {
+  const saving = new Set(save.map(r => r.outpost.mapIndex))
+  const others = outposts.filter(o => !saving.has(o.mapIndex))
+  if (save.length > MAX_LISTED && others.length <= MAX_LISTED) {
+    return (
+      <>
+        <span className="mc-outpost-world-tip-label">Don't spend PTS in any outpost here</span>
+        {others.length > 0 ? (
+          <>
+            {' '}except{' '}
+            {others.map((o, i) => (
+              <span key={o.mapIndex} className="mc-outpost-world-tip-name">
+                <strong>{o.name}</strong>{i < others.length - 1 && ', '}
+              </span>
+            ))}
+          </>
+        ) : ''}
+        {' '}(saving for Barracks).
+      </>
+    )
+  }
+  return (
+    <>
+      <span className="mc-outpost-world-tip-label">Don't spend, saving for Barracks:</span>{' '}
+      <NameList rows={save} detail={(opt, plan) => ` ${opt.pts.left - plan.spend}/${BARRACKS_COST}`} />
+    </>
+  )
+}
+
 function OutpostWorld({ group, summary, optimizer }) {
   const noticeCount = group.outposts.filter(o => outpostNotices(o, summary).length > 0).length
-  // Outposts with unspent PTS: savers (holding PTS for a Barracks level) first, then plain spenders.
-  // Anything not marked as saving can simply spend everything it has.
-  const ptsRows = group.outposts
-    .map(o => ({ outpost: o, opt: optimizer.byMap.get(o.mapIndex) }))
-    .filter(({ opt }) => opt && (opt.ptsPlan.spend > 0 || opt.ptsPlan.saveFor))
-    .sort((a, b) => Boolean(b.opt.ptsPlan.saveFor) - Boolean(a.opt.ptsPlan.saveFor))
-  const ptsToSpend = ptsRows.reduce((sum, { opt }) => sum + opt.ptsPlan.spend, 0)
-  const saving = ptsRows.filter(({ opt }) => opt.ptsPlan.saveFor).length
-  const ptsChip = [
-    ptsToSpend > 0 && `${ptsToSpend} PTS to spend`,
-    saving > 0 && `${saving} saving for Barracks`,
-  ].filter(Boolean).join(' · ')
+  const pts = worldPtsNotices(group.outposts, optimizer)
+  const barracksCount = pts.buy.length + pts.save.length
   const commanderAdvice = optimizer.commanderAdvice.get(group.world)
   const postedAt = commanderAdvice
     ? [...commanderAdvice.postedAt].map(([mapIndex, n]) => `${n} at ${mapIndex >= 0 ? summary.nameOf(mapIndex) : 'no outpost'}`).join(', ')
     : ''
+  const commanderTarget = commanderAdvice?.best.mapIndex
 
   return (
     <details className={`mc-outpost-world mc-outpost-world--w${group.world}`}>
@@ -249,37 +331,48 @@ function OutpostWorld({ group, summary, optimizer }) {
         <span className="mc-outpost-world-title">World {group.world}</span>
         <span className="mc-outpost-world-stat">{group.outposts.length} outposts</span>
         <span className="mc-outpost-world-chips">
-          {ptsRows.length > 0 && (
-            <span className={`mc-outpost-world-chip mc-outpost-world-chip--pts${saving > 0 ? ' mc-outpost-world-chip--save' : ''} tooltip-anchor`}>
-              {ptsChip}
+          {pts.educationPts > 0 && (
+            <span className="mc-outpost-world-chip mc-outpost-world-chip--pts tooltip-anchor">
+              {pts.educationPts} PTS → Education
               <span className="tooltip mc-outpost-world-tip">
-                {ptsRows.map(({ outpost, opt }) => {
-                  const plan = opt.ptsPlan
-                  const kept = opt.pts.left - plan.spend
-                  return plan.saveFor ? (
-                    <span key={outpost.mapIndex} className="mc-outpost-world-tip-row mc-outpost-world-tip-row--save">
-                      ⚠ <strong>{outpost.name}</strong>:{' '}
-                      {plan.spend > 0 ? `${spendText(plan.now)}, then save` : 'Save'}{' '}
-                      {kept} / {BARRACKS_COST} PTS for Barracks {plan.saveFor}
-                    </span>
-                  ) : (
-                    <span key={outpost.mapIndex} className="mc-outpost-world-tip-row">
-                      <strong>{outpost.name}</strong>: {spendText(plan.now)}
-                    </span>
-                  )
-                })}
-                {saving === 0 && (
-                  <span className="mc-outpost-world-tip-row mc-outpost-world-tip-note">No Barracks to save for: spend everything.</span>
+                Spend every unspent PTS on Greater Education ({pts.educationCount} outpost
+                {pts.educationCount === 1 ? '' : 's'}).
+                {barracksCount > 0 && ' The outposts in the Barracks notice are the exception.'}
+              </span>
+            </span>
+          )}
+          {barracksCount > 0 && (
+            <span className="mc-outpost-world-chip mc-outpost-world-chip--save tooltip-anchor">
+              {pts.buy.length > 0 && `${pts.buy.length} Barracks to buy`}
+              {pts.buy.length > 0 && pts.save.length > 0 && ' · '}
+              {pts.save.length > 0 && `${pts.save.length} saving for Barracks`}
+              <span className="tooltip mc-outpost-world-tip">
+                {pts.buy.length > 0 && (
+                  <span className="mc-outpost-world-tip-group">
+                    <span className="mc-outpost-world-tip-label">Buy Barracks now:</span>{' '}
+                    <NameList rows={pts.buy} />
+                  </span>
                 )}
+                {pts.save.length > 0 && (
+                  <span className="mc-outpost-world-tip-group">
+                    <SaveList save={pts.save} outposts={group.outposts} />
+                  </span>
+                )}
+                <span className="mc-outpost-world-tip-group mc-outpost-world-tip-note">
+                  Each outpost's card shows its full split.
+                </span>
               </span>
             </span>
           )}
           {commanderAdvice?.needsMove && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice tooltip-anchor">
-              Move Commanders → {summary.nameOf(commanderAdvice.best.mapIndex)}
+            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice mc-outpost-world-chip--commander tooltip-anchor">
+              <img src={COMMANDER_IMG} alt="Commanders" className="mc-outpost-commander-img" />
+              <span>→</span>
+              <MobIcon mobKey={summary.mobOf(commanderTarget)} />
+              <span>{summary.nameOf(commanderTarget)}</span>
               <span className="tooltip mc-outpost-world-tip">
-                Now: {postedAt}. {summary.nameOf(commanderAdvice.best.mapIndex)} reaches its next free{' '}
-                {commanderAdvice.best.unit} fastest.
+                Move this world's Commanders to {summary.nameOf(commanderTarget)}. Now: {postedAt}.{' '}
+                It reaches its next free {commanderAdvice.best.unit} fastest.
               </span>
             </span>
           )}

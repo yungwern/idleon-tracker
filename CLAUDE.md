@@ -75,6 +75,9 @@ src/
                         #   swappable (Workers/Guards hold collection and node range); Commanders aim at the next free
                         #   Trader (Command 2, 6, 10...). PTS plan (planPts) is closed form: Trade EXP ∝ Traders × (10 + Edu),
                         #   so a Barracks level beats 12 Education once 10 + Education > 12 × Traders (ties → Education).
+                        #   World header chips (RoyalOutposts.jsx): "PTS → Education" = one total, no outpost list; Barracks
+                        #   chip names buy/save outposts (max 6, or "every outpost except" when most are saving); Commander
+                        #   chip = RGcommander.png → mob sprite (OUTPOST_MOBS in royalOutposts.js) + outpost name.
                         # farmingUtils.js — Farming market costs, exotic rotation, land rank totals + optimizer
                         #   (ported from Toolbox parsers/world-6/farming.ts: per-plot goal scores in log space,
                         #   greedy over Toolbox's "all" goal; default spends only unspent points and never lowers a level,
@@ -196,6 +199,8 @@ slot goes 'Blank' after a claim (0 fills), so unlocked = name set, or any progre
 Territories can unlock out of order (16 open while 14 locked). A Converter keep also keeps the spices to claim, so a
 batch can be claimed again (counted as ~2 claims per batch).
 
+**Sub tabs**: every in-page tab row uses `.page-tabs` / `.page-tabs--sub` from global.css (set `--tab-color`), Masterclasses included.
+
 **Adding new pages**: register the section (and its sidebar icon in `sectionIcons`) in `data/sections.js` and wire up the component in `App.jsx`
 
 **Data flow**: save file is parsed via `extractSnapshot.js` → stored in localStorage → loaded by `useSaveImport` hook → passed as props to components.
@@ -233,8 +238,8 @@ badge and the masterclass/section nav badges), `utils/minibossNotices.js`. Sideb
 each stricter than the last; rules in its comment). One mode value (`useObolCheckMode`, localStorage, held in App) feeds
 character notices, the family board notice (`utils/obolNotices.js`, Obols sidebar badge) and board glow. Main stat
 per class = `CLASS_MAIN_STATS` (classes.js) via `characterUtils getClassMainStat`; family board = STR in every mode,
-same rules as a character (`getFamilyMainStat`, Eli: STR is strongest and you're active on RG). Obols with no UQ always fail Min/Max and BiS (by
-design: the example boards steer people off them). Storage obols are never checked.
+same rules as a character (`getFamilyMainStat`, Eli: STR is strongest and you're active on RG). Obols with no UQ (`obolHasUq`) can't roll one, so in Min/Max
+and BiS a positive main stat roll stands in for the UQ roll; every other rule still applies (Eli). Storage obols are never checked.
 Saves hold negative rolls on stats an obol doesn't have (AGI -1 on a Silver Pop); the game ignores them, so every check and
 tooltip uses `getEffectiveRolls(rawName, stoneData)` first. Only negatives on the obol's base stats (or its UQ) are real.
 Obols > Example Boards has sub-tabs Family Boards (your board + one picked setup) / Personal Boards (one picked setup), each

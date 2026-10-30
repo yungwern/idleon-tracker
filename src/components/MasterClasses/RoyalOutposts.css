@@ -157,6 +157,9 @@
 
 .mc-outpost-world-chips {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
   gap: 6px;
   margin-left: auto;
 }
@@ -202,16 +205,48 @@
   text-align: left;
 }
 
-.mc-outpost-world-tip-row {
+/* Names run inline and wrap, so a world with many outposts stays a few lines tall */
+.mc-outpost-world-tip-group {
   display: block;
 }
 
-.mc-outpost-world-tip-row strong {
+.mc-outpost-world-tip-group + .mc-outpost-world-tip-group {
+  margin-top: 4px;
+}
+
+.mc-outpost-world-tip-label {
+  color: #fb923c;
+}
+
+.mc-outpost-world-tip-name strong {
   color: #f3f4f6;
 }
 
-.mc-outpost-world-tip-row--save {
-  color: #fb923c;
+.mc-outpost-world-tip-more {
+  color: #9ca3af;
+}
+
+/* Commander chip: [Commander] → [mob] Outpost */
+.mc-outpost-world-chip--commander {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 4px;
+}
+
+.mc-outpost-commander-img {
+  width: 20px;
+  height: 20px;
+}
+
+/* Mob sprites carry a lot of empty padding, so they're drawn taller and allowed to overhang the pill */
+.mc-outpost-mob-img {
+  width: auto;
+  max-width: 44px;
+  height: 34px;
+  margin: -9px -8px -7px;
+  object-fit: contain;
+  image-rendering: pixelated;
 }
 
 .mc-outpost-world-tip-note {

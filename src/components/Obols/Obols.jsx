@@ -15,13 +15,14 @@ import {
 } from '../../data'
 import TierList from '../TierList/TierList'
 import InfoPanel from '../InfoPanel/InfoPanel'
-import { AccountBoard, CharacterBoard } from './ObolBoard'
+import { AccountBoard, CharacterBoard, ObolStatsPanel } from './ObolBoard'
 import {
   OBOL_CHECK_MODES,
   passesObolCheck,
   getEffectiveRolls,
   getObolNoticeTitle,
   getFamilyMainStat,
+  obolHasUq,
 } from './ObolUtils'
 import { getFamilyObolNotices } from '../../utils/obolNotices.js'
 import { getCharacterNotices } from '../../utils/characterNotices.js'
@@ -33,7 +34,7 @@ import './Obols.css'
 function buildUpgradedIds(accountObols = [], checkMode) {
   return new Set(
     accountObols
-      .filter(slot => slot.rawName !== 'Blank' && passesObolCheck(getEffectiveRolls(slot.rawName, slot.stoneData), checkMode, getFamilyMainStat()))
+      .filter(slot => slot.rawName !== 'Blank' && passesObolCheck(getEffectiveRolls(slot.rawName, slot.stoneData), checkMode, getFamilyMainStat(), obolHasUq(slot.rawName)))
       .map(slot => slot.rawName)
   )
 }
@@ -155,8 +156,10 @@ function SetupPicker({ setups, active, onChange }) {
 }
 
 // ── Example Boards Tab ────────────────────────────────────────────────────────
-// Sub-tabs: Family Boards (the player's family board, checked, next to one example setup) and
+// Sub-tabs: Family Boards (the player's family board, checked, above one example setup) and
 // Personal Boards (one character example setup). Each sub-tab shows its notice first.
+// Boards stack with their stats beside them (like the character Obols tab); the setup picker sits
+// right above the example board so swapping setups doesn't move it.
 // Family board save order (ObolEqO1) matches the on-screen layout, so no remap is needed.
 
 const BOARD_TABS = [
@@ -164,12 +167,13 @@ const BOARD_TABS = [
   { id: 'personal', label: 'Personal Boards' },
 ]
 
-function FamilyBoardsTab({ accountObols, familyNotices, checkMode }) {
+function FamilyBoardsTab({ accountObols, familyNotices, checkMode, menagerie, hasSave }) {
   const [setupId, setSetupId] = useState(Object.keys(familyBoards)[0])
   const setup = familyBoards[setupId]
   const hasFamilyBoard = accountObols.length > 0
   const familySlots = accountObols.map(slot => slot.rawName)
   const familyStoneData = Object.fromEntries(accountObols.map((slot, i) => [i, slot.stoneData]))
+  const setupObols = setup.slots.map(rawName => ({ rawName }))
 
   return (
     <>
@@ -180,26 +184,38 @@ function FamilyBoardsTab({ accountObols, familyNotices, checkMode }) {
           checkMode={checkMode}
         />
       )}
-      <SetupPicker
-        setups={familyBoards}
-        active={setupId}
-        onChange={setSetupId}
-      />
-      <div className="obols-comparison">
-        {hasFamilyBoard && (
-          <div className="obols-comparison-col">
-            <div className="obols-section-label obols-section-label--own">Your Family Board</div>
+      {hasFamilyBoard && (
+        <div className="obols-board-group">
+          <div className="obols-section-label obols-section-label--own">Your Family Board</div>
+          <div className="obols-board-row">
             <AccountBoard
               slots={familySlots}
               stoneDataMap={familyStoneData}
               checkMode={checkMode}
               mainStat={getFamilyMainStat()}
             />
+            <ObolStatsPanel
+              obols={accountObols}
+              menagerie={menagerie}
+            />
           </div>
-        )}
-        <div className="obols-comparison-col">
-          <div className="obols-section-label">{setup.label} Board</div>
+        </div>
+      )}
+      <div className="obols-board-group">
+        <SetupPicker
+          setups={familyBoards}
+          active={setupId}
+          onChange={setSetupId}
+        />
+        <div className="obols-section-label">{setup.label} Board</div>
+        <div className="obols-board-row">
           <AccountBoard slots={setup.slots} />
+          <ObolStatsPanel
+            obols={setupObols}
+            menagerie={menagerie}
+            note="Base stats, no rerolls"
+            showMissing={hasSave}
+          />
         </div>
       </div>
     </>
@@ -234,7 +250,7 @@ function PersonalBoardsTab({ hasSave, failedByCharacter, checkMode, onOpenCharac
   )
 }
 
-function ExampleBoardsTab({ accountObols, familyNotices, hasSave, failedByCharacter, boardNotices, checkMode, onOpenCharacter }) {
+function ExampleBoardsTab({ accountObols, familyNotices, hasSave, menagerie, failedByCharacter, boardNotices, checkMode, onOpenCharacter }) {
   const [boardTab, setBoardTab] = useState('family')
 
   return (
@@ -257,6 +273,8 @@ function ExampleBoardsTab({ accountObols, familyNotices, hasSave, failedByCharac
           accountObols={accountObols}
           familyNotices={familyNotices}
           checkMode={checkMode}
+          menagerie={menagerie}
+          hasSave={hasSave}
         />
       )}
       {boardTab === 'personal' && (
@@ -450,6 +468,7 @@ export default function Obols({ snapshot, obolCheckMode, onObolCheckModeChange, 
           accountObols={accountObols}
           familyNotices={familyNotices}
           hasSave={Boolean(snapshot)}
+          menagerie={snapshot?.menagerie}
           failedByCharacter={failedByCharacter}
           boardNotices={boardNotices}
           checkMode={obolCheckMode}

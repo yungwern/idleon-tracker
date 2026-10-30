@@ -6,6 +6,15 @@
 //   A map with exactly 1 entry is still being cleared.
 // ============================================================
 
+import { mapEnemyData } from './mobsMap'
+
+// Mob sprite (images/mobs/<key>.png) per outpost map. Mining, fishing and empty maps have none.
+// The Rift isn't in mapEnemyData (Map Bonuses skip it), so it's added here.
+const OUTPOST_MOBS = {
+  ...Object.fromEntries(mapEnemyData.map(e => [e.mapIndex, e.mobKey])),
+  166: 'The_Rift',
+}
+
 // Every map that can hold an outpost, keyed by map index. Towns, shops and other
 // non-idle screens can't hold one, so they're left out.
 export const OUTPOST_MAPS = {
@@ -242,6 +251,7 @@ export function buildOutpostSummary(rg) {
     return {
       mapIndex: o.mapIndex,
       name: OUTPOST_MAPS[o.mapIndex] ?? `Map ${o.mapIndex}`,
+      mobKey: OUTPOST_MOBS[o.mapIndex] ?? null,
       world: outpostWorld(o.mapIndex),
       upgrades: o.upgrades,
       ranks,
@@ -302,5 +312,6 @@ export function buildOutpostSummary(rg) {
     priestWorlds: priestWorlds(rg?.recruitLevel ?? 0),
     compounding,
     nameOf: mapIndex => OUTPOST_MAPS[mapIndex] ?? `Map ${mapIndex}`,
+    mobOf: mapIndex => OUTPOST_MOBS[mapIndex] ?? null,
   }
 }

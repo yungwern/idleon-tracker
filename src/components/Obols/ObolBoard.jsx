@@ -3,7 +3,7 @@ import {
   CHAR_OBOL_SHAPES,
   FAMILY_OBOL_SHAPES,
 } from '../../data'
-import { passesObolCheck, getObolRollNeeds, getEffectiveRolls, getObolBoardStats } from './ObolUtils'
+import { passesObolCheck, getObolRollNeeds, getEffectiveRolls, getObolBoardStats, obolHasUq } from './ObolUtils'
 import { getObolMiscMulti } from '../../utils/menagerieUtils.js'
 import './ObolBoard.css'
 
@@ -44,7 +44,7 @@ const ANY_STAT = 'STR/AGI/WIS/LUK'
 
 function getMissingRollHints(stoneData, checkMode, mainStat, uqNames) {
   const uqText = uqNames.map(uqLabel).join(' / ')
-  return getObolRollNeeds(stoneData, checkMode, mainStat).map(({ need, stat }) => {
+  return getObolRollNeeds(stoneData, checkMode, mainStat, uqNames.length > 0).map(({ need, stat }) => {
     let text
     if (need === 'any') text = uqText ? `${uqText} or any stat ? 🎲` : `${ANY_STAT} or WP ? 🎲`
     if (need === 'uq') text = uqText ? `${uqText} ? 🎲` : 'No unique bonus to roll'
@@ -90,7 +90,7 @@ export function ObolSlot({ rawName, stoneData: savedRolls, size = 'md', shape, c
   // Negative rolls on stats this obol doesn't have do nothing in game, so they're dropped here
   const stoneData = getEffectiveRolls(rawName, savedRolls)
   const checked = stoneData !== undefined
-  const passes = checked && passesObolCheck(stoneData, checkMode, mainStat)
+  const passes = checked && passesObolCheck(stoneData, checkMode, mainStat, obolHasUq(rawName))
   const slotState = checked ? (passes ? ' obol-slot--upgraded' : ' obol-slot--no-bonus') : ''
 
   // Base stat chips
@@ -156,13 +156,15 @@ export function ObolSlot({ rawName, stoneData: savedRolls, size = 'md', shape, c
 
 // ── Board Totals ("What it gives") ────────────────────────────────────────────
 // Sum of every equipped obol on one board (ObolUtils getObolBoardStats). obols: save-order slots.
+// Example boards pass slots with no stoneData (rolls count as 0) plus a note saying so.
+// showMissing: false hides the "re-import" hint (no save loaded, so there's nothing to re-import).
 
 function formatTotal(value, percent) {
   const rounded = Math.round(value * 10) / 10
   return `+${rounded.toLocaleString()}${percent ? '%' : ''}`
 }
 
-export function ObolStatsPanel({ obols, menagerie }) {
+export function ObolStatsPanel({ obols, menagerie, note = null, showMissing = true }) {
   const multi = getObolMiscMulti(menagerie)
   const rows = getObolBoardStats(obols, multi.value)
   const filled = obols.filter(slot => slot.rawName && slot.rawName !== 'Blank').length
@@ -173,6 +175,7 @@ export function ObolStatsPanel({ obols, menagerie }) {
       <div className="obol-stats-head">
         <span className="obol-stats-title">What it gives</span>
         <span className="obol-stats-sub">{filled}/{obols.length} slots filled</span>
+        {note && <span className="obol-stats-sub">{note}</span>}
       </div>
       {rows.length === 0 && <p className="obol-stats-empty">No stats from obols</p>}
       {rows.map(row => (
@@ -187,7 +190,7 @@ export function ObolStatsPanel({ obols, menagerie }) {
       {hasMisc && multi.level > 0 && (
         <p className="obol-stats-note">* includes Silver Jellyfish ×{Math.round(multi.value * 100) / 100} (LV {multi.level})</p>
       )}
-      {hasMisc && multi.missing && (
+      {hasMisc && multi.missing && showMissing && (
         <p className="obol-stats-note">Re-import your save to include the Silver Jellyfish bonus</p>
       )}
     </div>

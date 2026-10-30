@@ -760,11 +760,11 @@ export default function MasterClasses({ snapshot }) {
       />
 
       {/* ── Class Nav ── */}
-      <div className="mc-nav">
+      <div className="page-tabs mc-nav">
         {MASTERCLASSES.map(mc => (
           <button
             key={mc.id}
-            className={`mc-nav-btn${activeId === mc.id ? ' mc-nav-btn--active' : ''}`}
+            className={`page-tab-btn mc-nav-btn${activeId === mc.id ? ' page-tab-btn--active' : ''}`}
             onClick={() => selectClass(mc.id)}
             style={{ '--class-color': mc.color }}
           >
@@ -782,11 +782,12 @@ export default function MasterClasses({ snapshot }) {
         <div className="mc-class-body" style={{ '--class-color': activeMc.color }}>
 
           {/* ── Section Nav ── */}
-          <div className="mc-section-nav">
+          {/* Same shared sub-tab row as every other section (page-tabs--sub in global.css) */}
+          <div className="page-tabs page-tabs--sub mc-section-nav">
             {activeMc.sections.map(section => (
               <button
                 key={section.id}
-                className={`mc-section-nav-btn${activeSectionId === section.id ? ' mc-section-nav-btn--active' : ''}`}
+                className={`page-tab-btn${activeSectionId === section.id ? ' page-tab-btn--active' : ''}`}
                 onClick={() => setActiveSectionId(section.id)}
               >
                 {section.title}

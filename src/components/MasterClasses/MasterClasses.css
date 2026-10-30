@@ -375,27 +375,14 @@
 .map-bonus-stat[data-type="exp"] strong { color: #fbbf24; }
 .map-bonus-stat[data-type="afk"] strong { color: #60a5fa; }
 
-/* ── Master Classes Nav ── */
+/* ── Master Classes Nav ──
+   Shared .page-tabs (global.css); only the class colors and spacing differ */
 .mc-nav {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
+  --tab-color: var(--active-class-color);
   margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .mc-nav-btn {
-  position: relative;
-  padding: 10px 4px;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  border: none;
-  background: none;
-  color: #6b7280;
-  cursor: pointer;
-  transition: color 0.15s;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -405,55 +392,11 @@
   color: var(--class-color);
 }
 
-.mc-nav-btn--active {
-  color: var(--active-class-color);
-}
-
-.mc-nav-btn--active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: var(--active-class-color);
-}
-
-/* ── Section Nav (inner) ── */
+/* ── Section Nav (inner): shared .page-tabs--sub ── */
 .mc-section-nav {
-  display: flex;
+  --tab-color: var(--class-color);
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 0 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 12px;
-}
-
-.mc-section-nav-btn {
-  padding: 5px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
-  color: #6b7280;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
-}
-
-.mc-section-nav-btn:hover {
-  color: var(--class-color);
-  border-color: var(--class-color);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.mc-section-nav-btn--active {
-  color: var(--class-color);
-  border-color: var(--class-color);
-  background: rgba(255, 255, 255, 0.05);
+  row-gap: 0;
 }
 
 /* ── Active Class Header Pill ── */

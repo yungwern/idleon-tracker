@@ -74,7 +74,7 @@
   background: rgba(251, 191, 36, 0.1);
 }
 
-/* Label for the player's own board (vs the example board next to it) */
+/* Label for the player's own board (vs the example board below it) */
 .obols-section-label--own {
   color: #a0c4ff;
 }
@@ -86,18 +86,32 @@
   gap: 32px;
 }
 
-.obols-comparison {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.obols-comparison-col {
+/* Family Boards: one group per board (label, then board + stats side by side, wrapping under on narrow
+   screens like the character Obols tab). The example group also holds the setup picker. */
+.obols-board-group {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 12px;
+}
+
+.obols-board-group .obols-section-label {
+  margin-bottom: 0;
+}
+
+.obols-board-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* Stats panel shrinks from 240px down to 180px before it wraps under the board, so the pair stays
+   side by side down to ~552px (356px board + 16px gap + 180px). */
+.obols-board-row .obol-stats {
+  flex: 1 1 180px;
+  max-width: 240px;
 }
 
 
