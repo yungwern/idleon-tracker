@@ -58,6 +58,9 @@ const extractors = {
   level: (json, i) => json[`Lv0_${i}`]?.[0] ?? null,
   // Lv0_i = [class LV, then skill LVs by skill index (16 = Farming, 18 = Summoning)]
   skillLevels: (json, i) => parseRaw(json[`Lv0_${i}`]) ?? [],
+  // Exp0_i / ExpReq0_i = EXP into the current LV / EXP needed for the next LV, same skill indexes as Lv0_i
+  skillExp: (json, i) => (parseRaw(json[`Exp0_${i}`]) ?? []).map(Number),
+  skillExpReq: (json, i) => (parseRaw(json[`ExpReq0_${i}`]) ?? []).map(Number),
   // KLA_i[map][0] = kills still needed to clear each map (0 or below = cleared)
   mapKillsLeft: (json, i) => (parseRaw(json[`KLA_${i}`]) ?? []).map(entry => entry?.[0] ?? 0),
   // SL_i = { talentId: base level } on the live talent tab

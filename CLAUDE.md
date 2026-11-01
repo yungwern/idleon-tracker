@@ -243,7 +243,12 @@ talent tab and built from that tab's talents (Toolbox talents.json); `characterU
 
 **Notifications**: each count has one source so every badge agrees. `utils/characterNotices.js` (character
 Overview), `utils/masterclassNotices.js` (returns `{ masterclassId: { sectionId: count } }`, feeding the sidebar
-badge and the masterclass/section nav badges), `utils/minibossNotices.js`. Sidebar badges are wired in
+badge and the masterclass/section nav badges), `utils/minibossNotices.js`.
+**Skills tab** (Character Card): in-game menu order (`getSkillMenuOrder`), EXP from Exp0_i / ExpReq0_i. Maestro hands
+(`skillUtils getMaestroHandStatus`): last Maestro-line character (the Vman) gives other characters skill EXP/eff only in
+skills where their LV is strictly lower (ties get nothing). Tracked for mining/chopping/fishing/catching/trapping/worship
+(Eli; Smithing EXP also counts but is left out). Amber = lead ≤ `MAESTRO_LEAD_WARNING` (5). Feeds a character notice.
+Sidebar badges are wired in
 `sectionNotices` in `App.jsx`; in-page badges use the shared `.notice-badge` class in `global.css`.
 **Obol roll check**: `passesObolCheck` in `Obols/ObolUtils.js` is the only obol check (Standard / Min/Max / BiS Setup,
 each stricter than the last; rules in its comment). One mode value (`useObolCheckMode`, localStorage, held in App) feeds

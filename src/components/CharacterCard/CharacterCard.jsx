@@ -4,6 +4,13 @@ import AnvilProduction from '../AnvilProduction/AnvilProduction.jsx'
 import { CharacterBoard, ObolStatsPanel } from '../Obols/ObolBoard.jsx'
 import { getCharacterNotices } from '../../utils/characterNotices.js'
 import { getClassMainStat } from '../../utils/characterUtils.js'
+import {
+  getSkillMenuOrder,
+  getSkillLevel,
+  getSkillExp,
+  getMaestroHandStatus,
+} from '../../utils/skillUtils.js'
+import { formatBigNumber } from '../../utils/cogBoardUtils.js'
 import { getObolNoticeTitle } from '../Obols/ObolUtils.js'
 import { prayerMap } from '../../data/prayerMap'
 import { obolByRawName, CHAR_OBOL_SAVE_TO_DISPLAY } from '../../data'
@@ -85,18 +92,147 @@ function CharacterObolsTab({ charIndex, snapshot, obolCheckMode }) {
   )
 }
 
+// Hover details for one skill, like the top of its in-game skill page
+function SkillTooltip({ character, skill, hand }) {
+  const level = getSkillLevel(character, skill)
+  const exp = getSkillExp(character, skill)
+
+  return (
+    <span className="tooltip tooltip--wrap buff-tooltip char-skill-tooltip">
+      <span className="buff-tooltip-name char-skill-tooltip-name">{skill}</span>
+      <span className="buff-tooltip-source">LV {level}</span>
+      {exp
+        ? (
+          <>
+            <span className="char-skill-exp-bar">
+              <span
+                className="char-skill-exp-fill"
+                style={{ '--exp-percent': `${exp.percent}%` }}
+              />
+            </span>
+            <span className="char-skill-exp-text">
+              EXP {formatBigNumber(exp.exp)} / {formatBigNumber(exp.req)} ({Math.floor(exp.percent)}%)
+            </span>
+          </>
+        )
+        : <span className="buff-tooltip-warning">Re-import your save to see skill EXP</span>}
+      {hand && <MaestroHandLine hand={hand} />}
+    </span>
+  )
+}
+
+// Tooltip line for a Maestro hand skill. hand = { entry, isMaestro, maestroName, level }
+function MaestroHandLine({ hand }) {
+  const { entry, isMaestro, maestroName, level } = hand
+
+  if (isMaestro) {
+    if (entry.blocked.length > 0) {
+      return (
+        <span className={`char-skill-hand-line char-skill-hand-line--${entry.status}`}>
+          Maestro hands: {entry.blocked.map(other => `${other.name} (${other.level})`).join(', ')}
+          {entry.blocked.length === 1 ? ' is' : ' are'} tied or above, so no bonus for them
+        </span>
+      )
+    }
+    return (
+      <span className={`char-skill-hand-line char-skill-hand-line--${entry.status}`}>
+        Maestro hands: {entry.lead} LV ahead of {entry.closest?.name} ({entry.closest?.level})
+      </span>
+    )
+  }
+
+  const gets = level < entry.maestroLevel
+  return (
+    <span className={`char-skill-hand-line char-skill-hand-line--${gets ? 'safe' : 'blocked'}`}>
+      {gets
+        ? `Below ${maestroName} (${entry.maestroLevel}): gets the Maestro hand bonus`
+        : `Tied or above ${maestroName} (${entry.maestroLevel}): no Maestro hand bonus`}
+    </span>
+  )
+}
+
+// Corner marker on a hand skill: the Vman's lead (+19 / -25) or ✓ / ✗ for everyone else
+function MaestroHandMarker({ hand }) {
+  const { entry, isMaestro, level } = hand
+  if (isMaestro) {
+    const lead = entry.blocked.length > 0
+      ? entry.maestroLevel - entry.blocked[0].level
+      : entry.lead
+    return (
+      <span className={`char-skill-hand char-skill-hand--${entry.status}`}>
+        {lead > 0 ? `+${lead}` : lead}
+      </span>
+    )
+  }
+  const gets = level < entry.maestroLevel
+  return (
+    <span className={`char-skill-hand char-skill-hand--${gets ? 'safe' : 'blocked'}`}>
+      {gets ? '✓' : '✗'}
+    </span>
+  )
+}
+
+// Skills tab: every skill's icon and level, laid out like the in-game skill menu
+function CharacterSkillsTab({ charIndex, snapshot }) {
+  const character = snapshot?.characters?.[charIndex]
+  const handStatus = getMaestroHandStatus(snapshot?.characters)
+  const getHand = skill => {
+    const entry = handStatus?.skills.find(item => item.skill === skill)
+    if (!entry) return null
+    return {
+      entry,
+      isMaestro: charIndex === handStatus.maestroIndex,
+      maestroName: handStatus.maestroName,
+      level: getSkillLevel(character, skill),
+    }
+  }
+
+  if (!character?.skillLevels?.length) {
+    return <div className="char-skills-empty">No skill data available — import a save to see skill levels.</div>
+  }
+
+  return (
+    <div className="char-skills-grid">
+      {getSkillMenuOrder().map((skill, i) => {
+        if (!skill) return <div key={`empty-${i}`} />
+        const hand = getHand(skill)
+        return (
+          <div
+            key={skill}
+            className="char-skill tooltip-anchor"
+          >
+            {hand && <MaestroHandMarker hand={hand} />}
+            <img
+              src={`images/skills/${skill}.png`}
+              alt={skill}
+              className="char-skill-icon"
+            />
+            <span className="char-skill-level">LV {getSkillLevel(character, skill)}</span>
+            <SkillTooltip
+              character={character}
+              skill={skill}
+              hand={hand}
+            />
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Overview Notifications ────────────────────────────────────────────────────
 // Things on this character that need attention. Add new checks here as
 // more notification types are built.
-function CharacterNotices({ charIndex, snapshot, obolCheckMode, onViewObols }) {
+function CharacterNotices({ charIndex, snapshot, obolCheckMode, onViewObols, onViewSkills }) {
   const {
     noBonus,
     noBonusTotal,
     emptySlots,
     unspentTalents,
     unspentTotal,
+    maestroHand,
     count,
-  } = getCharacterNotices(snapshot?.characters?.[charIndex], obolCheckMode)
+  } = getCharacterNotices(snapshot?.characters?.[charIndex], obolCheckMode, snapshot?.characters, charIndex)
   const hasNotices = count > 0
 
   if (!snapshot) return null
@@ -146,6 +282,31 @@ function CharacterNotices({ charIndex, snapshot, obolCheckMode, onViewObols }) {
             {unspentTalents.map(({ tab, unspent }) => (
               <span key={tab} className="char-notice-chip">
                 Tab {tab}: {unspent} {unspent === 1 ? 'point' : 'points'}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {maestroHand.skills.length > 0 && (
+        <div className="char-notice">
+          <div className="char-notice-header">
+            <span className="char-notice-title">
+              ⚠ Maestro hand bonus lost in {maestroHand.skills.length} {maestroHand.skills.length === 1 ? 'skill' : 'skills'}
+            </span>
+            <button className="char-notice-link" onClick={onViewSkills}>
+              View skills →
+            </button>
+          </div>
+          <div className="char-notice-items">
+            {maestroHand.skills.map(entry => (
+              <span key={entry.skill} className="char-notice-chip char-notice-chip--skill">
+                <img
+                  src={`images/skills/${entry.skill}.png`}
+                  alt={entry.skill}
+                  className="char-notice-chip-icon"
+                />
+                {entry.blocked.map(other => `${other.name} ${other.level}`).join(', ')}
               </span>
             ))}
           </div>
@@ -245,8 +406,8 @@ export default function CharacterCard({ character, charIndex, snapshot, obolChec
       )}
 
       {/* ── Tab Navigation ── */}
-      <div className="card-tabs" style={{ '--tab-count': 2 }}>
-        {['overview', 'obols'].map(tab => (
+      <div className="card-tabs" style={{ '--tab-count': 3 }}>
+        {['overview', 'skills', 'obols'].map(tab => (
           <button
             key={tab}
             className={activeTab === tab ? 'active' : ''}
@@ -267,6 +428,7 @@ export default function CharacterCard({ character, charIndex, snapshot, obolChec
               snapshot={snapshot}
               obolCheckMode={obolCheckMode}
               onViewObols={() => setActiveTab('obols')}
+              onViewSkills={() => setActiveTab('skills')}
             />
             <section className="char-overview-section">
               <h3 className="char-overview-heading">Premium Gear</h3>
@@ -279,6 +441,13 @@ export default function CharacterCard({ character, charIndex, snapshot, obolChec
               </section>
             )}
           </div>
+        )}
+
+        {activeTab === 'skills' && (
+          <CharacterSkillsTab
+            charIndex={charIndex}
+            snapshot={snapshot}
+          />
         )}
 
         {activeTab === 'obols' && (

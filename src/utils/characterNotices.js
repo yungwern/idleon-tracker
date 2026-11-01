@@ -4,10 +4,12 @@
 import { getObolNotices } from '../components/Obols/ObolUtils.js'
 import { getUnspentSuperTalents } from './talentUtils.js'
 import { getClassMainStat } from './characterUtils.js'
+import { getMaestroHandNotices } from './skillUtils.js'
 
 // snapshotChar: snapshot.characters[i] (obols, superTalentPresets, level, class)
 // obolCheckMode: Obols page roll check (ObolUtils OBOL_CHECK_MODES)
-export function getCharacterNotices(snapshotChar, obolCheckMode) {
+// characters + charIndex: snapshot.characters and this character's index (Maestro hand check)
+export function getCharacterNotices(snapshotChar, obolCheckMode, characters, charIndex) {
   const level = snapshotChar?.level ?? 0
   const mainStat = getClassMainStat(snapshotChar?.class)
   const { noBonus, emptySlots } = getObolNotices(snapshotChar?.obols ?? [], level, obolCheckMode, mainStat)
@@ -16,7 +18,13 @@ export function getCharacterNotices(snapshotChar, obolCheckMode) {
   const unspentTotal = unspentTalents.reduce((sum, t) => sum + t.unspent, 0)
 
   // Number of notifications shown in the Overview (one per kind of issue)
-  const count = [noBonusTotal > 0, emptySlots > 0, unspentTotal > 0].filter(Boolean).length
+  const maestroHand = getMaestroHandNotices(characters, charIndex)
+  const count = [
+    noBonusTotal > 0,
+    emptySlots > 0,
+    unspentTotal > 0,
+    maestroHand.skills.length > 0,
+  ].filter(Boolean).length
 
   return {
     noBonus,
@@ -24,6 +32,7 @@ export function getCharacterNotices(snapshotChar, obolCheckMode) {
     emptySlots,
     unspentTalents,
     unspentTotal,
+    maestroHand,
     count,
   }
 }

@@ -63,7 +63,7 @@ export default function App() {
       nametag: nametagId !== 'Blank' ? { id: nametagId, equipped: true } : null,
       trophy:  trophyId  !== 'Blank' ? { id: trophyId,  equipped: true } : null,
       superTalentPresets: c.superTalentPresets ?? null,
-      noticeCount: getCharacterNotices(c, obolCheckMode).count,
+      noticeCount: getCharacterNotices(c, obolCheckMode, snapshot.characters, i).count,
     }
   })
 
