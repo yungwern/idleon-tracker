@@ -251,9 +251,9 @@ export default function Cooking({ snapshot }) {
         intro="This page is used to track ribbon levels on each meal. A few things to keep in mind when using this page:"
         items={[
           'Meals are sorted into categories by bonus types and each category is sorted in priority of which meal to ribbon first.',
-          'Categories are not ordered in priority — use your best judgement to prioritize categories based on account needs.',
-          'The category "NRLB / NMLB" is used to easily identify which tier ribbons are no longer needed. For example, if a meal is shown in this category with a level 5 ribbon, then you know that any ribbons below level 5 can be instantly upgraded in your ribbon shelf. This section is NOT intended to be used as a "which ribbon to upgrade next section," although it can be used that way if you want to evenly upgrade ribbon tiers across all your meals.',
-          'In general it\'s best to reach ribbon breakpoints of 5, 10, 15, 20, and 25. Reaching these breakpoints provides the highest multi increases.',
+          'The categories themselves are not ordered in priority — use your best judgement to prioritize categories based on account needs.',
+          '(NRLB) is used to easily identify which tier ribbons are no longer needed. If a meal is shown in this category with a level 5 ribbon, then you know that any ribbons below level 5 can be instantly upgraded in your ribbon shelf. This is NOT intended to be used as a "which ribbon to upgrade next section," although it can be used that way if you want to evenly upgrade ribbon tiers across all your meals.',
+          'In general it\'s best to reach ribbon breakpoints of 5, 10, 15, 20, and 25. Reaching these breakpoints provides the highest multi increases. See the breakdown in the Ribbon Shelf tab for more information.',
           'The gold ladle badge is the meal\'s Cooking Mastery level. Hover it to see the combined multiplier. Each mastery point is worth less than the last (the 1st point is +17%, the 10th only about +1.5%).',
           'Remember that you can upgrade ribbons on existing meals by dragging a ribbon of the same tier on top of it, the same way you upgrade in the ribbon shelf.',
         ]}
@@ -329,7 +329,7 @@ export default function Cooking({ snapshot }) {
 
           {uncategorized.length > 0 && (
             <div className="cooking-meal-group">
-              <div className="cooking-group-label">Uncategorized</div>
+              <div className="cooking-group-label">Not Worth a Ribbon</div>
               <div className="meal-grid">
                 {uncategorized.map(({ pngKey, level, ribbonRank, nodeLevel }) => (
                   <MealCard
@@ -347,4 +347,4 @@ export default function Cooking({ snapshot }) {
       )}
     </div>
   )
-}
+}

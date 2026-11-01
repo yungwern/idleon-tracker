@@ -435,11 +435,13 @@ export default function Obols({ snapshot, obolCheckMode, onObolCheckModeChange, 
         items={[
           'Obols come in four shapes (Circle, Square, Hexagon, Sparkle), and each board slot only takes its matching shape.',
           'Tiers go Bronze → Silver → Gold → Platinum → Dementia, so any obol you farm can be upgraded all the way to Dementia.',
+          'Hyper Obols are only available as limited time gem shop purchases.',
           <strong>DO NOT UPGRADE POP OBOLS PAST SILVER!!!</strong>,
-          'Obol Fragments reroll bonus stats. Save them mainly for Silver Pop Obols.',
+          'Use Obol Fragments to reroll bonus stats. Early on save them mainly for Silver Pop Obols.',
           'Go DR over everything else. Other sets have niche uses, but for most accounts just set everyone to DR and forget about it.',
-          'Skilling Obols can boost print sizes, but I wouldn\'t bother. Buy what you can from the Alchemy Shop until you can upgrade each type to max tier for the Slab.',
+          'Skilling Obols can boost print sizes, but I wouldn\'t bother. Buy what you can from the Alchemy Shop until you can upgrade each obol type to the max tier for filling out the Slab in World 5.',
           'Construction Obols only work on the character you\'re active on. Equip them, open Construction in the Codex to update speeds, then swap back to your DR obols and you keep the bonus.',
+          'Use the selector below to change the obol roll check mode. The stricter the mode, the more obols will be flagged in your family and personal boards as failing the check. Don\'t worry about min maxing your rolls until you have access to the Silver Jellyfish in World 7. Even then, the gains are minimal.', 
         ]}
       />
 

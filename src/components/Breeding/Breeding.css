@@ -734,3 +734,157 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* ── Shiny Planner ── */
+.shiny-plan {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.shiny-plan-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.shiny-plan-stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 160px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: default;
+}
+
+.shiny-plan-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.shiny-plan-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.shiny-plan-stat-note {
+  font-size: 11px;
+  color: #60a5fa;
+}
+
+.shiny-plan-note {
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.shiny-plan-done {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4ade80;
+  text-align: center;
+}
+
+.shiny-plan-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.shiny-plan-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.shiny-plan-heading {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.shiny-plan-heading--out {
+  color: #f87171;
+}
+
+.shiny-plan-heading--in {
+  color: #4ade80;
+}
+
+.shiny-plan-keep {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px;
+}
+
+.shiny-plan-pet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left-width: 3px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.shiny-plan-pet--out {
+  border-left-color: #f87171;
+}
+
+.shiny-plan-pet--in {
+  border-left-color: #4ade80;
+}
+
+.shiny-plan-pet--keep {
+  border-left-color: #60a5fa;
+}
+
+.shiny-plan-pet-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.shiny-plan-pet-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  min-width: 0;
+}
+
+.shiny-plan-pet-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f3f4f6;
+}
+
+.shiny-plan-pet-level {
+  font-size: 11px;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.shiny-plan-pet-note {
+  width: 100%;
+  font-size: 11px;
+  color: #9ca3af;
+}

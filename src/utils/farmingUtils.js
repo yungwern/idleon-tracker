@@ -1313,6 +1313,7 @@ const DEPOT_EXOTIC = 40
 const DEPOT_VAULT = 79
 
 export const CROP_DEPOT_BONUSES = {
+  shiny: { jade: 28, value: crops => 7 * Math.round(crops) }, // Science Crayon: Shiny Mob LV Up Rate + Breeding Rate
   spelunky: { jade: 40, value: crops => 5 * Math.round(Math.max(0, crops - 200)) }, // Science Fancy Pen: Spelunking POW + Amber
 }
 

@@ -22,6 +22,22 @@ export function getShinyLevel(shinyPetsLevels, worldIndex, petIndex, maxShinyLev
   return counter === 0 ? 0 : level === 0 ? 1 : level
 }
 
+// 446114 → '446K', 1.2e9 → '1.20B'
+export function formatShinyNumber(value) {
+  if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`
+  if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`
+  if (value >= 1e3) return `${Math.round(value / 1e3)}K`
+  return `${Math.round(value)}`
+}
+
+// Fence time: '5.1 days', '7 hrs', '—' when unknown
+export function formatShinyDays(days) {
+  if (days === null || days === undefined || !Number.isFinite(days)) return '—'
+  if (days < 1) return `${Math.max(1, Math.round(days * 24))} hrs`
+  if (days < 100) return `${days.toFixed(1)} days`
+  return `${Math.round(days).toLocaleString()} days`
+}
+
 // Max shiny level: the base 20 plus every active buff (breedingBuffMap keys on snapshot.breeding)
 export function getMaxShinyLevelFor(breeding) {
   return Object.entries(breedingBuffMap).reduce((max, [key, buff]) => (

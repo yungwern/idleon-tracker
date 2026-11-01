@@ -5,15 +5,17 @@ import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './RoyalOutposts.css'
 
-// What still needs doing on one outpost; only for features the account has unlocked.
-// Purity needs a Priest recruited in the outpost's world before it can be raised.
-function outpostNotices(outpost, summary) {
-  const notices = []
-  if (summary.glorifyUnlocked && !outpost.glorified) notices.push('Not Glorified')
-  if (summary.purityUnlocked && summary.priestWorlds.has(outpost.world) && !outpost.purified) {
-    notices.push('Not Purified')
-  }
-  return notices
+// Glorifying and purifying take a long time, so unfinished ones are plain status tags, not notices.
+// Purity only shows once the world has a Priest (the rank bar already shows the progress).
+function outpostStatusTags(outpost, summary, priestsHere) {
+  return [
+    summary.glorifyUnlocked && !outpost.glorified && { key: 'unglorified', label: 'Not Glorified', mod: 'pending' },
+    priestsHere > 0 && {
+      key: 'priests',
+      label: `${priestsHere} Priest${priestsHere === 1 ? '' : 's'} here`,
+      mod: 'priest',
+    },
+  ].filter(Boolean)
 }
 
 function OutpostRankRow({ bar }) {
@@ -159,7 +161,7 @@ function OutpostAdvice({ opt, world, worldCommanders, isBestCommand, commandersS
 }
 
 function OutpostCard({ outpost, summary, optimizer }) {
-  const notices = outpostNotices(outpost, summary)
+  const priestsHere = optimizer.priestAdvice.get(outpost.world)?.postedAt.get(outpost.mapIndex) ?? 0
   const isSupport = outpost.mode === SUPPORT_CAMP_MODE
   const opt = optimizer.byMap.get(outpost.mapIndex)
   // Purity only matters once the world has a Priest (or the outpost already has some)
@@ -169,11 +171,11 @@ function OutpostCard({ outpost, summary, optimizer }) {
     isSupport && { key: 'support', label: 'Support Camp', mod: 'support' },
     outpost.mode === SAVAGE_STRONGHOLD_MODE && { key: 'savage', label: 'Savage Stronghold', mod: 'savage' },
     outpost.purified && { key: 'purified', label: 'Purified', mod: 'purified' },
-    ...notices.map(n => ({ key: n, label: `! ${n}`, mod: 'notice' })),
+    ...outpostStatusTags(outpost, summary, priestsHere),
   ].filter(Boolean)
 
   return (
-    <div className={`mc-outpost-card${notices.length ? ' mc-outpost-card--notice' : ''}`}>
+    <div className="mc-outpost-card">
       <div className="mc-outpost-head">
         <span className="mc-outpost-name">
           {outpost.glorified && <span className="mc-outpost-glorified tooltip-anchor">★<span className="tooltip">Glorified</span></span>}
@@ -225,10 +227,11 @@ function OutpostCard({ outpost, summary, optimizer }) {
 }
 
 const COMMANDER_IMG = 'images/masterclass/royal guardian/RGcommander.png'
+const PRIEST_IMG = 'images/masterclass/royal guardian/RGpriest.png'
 
 function MobIcon({ mobKey }) {
   if (!mobKey) return null
-  return <img src={`images/mobs/${mobKey}.png`} alt="" className="mc-outpost-mob-img" />
+  return <img src={`images/mobs/trimmed/${mobKey}.png`} alt="" className="mc-outpost-mob-img" />
 }
 
 // Splits a world's unspent PTS into two notices:
@@ -316,14 +319,14 @@ function SaveList({ save, outposts }) {
 }
 
 function OutpostWorld({ group, summary, optimizer }) {
-  const noticeCount = group.outposts.filter(o => outpostNotices(o, summary).length > 0).length
   const pts = worldPtsNotices(group.outposts, optimizer)
   const barracksCount = pts.buy.length + pts.save.length
   const commanderAdvice = optimizer.commanderAdvice.get(group.world)
-  const postedAt = commanderAdvice
-    ? [...commanderAdvice.postedAt].map(([mapIndex, n]) => `${n} at ${mapIndex >= 0 ? summary.nameOf(mapIndex) : 'no outpost'}`).join(', ')
-    : ''
   const commanderTarget = commanderAdvice?.best.mapIndex
+  const priestAdvice = optimizer.priestAdvice.get(group.world)
+  const describePosts = postedAt => [...postedAt]
+    .map(([mapIndex, n]) => `${n} at ${mapIndex >= 0 ? summary.nameOf(mapIndex) : 'no outpost'}`)
+    .join(', ')
 
   return (
     <details className={`mc-outpost-world mc-outpost-world--w${group.world}`}>
@@ -365,20 +368,56 @@ function OutpostWorld({ group, summary, optimizer }) {
             </span>
           )}
           {commanderAdvice?.needsMove && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice mc-outpost-world-chip--commander tooltip-anchor">
-              <img src={COMMANDER_IMG} alt="Commanders" className="mc-outpost-commander-img" />
+            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice mc-outpost-world-chip--unit tooltip-anchor">
+              <img src={COMMANDER_IMG} alt="Commanders" className="mc-outpost-unit-img" />
               <span>→</span>
               <MobIcon mobKey={summary.mobOf(commanderTarget)} />
               <span>{summary.nameOf(commanderTarget)}</span>
               <span className="tooltip mc-outpost-world-tip">
-                Move this world's Commanders to {summary.nameOf(commanderTarget)}. Now: {postedAt}.{' '}
+                Move this world's Commanders to {summary.nameOf(commanderTarget)}. Now:{' '}
+                {describePosts(commanderAdvice.postedAt)}.{' '}
                 It reaches its next free {commanderAdvice.best.unit} fastest.
               </span>
             </span>
           )}
-          {noticeCount > 0 && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice">
-              {noticeCount} {noticeCount === 1 ? 'needs' : 'need'} attention
+          {priestAdvice?.needsMove && (
+            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice mc-outpost-world-chip--unit tooltip-anchor">
+              <img src={PRIEST_IMG} alt="Priests" className="mc-outpost-unit-img" />
+              <span>→</span>
+              <MobIcon mobKey={summary.mobOf(priestAdvice.target)} />
+              <span>{summary.nameOf(priestAdvice.target)}</span>
+              <span className="tooltip mc-outpost-world-tip">
+                Move this world's Priests to {summary.nameOf(priestAdvice.target)}. Now:{' '}
+                {describePosts(priestAdvice.postedAt)}.{' '}
+                {priestAdvice.global
+                  ? `Purifying ${summary.nameOf(priestAdvice.target)} triples the ${priestAdvice.target === 1 ? 'Intel' : 'Command'} bar on every outpost, so it comes first.`
+                  : 'Priests on one outpost purify it sooner than spread out; this is the closest to Purity Rank 1.'}
+              </span>
+            </span>
+          )}
+          {priestAdvice?.campsToLink.length > 0 && (
+            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice mc-outpost-world-chip--unit tooltip-anchor">
+              <span>{priestAdvice.campsToLink.length} Support Camp{priestAdvice.campsToLink.length === 1 ? '' : 's'}</span>
+              <span>→</span>
+              <MobIcon mobKey={summary.mobOf(priestAdvice.target)} />
+              <span>{summary.nameOf(priestAdvice.target)}</span>
+              <span className="tooltip mc-outpost-world-tip">
+                <span className="mc-outpost-world-tip-group">
+                  Link these Support Camps to {summary.nameOf(priestAdvice.target)}, where the Priests are purifying:
+                </span>
+                {priestAdvice.campsToLink.map(camp => (
+                  <span key={camp.mapIndex} className="mc-outpost-world-tip-group">
+                    <strong>{camp.name}</strong>
+                    {camp.supportTargets.length > 0
+                      ? ` (now boosts ${camp.supportTargets.map(summary.nameOf).join(', ')})`
+                      : ' (not linked)'}
+                  </span>
+                ))}
+                <span className="mc-outpost-world-tip-group mc-outpost-world-tip-note">
+                  Their boost speeds up Purity like any other rank. Every Purified Map adds Collection Rate to all
+                  outposts, so it's worth the Trade or Command ranks the old link was helping.
+                </span>
+              </span>
             </span>
           )}
         </span>
@@ -421,10 +460,10 @@ export default function RoyalOutposts({ snapshot }) {
   return (
     <div className="mc-outposts">
       <InfoPanel
-        intro="Your Kingdom's outposts by world. Click a world to open it."
+        intro="Your Kingdom's outposts by world."
         items={[
-          `Orange lines are suggested changes, worked out by simulating each outpost ${HORIZON_DAYS} days ahead for the most Trade ranks (PTS).`,
-          'Hover a rank bar or suggestion for the details.',
+          `Outposts trader ranks are suggested between Barracks and Education, worked out by simulating each outpost ${HORIZON_DAYS} days ahead for the most Trade ranks (PTS).`,
+          'Most information and suggested changes are shown on the World headings, but you can also click into each World to see info for each outpost.',
         ]}
       />
 
@@ -451,6 +490,29 @@ export default function RoyalOutposts({ snapshot }) {
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {summary.propaganda && (
+        <div className="mc-outpost-compounding">
+          <span className="mc-outpost-compounding-title">
+            State-Wide Propoganda: <strong>{summary.propaganda.multi.toFixed(2)}x</strong> EXP to one Rank Type
+          </span>
+          <div className="mc-outpost-compounding-options">
+            {summary.propaganda.options.map(opt => (
+              <span
+                key={opt.name}
+                className={`mc-outpost-compounding-option${opt.active ? ' mc-outpost-compounding-option--active' : ''}`}
+              >
+                {opt.name}
+                {opt.active && <span className="mc-outpost-compounding-badge">Active</span>}
+              </span>
+            ))}
+          </div>
+          <span className="mc-outpost-compounding-note">
+            The game doesn't apply this boost right now: it reads its value from the wrong list (found by IdleOn Toolbox),
+            so the suggestions on this page leave it out.
+          </span>
         </div>
       )}
 

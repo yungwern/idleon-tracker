@@ -32,15 +32,21 @@ SideBar -
     Lock import/sync/delete/import info so when you scroll it stays in view
     
 CharacterCard -
+    Premium Gear - remove greyed out text from Hats to avoid confusion with Hat rack
+
     Anvil - can probably extract info on exp/speed/capacity for each character now
 
-    Golden food
+    Golden food?
     
 Global -
     Money - Ways to increase it and everything to spend it on 
 
     Masterclasses - Zow/Chow/WoW Kills for DB
                     POW 10 bones, dust, tachyons ever collected.
+
+    Minibosses - Check Verminous Rats pickle math
+                 Add Glunko, Baba Yaga and Dr Defacus to spawn timers if 
+                 Add Googley Eyes and Dootjat Eye tracker
 
 Clickers -
     Orion - Create page
@@ -49,7 +55,8 @@ Clickers -
     Poppy - Create page
             Show bonuses and megafish
 
-    Bubba - Show bonuses and megaflesh
+    Bubba - Megaflesh gift advice (Beeg Slice / Slabcakes)
+            Show bonuses and megaflesh
 
 World 1 -
 
@@ -65,6 +72,8 @@ World 2 -
     Killroy - Timer/Skull Ratio, arcade ball info
 
 World 3 -
+    Worship - MSA bonuses
+
     Printer - Display prints, optimization guide for covering refinery prints
 
     Refinery - Optimizer for not overclicking

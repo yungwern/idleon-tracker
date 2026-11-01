@@ -11,7 +11,7 @@
 // keep resource nodes in range, so the optimizer never touches them.
 // ============================================================
 
-import { outpostRankThreshold, MAPS_PER_WORLD } from '../data/royalOutposts'
+import { outpostRankThreshold, MAPS_PER_WORLD, SUPPORT_CAMP_MODE } from '../data/royalOutposts'
 
 export const HORIZON_DAYS = 30
 const STEP_HOURS = 2
@@ -34,9 +34,15 @@ export const BARRACKS_SLOT_CAP = MAX_UNIT_SLOTS - 1
 export const BARRACKS_COST = 12
 const LOGISTICS_COST = 2
 
-// Movable unit jobs (RoyalG[6 + 2w])
+// Movable unit jobs (RoyalG[6 + 2w]): 4 = clearing, 5/6/7 = Command/Military/Purity EXP (Commander/Knight/Priest)
 const JOB_CLEARING = 4
 const JOB_COMMAND = 5
+const JOB_PURITY = 7
+const PURITY = 4
+
+// Game quirk (see accountContext): purifying map 1 (Spore Meadows) triples every outpost's Intel bar and
+// map 2 (Froggy Fields) every Command bar, so World 1 Priests go there before anywhere else.
+const GLOBAL_PURIFY_MAPS = [INTEL, COMMAND]
 
 // Armory upgrade ids and their bonus per level
 const ARMORY = {
@@ -381,14 +387,93 @@ export function getCommanderAdvice(rg, outposts) {
   return advice
 }
 
+// Account-wide Trade gain (summed fractional Trade ranks over the horizon) from purifying one of the
+// GLOBAL_PURIFY_MAPS, keeping every outpost's current units. Only used to pick between the two.
+function globalPurifyGain(rg, outposts, barType) {
+  const ctx = accountContext(rg)
+  const boosted = { ...ctx, baseRate: ctx.baseRate.map((rate, type) => (type === barType ? rate * 3 : rate)) }
+  const built = new Set(outposts.map(o => o.mapIndex))
+  const { commanders, militia } = readDeployments(rg, built)
+  const rawByMap = new Map((rg?.outposts ?? []).map(o => [o.mapIndex, o]))
+  let gain = 0
+  outposts.forEach(summaryOutpost => {
+    const raw = rawByMap.get(summaryOutpost.mapIndex)
+    if (!raw?.units) return
+    const state = outpostState(raw, ctx, summaryOutpost.supportedBy.length,
+      commanders.get(raw.mapIndex) ?? 0, militia.get(raw.mapIndex) ?? 0)
+    const plan = () => [state.slotTraders, state.slotSurveyors]
+    gain += simulate(boosted, state, { education: state.education, plan }).trade
+      - simulate(ctx, state, { education: state.education, plan }).trade
+  })
+  return gain
+}
+
+// Where each world's Priests (units on the Purity job) should be. Priests on one outpost finish it
+// sooner than spread out, so they're all aimed at one target:
+//   World 1: Froggy Fields / Spore Meadows while either is unpurified (GLOBAL_PURIFY_MAPS)
+//   otherwise: the unpurified outpost closest to Purity Rank 1, unless they already share one.
+// Only worlds with Priests posted get advice, and only while an outpost there is unpurified.
+// Returns Map(world → { target, priests, postedAt: Map(mapIndex → count), needsMove, global,
+//   campsToLink: Support Camp outposts in that world not linked to the target })
+export function getPriestAdvice(rg, outposts) {
+  const postedByWorld = new Map()
+  ;(rg?.deployments ?? []).filter(d => d.job === JOB_PURITY).forEach(d => {
+    const postedAt = postedByWorld.get(d.world) ?? new Map()
+    postedAt.set(d.mapIndex, (postedAt.get(d.mapIndex) ?? 0) + 1)
+    postedByWorld.set(d.world, postedAt)
+  })
+
+  const advice = new Map()
+  postedByWorld.forEach((postedAt, world) => {
+    const open = outposts.filter(o => o.world === world && !o.purified)
+    if (open.length === 0) return
+    const openMaps = new Set(open.map(o => o.mapIndex))
+    const posted = [...postedAt.keys()]
+    const settledOn = posted.length === 1 && openMaps.has(posted[0]) ? posted[0] : null
+
+    const globals = GLOBAL_PURIFY_MAPS.filter(m => openMaps.has(m))
+    let target
+    if (globals.length > 0) {
+      // Already all on one of them: leave them there. Otherwise the one worth more.
+      target = globals.includes(settledOn) ? settledOn
+        : globals.length === 1 ? globals[0]
+          : globals.reduce((best, m) => (globalPurifyGain(rg, outposts, m) > globalPurifyGain(rg, outposts, best) ? m : best))
+    } else {
+      // Split Priests gather on whichever of their outposts is furthest along
+      const progress = o => o.ranks[PURITY]?.progress ?? 0
+      const postedOpen = open.filter(o => postedAt.has(o.mapIndex))
+      const candidates = postedOpen.length > 0 ? postedOpen : open
+      target = settledOn ?? candidates.reduce((best, o) => (progress(o) > progress(best) ? o : best)).mapIndex
+    }
+
+    // Purifying comes first (Eli): every Purified Map adds Collection Rate to all outposts (Global Decree - PM),
+    // so the world's Support Camps should boost the Priests' target, even at the cost of what they boost now.
+    const campsToLink = outposts.filter(o => o.world === world
+      && o.mode === SUPPORT_CAMP_MODE
+      && o.mapIndex !== target
+      && !o.supportTargets.includes(target))
+
+    advice.set(world, {
+      target,
+      priests: posted.reduce((sum, m) => sum + postedAt.get(m), 0),
+      postedAt,
+      needsMove: posted.some(m => m !== target),
+      global: globals.length > 0,
+      campsToLink,
+    })
+  })
+  return advice
+}
+
 // Returns { byMap: Map(mapIndex → result), commandersByWorld, bestCommandTarget: Map(world → mapIndex), commanderAdvice,
-//   educationUnlocked }
+//   priestAdvice, educationUnlocked }
 export function optimizeOutposts(rg, outposts) {
   const ctx = accountContext(rg)
   const built = new Set(outposts.map(o => o.mapIndex))
 
   const { commanders, militia, commandersByWorld } = readDeployments(rg, built)
   const commanderAdvice = getCommanderAdvice(rg, outposts)
+  const priestAdvice = getPriestAdvice(rg, outposts)
   const bestCommandTarget = new Map([...commanderAdvice].map(([world, a]) => [world, a.best.mapIndex]))
 
   const rawByMap = new Map((rg?.outposts ?? []).map(o => [o.mapIndex, o]))
@@ -427,7 +512,14 @@ export function optimizeOutposts(rg, outposts) {
     byMap.set(raw.mapIndex, result)
   })
 
-  return { byMap, commandersByWorld, bestCommandTarget, commanderAdvice, educationUnlocked: ctx.educationUnlocked }
+  return {
+    byMap,
+    commandersByWorld,
+    bestCommandTarget,
+    commanderAdvice,
+    priestAdvice,
+    educationUnlocked: ctx.educationUnlocked,
+  }
 }
 
 // "3.5 days" / "18 hours"

@@ -383,16 +383,16 @@ export default function Minibosses({ snapshot }) {
     <div className="page">
       <h2 className="page-title">Minibosses</h2>
       <InfoPanel
-        intro="Use this section to track your Death Note skull progress for each Miniboss. A few things to keep in mind:"
+        intro="Use this section to track your Death Note progress for each Miniboss. A few things to keep in mind:"
         items={[
           'Bone Joe Pickles are tracked across all characters and storage.',
           'Each Bone Joe Pickle in your inventory (not storage) multiplies Miniboss HP by 1.10x and adds one additional Death Note kill. For example, 23 pickles means 9x HP and 24 kills credited.',
           'This bonus only applies after unlocking Revenge of the Pickle in World 6 at the Jade Emporium.',
           'It is recommended to consolidate all pickles onto a single character, as long as you can still comfortably kill the boss.',
-          'World 3–6 minibosses stack spawns over time. The most kills per day comes from spawning them once 2 are stacked (every 7 days). The Spawns bar shows how many are stacked as of your last save import: Kill = ready, Max = capped, or days until 2 are stacked.',
-          'Verminous (Royal Guardian) ignores your own damage, so all your pickles would make it unkillable. Its card shows the best number to carry; hover the warning for the math.',
+          'World 3–6 minibosses stack spawns over time. The most kills comes from spawning them once 2 are stacked (every 7 days).',
+          'Verminous Rats (Royal Guardian) work differently from other minibosses. Check its card below to see the best number of pickles to carry; hover the warning for the math.',
           'The "kills w/ pickles" estimate on each card assumes every pickle you own (storage included) is on the character doing the killing.',
-          'Each skull is worth Death Note points (1, 2, 3, 4, 5, 7, then 10 at 1M kills), up to 100 total. Every point is +1% Multikill per Tier, wherever you fight. The World 7 Luminous Menagerie mission Deathnote Boss PTS needs 25 points, then 15 more per claim. Hover the Death Note panel for each boss.',
+          'Each skull is worth Death Note points, up to 100 total. Every point is +1% Multikill per Tier, wherever you fight. Stop being lazy, don\'t sleep on your miniboss kills!',
         ]}
       />
       <div className="mb-top-row">

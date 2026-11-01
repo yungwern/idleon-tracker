@@ -115,8 +115,9 @@ export default function RoyalResources({ snapshot, imageFolder }) {
       <InfoPanel
         intro="Your Kingdom's resources and the best overnight connections for your Resource Depots."
         items={[
-          'Per day assumes every node is drained once a day.',
-          'Overnight setup: which depot should connect to which node so the biggest nodes are collected while you\'re away.',
+          'Stockpile daily generation assumes every node is fully drained once a day.',
+          'Overnight setup: Only World 1 has enough outposts to connect to every node. Other worlds will require some managing to collect everything. Use this to ensure your outposts are connected to the nodes with the most resources. This is best for overnight collection or if you won\'t have access to your account immediately after a reset.',
+          'Worlds where every outpost isn\'t unlocked yet will still show the best overnight setup, but it won\'t be counted in notifications until every outpost in that world is unlocked.',
         ]}
       />
 

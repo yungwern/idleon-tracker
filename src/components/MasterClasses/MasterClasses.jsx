@@ -45,7 +45,6 @@ function ActiveClassItem({ snapshot, mc }) {
       <div className="mc-header-pill">
         <div className="mc-header-pill-row">
           <img src={`images/${mc.imageFolder ?? 'items'}/${mc.headerItem}.png`} alt={name} className="mc-header-pill-icon" />
-          <span className="mc-header-pill-label">{name}</span>
           <span className="mc-header-pill-count">{qty.toLocaleString()}</span>
         </div>
       </div>
@@ -62,10 +61,10 @@ function MobProgressionTable({ rows, imageFolder = 'items' }) {
   return (
     <div className="mob-prog-table">
       <InfoPanel
-        intro="The mob progression tab shows the best mobs to farm for each Masterclass currency at endgame."
+        intro="The mob progression tab is only used for quick access to view which mob drops each type of Masterclass currency."
         items={[
-          'Only the most relevant endgame mobs are listed — earlier worlds are excluded for clarity.',
-          'World 6 mobs should be your primary focus. World 7 mobs are included for reference when they become farmable.',
+          'Only the most relevant endgame mobs are listed — earlier worlds are excluded for clarity. Info for ealier mobs can be seen in-game on the mobs card when a Masterclass form is active.',
+          'World 7 mobs are included for very end game accounts and as a reference for when they become more easily farmable.',
         ]}
       />
       {rows.length === 0 && (
@@ -230,10 +229,9 @@ function ExaltedStampTierList({ snapshot }) {
       <InfoPanel
       intro="This tier list tracks your Exalted Stamp upgrades and provides general guidance on upgrade priority."
       items={[
-        'Automatically updates when you import a new save.',
         'Stamps are ordered by priority within each tier.',
         'Priority is intended as general guidance — always consider your own account progression before upgrading.',
-        'Exalted Stamps cannot be reset. Upgrade with caution!',
+        'EXALTED STAMPS CANNOT BE RESET. UPGRADE WITH CAUTION!',
       ]}
       />
       <TierList
@@ -278,10 +276,9 @@ function PrismaBubbleTierList({ snapshot }) {
       <InfoPanel
       intro="This tier list tracks your Prisma Bubble upgrades and provides general guidance on upgrade priority."
       items={[
-        'Automatically updates when you import a new save.',
         'Bubbles are ordered by priority within each tier.',
         'Priority is intended as general guidance — always consider your own account progression before upgrading.',
-        'Prisma Bubbles cannot be reset. Upgrade with caution!',
+        'PRISMA BUBBLES CANNOT BE RESET. UPGRADE WITH CAUTION!',
       ]}
       />
       <TierList
@@ -552,8 +549,8 @@ function RoyalStatues({ snapshot, imageFolder }) {
       <InfoPanel
         intro="Marbles have two uses: restoring Royal Statues and flairing regular statues. Restoring and upgrading are both a chance per try, not a guarantee."
         items={[
-          'Locked statues cost 1 of their marble per try to unlock.',
-          'Unlocked statues cost 1 Parchment of Enchantment per try to level up, and the chance drops as the level rises.',
+          'Locked Royal Statues cost 1 of their marble per try to unlock.',
+          'Unlocked Royal Statues cost 1 Parchment of Enchantment per try to level up, and the chance drops as the level rises.',
           'Statue Flair spends marbles to raise the EXP multi of regular statues. Each marble covers its own set of statues.',
         ]}
       />
@@ -752,10 +749,9 @@ export default function MasterClasses({ snapshot }) {
       {/* ── Main Masterclass Info Panel ── */}
       <InfoPanel
       intro="This page breaks down each Masterclass and their unique progression systems. The AFK item for the active class is displayed at the top for a quick overview of your accumulated AFK hours."
-      items={[
-        'Switch between Masterclasses using the nav below. Each class has its own set of sections tailored to their specific mechanics.',
-        'AFK items are tracked per character — the count shown is from your first character with that Masterclass.',
-        'Some sections contain tier lists, farm recommendations, and map bonuses that update automatically when you import a new save.',
+      items={[,
+        'AFK items are tracked per Masterclass — the count shown is combined together from all of your characters and storage.',
+        'Some sections contain tier lists, farm recommendations, and map bonuses that update automatically with your save data.',
       ]}
       />
 

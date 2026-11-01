@@ -67,11 +67,11 @@ export const BUBBA_PHASES = [
       {
         title: 'Charisma and candies',
         points: [
-          'Leave [1st Slice] and [Good Meat] at Lv 50. They are for coins later.',
+          'Leave [1st Slice] and [Good Meat] at Lv 50. They will be used to get a big [Spare Coins] multi later in the run. ',
           'Upgrade [Charisma] to about Lv 100, then use Bubba Candy to get {Mindful} to 120. Takes about 3 candies.',
-          'Between candies, spend meat on upgrades with {Mindful} emulsified.',
-          'Keep using candy for Charisma: 1 on {Hustle} (emulsified while using candy), 1 on {Rizz}, 1 on {Joy}. Under 10 candies total, ending around [Super Chart].',
-          'Use [Dice Roll] when you unlock it, but only roll once.',
+          'Always remember to use candies with {Hustle} emulsified and spend your meat on upgrades in between candies with {Mindful} emulsified.',
+          'Keep using candy for Charisma: 1 on {Hustle}, 1 on {Rizz}, 1 on {Joy}. Should be less than 10 candies total, ending around [Super Chart].',
+          'Use [Dice Roll] when you unlock it, but only roll once since we\'ll quickly be unlocking [More Dice] and [More Sides].',
         ],
         goal: 0,
       },
@@ -92,12 +92,12 @@ export const BUBBA_PHASES = [
       {
         title: 'Second gift',
         points: [
-          'Buy [More Dice] and spend some rolls on a good multi (3–5 dice multi is great).',
-          'Spend meats, pat back to grey happiness, then open a gift.',
+          'Buy [More Dice] with {Rizz} emulsified and spend some rolls on a good multi; anything between 3–5 dice multi is great.',
+          'Spend meats with {Mindful} emulsified, swap to {Joy} pat back to grey happiness, then open a gift with {Hustle} emulsified.',
         ],
         tips: [
           'Close to [Smoker] but short? Use another candy on {Hustle}.',
-          'Bad dice roll? Open a gift and try a couple more. Still nothing, wait for the reset.',
+          'Bad dice roll? Open a gift and try a couple more. If still nothing, wait for the reset.',
         ],
         unlocks: 'Smoker',
       },

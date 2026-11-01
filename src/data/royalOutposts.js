@@ -188,6 +188,12 @@ export function priestWorlds(recruitLevel) {
   }
   return worlds
 }
+// Armory "State-Wide Propoganda": boosts one chosen Rank Type's EXP/hr by 1 + 10% per level.
+// Toolbox found the game reads its bonus from the wrong table (CustomLists.SpelunkUpg[77], past the end
+// of that list), so it never actually applies; the outpost optimizer leaves it out to match.
+export const PROPAGANDA_ARMORY = 77
+const PROPAGANDA_PER_LEVEL = 10
+
 // Orblet Market upgrade that unlocks Glorifying outposts
 export const GLORIFICATION_ORBLET = 4
 
@@ -299,6 +305,13 @@ export function buildOutpostSummary(rg) {
       }))
     : null
 
+  const propaganda = (rg?.propagandaLevel ?? 0) >= 1
+    ? {
+        multi: 1 + (PROPAGANDA_PER_LEVEL * rg.propagandaLevel) / 100,
+        options: OUTPOST_RANK_NAMES.map((name, type) => ({ name, active: type === rg.propagandaType })),
+      }
+    : null
+
   return {
     outposts,
     worlds,
@@ -311,6 +324,7 @@ export function buildOutpostSummary(rg) {
     // Purity only matters in worlds that have a Priest to raise it
     priestWorlds: priestWorlds(rg?.recruitLevel ?? 0),
     compounding,
+    propaganda,
     nameOf: mapIndex => OUTPOST_MAPS[mapIndex] ?? `Map ${mapIndex}`,
     mobOf: mapIndex => OUTPOST_MOBS[mapIndex] ?? null,
   }

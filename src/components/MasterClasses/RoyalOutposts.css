@@ -55,6 +55,17 @@
   font-size: 12px;
 }
 
+.mc-outpost-compounding-title strong {
+  color: #e5e7eb;
+}
+
+.mc-outpost-compounding-note {
+  max-width: 560px;
+  color: #6b7280;
+  font-size: 11px;
+  text-align: center;
+}
+
 .mc-outpost-compounding-options {
   display: flex;
   flex-wrap: wrap;
@@ -148,11 +159,13 @@
   color: var(--world-color);
   font-size: 14px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .mc-outpost-world-stat {
   color: #6b7280;
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .mc-outpost-world-chips {
@@ -226,25 +239,23 @@
   color: #9ca3af;
 }
 
-/* Commander chip: [Commander] → [mob] Outpost */
-.mc-outpost-world-chip--commander {
+/* Commander / Priest chip: [unit] → [mob] Outpost */
+.mc-outpost-world-chip--unit {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 0 8px 0 4px;
 }
 
-.mc-outpost-commander-img {
+.mc-outpost-unit-img {
   width: 20px;
   height: 20px;
 }
 
-/* Mob sprites carry a lot of empty padding, so they're drawn taller and allowed to overhang the pill */
+/* Trimmed mob sprites (images/mobs/trimmed, square, cropped to the mob) so every one sits the same */
 .mc-outpost-mob-img {
-  width: auto;
-  max-width: 44px;
-  height: 34px;
-  margin: -9px -8px -7px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -275,10 +286,6 @@
   border-top: 2px solid var(--world-color);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
-}
-
-.mc-outpost-card--notice {
-  border-top-color: #fb923c;
 }
 
 .mc-outpost-head {
@@ -334,9 +341,15 @@
   color: #c4b5fd;
 }
 
-.mc-outpost-tag--notice {
-  border-color: rgba(251, 146, 60, 0.5);
-  color: #fb923c;
+/* Long-running goals (Glorify), shown quietly rather than as a notice */
+.mc-outpost-tag--pending {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #6b7280;
+}
+
+.mc-outpost-tag--priest {
+  border-color: rgba(167, 139, 250, 0.5);
+  color: #c4b5fd;
 }
 
 /* ── Rank bars ──

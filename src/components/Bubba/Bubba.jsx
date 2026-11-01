@@ -264,8 +264,9 @@ export default function Bubba() {
       <h2 className="page-title">Bubba</h2>
 
       <InfoPanel
-        intro="A step-by-step route for a Bubba run, from the first candies to the hourly coin loop."
+        intro="A step-by-step route for a Bubba run, from the first candies to the hourly pat loop."
         items={[
+          'This mechanic used to be very easy to mess up leaving your account bricked for up to months at a time. It\'s much more forgiving now, but it\'s still easy to get stuck if you make too many mistakes.',
           'Each gift should unlock the next upgrade. If one doesn\'t, you need more Smoker levels or a better dice roll.',
           'The Charisma goals are rough targets, not requirements.',
         ]}

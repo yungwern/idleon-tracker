@@ -1,5 +1,5 @@
 import { buildOutpostSummary } from '../data'
-import { getCommanderAdvice } from './outpostOptimizer'
+import { getCommanderAdvice, getPriestAdvice } from './outpostOptimizer'
 import { planOvernightSetup, isWorldComplete } from './resourcePlanner'
 
 // Every masterclass notification, keyed by masterclass id, then section id: { 'royal-guardian': { outposts: 2 } }.
@@ -9,8 +9,11 @@ export function getMasterclassNotices(snapshot) {
   const rg = snapshot?.royalGuardian
   if (rg?.deployments) {
     const summary = buildOutpostSummary(rg)
-    // Outposts: +1 for every world whose Commanders should move to another outpost
+    // Outposts: +1 per world for each of: Commanders to move, Priests to move, Support Camps to relink to the Priests
+    const priestAdvice = [...getPriestAdvice(rg, summary.outposts).values()]
     const outposts = [...getCommanderAdvice(rg, summary.outposts).values()].filter(a => a.needsMove).length
+      + priestAdvice.filter(a => a.needsMove).length
+      + priestAdvice.filter(a => a.campsToLink.length > 0).length
     // Resources: +1 for every fully unlocked world with a Resource Depot to reconnect
     const resources = rg.resourceStorage
       ? planOvernightSetup(rg, summary.outposts).worlds

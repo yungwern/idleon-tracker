@@ -4,7 +4,9 @@ import TierList from '../TierList/TierList'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import BuffsPanel from '../BuffsPanel/BuffsPanel'
 import SpiceOptimizer from './SpiceOptimizer'
-import { getShinyThreshold, getShinyLevel, parseWorldCoords } from '../../utils/breedingUtils'
+import ShinyPlanner from './ShinyPlanner'
+import { getShinyThreshold, getShinyLevel, parseWorldCoords, formatShinyDays } from '../../utils/breedingUtils'
+import { getShinyRate, getShinyOverLevels } from '../../utils/shinyPlanner'
 
 import './Breeding.css'
 
@@ -80,14 +82,6 @@ function getMaxShinyLevel(buffs) {
 // (game: "Breeding:SpecialzOverLVL"). Counts every pet, not just the ones shown on the page.
 const OVER_LEVEL_BONUS = 10
 
-function getShinyOverLevels(shinyPetsLevels, maxShinyLevel) {
-  return Object.values(breedingMap).reduce((sum, pet) => {
-    const { worldIndex, petIndex } = parseWorldCoords(pet.world)
-    const level = getShinyLevel(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel)
-    return sum + Math.max(0, level - BASE_MAX_SHINY_LEVEL)
-  }, 0)
-}
-
 function OverLevelSummary({ overLevels }) {
   const multi = 1 + (overLevels * OVER_LEVEL_BONUS) / 100
   return (
@@ -109,8 +103,8 @@ function getShinyProgress(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel) 
   const counter = shinyPetsLevels?.[worldIndex]?.[petIndex] ?? 0
   const level = getShinyLevel(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel)
 
-  if (counter === 0) return { level: 0, counter, percent: 0, daysLeft: null, maxed: false }
-  if (level >= maxShinyLevel) return { level, counter, percent: 100, daysLeft: null, maxed: true }
+  if (counter === 0) return { level: 0, counter, percent: 0, remaining: null, maxed: false }
+  if (level >= maxShinyLevel) return { level, counter, percent: 100, remaining: null, maxed: true }
 
   const nextThreshold = getShinyThreshold(level - 1)
   const prevThreshold = level <= 1 ? 0 : getShinyThreshold(level - 2)
@@ -121,16 +115,9 @@ function getShinyProgress(shinyPetsLevels, worldIndex, petIndex, maxShinyLevel) 
     level,
     counter,
     percent: Math.min(100, (current / needed) * 100),
-    daysLeft: nextThreshold - counter,
+    remaining: nextThreshold - counter, // shiny progress, not days
     maxed: false,
   }
-}
-
-function formatDays(days) {
-  if (days === null || days === undefined) return null
-  if (days >= 1_000_000) return `${(days / 1_000_000).toFixed(2)}M`
-  if (days >= 1_000) return `${(days / 1_000).toFixed(1)}K`
-  return `${Math.floor(days)}`
 }
 
 // ============================================================
@@ -157,15 +144,19 @@ function ProgressBar({ percent, maxed }) {
   )
 }
 
-function PetCard({ pet, petKey, shiny, fenceCount }) {
+// Days to the next level at the shiny copies in the fence, or with 1 copy if none are in
+function getDaysDisplay(shiny, rate, shinyCount) {
+  if (shiny.maxed) return 'Maxed!'
+  if (shiny.remaining === null || !rate) return '—'
+  const days = formatShinyDays(shiny.remaining / (rate * Math.max(1, shinyCount)))
+  return shinyCount > 0 ? `${days} left` : `${days} with 1 in fence`
+}
+
+function PetCard({ pet, petKey, shiny, fenceCount, shinyCount, rate }) {
   const mobImageName = pet.name.replace(/ /g, '_')
   const geneEntry = Object.entries(geneMap).find(([, v]) => v.name === pet.gene)
   const geneKey = geneEntry ? geneEntry[0] : null
-  const daysDisplay = shiny.maxed
-    ? 'Maxed!'
-    : shiny.daysLeft !== null
-      ? `${formatDays(shiny.daysLeft)} days left`
-      : '—'
+  const daysDisplay = getDaysDisplay(shiny, rate, shinyCount)
   const passiveBonus = formatPassiveBonus(pet.passive, pet.baseValue, shiny.level)
 
   // Border state priority: warning > active > maxed > inactive
@@ -338,9 +329,9 @@ export default function Breeding({ snapshot }) {
   const fencePets = snapshot?.breeding?.fencePets ?? {}
   const breedingBuffs = useMemo(() => getBreedingBuffs(snapshot?.breeding), [snapshot?.breeding])
   const maxShinyLevel = getMaxShinyLevel(breedingBuffs)
-  const overLevels = useMemo(() =>
-    getShinyOverLevels(shinyPetsLevels, maxShinyLevel)
-  , [shinyPetsLevels, maxShinyLevel])
+  const overLevels = useMemo(() => getShinyOverLevels(snapshot?.breeding), [snapshot?.breeding])
+  const shinyRate = useMemo(() => getShinyRate(snapshot), [snapshot])
+  const fenceShiny = snapshot?.breeding?.fenceShiny
 
   const geneItemMap = useMemo(() =>
     Object.fromEntries(Object.entries(geneMap).map(([key, v]) => [key, { name: v.name }]))
@@ -353,7 +344,9 @@ export default function Breeding({ snapshot }) {
       const { worldIndex: wi, petIndex: pi } = parseWorldCoords(pet.world)
       const shiny = getShinyProgress(shinyPetsLevels, wi, pi, maxShinyLevel)
       const fenceCount = pet.rawName ? (fencePets[pet.rawName] ?? 0) : 0
-      return { key, pet, shiny, fenceCount }
+      // Older imports have no fenceShiny: count every fence pet as shiny
+      const shinyCount = pet.rawName ? ((fenceShiny ?? fencePets)[pet.rawName] ?? 0) : 0
+      return { key, pet, shiny, fenceCount, shinyCount }
     })
 
     // Sort by passive order, then by world, then by pet index within world
@@ -367,7 +360,7 @@ export default function Breeding({ snapshot }) {
         const { worldIndex: wb, petIndex: pb } = parseWorldCoords(b.pet.world)
         return wa !== wb ? wa - wb : pa - pb
       })
-  }, [shinyPetsLevels, fencePets, maxShinyLevel])
+  }, [shinyPetsLevels, fencePets, fenceShiny, maxShinyLevel])
 
   const { highlightedPets, otherGroups } = useMemo(() => {
     const groupByPassive = (pets) => {
@@ -415,6 +408,7 @@ export default function Breeding({ snapshot }) {
       intro="This page is used for all things Breeding. Track the levels and bonus of shiny pets, find the best spice formations as well as best comps for completing The Arena. Here are a few things to keep in mind:"
       items={[
         'Shinies are for the most part displayed in order of importance. There are a few exceptions like obtaining all infinite star signs and as always weigh things based on your accounts needs.',
+        'Shiny Planner picks which shiny pets to keep in the fence yard. Levels cost about 1.7x more each time and every level past 20 speeds up all shiny leveling, so it fills the fence with 3 shinies each of the lowest-level species, most important bonus first.',
         'Spice Formations finds the best gene types to run on each territory, using the types you own. It counts a Converter as claiming each batch about twice, since half the time it keeps the spices waiting for another claim. Hover a gene to see what it does.',
         'Pet Fighting Comps are just a general guidance. No guarantees for 100% success rate. If you\'re following the guide and still struggling, pet power can often be a way to brute force through the content.',
       ]}
@@ -429,6 +423,12 @@ export default function Breeding({ snapshot }) {
           Shiny Levels
         </button>
         <button
+          className={`breeding-nav-btn${activeTab === 'planner' ? ' breeding-nav-btn--active' : ''}`}
+          onClick={() => setActiveTab('planner')}
+        >
+          Shiny Planner
+        </button>
+        <button
           className={`breeding-nav-btn${activeTab === 'spice' ? ' breeding-nav-btn--active' : ''}`}
           onClick={() => setActiveTab('spice')}
         >
@@ -441,6 +441,13 @@ export default function Breeding({ snapshot }) {
           Pet Fighting Comps
         </button>
       </div>
+
+      {/* ── Shiny Planner Tab ── */}
+      {activeTab === 'planner' && (
+        snapshot?.breeding
+          ? <ShinyPlanner snapshot={snapshot} rate={shinyRate} />
+          : <p className="page-empty">No breeding data found. Import your save to get started.</p>
+      )}
 
       {/* ── Spice Formations Tab ── */}
       {activeTab === 'spice' && (
@@ -493,8 +500,16 @@ export default function Breeding({ snapshot }) {
                         {formatGroupTotal(sum.passive, sum.value)} total
                       </div>
                     )}
-                    {highlightedPets.map(({ key, pet, shiny, fenceCount }) => (
-                      <PetCard key={key} petKey={key} pet={pet} shiny={shiny} fenceCount={fenceCount} />
+                    {highlightedPets.map(({ key, pet, shiny, fenceCount, shinyCount }) => (
+                      <PetCard
+                        key={key}
+                        petKey={key}
+                        pet={pet}
+                        shiny={shiny}
+                        fenceCount={fenceCount}
+                        shinyCount={shinyCount}
+                        rate={shinyRate.value}
+                      />
                     ))}
                   </div>
                 )
@@ -513,8 +528,16 @@ export default function Breeding({ snapshot }) {
                       {label}
                     </div>
                     <div className="breeding-grid">
-                      {pets.map(({ key, pet, shiny, fenceCount }) => (
-                        <PetCard key={key} petKey={key} pet={pet} shiny={shiny} fenceCount={fenceCount} />
+                      {pets.map(({ key, pet, shiny, fenceCount, shinyCount }) => (
+                        <PetCard
+                          key={key}
+                          petKey={key}
+                          pet={pet}
+                          shiny={shiny}
+                          fenceCount={fenceCount}
+                          shinyCount={shinyCount}
+                          rate={shinyRate.value}
+                        />
                       ))}
                     </div>
                   </div>
@@ -579,4 +602,4 @@ export default function Breeding({ snapshot }) {
       )}
     </div>
   )
-}
+}

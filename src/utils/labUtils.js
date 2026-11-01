@@ -5,7 +5,7 @@
 
 const ASSUMED = 'Lab mainframe (assumed connected)'
 
-const JEWEL_BONUS = { 16: 16, 18: 20, 19: 10, 20: 10 } // jewel index → base bonus (shared-data jewels)
+const JEWEL_BONUS = { 15: 30, 16: 16, 18: 20, 19: 10, 20: 10 } // jewel index → base bonus (shared-data jewels)
 const PURE_OPAL_NAVETTE = 19 // jewel: adds its bonus / 100 to Spelunker Obol
 const SPELUNKER_OBOL = 1.5 // lab bonus 8: multiplies every jewel but Pure Opal Navette
 

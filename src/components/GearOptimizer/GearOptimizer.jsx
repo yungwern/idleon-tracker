@@ -156,7 +156,7 @@ function resolveCardSet(id, cards) {
     stars: Math.max(stars, 0),
     lines: [
       formatCardEffect(set.effect, getCardSetBonus(id, stars)),
-      stars >= 0 ? `${starLabel(stars)} set (average of every card in it)` : 'Needs every card in the set',
+      stars >= 0 ? `${starLabel(stars)}` : 'Needs every card in the set',
     ],
   }
 }
@@ -521,10 +521,9 @@ export default function GearOptimizer({ snapshot }) {
       <InfoPanel
         intro="Best-in-slot loadouts for common farming setups, including premium gear."
         items={[
-          'Hover any icon to see the item name and its bonuses.',
           'These are endgame setups. If you don\'t have a piece yet, use this as a goal to work toward.',
-          'Card stars, borders and bonus values come from your imported save, including any Card Buffs you\'ve unlocked.',
-          'Card Buffs are account-wide boosts to equipped cards. A chip counts once it\'s on any character or in chip storage.',
+          'Card values come from your imported save, including any Card Buffs you\'ve unlocked.',
+          'Card Buffs panel tracks account-wide boosts to your equipped cards. Lab chips show as owned once it\'s on any character or in chip storage.',
           'For more in depth information including obols/trophies check the link below.',
           <>
             Source:{' '}

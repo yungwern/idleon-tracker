@@ -4,7 +4,7 @@ import { anvilMapById } from '../data/anvilMap'
 import { getClassName } from '../data/classes'
 import { worshipMap } from '../data'
 import { seedInfo } from '../data/farmingMap'
-import { RANK_BAR_UNLOCK_ARMORY, KINGDOM_EXPANSION_ARMORY, COMPOUNDING_OUTPOSTING_ARMORY, GLORIFICATION_ORBLET, KINGDOM_SOVEREIGNTY_ARMORY } from '../data/royalOutposts'
+import { RANK_BAR_UNLOCK_ARMORY, KINGDOM_EXPANSION_ARMORY, COMPOUNDING_OUTPOSTING_ARMORY, GLORIFICATION_ORBLET, KINGDOM_SOVEREIGNTY_ARMORY, PROPAGANDA_ARMORY } from '../data/royalOutposts'
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 function parseStorage(json) {
@@ -463,6 +463,7 @@ const MENAGERIE_SHINY_UNLOCK = 11
 // Territory[i] = [barProgress, fills since last claim, ?, then 3 reward slots of (spice name or 'Blank', amount)].
 // The first slot reads 'CookingSpice{i}' only while spices wait to be claimed, so 'Blank' doesn't mean locked.
 const TERRITORY_TEAM_START = 27
+const FENCE_SHINY_TYPE = 5
 const TERRITORY_TEAM_SIZE = 4
 
 function parseBreeding(json) {
@@ -479,11 +480,20 @@ function parseBreeding(json) {
     return acc
   }, {})
 
+  // Fence pet type 5 = shiny (only these earn shiny progress), 4 = breedability (Toolbox breeding.ts)
+  const fenceShiny = petsRaw.slice(0, 27).reduce((acc, [name, type]) => {
+    if (name === 'none' || Number(type) !== FENCE_SHINY_TYPE) return acc
+    acc[name] = (acc[name] || 0) + 1
+    return acc
+  }, {})
+
   const menagerieShinyCap = Number(menagerie?.[MENAGERIE_UNLOCKS]?.[MENAGERIE_SHINY_UNLOCK]) >= 1
 
   return {
     shinyPetsLevels,
     fencePets,
+    fenceShiny,
+    petUpgradeLevels: (arr[2] ?? []).map(level => Number(level) || 0), // Breeding[2] = pet upgrade levels
     menagerieShinyCap,
     ...parseTerritories(json, petsRaw),
   }
@@ -750,6 +760,10 @@ function parseOutposts(json, raw) {
     worldsUnlocked: 1 + KINGDOM_EXPANSION_ARMORY.reduce((sum, id) => sum + Math.min(1, level(id)), 0),
     compoundingUnlocked: level(COMPOUNDING_OUTPOSTING_ARMORY) >= 1,
     compoundingIndex: Math.round(Number(raw[3]?.[2] ?? 0)),
+    // State-Wide Propoganda (armory 77): level, and the chosen Rank Type in RoyalG[3][3] (0 Trade ... 4 Purity,
+    // confirmed by Eli: Purity = 4)
+    propagandaLevel: level(PROPAGANDA_ARMORY),
+    propagandaType: Math.round(Number(raw[3]?.[3] ?? 0)),
     recruitLevel: level(KINGDOM_SOVEREIGNTY_ARMORY),
     glorifyUnlocked: Number(raw[23]?.[GLORIFICATION_ORBLET] ?? 0) >= 1,
     // Inputs for the outpost optimizer (utils/outpostOptimizer.js)
