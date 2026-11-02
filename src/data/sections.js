@@ -4,10 +4,10 @@ export const sections = {
   'Clickers': ['Bubba'],
   'World 1': ['Statues'],
   'World 2': ['Obols'],
-  'World 3': ['Construction', 'Shrines', 'Worship'],
+  'World 3': ['Construction', 'Shrines', 'Worship', 'Printer', 'Refinery'],
   'World 4': ['Cooking', 'Breeding'],
   'World 5': [],
-  'World 6': ['Farming'],
+  'World 6': ['Farming', 'Summoning'],
   'World 7': ['Spelunking'],
 }
 
@@ -26,11 +26,14 @@ export const sectionIcons = {
   'Construction': 'images/skills/construction.png',
   'Shrines': 'images/shrines/ConTowerB18.png',
   'Worship': 'images/skills/worship.png',
+  'Printer': 'images/gem shop/GemQ1.png',
+  'Refinery': 'images/construction/Refinery1.png',
 
   'Cooking': 'images/skills/cooking.png',
   'Breeding': 'images/skills/breeding.png',
 
   'Farming': 'images/skills/farming.png',
+  'Summoning': 'images/skills/summoning.png',
   
   'Spelunking': 'images/skills/spelunking.png',
 }

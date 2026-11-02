@@ -243,7 +243,9 @@ export const equipmentMap = {
   },
   EquipmentKeychain29: {
     uq1txt: '% MONEY',
+    uq2txt: '% DAMAGE MULTI',
     uq1val: '30',
+    uq2val: '5',
   },
 }
 
@@ -479,4 +481,4 @@ export const GEAR_SET_PIECES = {
     requiredTools: 0,
     requiredWeapon: 0,
   },
-}
+}

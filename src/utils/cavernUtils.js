@@ -1,5 +1,8 @@
 import { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel, glunkoUpgradeValues } from '../data'
 import { getZenithBonus } from './zenithUtils'
+import { getTesseractBonus } from './tesseractUtils'
+import { getEventShopBonus } from './eventShopUtils'
+import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 
 // Caverns (W5 Hole) bonuses, from IdleonToolbox parsers/world-5/caverns
 // (the-lamp.ts, bravery.ts, the-fountain.ts). snapshot.caverns holds the Holes save data.
@@ -49,4 +52,63 @@ export function getMonumentBonus(snapshot, t, i) {
 // Crystal Glunko Cove upgrade t: level × value (Toolbox getCglunkoBonus)
 export function getGlunkoBonus(snapshot, t) {
   return (snapshot?.glunko?.upgradeLevels?.[t] ?? 0) * (glunkoUpgradeValues[t] ?? 0)
+}
+
+// ── The Gambit: summoning doublers ──
+// From Toolbox parsers/world-5/caverns/gambit.ts. Points come from the best time on each of the 6 trials,
+// times a points multi; the first gambit bonus is the doubler count, plus 10 from event shop 15.
+// The multi leaves out Measurement 13 (it scales with Death Note points, not ported): on Eli's save the
+// count still matches Toolbox (33), but an account right at a boundary could read one low.
+const GAMBIT_STUDY = 13
+const GAMBIT_STUDY_PER_LEVEL = 5
+const GAMBIT_SCHEMATIC = 78
+const GAMBIT_SCHEMATIC_BONUS = 10
+const GAMBIT_JARS = [23, 30] // +1% gambit points per level each (holesInfo[67])
+const JAR_LEGEND_TALENT = 29
+const GAMBIT_TESSERACT = 47
+const GAMBIT_MONUMENT_T = 2
+const GAMBIT_MONUMENT_I = 7
+const EVENT_SHOP_DOUBLERS = 15
+const EVENT_SHOP_DOUBLER_COUNT = 10
+const GAME_LN10 = 2.30259
+
+function gameLog10(value) {
+  return Math.log(Math.max(value, 1)) / GAME_LN10
+}
+
+export function getGambitPointsMulti(snapshot) {
+  const caverns = snapshot?.caverns
+  const jarMulti = 1 + getLegendTalentBonus(JAR_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, JAR_LEGEND_TALENT)) / 100
+  const jars = GAMBIT_JARS.reduce((sum, i) => sum + (Number(caverns?.jarLevels?.[i]) || 0) * jarMulti, 0)
+  const study = (Number(caverns?.studyLevels?.[GAMBIT_STUDY]) || 0) * GAMBIT_STUDY_PER_LEVEL
+  const schematic = Number(caverns?.schematics?.[GAMBIT_SCHEMATIC]) ? GAMBIT_SCHEMATIC_BONUS : 0
+  return 1 + (study
+    + schematic
+    + getMonumentBonus(snapshot, GAMBIT_MONUMENT_T, GAMBIT_MONUMENT_I)
+    + jars
+    + getTesseractBonus(snapshot?.tesseract, GAMBIT_TESSERACT)) / 100
+}
+
+export function getGambitPoints(snapshot) {
+  const times = snapshot?.caverns?.gambitTimes ?? []
+  const base = times.reduce((sum, time, t) => {
+    const score = time + 3 * Math.floor(time / 10) + 10 * Math.floor(time / 60)
+    return sum + (t === 0 ? 100 : 200) * score
+  }, 0)
+  return base * getGambitPointsMulti(snapshot)
+}
+
+// { total, placed, placedIds }: placedIds = summoning upgrade indexes holding a doubler
+export function getSummoningDoublers(snapshot) {
+  const points = getGambitPoints(snapshot)
+  const fromPoints = points < 3000
+    ? 0
+    : Math.max(1, Math.ceil(Math.log2(Math.max(points, 1)) - 8 + (gameLog10(points) - 1)))
+  const placedIds = (snapshot?.caverns?.gambitDoublers ?? []).filter(id => id >= 0)
+  const total = fromPoints + EVENT_SHOP_DOUBLER_COUNT * getEventShopBonus(snapshot?.eventShop, EVENT_SHOP_DOUBLERS)
+  return {
+    total: Math.max(total, placedIds.length),
+    placed: placedIds.length,
+    placedIds,
+  }
 }

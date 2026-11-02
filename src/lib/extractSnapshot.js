@@ -67,6 +67,8 @@ const extractors = {
   talentLevels: (json, i) => parseRaw(json[`SL_${i}`]) ?? {},
   // SM_i = { talentId: max level } (book level the talent can go to, before added/super levels)
   talentMaxLevels: (json, i) => parseRaw(json[`SM_${i}`]) ?? {},
+  // AFKtarget_i = map / activity the character is AFK on ('Laboratory' = in the lab)
+  afkTarget: (json, i) => json[`AFKtarget_${i}`] ?? null,
   // CauldronBubbles[i] = the character's equipped active bubbles ('c21' style ids, 0 = empty)
   equippedBubbles: (json, i) => ((parseRaw(json['CauldronBubbles']) ?? [])[i] ?? []).filter(id => typeof id === 'string'),
   // PTimeAway_i = when this character was last left; the played character's keeps moving
@@ -74,6 +76,34 @@ const extractors = {
   // PVtStarSign_i = '69,64,6,' — equipped star sign indexes (see data/starSignMap.js)
   starSigns: (json, i) => String(json[`PVtStarSign_${i}`] ?? '').split(',').filter(Boolean).map(Number),
   equipOrder: (json, i) => json[`EquipOrder_${i}`]?.[0] ?? {},
+  // Keychains, one entry per copy (each copy rolls its own stats, so the merged inventory map can't be used).
+  // Equipped = EquipOrder_i[0] (slots 9 and 11), rolls in EMm0_i[slot]; spares = InventoryOrder_i, rolls in IMm_i[idx].
+  keychains: (json, i) => {
+    const isKeychain = key => typeof key === 'string' && key.startsWith('EquipmentKeychain')
+    const equipOrder = json[`EquipOrder_${i}`]?.[0] ?? {}
+    const equipMeta = parseRaw(json[`EMm0_${i}`]) ?? {}
+    const invOrder = json[`InventoryOrder_${i}`] ?? []
+    const invMeta = parseRaw(json[`IMm_${i}`]) ?? {}
+    const equipped = Object.entries(equipOrder)
+      .filter(([, key]) => isKeychain(key))
+      .map(([slot, key]) => ({
+        rawName: key,
+        stats: equipMeta[slot] ?? {},
+      }))
+    const inventory = []
+    invOrder.forEach((key, idx) => {
+      if (isKeychain(key)) {
+        inventory.push({
+          rawName: key,
+          stats: invMeta[idx] ?? {},
+        })
+      }
+    })
+    return {
+      equipped,
+      inventory,
+    }
+  },
   inventory: (json, i, weaponKeys) => {
     const order = json[`InventoryOrder_${i}`] ?? []
     const qty   = json[`ItemQTY_${i}`] ?? []
@@ -413,6 +443,87 @@ function parseShrineBuffs(json, charCount) {
     labUnlocked,
     moaiHead: Number(sailing[3]?.[0]) > 0,
     bargaining: typeof jadeUnlocks === 'string' ? jadeUnlocks.includes('s') : false,
+  }
+}
+
+// ── Printer (3D Printer) ──────────────────────────────────────────
+// Print = 5 unused zeros, then 14 values per character: 7 (item, amount) pairs. Pairs 0-4 are the
+// sample library, pairs 5-6 the two samples being printed. PrinterXtra = 10 values per character:
+// 5 more library slots (extra slots). Amounts are per hour; 'Blank' = empty.
+// Print multi inputs (Toolbox getPrinterMulti): OptLacc[125] days since last sample, [138] Orb of Remembrance kills, [323] / [354] / [364] / [479]
+// days counted for the event shop / companion / compass / legend talent multis, Compass[0][43] = Moon of Print LV.
+const PRINT_CHUNK = 14
+const PRINT_EXTRA_CHUNK = 10
+
+function toPrintSamples(values) {
+  const samples = []
+  for (let i = 0; i + 1 < values.length; i += 2) {
+    samples.push({
+      item: values[i] ?? 'Blank',
+      value: Number(values[i + 1]) || 0,
+    })
+  }
+  return samples
+}
+
+function parsePrinter(json, charCount, optLacc) {
+  const print = (parseRaw(json['Print']) ?? []).slice(5)
+  const extra = parseRaw(json['PrinterXtra']) ?? []
+  const compass = parseRaw(json['Compass']) ?? []
+  return {
+    daysSinceSample: Number(optLacc[125]) || 0,
+    orbKills: Number(optLacc[138]) || 0,
+    eventShopDays: Number(optLacc[323]) || 0,
+    companionDays: Number(optLacc[354]) || 0,
+    compassDays: Number(optLacc[364]) || 0,
+    legendTalentDays: Number(optLacc[479]) || 0,
+    moonOfPrintLevel: Number(compass[0]?.[43]) || 0,
+    characters: Array.from({ length: charCount }, (_, i) => {
+      const own = print.slice(i * PRINT_CHUNK, (i + 1) * PRINT_CHUNK)
+      const extraSlots = extra.slice(i * PRINT_EXTRA_CHUNK, (i + 1) * PRINT_EXTRA_CHUNK)
+      return {
+        library: toPrintSamples(own.slice(0, 10)),
+        extraLibrary: toPrintSamples(extraSlots),
+        printing: toPrintSamples(own.slice(10, 14)),
+      }
+    }),
+  }
+}
+
+// ── Atoms + Compass upgrade levels ─────────────────────────────────────────────
+// Atoms[i] = Atom Collider level of atom i; Compass[0][i] = Wind Walker compass upgrade i level
+function parseAtoms(json) {
+  return { levels: (parseRaw(json['Atoms']) ?? []).map(level => Number(level) || 0) }
+}
+
+function parseCompassUpgrades(json) {
+  return { levels: ((parseRaw(json['Compass']) ?? [])[0] ?? []).map(level => Number(level) || 0) }
+}
+
+// ── Refinery (W3) ──────────────────────────────────────────────────────────────
+// Refinery[0][0] = salts unlocked, Refinery[3 + i] = [refined, rank, ?, active, auto %] for salt i.
+// TaskZZ2[2][6] = salt task level (salts up to it pay rank^1.3 for the previous salt instead of ^1.5),
+// SaltLick[i] = salt lick upgrade levels, CauldronP2W[4][2i + 1] = sigil i tier (-1 = not found)
+function parseRefinery(json) {
+  const refinery = parseRaw(json['Refinery']) ?? []
+  const unlocked = Number(refinery[0]?.[0]) || 0
+  const sigils = (parseRaw(json['CauldronP2W']) ?? [])[4] ?? []
+  return {
+    salts: Array.from({ length: Math.max(0, refinery.length - 3) }, (_, i) => ({
+      unlocked: i < unlocked,
+      rank: Number(refinery[3 + i]?.[1]) || 0,
+      active: Number(refinery[3 + i]?.[3]) === 1,
+      // power refined toward the next rank (rank up is manual once the bar is full)
+      refined: Number(refinery[3 + i]?.[0]) || 0,
+    })),
+    // Salts parked in the refinery's own slots: Refinery[1] = names, Refinery[2] = amounts
+    storage: (refinery[1] ?? []).reduce((stored, name, i) => {
+      if (name && name !== 'Blank') stored[name] = (stored[name] ?? 0) + (Number(refinery[2]?.[i]) || 0)
+      return stored
+    }, {}),
+    saltTaskLevel: Number((parseRaw(json['TaskZZ2']) ?? [])[2]?.[6]) || 0,
+    saltLickLevels: (parseRaw(json['SaltLick']) ?? []).map(level => Number(level) || 0),
+    sigilTiers: sigils.filter((_, i) => i % 2 === 1).map(tier => Number(tier)),
   }
 }
 
@@ -983,11 +1094,21 @@ function parseEmperor(optLacc) {
 
 // ── Summoning (W6) ────────────────────────────────────────────────────────────
 // Summon[1] = enemy ids of every battle won; OptLacc[319] = highest endless battle reached
+// KRbest SummzTrz<i> = kills on summoning stone boss i (data/summoningMap.js summoningStoneBosses)
+// Summon[0][i] = level of summoning upgrade i (data/summoningMap.js summoningUpgrades)
 function parseSummoning(json, optLacc) {
   const summon = parseRaw(json['Summon']) ?? []
+  const killroyBest = parseRaw(json['KRbest']) ?? {}
+  const stoneKills = []
+  for (const [key, kills] of Object.entries(killroyBest)) {
+    const match = key.match(/^SummzTrz(\d+)$/)
+    if (match) stoneKills[Number(match[1])] = Number(kills) || 0
+  }
   return {
+    upgradeLevels: (summon[0] ?? []).map(level => Number(level) || 0),
     wonBattles: summon[1] ?? [],
     highestEndless: Number(optLacc[319]) || 0,
+    stoneKills: Array.from(stoneKills, kills => kills ?? 0),
   }
 }
 
@@ -995,9 +1116,16 @@ function parseSummoning(json, optLacc) {
 // Holes[4] / [6] = hole / IdleOn majik (cosmo) levels, [11][29..30] = the gods picked for
 // Pocket Divinity, [15] = Bravery Monument bonus levels, [21] = Lamp wishes used,
 // [31]/[32] = fountain upgrade levels / marbleize tiers per water type.
+// Gambit: [28] = summoning upgrade index per placed doubler (-1 = empty), [11][65..70] = best time per
+// gambit trial, [13] = engineer schematics owned, [24] = jar collectible levels, [26] = study levels.
 function parseCaverns(json) {
   const holes = parseRaw(json['Holes']) ?? []
   return {
+    gambitDoublers: (holes[28] ?? []).map(Number),
+    gambitTimes: (holes[11] ?? []).slice(65, 71).map(time => Number(time) || 0),
+    schematics: holes[13] ?? [],
+    jarLevels: holes[24] ?? [],
+    studyLevels: holes[26] ?? [],
     holeMajiks: holes[4] ?? [],
     idleonMajiks: holes[6] ?? [],
     pocketGods: [holes[11]?.[29] ?? -1, holes[11]?.[30] ?? -1].map(Number),
@@ -1161,11 +1289,13 @@ function parseLabJewels(json) {
 // ── Divinity (W5) ─────────────────────────────────────────────────────────────
 // Divinity[12 + i] = god slot character i is linked to (-1 none), [25] = gods unlocked.
 // Slots index data/divinityMap.js.
-function parseDivinity(json, charCount) {
+// OptLacc[425] = W7 chosen god (slot + 1, 0 = none): its major bonus applies to everyone
+function parseDivinity(json, charCount, optLacc) {
   const divinity = parseRaw(json['Divinity']) ?? []
   return {
     linkedGods: Array.from({ length: charCount }, (_, i) => Number(divinity[12 + i] ?? -1)),
     unlockedGods: Number(divinity[25]) || 0,
+    w7ChosenGod: (Number(optLacc[425]) || 0) - 1,
   }
 }
 
@@ -1235,6 +1365,10 @@ export function extractSnapshot(rawJson) {
     shrines: parseShrines(json),
     shrineBuffs: parseShrineBuffs(json, charList.length),
     worship: parseWorship(json),
+    printer: parsePrinter(json, charList.length, optLacc),
+    refinery: parseRefinery(json),
+    atoms: parseAtoms(json),
+    compassUpgrades: parseCompassUpgrades(json),
     towerLevels: parseTowerLevels(json),
     armorSmithySets: parseArmorSmithySets(optLacc),
     miniBossesKills: parseMiniBosses(json),
@@ -1287,7 +1421,7 @@ export function extractSnapshot(rawJson) {
     eventShop: parseEventShop(optLacc),
     button: parseButton(optLacc),
     labJewels: parseLabJewels(json),
-    divinity: parseDivinity(json, charList.length),
+    divinity: parseDivinity(json, charList.length, optLacc),
     coralReef: parseCoralReef(optLacc),
     minehead: parseMinehead(json),
     glunko: parseGlunko(optLacc),

@@ -5,8 +5,8 @@ import { getActiveCharacterIndex } from './characterUtils'
 // Family bonuses, from IdleonToolbox parsers/family.ts (game: DNSM.FamBonusQTYs).
 // Every class in a character's line grants its family bonus at that character's level. The game
 // walks the characters in save order and a character only replaces a bonus when its own raw value
-// beats the stored one. THE_FAMILY_GUY boosts a bonus only when the played character sets it.
-// Not ported: the account-wide THE_FAMILY_GUY on the Divine Knight / Siege Breaker bonuses.
+// beats the stored one. THE_FAMILY_GUY boosts a bonus only when the played character sets it,
+// except Divine Knight / Siege Breaker, which always get the account's best THE_FAMILY_GUY.
 
 const CLASS_ID_BY_NAME = Object.fromEntries(Object.entries(CLASS_NAMES).map(([id, name]) => [name, Number(id)]))
 const FAMILY_GUY = { func: 'decay', x1: 40, x2: 100 }
@@ -20,7 +20,11 @@ function classFamilyBonus(className, level) {
 // Family bonuses as the played character sees them, keyed by class name.
 // familyGuyLevel: the played character's THE_FAMILY_GUY level without the Elemental Sorcerer
 // family bonus (that part is added back from the walk), or 0 if it doesn't have the talent.
-export function getFamilyBonuses(snapshot, familyGuyLevel = 0) {
+// accountFamilyGuyLevel: the best THE_FAMILY_GUY on the account, same rule (talentUtils
+// getAccountFamilyBonuses works both out); 0 leaves Divine Knight / Siege Breaker unbuffed.
+const ACCOUNT_FAMILY_GUY_CLASSES = ['Divine Knight', 'Siege Breaker']
+
+export function getFamilyBonuses(snapshot, familyGuyLevel = 0, accountFamilyGuyLevel = 0) {
   const activeIndex = getActiveCharacterIndex(snapshot)
   const stored = {}
   ;(snapshot?.characters ?? []).forEach((character, index) => {
@@ -29,10 +33,15 @@ export function getFamilyBonuses(snapshot, familyGuyLevel = 0) {
       const bonus = classFamilyBonus(familyClass, level)
       if (!(bonus > (stored[familyClass] ?? 0))) continue
       stored[familyClass] = bonus
-      if (index !== activeIndex || familyGuyLevel <= 0) continue
       const sorcerer = Math.floor(stored['Elemental Sorcerer'] ?? 0)
-      const familyGuy = growth(FAMILY_GUY.func, familyGuyLevel + sorcerer, FAMILY_GUY.x1, FAMILY_GUY.x2)
-      stored[familyClass] = bonus * (1 + familyGuy / 100)
+      if (index === activeIndex && familyGuyLevel > 0) {
+        const familyGuy = growth(FAMILY_GUY.func, familyGuyLevel + sorcerer, FAMILY_GUY.x1, FAMILY_GUY.x2)
+        stored[familyClass] = bonus * (1 + familyGuy / 100)
+      }
+      if (ACCOUNT_FAMILY_GUY_CLASSES.includes(familyClass) && accountFamilyGuyLevel > 0) {
+        const accountFamilyGuy = growth(FAMILY_GUY.func, accountFamilyGuyLevel + sorcerer, FAMILY_GUY.x1, FAMILY_GUY.x2)
+        stored[familyClass] = bonus * (1 + accountFamilyGuy / 100)
+      }
     }
   })
   return stored

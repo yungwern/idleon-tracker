@@ -1,0 +1,331 @@
+/* ============================================================
+   SUMMONING (World 6)
+   ============================================================ */
+
+.summoning-tabs {
+  --tab-color: #c084fc;
+  margin-top: 16px;
+}
+
+/* Essence colour of an upgrade or stone: sets --stone-color for anything inside */
+.summoning-colour--white {
+  --stone-color: #e5e7eb;
+}
+
+.summoning-colour--green {
+  --stone-color: #4ade80;
+}
+
+.summoning-colour--yellow {
+  --stone-color: #facc15;
+}
+
+.summoning-colour--blue {
+  --stone-color: #60a5fa;
+}
+
+.summoning-colour--purple {
+  --stone-color: #c084fc;
+}
+
+.summoning-colour--red {
+  --stone-color: #f87171;
+}
+
+.summoning-colour--cyan {
+  --stone-color: #22d3ee;
+}
+
+.summoning-colour--teal {
+  --stone-color: #2dd4bf;
+}
+
+/* ── Bosses tab ── */
+.summoning-bosses-total {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.summoning-bosses-total strong {
+  color: #e5e7eb;
+}
+
+.summoning-bosses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 12px;
+}
+
+/* --stone-color = the boss's essence colour, from its .summoning-colour--* class */
+.summoning-boss {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--stone-color);
+  border-radius: 10px;
+}
+
+.summoning-boss-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.summoning-boss-stone {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.summoning-boss-sprite {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+/* Name with the colour bonus under it, between the boss sprite and the stats */
+.summoning-boss-info-col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.summoning-boss-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.summoning-boss-bonus {
+  position: relative;
+  align-self: flex-start;
+  font-size: 13px;
+  color: #d1d5db;
+  cursor: help;
+}
+
+.summoning-boss-colour {
+  font-weight: 700;
+  color: var(--stone-color);
+}
+
+.summoning-boss-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.summoning-boss-stat {
+  position: relative;
+  font-size: 12px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.summoning-boss-stat strong {
+  color: #e5e7eb;
+}
+
+.summoning-boss-info {
+  margin-left: 6px;
+  color: #6b7280;
+  cursor: help;
+}
+
+/* Found at: map name + the map's mob sprite (name on hover) */
+.summoning-boss-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.summoning-boss-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.summoning-boss-map-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.summoning-boss-mob {
+  position: relative;
+  display: flex;
+}
+
+.summoning-boss-mob-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+/* ── Doublers tab ── */
+.summoning-doubler-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.summoning-doubler-stat {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.summoning-doubler-stat strong {
+  color: #e5e7eb;
+}
+
+.summoning-doubler-stat-note {
+  margin-left: 6px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.summoning-doubler-done {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #4ade80;
+  text-align: center;
+}
+
+.summoning-doubler-moves {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summoning-doubler-move {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.summoning-doubler-move-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summoning-doubler-move-title--off {
+  color: #f87171;
+}
+
+.summoning-doubler-move-title--on {
+  color: #4ade80;
+}
+
+.summoning-doubler-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.summoning-doubler-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 4px;
+  font-size: 12px;
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--stone-color);
+  border-radius: 999px;
+}
+
+.summoning-doubler-chip-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.summoning-doubler-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summoning-doubler-divider {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summoning-doubler-row {
+  display: grid;
+  grid-template-columns: 28px 32px minmax(160px, 220px) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--stone-color);
+  border-radius: 8px;
+}
+
+.summoning-doubler-rank {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: right;
+}
+
+.summoning-doubler-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.summoning-doubler-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.summoning-doubler-gain {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.summoning-doubler-note {
+  font-size: 11px;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.summoning-doubler-status {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+  white-space: nowrap;
+}
+
+.summoning-doubler-status--placed {
+  color: #4ade80;
+}

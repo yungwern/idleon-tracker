@@ -445,9 +445,11 @@ export const talentMap = Object.fromEntries(
 // Growth inputs for talents whose bonus the app calculates (from IdleonToolbox talents.json):
 // bonus = growth(func, level, x1, x2), see utils/mathUtils.js. Add entries as needed.
 export const talentGrowthMap = {
+  178: { func: 'decay', x1: 5, x2: 150 }, // King of the Remembered: +% printer output per POW 10 orb kills
   205: { func: 'decayMulti', x1: 50, x2: 300 }, // Mass Irrigation: }x Crop Evo chance
   207: { func: 'decayMulti', x1: 2, x2: 200 }, // Dank Ranks: }x Land Rank Database bonuses
   235: { func: 'decay', x1: 50, x2: 200 }, // Amber Hoard: % cheaper Spelunking shop per Royal Statue LV
   238: { func: 'decayMulti', x1: 20, x2: 400 }, // Grand Vein: }x Grand Discovery chance
   589: { func: 'decayMulti', x1: 1, x2: 500 }, // Overwhelming Energy: }x max map bonus
+  597: { func: 'bigBase', x1: 100, x2: 0.15 }, // Absolute Stardom: summoning doublers give +{% instead of +100%
 }

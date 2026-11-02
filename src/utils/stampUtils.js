@@ -8,6 +8,8 @@ import { getSushiBonus } from './sushiUtils'
 import { getArmorSetBonus } from './armorSetUtils'
 import { getJellyBonus } from './jellyUtils'
 import { getAssumedLabBonus, LAB_BONUSES } from './labUtils'
+import { getEventShopBonus } from './eventShopUtils'
+import { getPaletteBonus } from './gamingUtils'
 
 // Stamp bonus math (W1), ported from IdleonToolbox parsers/world-1/stamps.ts.
 // Returns { value, missing } like the alchemy utils.
@@ -24,9 +26,18 @@ export function getExaltedStampMulti(snapshot) {
   const emperorSet = getArmorSetBonus(snapshot?.armorSmithySets, 'EMPEROR_SET')
   // The game divides only the jelly term by 100
   const jelly = getJellyBonus(snapshot?.jellyOperator, 50) / 100
+  // Aluminium - Stamp Supercharger atom (12): +1% per level. Compass upgrade 76 (Abomination Slayer XVII):
+  // +1% per level. Event shop 18: +20%. Palette 23. Spelunking exalted fragments: +1% each
+  const atom = snapshot?.atoms?.levels?.[12] ?? 0
+  const compass = snapshot?.compassUpgrades?.levels?.[76] ?? 0
+  const eventShop = 20 * getEventShopBonus(snapshot?.eventShop, 18)
+  const palette = getPaletteBonus(snapshot, 23)
+  const fragments = snapshot?.spelunking?.exaltedFragments ?? 0
+  const missing = []
+  if (!snapshot?.atoms) missing.push('Atom, Compass (re-import your save)')
   return {
-    value: 1 + (100 + exotic + legend + charm + sushi + emperorSet + jelly) / 100,
-    missing: ['Atom', 'Compass', 'Event shop', 'Palette', 'Exalted fragment'],
+    value: 1 + (100 + atom + charm + compass + emperorSet + eventShop + palette + exotic + fragments + legend + sushi + jelly) / 100,
+    missing,
   }
 }
 

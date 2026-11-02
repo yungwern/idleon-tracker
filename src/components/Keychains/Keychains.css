@@ -1,0 +1,126 @@
+/* ── Grid (equipped first, then inventory spares) ── */
+.keychain-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.keychain-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* ── Card ── */
+.keychain-card {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.keychain-card:hover {
+  border-color: rgba(160, 196, 255, 0.2);
+  background: rgba(160, 196, 255, 0.04);
+}
+
+.keychain-card--equipped {
+  border-color: rgba(45, 212, 191, 0.3);
+}
+
+/* Both stats at the top roll tier (beats the equipped teal) */
+.keychain-card--maxed,
+.keychain-card--maxed:hover {
+  border-color: #fbbf24;
+}
+
+/* ── Top image area ── */
+.keychain-card-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px 10px 0 0;
+  min-height: 60px;
+}
+
+.keychain-card-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.keychain-card-tag {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.keychain-card--equipped .keychain-card-tag {
+  color: #2dd4bf;
+}
+
+/* ── Body ── */
+.keychain-card-body {
+  position: relative;
+  padding: 6px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.keychain-card-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e5e7eb;
+  border-bottom: 1px solid #2dd4bf;
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+}
+
+.keychain-card-stat {
+  font-size: 11px;
+  color: #a0c4ff;
+  text-align: center;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 0px 0px 0px;
+}
+
+.keychain-card-stat::before {
+  content: '•';
+  color: #2dd4bf;
+  flex-shrink: 0;
+}
+
+/* Top roll tier on the chain's own stat */
+.keychain-card-stat--max {
+  color: #fbbf24;
+}
+
+.keychain-card-stat--none {
+  color: #4b5563;
+}

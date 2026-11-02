@@ -103,6 +103,20 @@ export function getAddedTalentLevels(snapshot) {
   }
 }
 
+// Family bonuses as the played character sees them, with both THE_FAMILY_GUY buffs in place:
+// its own (for bonuses it sets) and the account's best (for Divine Knight / Siege Breaker).
+export function getAccountFamilyBonuses(snapshot) {
+  const character = getActiveCharacter(snapshot)
+  const withoutFamily = getAddedLevelsWithoutFamily(snapshot)
+  const familyGuyBase = Number(character?.talentLevels?.[THE_FAMILY_GUY]) || 0
+  const bestBase = Math.max(0, ...(snapshot?.characters ?? []).map(c => Number(c?.talentLevels?.[THE_FAMILY_GUY]) || 0))
+  return getFamilyBonuses(
+    snapshot,
+    familyGuyBase > 0 ? familyGuyBase + withoutFamily : 0,
+    bestBase > 0 ? bestBase + withoutFamily : 0,
+  )
+}
+
 export function getSuperTalentBonus(snapshot) {
   const legend = getLegendTalentBonus(SUPER_DUPER_TALENTS, getLegendTalentLevel(snapshot?.legendTalents, SUPER_DUPER_TALENTS))
   return Math.round(50 + legend + getZenithBonus(snapshot?.zenith, SUPER_DUPERS))

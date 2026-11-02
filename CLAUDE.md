@@ -19,7 +19,7 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 src/
 ├── components/         # One folder per feature (see casing note below)
 │   ├── Section pages:  Breeding, Bubba (static guide, data in bubbaMap.js), Construction, Cooking, Farming, GearOptimizer,
-│   │                   MasterClasses, Minibosses, Obols, Shrines, Spelunking (+ LoreTab.jsx, RedJellyTab.jsx, ElixirTab.jsx), Statues, Worship
+│   │                   MasterClasses, Minibosses, Obols, Printer (+ SaltMaterialsTab.jsx), Refinery, Shrines, Spelunking (+ LoreTab.jsx, RedJellyTab.jsx, ElixirTab.jsx), Statues, Summoning (+ BossesTab.jsx, DoublersTab.jsx), Worship
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
@@ -198,6 +198,54 @@ case-sensitive on the live site even though Windows ignores case.
 (96 slots, CogO/CogM 0-95, row-major) for the player's real board. Cog stat keys come from Toolbox `cogKeyMap`:
 d = % Bonus Construct EXP, f = % Player Construct XP, b = player Construct EXP/hr, h = boost pattern.
 
+**Printer** (World 3): `snapshot.printer.characters[i]` = { library (Print, 5 slots), extraLibrary (PrinterXtra, 5 slots),
+printing (2) }, each { item, value }. Unlocks = gem shop (`printerUtils getPrinterUnlocks`, `printerBuffMap` + BuffsPanel):
+GemItemsPurchased[111] Crystal 3D Printer = 2nd chamber, [112] More Sample Spaces (max 6) = library 4 + purchases (Eli).
+Print Multis = the 5 in-game MULTI lines (`printerMultiMap`, `printerUtils getPrinterMultis`, inputs in snapshot.printer from OptLacc
+138/323/354/364/479 + Compass[0][43]); all 5 match the game on Eli's save (1.32/2/2/5/3x). Yet Another Printer Multi
+was shown but never applied until the Nov 1 2026 game update fixed it (Toolbox may still leave it out). `printerHiddenMultiMap` / getPrinterHiddenMultis = multis not on the
+in-game screen (Gold Relic OptLacc[125] days by artifact form, Skill Mastery + Lolly Flower added, Vote 11 = lower bound: vote multi
+not ported). Total (getPrinterTotalMulti) = product of all 8 (1472x on Eli's save; Toolbox's 490.68x × the 3x legend talent). value = the per-hour number the in-game
+printer shows (matched Eli's screenshot). Row art `public/images/printer/row.png` = one 458x76 row of Toolbox PrintBG (saved at 4x),
+so positions in Printer.css are % of that row; slot.png = PrintSlot. Sampleable item sprites = `images/items/<rawName>.png`, names in
+itemMap.js PRINTER SAMPLES (Toolbox items.json Type ORE/LOG/FISH/BUG/MONSTER_DROP).
+Printer page = InfoPanel, then tabs Printers / Salt Materials (not "Refinery": that's its own section). Salt Materials
+(SaltMaterialsTab.jsx) = print plan + printable salt inputs grouped by salt (refineryUtils getRefineryPrintList). utils/printPlanner.js
+getPrintPlan: fewest characters (ceil(chambers needed / 2)) keeping every input whose storage (unprinted) runs out within the chosen
+window printed. Tries every character set of that size; each set is filled by an exact assignment (Hungarian) maximizing
+getPlacementScore × 10 + continuity (printing now 2, in library 1). Placement: 5 = specialist line (getClassFit 2: class line passes
+the skill's tab in SKILL_SPECIALISTS: Warrior mining, Barbarian fishing, Mage choppin, Bowman catching), 2 = non-warrior main stat
+or monster drop, 1 = other non-warrior, 0 = warrior off its specialty (Eli: keep warriors on Copper, e.g. Caulifish overflow goes to a
+non-warrior). Eli: wrong-class prints get moved even if they cover the need (the tab shows the optimal setup). Ties keep more
+warriors free. The Vman (last Voidwalker) always gets Spore Caps (Eli: portal runs). Copper takes no slot when anyone is left free.
+Window choice in localStorage (idleon_print_plan_window). The full view is the World 3 Refinery section
+(components/Refinery): tabs Rank Planner (RankPlannerTab.jsx) / Materials (cycle times, each salt's inputs per hour vs printed, storage time left for unprintables). Rank Planner = refineryUtils getSaltRankPlan (Toolbox getSaltsBalance): salt made per cycle = floor(min(250k, rank^1.3 × Panda multi, companion 35)), each salt's
+`Safe up to` = highest rank whose cost of its feeder fits the feeder's output (per cycle, × cycle-time ratio, minus the Keep spare share),
+starved salts pass their slowdown down the chain (sustained), rank ups are manual (bar full = PowerCAP, REFINERY_POWER_CAPS) and the
+Rank up now list walks top-down so a feeder's rank up can free the next salt. Same-speed 2-cost salts balance at equal ranks. refineryMap.js = salts + costs
+(`printable` flag) + speed constants; refineryUtils (Toolbox refinery.ts): getRefineryCycleTimes (every % speed source, Gilded Tubing 3x
+assumed, legend 19, polymerize meal + research 48), cost = floor(rank^1.5) × qty (salt inputs ^1.3 up to TaskZZ2[2][6]), cycle times
+ceiled. Needed/hr matches Toolbox on Eli's save. printerUtils getPrintedPerHour = sample × account Total × per-character Wired In 2x /
+Harriep 3x (getCharacterPrintMulti, divinityUtils isMajorGodActive). Family DK bonus uses the account's best THE_FAMILY_GUY
+(talentUtils getAccountFamilyBonuses; 62.3 vs Toolbox 62.6, per-character added levels not ported). Exalted stamp multi is complete now
+(atoms, compass 76, event shop 18, palette 23, exalted fragments).
+
+**Summoning** (World 6, components/Summoning): tab row like Refinery (InfoPanel text per tab = TAB_INFO), tabs Bosses / Doublers. Bosses = 7 summoning stone
+bosses (`summoningStoneBosses` in summoningMap.js: Toolbox summoningEnemies[106+i] + stone maps). Kills = KRbest SummzTrz<i> =
+`snapshot.summoning.stoneKills`; next fight HP = 2 × baseHp × 4000^kills; colour upgrades × (1 + kills) (summoningUtils
+getSummoningStoneBosses, matched IT on Eli's save). Stone art = public/images/summoning/SumStone_<i>.png (Toolbox etc/).
+Doublers (DoublersTab.jsx, summoningUtils getDoublerPlans): count = cavernUtils getSummoningDoublers (Gambit points from Holes[11][65..70]
+trial times × points multi, first gambit bonus + 10 from event shop 15; multi skips Measurement 13 (Death Note pts, not ported), still
+33 = Toolbox on Eli's save). Placed = Holes[28] (upgrade index, -1 empty) = snapshot.caverns.gambitDoublers. Doubler multi = 2 + max(0,
+Absolute Stardom (talent 597) / 100 - 1) + Allstar (upgrade 78) % (3.33 on Eli's save, = Toolbox). Upgrade bonus = Summon[0] LV × qty ×
+stone multi (summoningUpgrades in summoningMap.js, stoneBoosted = Toolbox filler). Planner fills strict tiers, greedy log gain inside
+each (summoningDoublerModel; army DMG/HP from Toolbox getArmyDamage/Health, but 50/51/74/81 = own multipliers per in-game text):
+Damage setup = every damage/spike upgrade (incl. Seeing Red, Hundredaire, Spiked Placement, Jeweled Cards) > every mana upgrade
+(incl. Starting Mana, Final Card) > HP (Eli: HP rarely helps, always last) > essence. Essence setup = essence while a doubler adds 1%
+(Σ colours ln(knowledge × victories × summoning × Infinite Essence) + colours × ln(cost cuts)), then the damage tiers. Matched Eli's
+own Damage setup except 2 slots. Icons = public/images/summoning/upgrades/SumUpgIc<i>.png (Toolbox data/). Career wins per colour =
+won enemies by mapEnemyData world (Pet* = white).
+
 **Buffs panel**: `BuffsPanel` (styles in global.css) is the centered unlocked/missing/unknown icon strip under the
 InfoPanel — BiS Setups (Card Buffs) and Shrines use it. Pass `active: null` when the save can't tell.
 Shrine building levels (Tower[18..26]) give the W7 Dancing Coral bonus past Lv 200 (`coral` in shrineMap.js).
@@ -247,7 +295,8 @@ badge and the masterclass/section nav badges), `utils/minibossNotices.js`.
 **Skills tab** (Character Card): in-game menu order (`getSkillMenuOrder`), EXP from Exp0_i / ExpReq0_i. Maestro hands
 (`skillUtils getMaestroHandStatus`): last Maestro-line character (the Vman) gives other characters skill EXP/eff only in
 skills where their LV is strictly lower (ties get nothing). Tracked for mining/chopping/fishing/catching/trapping/worship
-(Eli; Smithing EXP also counts but is left out). Amber = lead ≤ `MAESTRO_LEAD_WARNING` (5). Feeds a character notice.
+(Eli; Smithing EXP also counts but is left out). Amber = lead ≤ `MAESTRO_LEAD_WARNING` (5). Notice on the Vman's card only (Eli: never tell other characters
+to stop leveling). Mages (WIS) are skipped for Worship (`MAESTRO_HAND_SKIPS_MAGES`): their charge levels it fast, little loss.
 Sidebar badges are wired in
 `sectionNotices` in `App.jsx`; in-page badges use the shared `.notice-badge` class in `global.css`.
 **Obol roll check**: `passesObolCheck` in `Obols/ObolUtils.js` is the only obol check (Standard / Min/Max / BiS Setup,

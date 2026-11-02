@@ -1,5 +1,6 @@
 import { isRiftBonusUnlocked } from './riftUtils'
 import { CLASS_TALENT_TABS } from '../data/classes.js'
+import { getClassMainStat } from './characterUtils.js'
 
 // Skill indexes in Lv0_i (index 0 is class level, so skill i is at Lv0_i[i])
 export const SKILLS = {
@@ -86,6 +87,11 @@ export const MAESTRO_HAND_SKILLS = ['mining', 'chopping', 'fishing', 'catching',
 // Vman leads by this many LVs or fewer → shown as "close" (amber)
 export const MAESTRO_LEAD_WARNING = 5
 
+// Hand skills where mages (WIS classes) aren't compared: their huge charge pool levels Worship fast,
+// and losing the hands there costs little (charge rate/max charge come from their own LV), so a
+// mage passing the Vman isn't worth a warning (Eli)
+export const MAESTRO_HAND_SKIPS_MAGES = ['worship']
+
 export function getMaestroIndex(characters) {
   let index = -1
   ;(characters ?? []).forEach((character, i) => {
@@ -103,13 +109,16 @@ export function getMaestroHandStatus(characters) {
 
   const skills = MAESTRO_HAND_SKILLS.map(skill => {
     const maestroLevel = getSkillLevel(maestro, skill)
+    const skipsMages = MAESTRO_HAND_SKIPS_MAGES.includes(skill)
     const others = characters
       .map((character, index) => ({
         index,
         name: character?.name,
         level: getSkillLevel(character, skill),
+        isMage: getClassMainStat(character?.class) === 'WIS',
       }))
       .filter(other => other.index !== maestroIndex)
+      .filter(other => !(skipsMages && other.isMage))
       .sort((a, b) => b.level - a.level)
     const closest = others[0] ?? null
     const blocked = others.filter(other => other.level >= maestroLevel)
@@ -120,6 +129,7 @@ export function getMaestroHandStatus(characters) {
     return {
       skill,
       maestroLevel,
+      skipsMages,
       closest,
       blocked,
       lead,

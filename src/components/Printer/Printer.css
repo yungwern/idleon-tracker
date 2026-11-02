@@ -1,0 +1,597 @@
+/* ============================================================
+   PRINTER — one row per character, drawn on the in-game printer art.
+   row.png is one 458x76 row of the game's PrintBG (saved at 4x), so every position
+   below is a % of that row (left / 458, top / 76) and the whole row scales together.
+   ============================================================ */
+
+.printer-board {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 760px;
+  margin: 16px auto 0;
+  border: 2px solid #11131a;
+  border-radius: 4px;
+  background: #11131a;
+}
+
+.printer-row {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 458 / 76;
+  background-image: url("/images/printer/row.png");
+  background-size: 100% 100%;
+  container-type: inline-size;
+}
+
+/* ── Name plate (dark bar, top left) ── */
+.printer-name {
+  position: absolute;
+  left: 1.09%;
+  top: 3.95%;
+  width: 34.06%;
+  height: 23.68%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2cqw;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--class-color, #e5e7eb);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* ── Class icon (under the name plate) ── */
+.printer-class-icon {
+  position: absolute;
+  left: 2.18%;
+  top: 34.2%;
+  width: 8.73%;
+  height: 52.6%;
+  background-image: var(--class-icon);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* ── Sample library (what the character can swap to) ── */
+.printer-library {
+  position: absolute;
+  left: 13.54%;
+  top: 35.5%;
+  width: 50.66%;
+  height: 47.4%;
+  display: flex;
+  align-items: center;
+  gap: 1.38%;
+}
+
+/* Extra library slots shrink the row of slots instead of running into the glass cases */
+.printer-slot {
+  position: relative;
+  flex: 0 1 15.52%;
+  aspect-ratio: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url("/images/printer/slot.png");
+  background-size: 100% 100%;
+  border-radius: 2px;
+}
+
+.printer-slot--printing {
+  box-shadow: 0 0 0 2px #4ade80, 0 0 8px #4ade80;
+}
+
+.printer-slot-img {
+  width: 92%;
+  height: 92%;
+  object-fit: contain;
+}
+
+/* ── Glass cases (the two samples being printed) ── */
+.printer-case {
+  position: absolute;
+  top: 1.32%;
+  width: 15.72%;
+  height: 72.4%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 0.6cqw;
+}
+
+.printer-case--left {
+  left: 65.5%;
+}
+
+.printer-case--right {
+  left: 83.19%;
+}
+
+.printer-case-rate {
+  font-size: 1.75cqw;
+  font-weight: 700;
+  color: #f0abfc;
+  text-shadow: 0 1px 0 #000000, 0 0 3px #000000;
+  white-space: nowrap;
+}
+
+.printer-case-img {
+  width: 75%;
+  flex: 1;
+  min-height: 0;
+  object-fit: contain;
+}
+
+.printer-case--locked {
+  background: #0b0d14b3;
+}
+
+.printer-case--locked .printer-case-empty {
+  color: #cbd5e1;
+}
+
+.printer-case-empty {
+  margin: auto 0;
+  font-size: 1.5cqw;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Print Multis (the in-game MULTI lines) ── */
+.printer-multis {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto 0;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.printer-multis-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.printer-multis-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+.printer-multi {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 2px;
+  background: #1a1d29;
+  border: 1px solid #2e3344;
+  border-radius: 5px;
+}
+
+.printer-multi-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.printer-multi-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--printer-multi-color, #e5e7eb);
+}
+
+.printer-multi-label {
+  padding-left: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.printer-multis-subtitle {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.printer-multis-list--hidden .printer-multi {
+  background: #151821;
+  border-style: dashed;
+}
+
+.printer-multis-list--hidden .printer-multi-img {
+  width: 18px;
+  height: 18px;
+}
+
+.printer-multis-list--hidden .printer-multi-value {
+  font-size: 11px;
+}
+
+/* Colors match the in-game MULTI text */
+.printer-multi--kingOfTheRemembered {
+  --printer-multi-color: #fbbf24;
+}
+
+.printer-multi--supremeWiring {
+  --printer-multi-color: #60a5fa;
+}
+
+.printer-multi--biggoleMole {
+  --printer-multi-color: #fb923c;
+}
+
+.printer-multi--moonOfPrint {
+  --printer-multi-color: #4ade80;
+}
+
+.printer-multi--yetAnotherPrinterMulti {
+  --printer-multi-color: #e5e7eb;
+}
+
+.printer-multi--goldRelic {
+  --printer-multi-color: #facc15;
+}
+
+.printer-multi--skillMastery {
+  --printer-multi-color: #f9a8d4;
+}
+
+.printer-multi--vote {
+  --printer-multi-color: #a5b4fc;
+}
+
+.printer-multi--total {
+  --printer-multi-color: #f0abfc;
+  margin-top: 2px;
+  border-color: #6b4f7a;
+}
+
+/* ── Salt Materials tab: material rows ── */
+.printer-refinery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.printer-refinery-summary {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.printer-refinery-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px 5px 6px;
+  background: #1a1d29;
+  border: 1px solid #2e3344;
+  border-left: 3px solid #4ade80;
+  border-radius: 6px;
+}
+
+.printer-refinery-row--short {
+  border-left-color: #f87171;
+}
+
+.printer-refinery-row--notPrinting {
+  border-left-color: #fbbf24;
+}
+
+.printer-refinery-img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.printer-refinery-text,
+.printer-refinery-rates {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.printer-refinery-text {
+  flex: 1;
+  text-align: left;
+}
+
+.printer-refinery-rates {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.printer-refinery-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.printer-refinery-salts,
+.printer-refinery-printers {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.printer-refinery-need {
+  font-size: 12px;
+  color: #d1d5db;
+}
+
+.printer-refinery-pill {
+  min-width: 112px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.printer-refinery-pill--ok {
+  color: #4ade80;
+  background: #14532d66;
+}
+
+.printer-refinery-pill--short {
+  color: #f87171;
+  background: #7f1d1d66;
+}
+
+.printer-refinery-pill--notPrinting {
+  color: #fbbf24;
+  background: #78350f66;
+}
+
+/* ── Salt Materials tab: print plan ── */
+.salt-plan-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.salt-plan-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #d1d5db;
+}
+
+.salt-plan-summary {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.salt-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 920px;
+}
+
+.salt-plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: #1a1d29;
+  border: 1px solid #2e3344;
+  border-top: 2px solid var(--class-color, #4b5563);
+  border-radius: 6px;
+}
+
+.salt-plan-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.salt-plan-class-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-image: var(--class-icon);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.salt-plan-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--class-color, #e5e7eb);
+}
+
+.salt-plan-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  background: #151821;
+  border-radius: 4px;
+}
+
+.salt-plan-slot--spare {
+  justify-content: center;
+  min-height: 28px;
+  font-size: 11px;
+  color: #6b7280;
+  border: 1px dashed #374151;
+}
+
+.salt-plan-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.salt-plan-item {
+  flex: 1;
+  font-size: 12px;
+  color: #e5e7eb;
+  text-align: left;
+}
+
+.salt-plan-fit {
+  font-size: 11px;
+  color: #facc15;
+}
+
+.salt-plan-action {
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.salt-plan-action--keep {
+  color: #4ade80;
+}
+
+.salt-plan-action--swap {
+  color: #60a5fa;
+}
+
+.salt-plan-action--sample {
+  color: #fbbf24;
+}
+
+.salt-plan-action--misfit {
+  color: #fb923c;
+}
+
+.salt-plan-free {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #11241a;
+  border: 1px solid #166534;
+  border-radius: 8px;
+}
+
+.salt-plan-free-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4ade80;
+}
+
+.salt-plan-free-note {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.salt-plan-free-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.salt-plan-free-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--class-color, #e5e7eb);
+  background: #1a1d29;
+  border-radius: 6px;
+}
+
+.salt-plan-free-copper {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+/* ── Salt Materials tab: materials by salt ── */
+.salt-materials {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 640px;
+  margin-top: 4px;
+}
+
+.salt-materials-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.salt-materials-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.salt-materials-salt-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.printer-refinery-row--stocked {
+  border-left-color: #4b5563;
+}
+
+.printer-refinery-pill--stocked {
+  color: #9ca3af;
+  background: #37415166;
+}
+
+/* ── Tooltip (shared .tooltip from global.css) ── */
+.printer-tooltip > span {
+  display: block;
+  text-align: center;
+}
+
+.printer-tooltip-name {
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.printer-tooltip-line {
+  color: #f0abfc;
+}
+
+.printer-tooltip-status {
+  color: #9ca3af;
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
+import Keychains from '../Keychains/Keychains.jsx'
 import AnvilProduction from '../AnvilProduction/AnvilProduction.jsx'
 import { CharacterBoard, ObolStatsPanel } from '../Obols/ObolBoard.jsx'
 import { getCharacterNotices } from '../../utils/characterNotices.js'
@@ -137,6 +138,7 @@ function MaestroHandLine({ hand }) {
     return (
       <span className={`char-skill-hand-line char-skill-hand-line--${entry.status}`}>
         Maestro hands: {entry.lead} LV ahead of {entry.closest?.name} ({entry.closest?.level})
+        {entry.skipsMages && ' · mages not counted'}
       </span>
     )
   }
@@ -433,6 +435,10 @@ export default function CharacterCard({ character, charIndex, snapshot, obolChec
             <section className="char-overview-section">
               <h3 className="char-overview-heading">Premium Gear</h3>
               <PremiumGearTab charIndex={charIndex} snapshot={snapshot} />
+            </section>
+            <section className="char-overview-section">
+              <h3 className="char-overview-heading">Keychains</h3>
+              <Keychains charIndex={charIndex} snapshot={snapshot} />
             </section>
             {snapshot?.anvil && (
               <section className="char-overview-section">

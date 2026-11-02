@@ -14,6 +14,7 @@ export const LAB_BONUSES = {
   myFirstChemistrySet: 2, // lab bonus 10: 2x vials
   slabSovereignty: 15, // lab bonus 15: +25% slab bonuses (+ Pure Opal Rhinestone)
   depotStudiesPhd: 17, // lab bonus 17: +30% crop depot bonuses (+ Pure Opal Rhombol)
+  gildedCyclicalTubing: 3, // lab bonus 2: 3x refinery cycle speed
 }
 
 // Mainframe bonuses given as a % (by lab bonus index): base % and the jewel that adds to it

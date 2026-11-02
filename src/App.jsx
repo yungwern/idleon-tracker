@@ -22,10 +22,13 @@ import Obols from './components/Obols/Obols.jsx'
 import Construction from './components/Construction/Construction.jsx'
 import Shrines from './components/Shrines/shrines.jsx'
 import Worship from './components/Worship/Worship.jsx'
+import Printer from './components/Printer/Printer.jsx'
+import Refinery from './components/Refinery/Refinery.jsx'
 import Bubba from './components/Bubba/Bubba.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
 import Farming from './components/Farming/Farming.jsx'
+import Summoning from './components/Summoning/Summoning.jsx'
 import Spelunking from './components/Spelunking/Spelunking.jsx'
 
 import './App.css'
@@ -150,10 +153,13 @@ export default function App() {
     if (current === 'Construction')   return <Construction snapshot={snapshot} />
     if (current === 'Shrines')        return <Shrines snapshot={snapshot} />
     if (current === 'Worship') return <Worship snapshot={snapshot} />
+    if (current === 'Printer') return <Printer snapshot={snapshot} />
+    if (current === 'Refinery') return <Refinery snapshot={snapshot} />
     if (current === 'Bubba') return <Bubba />
     if (current === 'Cooking') return <Cooking snapshot={snapshot} />
     if (current === 'Breeding') return <Breeding snapshot={snapshot} />
     if (current === 'Farming') return <Farming snapshot={snapshot} tomePoints={tomePoints} />
+    if (current === 'Summoning') return <Summoning snapshot={snapshot} />
     if (current === 'Spelunking') return <Spelunking snapshot={snapshot} tomePoints={tomePoints} />
     if (!sectionItems.includes(current)) {
       return (

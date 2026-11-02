@@ -50,6 +50,14 @@ function minorMultiplier(slot) {
   return godMap[godMap[slot]?.godIndex]?.minorBonusMultiplier ?? 0
 }
 
+// Whether a god's MAJOR bonus applies to a character: granted to everyone, the W7 chosen god,
+// or linked (Toolbox isMajorDivinityActive; Purrmep / Kattlekruk's any-link rule isn't ported)
+export function isMajorGodActive(snapshot, characterIndex, slot) {
+  return isGrantedToEveryone(snapshot, slot)
+    || snapshot?.divinity?.w7ChosenGod === slot
+    || isLinked(snapshot, characterIndex, slot)
+}
+
 // A god's minor link bonus for one character (0 when it isn't linked)
 export function getMinorDivinityBonus(snapshot, characterIndex, slot) {
   if (!isGrantedToEveryone(snapshot, slot) && !isLinked(snapshot, characterIndex, slot)) return 0

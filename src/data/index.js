@@ -55,6 +55,8 @@ export { cogMap, BOARD_ROWS, BOARD_COLS, COG_BORDER_CLASS, COG_PLACEMENTS, saltM
 export { shrineMap, shrineBuffMap } from './shrineMap'
 export { worshipMap, soulsMap, towerMap } from './worshipMap'
 export { prayerMap } from './prayerMap'
+export { refinerySalts, REFINERY_BASE_CYCLE_SECONDS, REFINERY_SPEED_SOURCES, REFINERY_POWER_CAPS, REFINERY_SALT_COMPANION, SKILL_MAIN_STATS, SKILL_SPECIALISTS, VMAN_CLASS, VMAN_ITEM } from './refineryMap'
+export { printerBuffMap, printerMultiMap, printerHiddenMultiMap, GOLD_RELIC_FORMS, PRINTER_MULTI_SOURCES, PRINTER_CHARACTER_MULTIS, PRINTER_BASE_LIBRARY_SLOTS, SAMPLE_SPACES_MAX } from './printerMap'
 export { BUBBA_UPGRADES, BUBBA_ATTRIBUTES, BUBBA_HAPPINESS, BUBBA_GIFT_HAPPINESS, BUBBA_CHARISMA_GOALS, BUBBA_PHASES } from './bubbaMap'
 
 // ── World 4 ───────────────────────────────────────────────────────────────────
@@ -72,7 +74,7 @@ export { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel, gl
 // ── World 6 ───────────────────────────────────────────────────────────────────
 export { pristineCharmMap } from './sneakingMap'
 export { emperorBonusOrder } from './emperorMap'
-export { summoningBonuses, summoningEnemyBonuses, summoningEndless } from './summoningMap'
+export { summoningBonuses, summoningEnemyBonuses, summoningEndless, summoningStoneBosses, summoningColourNames, summoningUpgrades, summoningEssenceUpgrades, summoningDoublerModel, summoningDoublerNotes } from './summoningMap'
 export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, exoticCap, landRankMap, calcRankBonus } from './farmingMap'
 
 // ── World 7 ───────────────────────────────────────────────────────────────────
