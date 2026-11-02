@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { summoningColourNames } from '../../data'
 import { getDoublerPlans, DOUBLER_SETUPS, DOUBLER_TIERS } from '../../utils/summoningUtils'
+import InfoPanel from '../InfoPanel/InfoPanel'
 
 // Summoning > Doublers: where to put the account's Gambit summoning doublers for a Damage push or for
 // Essence gain (utils/summoningUtils.js getDoublerPlans), and what to move from the current placement
@@ -13,15 +14,13 @@ const SETUPS = [
 // Header shown where each tier starts in the pick list
 const TIER_HEADERS = {
   [DOUBLER_SETUPS.damage]: {
-    [DOUBLER_TIERS.damage]: 'Damage & spikes',
-    [DOUBLER_TIERS.mana]: 'Mana',
-    [DOUBLER_TIERS.health]: 'Health: only once every damage and mana upgrade has one',
+    [DOUBLER_TIERS.combat]: 'Damage, spikes & mana',
+    [DOUBLER_TIERS.health]: 'Health: only once every damage, spike and mana upgrade has one',
     [DOUBLER_TIERS.essence]: 'Leftovers: essence gain',
   },
   [DOUBLER_SETUPS.essence]: {
     [DOUBLER_TIERS.essence]: 'Essence gain',
-    [DOUBLER_TIERS.damage]: 'Leftovers: nothing else adds 1% essence, so damage & spikes',
-    [DOUBLER_TIERS.mana]: 'Leftovers: mana',
+    [DOUBLER_TIERS.combat]: 'Leftovers: nothing else adds 1% essence, so damage, spikes & mana',
     [DOUBLER_TIERS.health]: 'Leftovers: health',
   },
 }
@@ -55,16 +54,22 @@ function UpgradeIcon({ index, className }) {
   )
 }
 
+// Icon only, name on hover
 function UpgradeChip({ upgrade }) {
   return (
-    <span className={`summoning-doubler-chip ${colourClass(upgrade.colour)}`}>
+    <span className={`summoning-doubler-chip tooltip-anchor ${colourClass(upgrade.colour)}`}>
       <UpgradeIcon
         index={upgrade.index}
         className="summoning-doubler-chip-icon"
       />
-      {upgrade.name}
+      <span className="tooltip">{upgrade.name}</span>
     </span>
   )
+}
+
+// Take off / Put on chips in essence colour order (white first, teal last), then upgrade index
+function byColour(upgrades) {
+  return [...upgrades].sort((a, b) => a.colour - b.colour || a.index - b.index)
 }
 
 function MoveList({ plan }) {
@@ -78,7 +83,7 @@ function MoveList({ plan }) {
           Take off ({plan.takeOff.length})
         </span>
         <div className="summoning-doubler-chips">
-          {plan.takeOff.map(upgrade => (
+          {byColour(plan.takeOff).map(upgrade => (
             <UpgradeChip
               key={upgrade.index}
               upgrade={upgrade}
@@ -91,7 +96,7 @@ function MoveList({ plan }) {
           Put on ({plan.putOn.length})
         </span>
         <div className="summoning-doubler-chips">
-          {plan.putOn.map(upgrade => (
+          {byColour(plan.putOn).map(upgrade => (
             <UpgradeChip
               key={upgrade.index}
               upgrade={upgrade}
@@ -158,6 +163,17 @@ export default function DoublersTab({ snapshot }) {
 
   return (
     <>
+      <InfoPanel
+        intro="Push in the Damage setup. When you stall, swap to Essence Gain for a while, then swap back."
+        items={[
+          'Doublers = the Gambit count from your save. Each doubler multiplies its upgrade by 2 + Absolute Stardom past 100%, plus Allstar.',
+          'Damage fills in tiers: damage, spike and mana upgrades together (biggest gain first), then HP, then essence with whatever is left.',
+          'Damage vs mana: more mana regen means more units summoned, so 2x mana regen counts the same as 2x unit damage. Unit and spike damage count half each, starting mana counts half (it only helps the opening).',
+          'Essence Gain: essence per hour of every colour, and cheaper upgrades (which helps every colour). Once nothing adds at least 1% essence, the rest follow the Damage tiers.',
+          'Seeing Red, Hundredaire and Final Card only work part of the fight (noted on their row) but are ranked as if always on. Jeweled Cards is an estimate: its chance isn\'t a sure thing even above 100%.',
+          'Unit Obliteration and Glombolic Units are treated as their own multipliers (Toolbox doesn\'t have them yet).',
+        ]}
+      />
       <div className="summoning-doubler-summary">
         <span className="summoning-doubler-stat">
           Doublers: <strong>{plans.total}</strong>

@@ -238,12 +238,13 @@ Doublers (DoublersTab.jsx, summoningUtils getDoublerPlans): count = cavernUtils 
 trial times × points multi, first gambit bonus + 10 from event shop 15; multi skips Measurement 13 (Death Note pts, not ported), still
 33 = Toolbox on Eli's save). Placed = Holes[28] (upgrade index, -1 empty) = snapshot.caverns.gambitDoublers. Doubler multi = 2 + max(0,
 Absolute Stardom (talent 597) / 100 - 1) + Allstar (upgrade 78) % (3.33 on Eli's save, = Toolbox). Upgrade bonus = Summon[0] LV × qty ×
-stone multi (summoningUpgrades in summoningMap.js, stoneBoosted = Toolbox filler). Planner fills strict tiers, greedy log gain inside
-each (summoningDoublerModel; army DMG/HP from Toolbox getArmyDamage/Health, but 50/51/74/81 = own multipliers per in-game text):
-Damage setup = every damage/spike upgrade (incl. Seeing Red, Hundredaire, Spiked Placement, Jeweled Cards) > every mana upgrade
-(incl. Starting Mana, Final Card) > HP (Eli: HP rarely helps, always last) > essence. Essence setup = essence while a doubler adds 1%
-(Σ colours ln(knowledge × victories × summoning × Infinite Essence) + colours × ln(cost cuts)), then the damage tiers. Matched Eli's
-own Damage setup except 2 slots. Icons = public/images/summoning/upgrades/SumUpgIc<i>.png (Toolbox data/). Career wins per colour =
+stone multi (summoningUpgrades in summoningMap.js, stoneBoosted = Toolbox filler). Planner fills tiers, greedy log gain inside
+each (summoningDoublerModel; army DMG/HP = Toolbox getArmyDamage/Health, Merciless 51 / Unit Blood 50 stay in the shared pools: Eli
+says doubling them does ~nothing; 74/81 own multipliers). Damage setup = one combat tier (damage, spikes, mana, Jeweled Cards;
+score = ln mana regen + ln jeweled + ½ ln unit DMG + ½ ln spikes + ½ ln starting mana: output ≈ units summoned × damage) > HP (Eli:
+always last) > essence. Jeweled Cards = raised chance, not sure even past 100% (Eli tested), valued as 1 + bonus/100 (estimate).
+Essence setup = essence while a doubler adds 1% (Σ colours ln(knowledge × victories × summoning × Infinite Essence) + colours ×
+ln(cost cuts)), then combat, then HP. Take off / Put on chips = icon only, name in a tooltip. Icons = public/images/summoning/upgrades/SumUpgIc<i>.png (Toolbox data/). Career wins per colour =
 won enemies by mapEnemyData world (Pet* = white).
 
 **Buffs panel**: `BuffsPanel` (styles in global.css) is the centered unlocked/missing/unknown icon strip under the

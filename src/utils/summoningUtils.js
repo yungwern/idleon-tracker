@@ -117,8 +117,11 @@ export function formatStoneHp(value) {
 // ── Summoning doublers (Doublers tab) ──
 // A Gambit doubler on an upgrade multiplies its bonus by 2 + max(0, Absolute Stardom / 100 - 1), plus
 // Allstar (78) % on top (Toolbox summoning.ts). Each setup fills doublers in tiers, best gain first:
-//   Damage: every damage / spike upgrade, then every mana upgrade, then HP (Eli: HP rarely helps you
-//     progress, it only beats nothing), then the essence ranking for anything left.
+//   Damage: damage, spikes and mana in one tier, then HP (Eli: HP rarely helps you progress, it only beats
+//     nothing), then the essence ranking for anything left. Combat output is taken as mana regen (how many
+//     units you summon) × (half unit damage + half spike damage): so x2 mana regen = x2 unit damage (which
+//     also raises spikes) = x4 spike damage alone. Starting mana counts half (it only helps the opening),
+//     Jeweled Cards counts like mana (more units per mana).
 //   Essence: essence per hour of every unlocked colour + cheaper upgrades (once per colour, every colour
 //     pays costs), while a doubler still adds 1%; then the damage tiers.
 // Only the summoning-upgrade parts of each formula are modelled: the rest are the same with or without a
@@ -135,8 +138,7 @@ export const DOUBLER_SETUPS = {
 
 // Pick tiers, in the order the Damage setup fills them
 export const DOUBLER_TIERS = {
-  damage: 'damage',
-  mana: 'mana',
+  combat: 'combat',
   health: 'health',
   essence: 'essence',
 }
@@ -227,7 +229,7 @@ function getDoublerStats(context, doubled) {
   return {
     damage,
     spikes: (value(spikes.flat) + value(spikes.ofDamage) / 100 * damage) * percent(value(spikes.multi)),
-    jeweled: 1 + Math.min(100, value(jeweledCards)) / 100,
+    jeweled: percent(value(jeweledCards)),
     manaRegen: percent(sum(mana.regen)) * product(mana.regenMulti),
     startingMana: percent(value(mana.starting)),
     health: army(healthModel),
@@ -236,10 +238,18 @@ function getDoublerStats(context, doubled) {
   }
 }
 
-const TIER_STATS = {
-  [DOUBLER_TIERS.damage]: ['damage', 'spikes', 'jeweled'],
-  [DOUBLER_TIERS.mana]: ['manaRegen', 'startingMana'],
-  [DOUBLER_TIERS.health]: ['health'],
+// log weight of each stat in a tier's score (see the combat output note at the top)
+const TIER_WEIGHTS = {
+  [DOUBLER_TIERS.combat]: {
+    damage: 0.5,
+    spikes: 0.5,
+    manaRegen: 1,
+    jeweled: 1,
+    startingMana: 0.5,
+  },
+  [DOUBLER_TIERS.health]: {
+    health: 1,
+  },
 }
 
 function getTierScore(tier, stats) {
@@ -247,7 +257,7 @@ function getTierScore(tier, stats) {
     const colours = Object.values(stats.essence)
     return colours.reduce((sum, multi) => sum + Math.log(multi), 0) + colours.length * Math.log(stats.costDivisor)
   }
-  return TIER_STATS[tier].reduce((sum, stat) => sum + Math.log(Math.max(stats[stat], 1e-300)), 0)
+  return Object.entries(TIER_WEIGHTS[tier]).reduce((sum, [stat, weight]) => sum + weight * Math.log(Math.max(stats[stat], 1e-300)), 0)
 }
 
 // Upgrade indexes in each tier the account owns (LV 1+)
@@ -255,8 +265,16 @@ function getTierCandidates(context, tier) {
   const { damage, health, mana, spikes, jeweledCards, infiniteEssence, costCuts, costLaundering } = summoningDoublerModel
   const army = model => [...model.flat, ...model.multi, ...model.group, model.endless, model.perHundred]
   const byTier = {
-    [DOUBLER_TIERS.damage]: [...army(damage), spikes.flat, spikes.ofDamage, spikes.multi, jeweledCards],
-    [DOUBLER_TIERS.mana]: [...mana.regen, ...mana.regenMulti, mana.starting],
+    [DOUBLER_TIERS.combat]: [
+      ...army(damage),
+      spikes.flat,
+      spikes.ofDamage,
+      spikes.multi,
+      jeweledCards,
+      ...mana.regen,
+      ...mana.regenMulti,
+      mana.starting,
+    ],
     [DOUBLER_TIERS.health]: army(health),
     [DOUBLER_TIERS.essence]: [
       ...context.colours.flatMap(colour => {
@@ -305,15 +323,13 @@ function describeGain(before, after) {
 
 const SETUP_TIERS = {
   [DOUBLER_SETUPS.damage]: [
-    { tier: DOUBLER_TIERS.damage },
-    { tier: DOUBLER_TIERS.mana },
+    { tier: DOUBLER_TIERS.combat },
     { tier: DOUBLER_TIERS.health },
     { tier: DOUBLER_TIERS.essence },
   ],
   [DOUBLER_SETUPS.essence]: [
     { tier: DOUBLER_TIERS.essence, minGain: MIN_ESSENCE_GAIN },
-    { tier: DOUBLER_TIERS.damage },
-    { tier: DOUBLER_TIERS.mana },
+    { tier: DOUBLER_TIERS.combat },
     { tier: DOUBLER_TIERS.health },
   ],
 }

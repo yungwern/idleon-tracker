@@ -13,28 +13,6 @@ const TABS = [
   { id: 'doublers', label: 'Doublers' },
 ]
 
-const TAB_INFO = {
-  bosses: {
-    intro: 'Each essence colour has a summoning stone boss, fought at a stone on a regular map. Every kill multiplies most of that colour\'s summoning upgrades, but makes the next fight 4,000x tougher.',
-    items: [
-      'Bonus: a colour\'s stone-boosted summoning upgrades are multiplied by 1 + kills (6 kills = 7x). Hover the bonus to see what the next kill brings.',
-      'HP is the boss\'s health on your next fight. Hover the ⓘ next to it for the fights after that.',
-      'Found at: the map with the stone. Hover the mob next to it to see which mob lives on that map, to help find it in game.',
-    ],
-  },
-  doublers: {
-    intro: 'Summoning doublers (from the Gambit cavern) multiply one upgrade each. Push in the Damage setup; when you stall, swap to Essence Gain for a while, then swap back.',
-    items: [
-      'Doublers = the Gambit count from your save. Each doubler multiplies its upgrade by 2 + Absolute Stardom past 100%, plus Allstar.',
-      'Damage fills in tiers: every damage and spike upgrade first, then every mana upgrade, then HP, then essence with whatever is left. Within a tier, the biggest gain comes first.',
-      'Essence Gain: essence per hour of every colour, and cheaper upgrades (which helps every colour). Once nothing adds at least 1% essence, the rest follow the Damage tiers.',
-      'Seeing Red, Hundredaire and Final Card only work part of the fight (noted on their row) but are ranked as if always on.',
-      'Take off / Put on is what to change from your current placement. Re-import after moving them.',
-      'Merciless Units, Unit Blood, Unit Obliteration and Glombolic Units are treated as their own multipliers (from the in-game text; Toolbox\'s formula differs or is missing them).',
-    ],
-  },
-}
-
 export default function Summoning({ snapshot }) {
   const [activeTab, setActiveTab] = useState('bosses')
   if (!snapshot?.summoning) {
@@ -49,8 +27,11 @@ export default function Summoning({ snapshot }) {
     <div className="page">
       <h2 className="page-title">Summoning</h2>
       <InfoPanel
-        intro={TAB_INFO[activeTab].intro}
-        items={TAB_INFO[activeTab].items}
+        intro="Your World 6 Summoning: the stone bosses and where to put your summoning doublers."
+        items={[
+          'Bosses: each essence colour has a stone boss on a regular map. Every kill multiplies most of that colour\'s summoning upgrades by 1 + kills, but makes the next fight 4,000x tougher. Hover the bonus for what the next kill brings, the ⓘ next to HP for the fights after that, and the mob next to the map name to see which mob lives there.',
+          'Doublers: where to put your Gambit summoning doublers for a Damage push or for Essence Gain, and what to move from your current placement. Re-import after moving them.',
+        ]}
       />
       <div className="page-tabs summoning-tabs">
         {TABS.map(tab => (

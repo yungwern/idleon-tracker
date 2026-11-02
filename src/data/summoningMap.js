@@ -1268,23 +1268,25 @@ export const summoningEssenceUpgrades = [
 
 // How each doubler candidate feeds its stat (Toolbox getArmyDamage / getArmyHealth / upgrade cost, plus the
 // in-game text). flat = one additive pool, multi = own multipliers, group = one shared % pool (+ endless ×
-// highest endless), perHundred = % per 100 total upgrade levels. Differences from Toolbox's army formulas:
-// Merciless Units (51) and Unit Blood (50) say "a brand new multiplier", so they are their own multipliers;
-// Unit Obliteration (74) and Glombolic Units (81) aren't in Toolbox yet, also treated as own multipliers;
-// Seeing Red (47) and Hundredaire (76) only kick in mid-fight (see summoningDoublerNotes) but count fully.
-// Jeweled Cards = chance (capped at 100%) to spawn 4x units for 2x mana. Starting Mana counts as a multiplier.
+// highest endless), perHundred = % per 100 total upgrade levels. Merciless Units (51) and Unit Blood (50) stay
+// in Toolbox's shared pools even though their text says "a brand new multiplier": Eli's testing shows a
+// doubler on them does almost nothing. Unit Obliteration (74) and Glombolic Units (81) aren't in Toolbox yet:
+// treated as own multipliers. Seeing Red (47) and Hundredaire (76) only kick in mid-fight (see
+// summoningDoublerNotes) but count fully. Jeweled Cards (32) = a raised chance, not a sure thing, even above
+// 100% (Eli tested in game): valued as if bonus / 100 more cards spawn 4x units for 2x mana (an estimate).
+// Starting Mana counts as a multiplier.
 export const summoningDoublerModel = {
   damage: {
     flat: [3, 12, 21, 31],
-    multi: [43, 74, 51, 47, 76],
-    group: [56],
+    multi: [43, 74, 47, 76],
+    group: [51, 56],
     endless: 64,
     perHundred: 60,
   },
   health: {
     flat: [1, 10, 35, 37],
-    multi: [20, 81, 50],
-    group: [59],
+    multi: [20, 81],
+    group: [50, 59],
     endless: 63,
     perHundred: 61,
   },
@@ -1309,5 +1311,6 @@ export const summoningDoublerModel = {
 export const summoningDoublerNotes = {
   47: 'after an enemy reaches your line',
   76: 'with 100x a unit\'s mana cost banked',
+  32: 'value is an estimate: the chance isn\'t a sure thing',
   41: 'when you play your whole hand',
 }
