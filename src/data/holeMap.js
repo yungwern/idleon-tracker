@@ -176,7 +176,7 @@ export const holeCaverns = [
     opalSource: '1 opal per colony conquered.',
     guide: [
       'Kill the colony, then press Challenge the Monarch (a tanky giant) for the next colony tier.',
-      'AFK is better than active (slow respawns). Gloomie Mushroom card: +5% Villager EXP per tier. Unique drop: Villager statue.',
+      'AFK is better than active (slow respawns). If you are going to active use a Siege Breaker. Gloomie Mushroom card: +5% Villager EXP per tier. Unique drop: Villager statue.',
     ],
   },
   {
@@ -201,7 +201,7 @@ export const holeCaverns = [
     kind: 'Resource',
     opalSource: 'Some jars have a chance to hold an opal.',
     guide: [
-      'Make and break jars for Rupies, opals and collectibles. Collectibles give permanent bonuses and can be enchanted.',
+      'Make and break jars for Rupies, opals and collectibles. Collectibles give permanent bonuses and can be enchanted to further increase their value.',
     ],
   },
   {
@@ -221,7 +221,7 @@ export const holeCaverns = [
     kind: 'Monument',
     opalSource: 'Chance for Wisdom opals.',
     guide: [
-      'The third monument: AFK for Respect bonuses, then play its daily story (a matching game).',
+      'The third monument: AFK for Respect bonuses, then play its story (a memory matching game). You can quickly take a screenshot after you flip the first row of cards to gain an advantage.',
     ],
   },
   {
@@ -231,7 +231,7 @@ export const holeCaverns = [
     kind: 'Challenge',
     opalSource: null,
     guide: [
-      'Daily timed trials. Your best time on each one gives Gambit Points, and points give Summoning Doublers (World 6 > Summoning > Doublers).',
+      'Daily timed trials. Your best time on each one gives Gambit Points, more points give valuable upgrades like Opals, Summoning Doublers and various other account-wide bonuses.',
     ],
   },
   {
@@ -241,7 +241,7 @@ export const holeCaverns = [
     kind: 'Combat',
     opalSource: null,
     guide: [
-      'Ancient Golems drop torches. Spend torches on Illuminate / Search / Amplify to push deeper layers.',
+      'Ancient Golems drop torches. Spend torches on Illuminate / Search / Amplify to push deeper layers. AFK is better for farming statues, active is better for pushing layers. Again, use Siege Breaker for active.',
     ],
   },
   {
@@ -271,7 +271,7 @@ export const holeCaverns = [
     kind: 'Shop',
     opalSource: null,
     guide: [
-      'Home of the Crystal Glunko upgrades (the save calls this cavern THE_COVE).',
+      'Home of the Crystal Glunko. Various upgrades that increase gains in both this cavern and IdleOn account-wide bonuses. You can AFK here to speed up progression with multiple characters, but active Siege Breaker is still the best. ',
     ],
   },
 ]
