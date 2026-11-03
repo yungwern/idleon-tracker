@@ -30,7 +30,7 @@ export const holeVillagers = [
     unlockCavern: 2,
     opalRate: '35% - 60%',
     parallelTier: 'S+',
-    info: 'Each LV unlocks 3 schematics to build, +1 every 5th LV. Schematics are crucial for Hole progress and also boost normal IdleOn stats. Invest your opals in him.',
+    info: 'Each LV unlocks 3 schematics to build, +1 every 5th LV. Schematics are crucial for Hole progress and also boost normal IdleOn stats.',
   },
   {
     id: 2,
@@ -52,7 +52,7 @@ export const holeVillagers = [
     unlockCavern: 7,
     opalRate: '25% - 40%',
     parallelTier: 'S+',
-    info: 'Each LV unlocks a Measure: a cavern-resource sink whose bonus is multiplied by an IdleOn stat (Tome score, Death Note points, ...). Villager EXP Gain is the most important one. The more endgame you are, the more opals go here.',
+    info: 'Each LV unlocks a Measure: a cavern-resource sink whose bonus is multiplied by an IdleOn stat (Tome score, Death Note points, ...). Villager EXP Gain is the most important one.',
   },
   {
     id: 4,
@@ -60,9 +60,9 @@ export const holeVillagers = [
     tabLabel: 'Studies',
     name: 'Bolaia',
     role: 'Librarian',
-    unlockCavern: null,
+    unlockCavern: 12,
     opalRate: null,
-    parallelTier: null,
+    parallelTier: 'S+',
     info: 'Send him to study one cavern at a time to unlock its study bonus. Each LV boosts his study rate by +5%.',
   },
 ]
@@ -108,8 +108,8 @@ export const holeCaverns = [
     kind: 'Combat challenge',
     opalSource: 'Every high score threshold reached.',
     guide: [
-      'Kill hounds for points before Fear fills the bar. No timer, retry as often as you like.',
-      'Amplifiers raise difficulty for a bigger score multi. Kill hounds in under 3 s; defense and AoE classes (Bubonic, Divine Knight, Siege Breaker) help.',
+      'Kill hounds for points before Fear fills the bar. Trying different Amplifier and Talent Bar setups can lead to higher scores.',
+      'Amplifiers raise difficulty for a bigger score multi. Arcane Cultist, Royal Guardian, and Windwalker are the recommended class choices.',
     ],
   },
   {
@@ -119,8 +119,9 @@ export const holeCaverns = [
     kind: 'Monument',
     opalSource: 'Chance to show up as a monument bonus.',
     guide: [
-      'AFK here (Pay Respect, 1 h to unlock) for Respect bonuses, then play the daily sword story: Fight or Run Away before each battle.',
-      'Never lose the multiplier bonus from the first fight. Fight if Sword Throws × 60% max damage beats the enemy HP, else run. Always pick the blue chest.',
+      'AFK here for Respect bonuses, then play the sword story: Fight or Run Away before each battle.',
+      'Fight if Sword Throws × 60% max damage beats the enemy HP, else run.',
+      'Use your Sword Rerolls when the Sword damage is lower than 40-50% damage.'
     ],
   },
   {
@@ -131,7 +132,7 @@ export const holeCaverns = [
     opalSource: '+1 opal every Ping.',
     guide: [
       'Generates Ring, Ping, Clean and Renew rates for the selected action; click when the bar fills.',
-      'Ring = +1 LV to a random bonus (Villager XP is the important one). Clean unlocks improvements, Renew resets ring bonuses (you keep improvements and opals).',
+      'Ring = +1 LV to a random bonus, Ping unlocks Opals, Clean unlocks improvements, Renew resets ring bonuses (you keep improvements and opals).',
     ],
   },
   {
@@ -154,6 +155,7 @@ export const holeCaverns = [
     guide: [
       'Gives wishes every daily reset (pocket watches don\'t work here). Wishes change your cavern playstyle and give big IdleOn bonuses.',
       'Get as many wishes per day as you can (Bell, Measurer, Conjuror).',
+      'Opal Calculator is only there to help you plan how long it will take to buy the next one. It doesn\'t mean it\'s always the best thing to buy.',
     ],
   },
   {
@@ -173,8 +175,8 @@ export const holeCaverns = [
     kind: 'Combat',
     opalSource: '1 opal per colony conquered.',
     guide: [
-      'An infinite portal map: kill the colony, then press Challenge the Monarch (a tanky giant) for the next colony tier.',
-      'AFK is better than active (slow respawns). Gloomie Mushroom card: +5% Villager EXP per tier. Unique drop: Dragon Warrior statue.',
+      'Kill the colony, then press Challenge the Monarch (a tanky giant) for the next colony tier.',
+      'AFK is better than active (slow respawns). Gloomie Mushroom card: +5% Villager EXP per tier. Unique drop: Villager statue.',
     ],
   },
   {
@@ -184,7 +186,7 @@ export const holeCaverns = [
     kind: 'Monument',
     opalSource: 'Chance for Justice opals.',
     guide: [
-      'The second monument: AFK for Respect bonuses, then play its daily story (cases in court).',
+      'The second monument: AFK for Respect bonuses, then play its story (cases in court).',
     ],
     link: {
       text: 'Not sure which choice to pick in a case? This helper tells you:',

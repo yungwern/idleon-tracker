@@ -35,7 +35,6 @@ export default function WellPanel({ snapshot, lead }) {
             />
             {formatHoleNumber(well.gravel)} / {formatHoleNumber(well.opalCost)}
           </span>
-          <span className="hole-stat-card-hint">The price goes up with every opal you trade for.</span>
         </div>
         <div className="hole-card hole-stat-card">
           <span className="hole-stat-card-label">Fill rate (all buckets)</span>
@@ -69,10 +68,9 @@ export default function WellPanel({ snapshot, lead }) {
               />
               <span className="hole-well-bucket-rate">{formatHoleNumber(bucket.rate)}/hr</span>
               <span className="tooltip tooltip--wrap hole-tooltip">
-                <span className="hole-tooltip-title">Bucket {bucket.index + 1}{bucket.golden ? ' (golden)' : ''}</span>
+                <span className="hole-tooltip-title">Bucket {bucket.index + 1}{bucket.golden ? ' (Golden)' : ''}</span>
                 <span className="hole-tooltip-text">
-                  {bucket.rocks ? 'Digging through the rock layer' : `Filling ${bucket.sedimentName}`}
-                  {' '}at {formatHoleNumber(bucket.rate)} / hr
+                  {bucket.rocks ? 'Digging through the rock layer' : ` - ${bucket.sedimentName}`}
                 </span>
               </span>
             </div>
@@ -110,7 +108,7 @@ export default function WellPanel({ snapshot, lead }) {
                   <div className={`hole-well-bar-fill hole-well-sedi--${sediment.index}`} />
                 </div>
                 <span className="tooltip tooltip--wrap hole-tooltip">
-                  <span className="hole-tooltip-title">{sediment.name}</span>
+                  <span className="hole-tooltip-title">{sediment.name} - </span>
                   <span className="hole-tooltip-text">
                     {sediment.expansions} bar expansions ({WELL_BAR_TIERS[sediment.tier]} outline
                     {sediment.tier === sediment.previous ? ', complete' : ` ${Math.round(sediment.fill * 100)}% of the way`})

@@ -117,7 +117,7 @@ export default function CavernTab({ snapshot, cavern, unlocked, tomePoints }) {
 
       {details.progress != null && (
         <div
-          className="hole-bar"
+          className={`hole-bar hole-bar--cavern-${cavern.id}`}
           style={{ '--hole-progress': `${Math.round(details.progress * 100)}%` }}
         >
           <div className="hole-bar-fill" />

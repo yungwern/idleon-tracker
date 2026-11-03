@@ -42,8 +42,7 @@ export default function DenPanel({ snapshot, lead }) {
           <span className="hole-card-title-stat">{matches} / {den.amps.length} match the recommended setup</span>
         </h3>
         <p className="hole-text hole-text--note">
-          Recommended setup = a late-game run at a 7.16B best score. It's only a starting point for higher levels:
-          tweak the charges to fit your account and the character you bring.
+          Recommended setup is only intended as a starting point for higher level accounts: tweak the amplifiers to fit your account and the character you bring.
         </p>
         <div className="hole-den-amps">
           {den.amps.map(amp => (
