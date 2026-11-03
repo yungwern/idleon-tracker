@@ -3,10 +3,10 @@ export const sections = {
   'Global': ['MasterClasses', 'Minibosses', 'BiS Setups'],
   'Clickers': ['Bubba'],
   'World 1': ['Statues'],
-  'World 2': ['Obols'],
-  'World 3': ['Construction', 'Shrines', 'Worship', 'Printer', 'Refinery'],
-  'World 4': ['Cooking', 'Breeding'],
-  'World 5': [],
+  'World 2': ['Obols', 'Islands'],
+  'World 3': ['Construction', 'Shrines', 'Worship', 'Printer', 'Refinery', 'Hat Rack'],
+  'World 4': ['Cooking', 'Breeding', 'The Cape Vine'],
+  'World 5': ['The Hole'],
   'World 6': ['Farming', 'Summoning'],
   'World 7': ['Spelunking'],
 }
@@ -22,15 +22,20 @@ export const sectionIcons = {
   'Statues': 'images/statues/EquipmentStatues1.png',
 
   'Obols': 'images/obols/ObolPinkLuck.png',
+  'Islands': 'images/islands/Island1.png',
 
   'Construction': 'images/skills/construction.png',
   'Shrines': 'images/shrines/ConTowerB18.png',
   'Worship': 'images/skills/worship.png',
   'Printer': 'images/gem shop/GemQ1.png',
   'Refinery': 'images/construction/Refinery1.png',
+  'Hat Rack': 'images/premium gear/hats/EquipmentHats114.png',
 
   'Cooking': 'images/skills/cooking.png',
   'Breeding': 'images/skills/breeding.png',
+  'The Cape Vine': 'images/premium gear/capes/EquipmentCape12.png',
+
+  'The Hole': 'images/hole/Villager_0.png',
 
   'Farming': 'images/skills/farming.png',
   'Summoning': 'images/skills/summoning.png',

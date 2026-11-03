@@ -1,0 +1,1530 @@
+/* ============================================================
+   THE HOLE (World 5 caverns)
+   ============================================================ */
+
+.hole-tabs {
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.hole-tabs.page-tabs--sub {
+  gap: 14px;
+}
+
+.hole-icon-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hole-icon-tab:not(.page-tab-btn--active) img {
+  opacity: 0.6;
+}
+
+.hole-icon-tab:hover img {
+  opacity: 1;
+}
+
+.hole-icon-tab--locked img {
+  filter: grayscale(1);
+}
+
+/* Hole sprites are saved at 4x (nearest-neighbor): set a height here and let the browser
+   scale them down smoothly, which stays crisp at any size */
+.hole-villager-icon {
+  height: 40px;
+  width: auto;
+}
+
+.hole-cavern-icon {
+  height: 34px;
+  width: auto;
+}
+
+/* Cavern tabs are art only (the sprite already has the name on it) */
+.hole-cavern-tab .hole-cavern-icon {
+  height: 44px;
+}
+
+.hole-cavern-tab,
+.hole-top-tab {
+  position: relative;
+}
+
+.hole-tab-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-left: 0;
+}
+
+/* Text tabs: badge floats over the label's top-right corner so the tab keeps its width */
+.hole-tab-badge--text {
+  top: 1px;
+  right: -4px;
+}
+
+.hole-cavern-art-2x {
+  height: 60px;
+  width: auto;
+}
+
+.hole-cavern-art-1x {
+  height: 30px;
+  width: auto;
+}
+
+.hole-inline-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  vertical-align: -2px;
+}
+
+/* ── Summary strip ── */
+.hole-summary {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.hole-stat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.hole-stat-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.hole-stat-value {
+  color: #e5e7eb;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hole-stat-label {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* ── Tab body + cards ── */
+.hole-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.hole-card {
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.hole-card--active {
+  border-color: rgba(251, 146, 60, 0.45);
+}
+
+.hole-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hole-card-title-stat {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hole-text {
+  margin: 0 0 6px;
+  color: #d1d5db;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hole-text:last-child {
+  margin-bottom: 0;
+}
+
+.hole-text--note {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.hole-good {
+  color: #4ade80;
+}
+
+.hole-chip {
+  padding: 1px 8px;
+  color: var(--world-5-color);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(251, 146, 60, 0.35);
+  border-radius: 999px;
+}
+
+.hole-chip--locked {
+  color: #9ca3af;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.hole-chip--active {
+  margin-left: 8px;
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+/* ── Villager / cavern header ── */
+.hole-villager-head,
+.hole-cavern-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.hole-villager-head-text,
+.hole-cavern-head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hole-villager-art {
+  height: 80px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.hole-cavern-head-art {
+  height: 72px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* --hole-progress set on .hole-bar (0% - 100%) */
+.hole-bar {
+  height: 6px;
+  margin: 8px 0 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.hole-bar-fill {
+  width: var(--hole-progress, 0%);
+  height: 100%;
+  background: var(--world-5-color);
+  border-radius: 999px;
+}
+
+/* ── Stat cards ── */
+.hole-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.hole-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hole-stat-card-label {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.hole-stat-card-value {
+  color: #e5e7eb;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.hole-stat-card-hint {
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* ── Lists (bonuses, wishes, majiks, studies) ── */
+.hole-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.hole-list-item {
+  display: grid;
+  grid-template-columns: 180px 110px 1fr;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+
+.hole-list-item:first-child {
+  border-top: none;
+}
+
+.hole-list-item--study {
+  grid-template-columns: 56px 120px 60px 1fr 80px;
+  align-items: center;
+}
+
+.hole-list-item--dim {
+  opacity: 0.45;
+}
+
+.hole-list-item--active .hole-list-name {
+  color: #4ade80;
+}
+
+.hole-list-name {
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.hole-list-level {
+  color: var(--world-5-color);
+  font-weight: 600;
+}
+
+.hole-list-level--max {
+  color: #4ade80;
+}
+
+.hole-list-text {
+  color: #d1d5db;
+}
+
+@media (max-width: 640px) {
+  .hole-list-item,
+  .hole-list-item--study {
+    grid-template-columns: 1fr auto;
+  }
+
+  .hole-list-item--study .hole-cavern-art-1x {
+    display: none;
+  }
+
+  .hole-list-text {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── Explore: cavern grid ── */
+.hole-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.hole-grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+.hole-grid-item--dim {
+  opacity: 0.4;
+}
+
+.hole-grid-name {
+  color: #e5e7eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hole-grid-value {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* ── Engineer: schematic tiles (pre-built tile art, 97px, shown at 64px) ── */
+.hole-filter-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.hole-empty {
+  text-align: center;
+}
+
+.hole-schematics {
+  display: grid;
+  grid-template-columns: repeat(6, 97px);
+  justify-content: center;
+  gap: 8px;
+}
+
+/* One in-game tile: art at its own 97px size, status written along the bottom like the game */
+.hole-schematic {
+  position: relative;
+  width: 97px;
+  height: 97px;
+  cursor: default;
+}
+
+.hole-schematic-img {
+  display: block;
+  width: 97px;
+  height: 97px;
+}
+
+.hole-schematic--locked .hole-schematic-img {
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+
+.hole-schematic-label {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 7px;
+  display: flex;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-shadow: 0 0 3px #000000, 0 1px 2px #000000;
+}
+
+.hole-schematic--built .hole-schematic-label {
+  color: #4ade80;
+}
+
+.hole-schematic-label .hole-cost {
+  text-shadow: 0 0 3px #000000, 0 1px 2px #000000;
+}
+
+/* Edge columns open their tooltip inward so it isn't cut off by the page edge */
+.hole-schematic:nth-child(6n + 1) .tooltip,
+.hole-schematic:nth-child(6n + 2) .tooltip {
+  left: 0;
+  right: auto;
+  transform: none;
+}
+
+.hole-schematic:nth-child(6n) .tooltip,
+.hole-schematic:nth-child(6n + 5) .tooltip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+@media (max-width: 760px) {
+  .hole-schematics {
+    grid-template-columns: repeat(auto-fill, 97px);
+  }
+}
+
+/* ── Costs: resource sprite + owned / cost ── */
+.hole-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #f87171;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hole-cost--ok {
+  color: #4ade80;
+}
+
+.hole-cost-icon {
+  height: 16px;
+  width: auto;
+  max-width: 28px;
+  object-fit: contain;
+}
+
+/* ── Hover tooltips (opals, schematics) on top of global .tooltip ── */
+.hole-tooltip {
+  min-width: 200px;
+  font-size: 12px;
+}
+
+.hole-tooltip-title {
+  margin-bottom: 6px;
+  color: #e5e7eb;
+  font-weight: 700;
+}
+
+.hole-tooltip-text {
+  color: #d1d5db;
+  line-height: 1.45;
+}
+
+.hole-tooltip-status {
+  margin-top: 6px;
+  color: #9ca3af;
+}
+
+.hole-tooltip-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #d1d5db;
+  line-height: 1.6;
+}
+
+.hole-tooltip-line--off {
+  color: #6b7280;
+}
+
+.hole-tooltip-line--total {
+  margin-top: 4px;
+  padding-top: 4px;
+  color: #fcd34d;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Bonuses: majik group shapes ── */
+.hole-majik-icon {
+  height: 22px;
+  width: auto;
+  align-self: center;
+}
+
+/* ── Measure: two-column cards ── */
+.hole-measures {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+}
+
+.hole-measure {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.hole-measure--locked {
+  opacity: 0.45;
+}
+
+.hole-measure-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.hole-measure-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.hole-measure-title {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hole-measure-value {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.hole-measure-sep {
+  color: #6b7280;
+}
+
+.hole-measure-name {
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.hole-measure-by strong {
+  color: #e5e7eb;
+  font-weight: 700;
+}
+
+.hole-study-time {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hole-study-time--active {
+  color: #4ade80;
+}
+
+.hole-chip--tip {
+  position: relative;
+  cursor: help;
+}
+
+.hole-measure-head,
+.hole-measure-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.hole-measure-by {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.hole-cost-icon--big {
+  height: 22px;
+  max-width: 40px;
+}
+
+/* ============================================================
+   CAVERN PANELS (Shallow Caverns)
+   ============================================================ */
+
+.hole-cost-icon--big {
+  height: 22px;
+  max-width: 40px;
+}
+
+.hole-bell-action .hole-bar {
+  margin: 4px 0 2px;
+}
+
+/* ── The Well: buckets ── */
+.hole-well-buckets {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hole-well-bucket {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 64px;
+}
+
+.hole-well-bucket-img {
+  height: 70px;
+  width: auto;
+}
+
+.hole-well-bucket-rate {
+  color: #9ca3af;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── The Well: sediment bars ──
+   --well-fill = how full the bar is, --well-outline = how far the newest outline colour has grown.
+   The outline is a gradient behind the bar: new colour on the left, previous colour on the right. */
+.hole-well-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hole-well-row {
+  display: grid;
+  grid-template-columns: 24px 90px 110px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.hole-well-icon {
+  height: 16px;
+  width: auto;
+  max-width: 24px;
+  object-fit: contain;
+}
+
+.hole-well-name {
+  color: #e5e7eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hole-well-amount {
+  font-variant-numeric: tabular-nums;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hole-well-bar {
+  position: relative;
+  padding: 2px;
+  background: linear-gradient(to right, var(--well-new) var(--well-outline, 0%), var(--well-old) var(--well-outline, 0%));
+  border-radius: 5px;
+}
+
+.hole-well-bar-inner {
+  height: 14px;
+  overflow: hidden;
+  background: #2b2522;
+  border-radius: 3px;
+}
+
+.hole-well-bar-fill {
+  width: var(--well-fill, 0%);
+  height: 100%;
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+}
+
+.hole-well-bar--new-brown {
+  --well-new: #a08074;
+}
+
+.hole-well-bar--old-brown {
+  --well-old: #a08074;
+}
+
+.hole-well-bar--new-silver {
+  --well-new: #d6e2ea;
+}
+
+.hole-well-bar--old-silver {
+  --well-old: #d6e2ea;
+}
+
+.hole-well-bar--new-gold {
+  --well-new: #ffd84d;
+}
+
+.hole-well-bar--old-gold {
+  --well-old: #ffd84d;
+}
+
+.hole-well-bar--new-blue {
+  --well-new: #4fd8ff;
+}
+
+.hole-well-bar--old-blue {
+  --well-old: #4fd8ff;
+}
+
+.hole-well-bar--new-red {
+  --well-new: #ff6b81;
+}
+
+.hole-well-bar--old-red {
+  --well-old: #ff6b81;
+}
+
+.hole-well-bar--new-green {
+  --well-new: #5cf07a;
+}
+
+.hole-well-bar--old-green {
+  --well-old: #5cf07a;
+}
+
+.hole-well-sedi--0 {
+  background-image: url("/images/hole/well/sedi0.png");
+}
+
+.hole-well-sedi--1 {
+  background-image: url("/images/hole/well/sedi1.png");
+}
+
+.hole-well-sedi--2 {
+  background-image: url("/images/hole/well/sedi2.png");
+}
+
+.hole-well-sedi--3 {
+  background-image: url("/images/hole/well/sedi3.png");
+}
+
+.hole-well-sedi--4 {
+  background-image: url("/images/hole/well/sedi4.png");
+}
+
+.hole-well-sedi--5 {
+  background-image: url("/images/hole/well/sedi5.png");
+}
+
+.hole-well-sedi--6 {
+  background-image: url("/images/hole/well/sedi6.png");
+}
+
+.hole-well-sedi--7 {
+  background-image: url("/images/hole/well/sedi7.png");
+}
+
+.hole-well-sedi--8 {
+  background-image: url("/images/hole/well/sedi8.png");
+}
+
+.hole-well-sedi--9 {
+  background-image: url("/images/hole/well/sedi9.png");
+}
+
+/* ── The Den: amplifiers ── */
+.hole-den-amps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+}
+
+.hole-den-amp {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.hole-den-amp--locked {
+  opacity: 0.4;
+}
+
+.hole-den-amp-icon {
+  width: 40px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.hole-den-amp-body {
+  font-size: 13px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.hole-den-amp-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hole-den-amp-rec {
+  color: #fcd34d;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hole-den-amp-rec--ok {
+  color: #4ade80;
+}
+
+/* ── Monuments: hour unlocks + bonuses with cap bars ── */
+.hole-hour-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.hole-hour-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+  opacity: 0.55;
+}
+
+.hole-hour-row:first-child {
+  border-top: none;
+}
+
+.hole-hour-row--reached {
+  opacity: 1;
+}
+
+.hole-hour-hours {
+  color: var(--world-5-color);
+  font-weight: 700;
+}
+
+.hole-hour-state {
+  font-weight: 600;
+  color: #9ca3af;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.hole-hour-row--reached .hole-hour-state {
+  color: #4ade80;
+}
+
+.hole-monument-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.hole-monument-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+
+.hole-monument-row:first-child {
+  border-top: none;
+}
+
+.hole-monument-head {
+  font-size: 13px;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+}
+
+.hole-cap-bar {
+  width: 100%;
+  height: 6px;
+  border: none;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  appearance: none;
+  overflow: hidden;
+}
+
+.hole-cap-bar::-webkit-progress-bar {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hole-cap-bar::-webkit-progress-value {
+  background: var(--world-5-color);
+}
+
+.hole-cap-bar::-moz-progress-bar {
+  background: var(--world-5-color);
+}
+
+.hole-cap-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.hole-cap-row .milestone {
+  --milestone-color: var(--world-5-color);
+}
+
+/* ── The Bell ── */
+.hole-bell-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.hole-bell-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hole-bell-action--0 {
+  --bell-color: #fbbf24;
+}
+
+.hole-bell-action--1 {
+  --bell-color: #4ade80;
+}
+
+.hole-bell-action--2 {
+  --bell-color: #38bdf8;
+}
+
+.hole-bell-action--3 {
+  --bell-color: #f472b6;
+}
+
+.hole-bell-icon {
+  height: 64px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.hole-bell-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hole-bell-name {
+  color: var(--bell-color);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hole-bell-rate {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.hole-bell-body .hole-bar {
+  margin: 4px 0 2px;
+}
+
+.hole-bell-fill {
+  background: var(--bell-color);
+}
+
+.hole-bell-desc {
+  color: #9ca3af;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.hole-bell-bonuses,
+.hole-bell-methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.hole-bell-bonus,
+.hole-bell-method {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.hole-bell-method--locked {
+  opacity: 0.4;
+}
+
+.hole-bell-method-head {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+@media (max-width: 640px) {
+  .hole-well-row {
+    grid-template-columns: 20px 1fr auto;
+  }
+
+  .hole-well-bar {
+    grid-column: 1 / -1;
+  }
+
+  .hole-monument-head {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+/* ── The Bell: Ring or Ping? ── */
+.hole-bell-choice-pick {
+  margin-left: 8px;
+}
+
+.hole-bell-choice-pick--ring {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.hole-bell-choice-pick--ping {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.hole-bell-choice-pick--either {
+  color: #cbd5e1;
+  border-color: rgba(203, 213, 225, 0.35);
+}
+
+.hole-bell-choice-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.hole-bell-choice-option {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.hole-bell-choice-option--best {
+  background: rgba(74, 222, 128, 0.06);
+  border-color: rgba(74, 222, 128, 0.45);
+}
+
+.hole-bell-choice-time {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.hole-bell-choice-vs {
+  align-self: center;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .hole-bell-choice-row {
+    flex-direction: column;
+  }
+}
+
+.hole-bell-choice-swap {
+  padding: 0 8px;
+}
+
+.hole-bell-charging {
+  margin-left: 8px;
+  padding: 1px 6px;
+  color: #93c5fd;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  border: 1px solid rgba(147, 197, 253, 0.4);
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+/* ── Stat cards with a sprite before the value (layer caverns, Grotto) ── */
+.hole-stat-card-icon {
+  height: 22px;
+  width: auto;
+  max-width: 32px;
+  margin-right: 8px;
+  object-fit: contain;
+  vertical-align: -4px;
+}
+
+/* ── The Harp: string type colours (in-game LV bars C D E F G A) ── */
+.hole-harp--0 {
+  --harp-color: #f59e4c;
+}
+
+.hole-harp--1 {
+  --harp-color: #f0607a;
+}
+
+.hole-harp--2 {
+  --harp-color: #d665ea;
+}
+
+.hole-harp--3 {
+  --harp-color: #8a93f2;
+}
+
+.hole-harp--4 {
+  --harp-color: #4fd6ea;
+}
+
+.hole-harp--5 {
+  --harp-color: #5ee04f;
+}
+
+.hole-harp-stat-icon {
+  height: 20px;
+  width: auto;
+  margin-right: 8px;
+  vertical-align: -3px;
+}
+
+.hole-harp-notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.hole-harp-note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: default;
+}
+
+.hole-harp-note--tuned {
+  background: rgba(252, 211, 77, 0.06);
+  border-color: rgba(252, 211, 77, 0.45);
+}
+
+.hole-harp-note--locked {
+  opacity: 0.4;
+}
+
+.hole-harp-note-icon {
+  height: 28px;
+  width: auto;
+  max-width: 40px;
+  object-fit: contain;
+}
+
+.hole-harp-note-value {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-harp-strings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hole-harp-string {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 34px;
+}
+
+.hole-harp-string-line {
+  width: 4px;
+  height: 56px;
+  background: var(--harp-color);
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--harp-color);
+}
+
+.hole-harp-string-letter {
+  height: 24px;
+  width: auto;
+}
+
+.hole-harp-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+}
+
+.hole-harp-type {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 3px solid var(--harp-color);
+  border-radius: 8px;
+}
+
+.hole-harp-type--locked {
+  opacity: 0.4;
+}
+
+.hole-harp-type-letter {
+  height: 40px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.hole-harp-type-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.hole-harp-type-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.hole-harp-type-level {
+  color: var(--harp-color);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.hole-harp-type-exp {
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-harp-bar {
+  height: 8px;
+  margin: 2px 0 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.hole-harp-bar-fill {
+  width: var(--hole-progress, 0%);
+  height: 100%;
+  background: var(--harp-color);
+  border-radius: 999px;
+}
+
+/* ── The Lamp: wish cards ── */
+.hole-lamp-wishes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 8px;
+}
+
+.hole-lamp-wish {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.hole-lamp-wish--off {
+  opacity: 0.4;
+}
+
+.hole-lamp-icon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.hole-lamp-body {
+  display: flex;
+  flex: 1;
+  align-self: stretch;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hole-lamp-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.hole-lamp-name {
+  color: #fcd34d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hole-lamp-choice {
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.hole-lamp-cost {
+  margin-top: auto;
+  padding-top: 2px;
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hole-lamp-cost--ok {
+  color: #4ade80;
+}
+
+.hole-lamp-cost--off {
+  color: #6b7280;
+}
+
+.hole-lamp-wait {
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+/* ── Links in cavern guide text ── */
+.hole-link {
+  color: var(--world-5-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hole-link:hover {
+  text-decoration: underline;
+}
+
+/* ── The Harp: best setups ── */
+.hole-harp-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.hole-harp-setup-notice {
+  margin-left: 8px;
+  padding: 0 8px;
+}
+
+.hole-harp-worth {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.hole-harp-worth-chip {
+  padding: 1px 8px;
+  color: var(--harp-color);
+  font-weight: 700;
+  border: 1px solid var(--harp-color);
+  border-radius: 999px;
+}
+
+.hole-harp-setup-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hole-harp-setup-name {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hole-harp-setup + .hole-text--note {
+  margin-top: 10px;
+}
+
+.hole-harp-setup .hole-harp-string-line {
+  height: 36px;
+}
+
+/* ── The Lamp: opal calculator ── */
+.hole-lamp-opal-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 0;
+}
+
+.hole-lamp-opals {
+  display: grid;
+  grid-template-columns: 76px 96px 1fr auto;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.hole-lamp-opals-head {
+  padding-bottom: 6px;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hole-lamp-opals-head:nth-child(4) {
+  text-align: right;
+}
+
+.hole-lamp-opals-row {
+  display: contents;
+  color: #9ca3af;
+}
+
+.hole-lamp-opals-row > span {
+  padding: 5px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-lamp-opals-row--now {
+  color: #e5e7eb;
+}
+
+.hole-lamp-opals-when {
+  font-weight: 700;
+  text-align: right;
+}
+
+.hole-lamp-opals-row--now .hole-lamp-opals-when {
+  color: #4ade80;
+}

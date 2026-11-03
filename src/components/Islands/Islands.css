@@ -1,0 +1,781 @@
+/* ============================================================
+   ISLANDS (World 2)
+   ============================================================ */
+
+.islands-tabs {
+  --tab-color: var(--world-2-color);
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.islands-tab {
+  display: flex;
+  align-items: center;
+  padding: 8px 4px;
+}
+
+.islands-tab:not(.page-tab-btn--active) .islands-plate {
+  opacity: 0.6;
+}
+
+.islands-tab:hover .islands-plate {
+  opacity: 1;
+}
+
+.islands-tab--locked .islands-plate {
+  filter: grayscale(1);
+}
+
+/* In-game name plate: 61x37 pixel art at its own size */
+.islands-plate {
+  width: 61px;
+  height: 37px;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+
+.islands-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+}
+
+.islands-good {
+  color: #4ade80;
+}
+
+/* ── Cards ── */
+.islands-card {
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.islands-card-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.islands-card-title-stat {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.islands-card-note {
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.islands-card-title + .islands-card-note {
+  margin: -4px 0 10px;
+}
+
+.islands-warning {
+  margin: 0;
+  padding: 8px 12px;
+  color: #fcd34d;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.islands-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+/* ── Summary stats ── */
+.islands-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.islands-tab-body .islands-summary {
+  margin-top: 0;
+}
+
+.islands-stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.islands-stat.tooltip-anchor {
+  cursor: help;
+}
+
+.islands-stat-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 2px;
+}
+
+.islands-stat-icon--small {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 6px;
+  image-rendering: pixelated;
+}
+
+.islands-stat-value {
+  color: #e5e7eb;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.islands-stat-label {
+  color: #9ca3af;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.islands-tooltip {
+  min-width: 220px;
+  text-align: left;
+}
+
+.islands-tooltip-title {
+  margin-bottom: 4px;
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.islands-tooltip-line {
+  color: #e5e7eb;
+}
+
+.islands-tooltip-line--off {
+  color: #6b7280;
+}
+
+/* ── Bottle planner ── */
+.islands-planner {
+  margin-top: 12px;
+}
+
+.islands-planner-note,
+.islands-planner-foot {
+  margin: 4px 0 10px;
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.islands-planner-foot {
+  margin: 10px 0 0;
+  color: #6b7280;
+}
+
+.islands-planner-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.islands-planner-row {
+  display: grid;
+  grid-template-columns: 24px 61px 1fr 1fr 110px;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  color: #d1d5db;
+  font-size: 13px;
+}
+
+.islands-planner-row--ready {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.islands-planner-step {
+  color: #6b7280;
+  font-weight: 700;
+  text-align: center;
+}
+
+.islands-planner-total {
+  color: #6b7280;
+}
+
+.islands-planner-days {
+  color: #fbbf24;
+  font-weight: 600;
+  text-align: right;
+}
+
+.islands-planner-row--ready .islands-planner-days {
+  color: #4ade80;
+}
+
+/* ── Overview (top of each tab) ── */
+.islands-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.islands-overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 14px;
+}
+
+.islands-about-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.islands-about-titles {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.islands-about-name {
+  color: #e5e7eb;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.islands-about-subtitle {
+  color: #fbbf24;
+  font-size: 12px;
+}
+
+.islands-status {
+  padding: 2px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.islands-status--unlocked {
+  border-color: rgba(74, 222, 128, 0.4);
+  color: #4ade80;
+}
+
+.islands-features {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #d1d5db;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.islands-guide-label {
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.islands-guide-label--rec {
+  color: #f87171;
+}
+
+.islands-guide-text {
+  margin: 2px 0 10px;
+  color: #d1d5db;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.islands-guide-text:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Shop rows (Trash, Rando, Shimmer) ── */
+.islands-shop,
+.islands-order {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.islands-shop-row,
+.islands-order-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: #d1d5db;
+  font-size: 13px;
+}
+
+.islands-shop-row--owned {
+  opacity: 0.45;
+}
+
+.islands-shop-row--affordable,
+.islands-order-row--ready {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.islands-shop-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.islands-shop-icon--small {
+  width: 17px;
+  height: 16px;
+  justify-self: center;
+  image-rendering: pixelated;
+}
+
+.islands-shop-name {
+  display: flex;
+  flex-direction: column;
+}
+
+.islands-shop-sub {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.islands-shop-status {
+  color: #9ca3af;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.islands-shop-cost {
+  color: #fbbf24;
+  font-weight: 700;
+  text-align: right;
+}
+
+.islands-order-when {
+  color: #9ca3af;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.islands-order-row--ready .islands-order-when {
+  color: #4ade80;
+}
+
+/* ── Trash bribe set ── */
+.islands-bribes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 6px;
+}
+
+.islands-bribe {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  column-gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.islands-bribe-check {
+  grid-row: span 2;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.islands-bribe--owned .islands-bribe-check {
+  color: #4ade80;
+}
+
+.islands-bribe-name {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.islands-bribe-desc {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+/* ── Crystal days ── */
+.islands-crystal-days {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 6px;
+}
+
+.islands-crystal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.islands-crystal-day-label {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.islands-crystal-day-mobs {
+  color: #d1d5db;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.islands-crystal-day--best .islands-crystal-day-mobs {
+  color: #e879f9;
+}
+
+.islands-crystal-day--capped .islands-crystal-day-mobs {
+  color: #f87171;
+}
+
+.islands-crystal-day--current {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+}
+
+/* ── Seasalt fish ── */
+.islands-fish {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.islands-fish-row {
+  display: grid;
+  grid-template-columns: 36px 120px 32px 1fr 70px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: #d1d5db;
+  font-size: 13px;
+}
+
+.islands-fish-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.islands-fish-card {
+  width: 28px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.islands-fish-name {
+  font-weight: 600;
+}
+
+.islands-fish-stars {
+  color: #fbbf24;
+  font-weight: 700;
+  text-align: right;
+}
+
+.islands-fish-stars--missing {
+  color: #6b7280;
+  font-weight: 400;
+}
+
+/* ── Shimmer ── */
+.islands-trial {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-left: 3px solid #38bdf8;
+}
+
+.islands-trial-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.islands-trial-reqs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.islands-trial-req {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.islands-trial-req--max {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.islands-trial-req-score {
+  color: #e5e7eb;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.islands-trial-req--max .islands-trial-req-score {
+  color: #38bdf8;
+}
+
+.islands-trial-req-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #9ca3af;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.islands-trial-label {
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.islands-trial-name {
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.islands-trial-done {
+  margin-left: auto;
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.islands-trial-done.islands-good {
+  color: #4ade80;
+}
+
+.islands-trials {
+  margin: 0;
+  padding-left: 24px;
+  color: #9ca3af;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.islands-trials-current {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+/* ── Fractal timeline ── */
+.islands-fractal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.islands-fractal-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 170px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.islands-fractal-row--next {
+  border-color: rgba(165, 180, 252, 0.5);
+  background: rgba(165, 180, 252, 0.06);
+}
+
+.islands-fractal-hours {
+  color: #a5b4fc;
+  font-weight: 700;
+}
+
+.islands-fractal-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.islands-fractal-effect {
+  color: #d1d5db;
+}
+
+.islands-fractal-row--reached .islands-fractal-effect {
+  color: #9ca3af;
+}
+
+.islands-fractal-bar {
+  width: 100%;
+  height: 6px;
+  border: none;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  appearance: none;
+  overflow: hidden;
+}
+
+.islands-fractal-bar::-webkit-progress-bar {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.islands-fractal-bar::-webkit-progress-value {
+  background: #a5b4fc;
+}
+
+.islands-fractal-bar::-moz-progress-bar {
+  background: #a5b4fc;
+}
+
+.islands-fractal-row--reached .islands-fractal-bar::-webkit-progress-value {
+  background: #4ade80;
+}
+
+.islands-fractal-row--reached .islands-fractal-bar::-moz-progress-bar {
+  background: #4ade80;
+}
+
+.islands-fractal-left {
+  color: #9ca3af;
+  font-size: 12px;
+  text-align: right;
+}
+
+.islands-fractal-row--reached .islands-fractal-left {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+/* ── Additions: buy order divider, planner warning, Rando bribe, Shimmer totals, trophy ── */
+.islands-order-divider {
+  margin: 6px 0 2px;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.islands-planner-cost {
+  display: flex;
+  flex-direction: column;
+}
+
+.islands-planner-warn {
+  color: #fcd34d;
+  font-size: 11px;
+}
+
+.islands-stat-icon--bribe {
+  width: 45px;
+  height: 36px;
+  image-rendering: pixelated;
+}
+
+.islands-shimmer-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto 56px;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  color: #d1d5db;
+  font-size: 13px;
+}
+
+.islands-shimmer-row--affordable {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.islands-shimmer-total {
+  color: #38bdf8;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.islands-shimmer-cost {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.islands-shimmer-cost-icon {
+  width: 17px;
+  height: 16px;
+  image-rendering: pixelated;
+}
+
+.islands-trials-note {
+  margin: 0 0 8px;
+}
+
+.islands-trophy--locked {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+.islands-trials-max {
+  float: right;
+  margin-left: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.islands-trials-current .islands-trials-max {
+  color: #38bdf8;
+}

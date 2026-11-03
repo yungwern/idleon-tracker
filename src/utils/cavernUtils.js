@@ -3,6 +3,7 @@ import { getZenithBonus } from './zenithUtils'
 import { getTesseractBonus } from './tesseractUtils'
 import { getEventShopBonus } from './eventShopUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
+import { getMeasurementTotal } from './measureUtils'
 
 // Caverns (W5 Hole) bonuses, from IdleonToolbox parsers/world-5/caverns
 // (the-lamp.ts, bravery.ts, the-fountain.ts). snapshot.caverns holds the Holes save data.
@@ -18,7 +19,17 @@ export function getLampBonus(snapshot, t, i) {
   return (lampBonuses[t]?.[i] ?? 0) * wishes * (1 + getZenithBonus(snapshot?.zenith, LAMP_BOOST) / 100)
 }
 
-function getFountainBonus(caverns, t, i) {
+// Infinite Resources wish (7): +25% Well and Harp resources per use (Toolbox getLampBonus t = 99)
+const LAMP_RESOURCE_WISH = 7
+const LAMP_RESOURCE_PER_USE = 25
+
+export function getLampResourceBonus(snapshot) {
+  const uses = Number(snapshot?.caverns?.wishesUsed?.[LAMP_RESOURCE_WISH]) || 0
+  return LAMP_RESOURCE_PER_USE * uses * (1 + getZenithBonus(snapshot?.zenith, LAMP_BOOST) / 100)
+}
+
+// Fountain upgrade i of water type t (Toolbox getFountainBonusTotal)
+export function getFountainBonus(caverns, t, i) {
   const level = caverns?.fountainLevels?.[t]?.[i] ?? 0
   const marble = caverns?.fountainMarbles?.[t]?.[i] ?? 0
   const marbleMulti = marble === 0 ? 1 : 1.5 + 0.5 * marble
@@ -26,12 +37,12 @@ function getFountainBonus(caverns, t, i) {
 }
 
 // Monuments 0-2 (Bravery, Justice, Wisdom) are boosted by their fountain upgrade
-function applyMonumentFountain(base, caverns, t) {
+export function applyMonumentFountain(base, caverns, t) {
   const withFountain = t <= 2 ? base * (1 + getFountainBonus(caverns, t, FOUNTAIN_MONUMENT_BOOST) / 100) : base
   return Math.max(1, withFountain)
 }
 
-function getMonumentMultiplier(caverns, t) {
+export function getMonumentMultiplier(caverns, t) {
   const cosmo = Math.floor((holeMajikBonuses[MONUMENTAL_VIBES] ?? 0) * (caverns?.holeMajiks?.[MONUMENTAL_VIBES] ?? 0))
   const base = 1 + getMonumentBonus({ caverns }, t, MONUMENT_MULTI) / 100 + cosmo / 100
   return applyMonumentFountain(base, caverns, t)
@@ -57,9 +68,9 @@ export function getGlunkoBonus(snapshot, t) {
 // ── The Gambit: summoning doublers ──
 // From Toolbox parsers/world-5/caverns/gambit.ts. Points come from the best time on each of the 6 trials,
 // times a points multi; the first gambit bonus is the doubler count, plus 10 from event shop 15.
-// The multi leaves out Measurement 13 (it scales with Death Note points, not ported): on Eli's save the
-// count still matches Toolbox (33), but an account right at a boundary could read one low.
+// The multi includes Measurement 13 (Gambit Points, scaled by Death Note points: measureUtils).
 const GAMBIT_STUDY = 13
+const GAMBIT_MEASUREMENT = 13
 const GAMBIT_STUDY_PER_LEVEL = 5
 const GAMBIT_SCHEMATIC = 78
 const GAMBIT_SCHEMATIC_BONUS = 10
@@ -82,7 +93,8 @@ export function getGambitPointsMulti(snapshot) {
   const jars = GAMBIT_JARS.reduce((sum, i) => sum + (Number(caverns?.jarLevels?.[i]) || 0) * jarMulti, 0)
   const study = (Number(caverns?.studyLevels?.[GAMBIT_STUDY]) || 0) * GAMBIT_STUDY_PER_LEVEL
   const schematic = Number(caverns?.schematics?.[GAMBIT_SCHEMATIC]) ? GAMBIT_SCHEMATIC_BONUS : 0
-  return 1 + (study
+  return 1 + (getMeasurementTotal(snapshot, GAMBIT_MEASUREMENT)
+    + study
     + schematic
     + getMonumentBonus(snapshot, GAMBIT_MONUMENT_T, GAMBIT_MONUMENT_I)
     + jars

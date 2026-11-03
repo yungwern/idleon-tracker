@@ -49,6 +49,7 @@ export { stampMap, STAMP_TIERS } from './stampsMap'
 export { bubbleMap, BUBBLE_TIERS } from './bubblesMap'
 export { vialMap } from './vialMap'
 export { arcadeShopMap } from './arcadeMap'
+export { islandMap, ISLAND_COST_STEPS, ISLAND_PATH, ISLAND_PATH_NOTE, BOTTLES_BASE_PER_DAY, BOTTLE_GAIN_PER_LEVEL, BOTTLE_PER_OMAR_QUEST, BOTTLE_BUNDLE, OMAR_QUESTS, ISLAND_BRIBES, TRASH_BRIBE_SET, trashShopMap, randoShopMap, RANDO_TALENT, CRYSTAL_MAX_DAYS, CRYSTAL_WARN_DAYS, SEASALT_FISH, shimmerShopMap, SHIMMER_SHOP_START, SHIMMER_MAX_MULTI, DUMMY_TALENT, shimmerTrials, SHIMMER_WEEKLY_MAX, SHIMMER_REQ_TIERS, fractalBonusMap, NOTHING_TROPHY } from './islandsMap'
 
 // ── World 3 ───────────────────────────────────────────────────────────────────
 export { cogMap, BOARD_ROWS, BOARD_COLS, COG_BORDER_CLASS, COG_PLACEMENTS, saltMap } from './constructionMap'
@@ -58,18 +59,23 @@ export { prayerMap } from './prayerMap'
 export { refinerySalts, REFINERY_BASE_CYCLE_SECONDS, REFINERY_SPEED_SOURCES, REFINERY_POWER_CAPS, REFINERY_SALT_COMPANION, SKILL_MAIN_STATS, SKILL_SPECIALISTS, VMAN_CLASS, VMAN_ITEM } from './refineryMap'
 export { printerBuffMap, printerMultiMap, printerHiddenMultiMap, GOLD_RELIC_FORMS, PRINTER_MULTI_SOURCES, PRINTER_CHARACTER_MULTIS, PRINTER_BASE_LIBRARY_SLOTS, SAMPLE_SPACES_MAX } from './printerMap'
 export { BUBBA_UPGRADES, BUBBA_ATTRIBUTES, BUBBA_HAPPINESS, BUBBA_GIFT_HAPPINESS, BUBBA_CHARISMA_GOALS, BUBBA_PHASES } from './bubbaMap'
+export { premiumHats, HAT_RACK_MULTI_SOURCES } from './hatRackMap'
+
+export { deathNoteMobs, deathNoteMiniBosses, DEATH_NOTE_RANKS, MINI_BOSS_DEATH_NOTE_RANKS, ECLIPSE_SKULL_KILLS, ECLIPSE_SKULL_RANK } from './deathNoteMap'
 
 // ── World 4 ───────────────────────────────────────────────────────────────────
 export { labChipMap } from './labChipMap'
 export { cookingMap, cookingBonusTypes } from './cookingMap'
 export { mealMap } from './mealMap'
 export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, CRUCIBLE_WAVES, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
+export { premiumCapes, CAPE_VINE_SHARE, GOLDEN_VINE_SHARE, LOVELY_BALLOON, GOLDEN_VINE_PACK, GOLDEN_VINE_LEVEL_STEP, CAPE_VINE_EVENT_SHOP, CAPE_VINE_EVENT_SHOP_BONUS } from './capeVineMap'
 
 // ── World 5 ───────────────────────────────────────────────────────────────────
 export { artifactMap } from './artifactMap'
 export { paletteMap } from './gamingMap'
 export { godMap } from './divinityMap'
 export { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel, glunkoUpgradeValues } from './cavernsMap'
+export { holeVillagers, holeBiomes, holeCaverns, holeMajiks, lampWishes, holeSchematics, holeSchematicOrder, holeMeasurements, holeStudies, harpStringTypes, harpNoteNames, bellRingBonuses, denAmplifiers, monumentBonusText, jarCollectibles, denAmpMax, denRecommendedSetup, wellSedimentNames, wellSedimentCapBonus, monumentHourReqs, monumentHourRewards, bellMethods, gambitBonuses } from './holeMap'
 
 // ── World 6 ───────────────────────────────────────────────────────────────────
 export { pristineCharmMap } from './sneakingMap'

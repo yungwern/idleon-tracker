@@ -2,8 +2,9 @@ import { talentMap } from '../data/talentMap'
 import { MASTERCLASSES } from '../data/masterClasses'
 import { anvilMapById } from '../data/anvilMap'
 import { getClassName } from '../data/classes'
-import { worshipMap } from '../data'
+import { worshipMap, LOVELY_BALLOON } from '../data'
 import { seedInfo } from '../data/farmingMap'
+import { OMAR_QUESTS, SHIMMER_SHOP_START, shimmerShopMap, TRASH_BRIBE_SET, ISLAND_BRIBES } from '../data/islandsMap'
 import { RANK_BAR_UNLOCK_ARMORY, KINGDOM_EXPANSION_ARMORY, COMPOUNDING_OUTPOSTING_ARMORY, GLORIFICATION_ORBLET, KINGDOM_SOVEREIGNTY_ARMORY, PROPAGANDA_ARMORY } from '../data/royalOutposts'
 
 // ── Storage ───────────────────────────────────────────────────────────────────
@@ -1079,6 +1080,39 @@ function parseBundles(json) {
   return { owned: Object.keys(raw).filter(name => Number(raw[name]) > 0) }
 }
 
+// ── Islands (W2) ──────────────────────────────────────────────────────────────
+// OptLacc (Toolbox OPT): [160] Trash days unclaimed, [161] garbage, [162] bottles, [163] Garbage Gain LV,
+// [164] Bottle Gain LV, [166] / [167] Rando loot / double event LV, [169] unlocked islands (save letters),
+// [171] Crystal days unclaimed, [172] best Target Dummy DPS, [173] shimmer, [174-180] shimmer shop LVs,
+// [182] shimmer trial done this week (Toolbox calls it 'today'; Eli: once a week), [183] this week's trial, [184] Fractal Nothing AFK hours.
+// BribeStatus[i] = 1 bought. Cards1 = items ever looted (Trash Tuna nametag). Omar quests = QuestComplete_i.
+function parseIslands(json, optLacc, charCount) {
+  const num = index => Number(optLacc[index]) || 0
+  const bribes = parseRaw(json['BribeStatus']) ?? []
+  const looted = parseRaw(json['Cards1']) ?? []
+  const quests = Array.from({ length: charCount }, (_, i) => parseRaw(json[`QuestComplete_${i}`]) ?? {})
+  return {
+    unlocked: typeof optLacc[169] === 'string' ? optLacc[169] : '',
+    trashDays: num(160),
+    garbage: num(161),
+    bottles: num(162),
+    garbageGainLevel: num(163),
+    bottleGainLevel: num(164),
+    randoLevels: { 166: num(166), 167: num(167) },
+    crystalDays: num(171),
+    shimmerBestDps: num(172),
+    shimmer: num(173),
+    shimmerLevels: shimmerShopMap.map((_, i) => num(SHIMMER_SHOP_START + i)),
+    shimmerDoneThisWeek: num(182) > 0,
+    shimmerTrial: num(183),
+    fractalHours: num(184),
+    trashBribes: TRASH_BRIBE_SET.map(bribe => Number(bribes[bribe.index]) === 1),
+    artOfTheBail: Number(bribes[ISLAND_BRIBES.artOfTheBail]) === 1,
+    trashNametag: looted.includes('EquipmentNametag6b'),
+    omarQuests: OMAR_QUESTS.filter(quest => quests.some(done => Number(done[quest]) === 1)).length,
+  }
+}
+
 // ── Sailing (W5) ──────────────────────────────────────────────────────────────
 // Sailing[3][i] = artifact i's form (0 not found, 1 found, 2 ancient ... 7 verisimilitude)
 function parseSailing(json) {
@@ -1118,9 +1152,36 @@ function parseSummoning(json, optLacc) {
 // [31]/[32] = fountain upgrade levels / marbleize tiers per water type.
 // Gambit: [28] = summoning upgrade index per placed doubler (-1 = empty), [11][65..70] = best time per
 // gambit trial, [13] = engineer schematics owned, [24] = jar collectible levels, [26] = study levels.
+// The Hole page: [1]/[2]/[3] = villager LV / EXP / opals invested, [5] = villager majiks, [7] = opals found per
+// cavern, [8] = well bar expansions, [9] = hole resources (well 0-9, harp notes 10-19, rupies 20-29, coins 30+; a
+// negative well entry = rock layer), [10] = well buckets, [11] = misc counters (holeUtils HOLE_EXTRA), [12] = Den
+// amplifier LVs, [14] = monument [hours, ?] pairs, [16] / [17] = bell improvement / ring LVs, [18] = bell
+// [EXP, uses] pairs, [19] = harp string [LV, EXP] pairs, [22] = measurement LVs, [23] = Parallel Villagers,
+// [27] = study progress, [33] = fountain water bars.
 function parseCaverns(json) {
   const holes = parseRaw(json['Holes']) ?? []
+  const numbers = list => (list ?? []).map(value => Number(value) || 0)
   return {
+    villagerLevels: numbers(holes[1]),
+    villagerExp: numbers(holes[2]),
+    opalsInvested: numbers(holes[3]),
+    villageMajiks: holes[5] ?? [],
+    opalsPerCavern: numbers(holes[7]),
+    sedimentMulti: numbers(holes[8]),
+    holeResources: numbers(holes[9]),
+    wellBuckets: numbers(holes[10]),
+    extra: numbers(holes[11]),
+    denAmplifiers: numbers(holes[12]),
+    monuments: numbers(holes[14]),
+    bellImprovements: numbers(holes[16]),
+    bellRingLevels: numbers(holes[17]),
+    bellRelated: numbers(holes[18]),
+    harpRelated: numbers(holes[19]),
+    harpStringNotes: numbers(holes[20]),
+    measurementLevels: numbers(holes[22]),
+    parallelVillagers: numbers(holes[23]),
+    studyProgress: numbers(holes[27]),
+    fountainBars: numbers(holes[33]),
     gambitDoublers: (holes[28] ?? []).map(Number),
     gambitTimes: (holes[11] ?? []).slice(65, 71).map(time => Number(time) || 0),
     schematics: holes[13] ?? [],
@@ -1136,11 +1197,42 @@ function parseCaverns(json) {
   }
 }
 
+// ── Currencies ────────────────────────────────────────────────────────────────
+function parseCurrencies(json) {
+  const characterMoney = Object.keys(json)
+    .filter(key => /^Money_\d+$/.test(key))
+    .reduce((sum, key) => sum + (parseFloat(json[key]) || 0), 0)
+  return {
+    money: (parseFloat(json['MoneyBANK']) || 0) + characterMoney,
+    bits: Number(parseRaw(json['Gaming'])?.[0]) || 0,
+    particles: Number(parseRaw(json['Divinity'])?.[39]) || 0,
+  }
+}
+
 // ── Zenith Market (W7 Spelunking) ─────────────────────────────────────────────
 // Spelunk[45][i] = level of zenith market upgrade i (see data/zenithMap.js)
 function parseZenith(json) {
   const spelunk = parseRaw(json['Spelunk']) ?? []
   return { marketLevels: spelunk[45] ?? [] }
+}
+
+// ── Hat Rack (W3 Gallery) / The Cape Vine (W4) ─────────────────────────────────
+// Spelunk[46] = rawNames of the premium hats on the Hat Rack. Spelunk[54] = rawNames of the capes on
+// the Cape Vine, in vine order (Golden Vine slots come first). lovelyBalloon = the pack cape was ever looted
+// (Cards1) or is on the vine: that pack also gives 3 Golden Vines.
+function parseHatRack(json) {
+  const spelunk = parseRaw(json['Spelunk']) ?? []
+  return { hats: (spelunk[46] ?? []).filter(name => typeof name === 'string') }
+}
+
+function parseCapeVine(json) {
+  const spelunk = parseRaw(json['Spelunk']) ?? []
+  const capes = (spelunk[54] ?? []).filter(name => typeof name === 'string')
+  const looted = parseRaw(json['Cards1']) ?? []
+  return {
+    capes,
+    lovelyBalloon: capes.includes(LOVELY_BALLOON) || looted.includes(LOVELY_BALLOON),
+  }
 }
 
 // ── Star Signs ────────────────────────────────────────────────────────────────
@@ -1388,6 +1480,11 @@ export function extractSnapshot(rawJson) {
     alchemy: parseAlchemy(json),
     droppedTrophies: parseDroppedTrophies(json),
     lootedItemCount: parseLootedItemCount(json),
+    // Currencies some costs are paid in: coins = MoneyBANK + every character's Money_i, Gaming[0] = bits,
+    // Divinity[39] = particles (Toolbox currencies.rawMoney / gaming.bits / atoms.particles)
+    currencies: parseCurrencies(json),
+    // TaskZZ0[1][0] = highest damage ever dealt (Hole Measurer stat, Toolbox tasks[0][1][0])
+    highestDamage: Number(parseRaw(json['TaskZZ0'])?.[1]?.[0]) || 0,
     grimoire: parseGrimoire(json),
     upgradeVault: parseUpgradeVault(json),
     achievements: parseAchievements(json),
@@ -1405,10 +1502,13 @@ export function extractSnapshot(rawJson) {
     merits: parseMerits(json),
     bundles: parseBundles(json),
     sailing: parseSailing(json),
+    islands: parseIslands(json, optLacc, charList.length),
     emperor: parseEmperor(optLacc),
     summoning: parseSummoning(json, optLacc),
     caverns: parseCaverns(json),
     zenith: parseZenith(json),
+    hatRack: parseHatRack(json),
+    capeVine: parseCapeVine(json),
     starSigns: parseStarSigns(json),
     equinox: parseEquinox(json),
     research: parseResearch(json, optLacc),
@@ -1426,4 +1526,4 @@ export function extractSnapshot(rawJson) {
     minehead: parseMinehead(json),
     glunko: parseGlunko(optLacc),
   }
-}
+}

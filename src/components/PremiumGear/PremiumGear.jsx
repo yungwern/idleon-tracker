@@ -2,6 +2,12 @@ import { premiumGearNames, premiumGearMap } from '../../data'
 
 import './PremiumGear.css'
 
+// Slots whose bonuses come from an account-wide collection page instead of being worn (sidebar section names)
+const COLLECTION_PAGES = {
+  hat: 'Hat Rack',
+  cape: 'The Cape Vine',
+}
+
 function getPremiumGear(snapshot, charIndex) {
   const equipOrder = snapshot?.characters?.[charIndex]?.equipOrder ?? {}
   const slots = {
@@ -33,15 +39,15 @@ function getPremiumGear(snapshot, charIndex) {
         src: equipped ? `images/${base}/${folder}/${id}.png` : null,
         label,
         equipped,
-        // Hat bonuses only count from the World 3 Hat Rack, not while worn
-        hatRackOnly: key === 'hat',
+        // Hats and capes give nothing while worn: their bonuses come from the Hat Rack / Cape Vine
+        collection: COLLECTION_PAGES[key] ?? null,
       }]
     })
   )
 }
 
-function PremiumGearSlot({ slot }) {
-  const { src, label, equipped, id, hatRackOnly } = slot
+function PremiumGearSlot({ slot, onOpenSection }) {
+  const { src, label, equipped, id, collection } = slot
   const equipment = premiumGearMap[id] ?? {}
   const formatStat = (val, txt) =>
     `${val}${txt.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`
@@ -52,8 +58,6 @@ function PremiumGearSlot({ slot }) {
   const uq2 = equipment.uq2txt && equipment.uq2val != null
     ? formatStat(equipment.uq2val, equipment.uq2txt)
     : null
-
-  const statClass = hatRackOnly ? 'pg-card-stat pg-card-stat--inactive' : 'pg-card-stat'
 
   return (
     <div className="pg-card">
@@ -74,21 +78,28 @@ function PremiumGearSlot({ slot }) {
           </span>
         )}
       </div>
-      <div className={`pg-card-body${hatRackOnly ? ' tooltip-anchor' : ''}`}>
+      <div className="pg-card-body">
         <span className={`pg-card-name ${equipped ? '' : 'pg-card-name-empty'}`}>
           {equipped ? (premiumGearNames[id] ?? id) : `No ${label}`}
         </span>
-        {equipped && uq1 && <span className={statClass}>{uq1}</span>}
-        {equipped && uq2 && <span className={statClass}>{uq2}</span>}
-        {equipped && hatRackOnly && (uq1 || uq2) && (
-          <span className="tooltip">Only active in the Hat Rack</span>
+        {equipped && collection && (
+          <button
+            type="button"
+            className="pg-card-link"
+            onClick={() => onOpenSection?.(collection)}
+            disabled={!onOpenSection}
+          >
+            Bonus in {collection.replace(/^The /, '')}
+          </button>
         )}
+        {equipped && !collection && uq1 && <span className="pg-card-stat">{uq1}</span>}
+        {equipped && !collection && uq2 && <span className="pg-card-stat">{uq2}</span>}
       </div>
     </div>
   )
 }
 
-export default function PremiumGearTab({ charIndex, snapshot }) {
+export default function PremiumGearTab({ charIndex, snapshot, onOpenSection }) {
   const gear = getPremiumGear(snapshot, charIndex)
 
   if (!snapshot) {
@@ -102,8 +113,14 @@ export default function PremiumGearTab({ charIndex, snapshot }) {
 
   return (
     <div className="pg-grid">
-      <PremiumGearSlot slot={gear.hat}   />
-      <PremiumGearSlot slot={gear.cape}  />
+      <PremiumGearSlot
+        slot={gear.hat}
+        onOpenSection={onOpenSection}
+      />
+      <PremiumGearSlot
+        slot={gear.cape}
+        onOpenSection={onOpenSection}
+      />
       <PremiumGearSlot slot={gear.armor} />
       <PremiumGearSlot slot={gear.ring}  />
     </div>

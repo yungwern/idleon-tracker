@@ -4,6 +4,8 @@ import { getCharacterNotices } from './utils/characterNotices.js'
 import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
 import { getMinibossNoticeCount } from './utils/minibossNotices.js'
 import { getObolNoticeCount } from './utils/obolNotices.js'
+import { getIslandNoticeCount } from './utils/islandNotices.js'
+import { getHoleNoticeCount } from './utils/holeNotices.js'
 import { getClassRoles } from './utils/characterUtils.js'
 import { sections, sectionIcons } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
@@ -19,15 +21,19 @@ import Minibosses from './components/Minibosses/minibosses.jsx'
 import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
 import Statues from './components/Statues/statues.jsx'
 import Obols from './components/Obols/Obols.jsx'
+import Islands from './components/Islands/Islands.jsx'
 import Construction from './components/Construction/Construction.jsx'
 import Shrines from './components/Shrines/shrines.jsx'
 import Worship from './components/Worship/Worship.jsx'
 import Printer from './components/Printer/Printer.jsx'
 import Refinery from './components/Refinery/Refinery.jsx'
+import HatRack from './components/HatRack/HatRack.jsx'
+import CapeVine from './components/CapeVine/CapeVine.jsx'
 import Bubba from './components/Bubba/Bubba.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
 import Farming from './components/Farming/Farming.jsx'
+import Hole from './components/Hole/Hole.jsx'
 import Summoning from './components/Summoning/Summoning.jsx'
 import Spelunking from './components/Spelunking/Spelunking.jsx'
 
@@ -80,6 +86,8 @@ export default function App() {
     MasterClasses: getMasterclassNoticeCount(snapshot),
     Minibosses: getMinibossNoticeCount(snapshot),
     Obols: getObolNoticeCount(snapshot, obolCheckMode),
+    Islands: getIslandNoticeCount(snapshot),
+    'The Hole': getHoleNoticeCount(snapshot),
   }), [snapshot, obolCheckMode])
 
   function handleClearSave() {
@@ -133,6 +141,7 @@ export default function App() {
           charIndex={charIndex}
           snapshot={snapshot}
           obolCheckMode={obolCheckMode}
+          onOpenSection={setSelected}
         />
       )
     }
@@ -150,15 +159,19 @@ export default function App() {
         />
       )
     }
+    if (current === 'Islands') return <Islands snapshot={snapshot} />
     if (current === 'Construction')   return <Construction snapshot={snapshot} />
     if (current === 'Shrines')        return <Shrines snapshot={snapshot} />
     if (current === 'Worship') return <Worship snapshot={snapshot} />
     if (current === 'Printer') return <Printer snapshot={snapshot} />
     if (current === 'Refinery') return <Refinery snapshot={snapshot} />
+    if (current === 'Hat Rack') return <HatRack snapshot={snapshot} />
+    if (current === 'The Cape Vine') return <CapeVine snapshot={snapshot} />
     if (current === 'Bubba') return <Bubba />
     if (current === 'Cooking') return <Cooking snapshot={snapshot} />
     if (current === 'Breeding') return <Breeding snapshot={snapshot} />
     if (current === 'Farming') return <Farming snapshot={snapshot} tomePoints={tomePoints} />
+    if (current === 'The Hole') return <Hole snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'Summoning') return <Summoning snapshot={snapshot} />
     if (current === 'Spelunking') return <Spelunking snapshot={snapshot} tomePoints={tomePoints} />
     if (!sectionItems.includes(current)) {

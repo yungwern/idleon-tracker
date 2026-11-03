@@ -331,7 +331,7 @@ function CharacterNotices({ charIndex, snapshot, obolCheckMode, onViewObols, onV
   )
 }
 
-export default function CharacterCard({ character, charIndex, snapshot, obolCheckMode, initialTab = 'overview' }) {
+export default function CharacterCard({ character, charIndex, snapshot, obolCheckMode, initialTab = 'overview', onOpenSection }) {
   const [activeTab, setActiveTab] = useState(initialTab)
   const slug = toClassSlug(character.class)
 
@@ -434,7 +434,11 @@ export default function CharacterCard({ character, charIndex, snapshot, obolChec
             />
             <section className="char-overview-section">
               <h3 className="char-overview-heading">Premium Gear</h3>
-              <PremiumGearTab charIndex={charIndex} snapshot={snapshot} />
+              <PremiumGearTab
+                charIndex={charIndex}
+                snapshot={snapshot}
+                onOpenSection={onOpenSection}
+              />
             </section>
             <section className="char-overview-section">
               <h3 className="char-overview-heading">Keychains</h3>
