@@ -19,7 +19,7 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 src/
 ├── components/         # One folder per feature (see casing note below)
 │   ├── Section pages:  Breeding, Bubba (static guide, data in bubbaMap.js), Construction, Cooking, Farming, GearOptimizer,
-│   │                   CapeVine, HatRack, Hole (+ VillagerTab, CavernTab, *Panel per cavern, MonumentBonusList), Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer (+ SaltMaterialsTab.jsx), Refinery, Shrines, Spelunking (+ LoreTab.jsx, RedJellyTab.jsx, ElixirTab.jsx), Statues, Summoning (+ BossesTab.jsx, DoublersTab.jsx), Worship
+│   │                   CapeVine, HatRack, Hole (+ VillagerTab, CavernTab, *Panel per cavern, MonumentBonusList, StatIconRow), Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer (+ SaltMaterialsTab.jsx), Refinery, Shrines, Spelunking (+ LoreTab.jsx, RedJellyTab.jsx, ElixirTab.jsx), Statues, Summoning (+ BossesTab.jsx, DoublersTab.jsx), Worship
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, PremiumCollection (Hat Rack + Cape Vine body), CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
@@ -237,7 +237,7 @@ bosses (`summoningStoneBosses` in summoningMap.js: Toolbox summoningEnemies[106+
 `snapshot.summoning.stoneKills`; next fight HP = 2 × baseHp × 4000^kills; colour upgrades × (1 + kills) (summoningUtils
 getSummoningStoneBosses, matched IT on Eli's save). Stone art = public/images/summoning/SumStone_<i>.png (Toolbox etc/).
 Doublers (DoublersTab.jsx, summoningUtils getDoublerPlans): count = cavernUtils getSummoningDoublers (Gambit points from Holes[11][65..70]
-trial times × points multi, first gambit bonus + 10 from event shop 15; multi skips Measurement 13 (Death Note pts, not ported), still
+trial times × points multi, first gambit bonus + 10 from event shop 15; multi includes Measurement 13 (Death Note pts), 8.18x and
 33 = Toolbox on Eli's save). Placed = Holes[28] (upgrade index, -1 empty) = snapshot.caverns.gambitDoublers. Doubler multi = 2 + max(0,
 Absolute Stardom (talent 597) / 100 - 1) + Allstar (upgrade 78) % (3.33 on Eli's save, = Toolbox). Upgrade bonus = Summon[0] LV × qty ×
 stone multi (summoningUpgrades in summoningMap.js, stoneBoosted = Toolbox filler). Planner fills tiers, greedy log gain inside
@@ -284,7 +284,36 @@ while the other one is faster (not Either); harp strings under 99.5% (HARP_SETUP
 bonus, capped bonuses (base >= 30) get a cap bar + 50-99% milestones (progress = LV / (250 + LV)); also used by Justice/Wisdom.
 Bravery study (3) caps at 32% = LV 7 (getStudyMaxLevel). Motherlode-style caverns show ore remaining like the game.
 Glowshroom (Toolbox the-harp/the-lamp/justice/grotto.ts): HarpPanel (getHarp: Holes[20] = string type per harp string, Holes[11][21] = tuned note (2 = Bass, matched Eli's screen), notes = Holes[9][10..19], names harpNoteNames (Eli); string LV/EXP bars per type in its in-game colour (.hole-harp--t), Makes = per pluck at current Harp Power; letter art images/hole/harp/string_t.png = Toolbox HarpNote_109+t at 4x), LampPanel (getLamp: wish art images/hole/lamp/wish_t.png = HoleLampUpg t, wishes/day = 136.1 like the game, next cost + days to afford; x1 999 wishes = not in the game yet; Opal calculator = getLampOpalPlan, next 6 opals of wish 2 by day; each More Wishes (wish 0) rank shows one more wish on the in-game Lamp (Eli), e.g. W7 Watsinames), Harp Best setup (HarpSetups.jsx + utils/harpOptimizer.js, one setup per goal: Eli found 3 confusing): brute force over every type mix, slot k multi = 1 + (15 + 20k + 30 × unique types)/100 (Stringy/Domino/Variety), order by pairwise swaps. Notes goal = ln(notes per strum) + Σ (LV worth / ln 1.15) × ln(EXP per strum to the type) (LV ≈ ln EXP / ln 1.15; worth from current LVs, getHarpLevelWorth), so high-LV accounts get one of each + C, low-LV ones E/G-heavy (the in-game tip 'one of each, spam E/G' is the early answer). Level goal = Σ ln EXP per type. Players pluck in any order; the card tells them to pluck left to right (Eli). Explanation text follows the setup (explainNotes: mostly G vs mostly C); uniform-LV test: LV ≤ 40 G-heavy, ~60+ one of each + C), JusticePanel (head links to idleon-justice.vercel.app via cavern.link in holeMap; getJustice: starting coins/health/dismissals/popularity, 59 coins + 218.2x reward = Eli's screen; MonumentHourList shared with Bravery). Layer caverns show what they collect (images/hole/layers/<cavern id>.png, 4x); Grotto shows Gloomie Lootie/Expie/Opie (schematics 46-48, 5/25/10% per colony).
-Not ported yet: villager EXP/hr, schematic Total Bonus lines, opal sources for caverns 11/13-17.
+Overgrowth (Toolbox the-jars/wisdom/gambit/the-temple.ts, all = Toolbox and Eli's screens on his save): JarsPanel (getJars:
+rupies = Holes[9][20..29] + white/dark Holes[11][38/39], shown 6 + 6 like the game, kinds in RUPIE_KINDS inferred from the jar
+texts; production/hr, rupie value, extra rupie chance, jar slots (schematics 63/66) = Holes[25] type 0-2 + progress 3-5; jar types
+= jarTypes (holesInfo[65] + Toolbox names) with req, Tall/Ornate/Enchanted chances, destroyed Holes[11][40+i]; shelf = save key
+Jars = snapshot.caverns.jarShelf ({ type, tier }, tier t counts as 10^(t-1)); collectibles = 8-wide icon grid like the game, click
+one to read it underneath (picked one = Holes[11][62], purple outline); Producing now has no progress bar (Eli: the save's
+progress is frozen and jars take seconds); Rupie Slug = OptLacc[355]). Jar cards also show Jar Production Line (schematic 74,
+getProductionLine): type i req ÷ (1 + 5% × game log10(broken of type max(0, i-1))), continuous (each ×10 = +5%, Simple feeds Simple
++ Tall), next ×10 bar in log space + time with all slots; "Make next" = soonest ×10 among types feeding an unlocked type (idea from
+Corgan's jar calculator, which is all-rights-reserved: never copy its code). Chance jars: ~1 success per hoursToMake / chance in one
+slot, guaranteed at T ceil(log10(1/chance)) + 1. WisdomPanel = Bravery/Justice layout (getWisdom: starting attempts 57 = 5 + study 12 + hours; the in-game hour list
+always says "30" (game WisdomAttempts(1)), we copy that text). GambitPanel (getGambit: base points × multi like the in-game box,
+gambitTrials names/descriptions (Eli), times cut to 0.1 s like the game, all 19 gambitBonuses with their ? text; x1 = 1 bonuses never cap (+x0 per 10x points, ↑ chip), Doublers/Opals
+get a bar to the next breakpoint in log space: getGambitGrowth). TemplePanel
+(getTemple: Illuminate/Search/Amplify as 3 boxes: big bonus value + label, LV and cost footer, LV = Holes[11][57]/[59], extra torch chance). Story stat icons (swords,
+mental health, insta matches...) = StatIconRow under the main card number; art in images/hole/<bravery|justice|wisdom>/ (Toolbox
+etc/, wisdom/match.png = HoleWisdomCard + HoleWisdomQ). Jar/collectible/rupie art = images/hole/jars/, pieces = images/hole/gambit/,
+torch = images/hole/temple/torch.png (HoleUIbuildUpg77), all 4x.
+Sentinel (Toolbox the-fountain / crystal-glunko-cove.ts): FountainPanel (getFountain: 9 currencies = Holes[9][30..38] (owned matched
+Eli's screen), base value per coin, LUCKY bubbles = Holes[30][c] (coloured per currency, .hole-fountain-bubble--c), coins on the ground = Holes[29][space] (coin types), total currency multi
+(Green water gets its sqrt), marble Holes[11][81], ducks OptLacc[601]; bars coin/marble/duck (1m 50s / 10h / 25h, 0.217% duck = Toolbox);
+water tabs Blue/Yellow/Green, upgrades grouped by unlock tier (depth of the prereq chain, prereq LV 10, Blue 2/14 at LV 1), data
+fountainUpgrades in holeMap (gen_hole.py), art images/hole/fountain/ (coin_c, upg_t_i, marble, 4x)). Holes[11][80] isn't the water on
+screen (0 while Eli's showed Green), so no 'active water' chip. LairPanel (getLair: DR 81.55Mx and all 24 costs = Eli's screen incl.
+study 17's 15% daily discount; upgrade t paid in shape floor(t%12/2) + 6 floor(t/12), odd t 5x; in-game column k = t 2k / 2k+1, shown as one card per shape;
+shapes OptLacc[654..665] art images/hole/lair/shape_i.png; Double Shape = schematics 101/103/105 +10% each (Toolbox 'double pickup')).
+Lair AFK = 10 + Sleepy Drops + Sleepy Drops+ (126% on Eli's save; in-game header shows 164%, extra source unknown). In-game Multikill
+= base + per tier × damage tiers (4,587 = 2,700 + 51 × 37 on Eli's screen); tiers not ported. Trench = layer cavern (unchanged).
+Not ported yet: villager EXP/hr, schematic Total Bonus lines, opal sources for caverns 11/15/16, Monument AFK gain, how LUCKY coins
+combine into currency value.
 
 **Death Note** (W3 Workbench, no page yet; planned World 3 section): data = deathNoteMap.js (IdleOn Resources/gen_deathnote.py
 from Toolbox shared-data deathNote/mapEnemies/mapPortals + monsters.json), math = utils/deathNoteUtils.js getDeathNote: account kills

@@ -101,13 +101,20 @@ export function getGambitPointsMulti(snapshot) {
     + getTesseractBonus(snapshot?.tesseract, GAMBIT_TESSERACT)) / 100
 }
 
-export function getGambitPoints(snapshot) {
+// Base points of one trial's best time (seconds): +3 per 10 s and +10 per minute survived, × 100 (King's Gambit) or 200
+export function getGambitTrialPoints(time, t) {
+  const score = time + 3 * Math.floor(time / 10) + 10 * Math.floor(time / 60)
+  return (t === 0 ? 100 : 200) * score
+}
+
+// "Base Points from Survival Time" on the in-game screen
+export function getGambitBasePoints(snapshot) {
   const times = snapshot?.caverns?.gambitTimes ?? []
-  const base = times.reduce((sum, time, t) => {
-    const score = time + 3 * Math.floor(time / 10) + 10 * Math.floor(time / 60)
-    return sum + (t === 0 ? 100 : 200) * score
-  }, 0)
-  return base * getGambitPointsMulti(snapshot)
+  return times.reduce((sum, time, t) => sum + getGambitTrialPoints(time, t), 0)
+}
+
+export function getGambitPoints(snapshot) {
+  return getGambitBasePoints(snapshot) * getGambitPointsMulti(snapshot)
 }
 
 // { total, placed, placedIds }: placedIds = summoning upgrade indexes holding a doubler

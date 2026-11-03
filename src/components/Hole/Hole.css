@@ -1544,3 +1544,777 @@
 .hole-lamp-opals-row--now .hole-lamp-opals-when {
   color: #4ade80;
 }
+
+/* ── Small icon + value stats under a stat card number (monument story stats) ── */
+.hole-icon-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.hole-icon-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.hole-icon-stat-img {
+  height: 16px;
+  width: auto;
+  max-width: 20px;
+  object-fit: contain;
+}
+
+.hole-icon-stat-value {
+  color: #e5e7eb;
+  font-weight: 700;
+}
+
+.hole-icon-stat-label {
+  color: #9ca3af;
+}
+
+/* ── Icon tiles (Jars rupies) ── */
+.hole-icon-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+}
+
+.hole-icon-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  cursor: default;
+}
+
+.hole-icon-tile-img {
+  height: 28px;
+  width: auto;
+  max-width: 36px;
+  object-fit: contain;
+}
+
+.hole-icon-tile-value {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Icon cards (jar types, collectibles, gambit trials) ── */
+.hole-entries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 8px;
+}
+
+.hole-entries--wide {
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+}
+
+.hole-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.hole-entry--locked {
+  opacity: 0.45;
+}
+
+.hole-entry--picked {
+  border-color: rgba(196, 113, 210, 0.55);
+  background: rgba(196, 113, 210, 0.06);
+}
+
+.hole-entry-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.hole-entry-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.hole-entry-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.hole-entry-name {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hole-entry-head .hole-list-level {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.hole-entry-text {
+  color: #d1d5db;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.hole-entry-text--quote {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.hole-entry-meta {
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.hole-entry-meta--picked {
+  color: #c471d2;
+  font-weight: 600;
+}
+
+/* Rupies: two rows of 6 like the in-game Jars screen */
+.hole-icon-tiles--rupies {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .hole-icon-tiles--rupies {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ── The Jars: production slots ── */
+.hole-jar-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 8px;
+}
+
+.hole-jar-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.hole-jar-slot-img {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.hole-jar-slot-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* ── Gambit ── */
+.hole-gambit-points {
+  display: grid;
+  align-items: baseline;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.hole-gambit-points strong {
+  color: #d1d5db;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-gambit-time {
+  margin-left: auto;
+  color: #fcd34d;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-list-item--gambit {
+  grid-template-columns: minmax(0, 1fr) 90px minmax(0, 1fr);
+}
+
+.hole-gambit-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.hole-list-item--gambit .hole-list-text {
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ── The Temple: torch buys (the in-game boxes) ── */
+.hole-temple-buys {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hole-temple-buy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 10px 0;
+  text-align: center;
+  background: rgba(163, 230, 53, 0.03);
+  border: 1px solid rgba(163, 230, 53, 0.18);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hole-temple-buy-name {
+  color: #a3e635;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.hole-temple-buy-value {
+  margin-top: 4px;
+  color: #f3f4f6;
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-temple-buy-label {
+  min-height: 32px;
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.hole-temple-buy-foot {
+  display: flex;
+  align-self: stretch;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin: 8px -10px 0;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid rgba(163, 230, 53, 0.12);
+  font-size: 12px;
+}
+
+.hole-temple-buy-level {
+  color: var(--world-5-color);
+  font-weight: 700;
+}
+
+.hole-temple-buy-level--note {
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.hole-temple-buy-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #f87171;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-temple-buy-cost--ok {
+  color: #4ade80;
+}
+
+.hole-temple-buy-torch {
+  height: 14px;
+  width: auto;
+}
+
+@media (max-width: 520px) {
+  .hole-temple-buys {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Gambit: growing bonuses */
+.hole-chip--grows {
+  line-height: 16px;
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.35);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.hole-gambit-next {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* ── The Jars: narrower jar cards, 8-wide collectible grid like the game ── */
+.hole-entries--jars {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+.hole-entry--recommended {
+  border-color: rgba(74, 222, 128, 0.45);
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.hole-entry-meta--line {
+  color: #9ca3af;
+}
+
+.hole-jar-next {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hole-jar-next-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #d1d5db;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hole-jar-next-time {
+  color: #4ade80;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-collectibles {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 560px;
+  margin: 0 auto 10px;
+}
+
+.hole-collectible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.hole-collectible:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.hole-collectible--locked .hole-collectible-img {
+  opacity: 0.3;
+}
+
+.hole-collectible--picked {
+  border-color: rgba(196, 113, 210, 0.7);
+  background: rgba(196, 113, 210, 0.08);
+}
+
+.hole-collectible--selected {
+  box-shadow: 0 0 0 2px var(--world-5-color);
+}
+
+.hole-collectible-img {
+  width: 100%;
+  height: 100%;
+  max-width: 44px;
+  max-height: 44px;
+  object-fit: contain;
+}
+
+.hole-collectible-detail {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .hole-list-item--gambit {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+/* ── The Fountain (cavern 16): currencies, bars, upgrades by tier ── */
+.hole-fountain-currencies {
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+}
+
+.hole-fountain-currency {
+  position: relative;
+  gap: 4px;
+}
+
+.hole-fountain-currency--desired {
+  border-color: rgba(250, 204, 21, 0.5);
+  background: rgba(250, 204, 21, 0.05);
+}
+
+.hole-fountain-lucky {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  min-height: 10px;
+}
+
+/* LUCKY coin bubbles: currency colour with a dark rim and a light glint, like the in-game dots */
+.hole-fountain-bubble {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #1f2937;
+  border-radius: 999px;
+  background: radial-gradient(circle at 32% 30%, #ffffff 0 18%, var(--bubble-color) 30%, var(--bubble-shade) 100%);
+}
+
+.hole-fountain-bubble--0 {
+  --bubble-color: #f0a24a;
+  --bubble-shade: #9a5a1e;
+}
+
+.hole-fountain-bubble--1 {
+  --bubble-color: #d9dce1;
+  --bubble-shade: #7d838c;
+}
+
+.hole-fountain-bubble--2 {
+  --bubble-color: #f8c628;
+  --bubble-shade: #a4740c;
+}
+
+.hole-fountain-bubble--3 {
+  --bubble-color: #8be08b;
+  --bubble-shade: #3f8a3f;
+}
+
+.hole-fountain-bubble--4 {
+  --bubble-color: #4cc9f0;
+  --bubble-shade: #1c6f94;
+}
+
+.hole-fountain-bubble--5 {
+  --bubble-color: #f27b72;
+  --bubble-shade: #9c3a33;
+}
+
+.hole-fountain-bubble--6 {
+  --bubble-color: #f2a93b;
+  --bubble-shade: #9a6216;
+}
+
+.hole-fountain-bubble--7 {
+  --bubble-color: #e57de8;
+  --bubble-shade: #8c3592;
+}
+
+.hole-fountain-bubble--8 {
+  --bubble-color: #5ad46a;
+  --bubble-shade: #237a33;
+}
+
+/* Currency tooltip: title + short lines instead of one run-on sentence */
+.hole-fountain-tip {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.tooltip-anchor:hover .tooltip.hole-fountain-tip {
+  display: flex;
+}
+
+.hole-fountain-tip-title {
+  color: #f3f4f6;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hole-fountain-tip-line {
+  color: #9ca3af;
+}
+
+.hole-fountain-tip-line strong {
+  color: #e5e7eb;
+}
+
+.hole-fountain-tip-note {
+  color: #fbbf24;
+}
+
+.hole-fountain-coin {
+  height: 28px;
+  width: auto;
+}
+
+.hole-fountain-currency-value {
+  color: #9ca3af;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.hole-fountain-currency-ground {
+  color: #facc15;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.hole-chip--marble {
+  color: #e5e7eb;
+  border-color: rgba(229, 231, 235, 0.35);
+}
+
+.hole-fountain-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #9ca3af;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-fountain-cost--ok {
+  color: #4ade80;
+}
+
+.hole-fountain-cost-icon {
+  height: 16px;
+  width: auto;
+}
+
+.hole-fountain-needs {
+  color: #fbbf24;
+}
+
+/* One bar per row: the card is too narrow for side-by-side bars with readable stats */
+.hole-fountain-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hole-fountain-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.hole-fountain-bar-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hole-fountain-bar-count {
+  color: #9ca3af;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Label over value, all cells in one row */
+.hole-fountain-bar-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hole-fountain-bar-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #e5e7eb;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hole-fountain-bar-label {
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hole-fountain-bar--0::-webkit-progress-value {
+  background: #38bdf8;
+}
+
+.hole-fountain-bar--0::-moz-progress-bar {
+  background: #38bdf8;
+}
+
+.hole-fountain-bar--1::-webkit-progress-value {
+  background: #d1d5db;
+}
+
+.hole-fountain-bar--1::-moz-progress-bar {
+  background: #d1d5db;
+}
+
+.hole-fountain-bar--2::-webkit-progress-value {
+  background: #facc15;
+}
+
+.hole-fountain-bar--2::-moz-progress-bar {
+  background: #facc15;
+}
+
+.hole-fountain-tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.hole-fountain-tier {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hole-fountain-tier-label {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hole-fountain-upgrade-icon {
+  height: 40px;
+  width: 40px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* ── The Lair (cavern 18): 2 rows of 6 like the in-game Cove shop ── */
+.hole-lair-shape {
+  height: 32px;
+  width: auto;
+}
+
+/* One card per shape: its two upgrades stacked (one in-game column) */
+.hole-lair-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.hole-lair-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(56, 189, 248, 0.03);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 10px;
+}
+
+.hole-lair-group--jeweled {
+  background: rgba(192, 132, 252, 0.04);
+  border-color: rgba(192, 132, 252, 0.28);
+}
+
+.hole-lair-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 2px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hole-lair-group-icon {
+  height: 24px;
+  width: auto;
+}
+
+.hole-lair-group-name {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hole-lair-group-owned {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hole-lair-upgrade {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+}
+
+.hole-lair-upgrade-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hole-lair-upgrade-level {
+  color: var(--world-5-color);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .hole-fountain-currencies {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -8,7 +8,12 @@ import BellPanel from './BellPanel'
 import HarpPanel from './HarpPanel'
 import LampPanel from './LampPanel'
 import JusticePanel from './JusticePanel'
-import MonumentBonusList from './MonumentBonusList'
+import JarsPanel from './JarsPanel'
+import WisdomPanel from './WisdomPanel'
+import GambitPanel from './GambitPanel'
+import TemplePanel from './TemplePanel'
+import FountainPanel from './FountainPanel'
+import LairPanel from './LairPanel'
 
 // One cavern: what it is, how it gives opals, your progress, its list (bonuses, wishes, ...) and its study.
 // Caverns with a full panel (CAVERN_PANELS) render it under the stat cards; the rest use getCavernDetails.
@@ -21,9 +26,13 @@ const CAVERN_PANELS = {
   5: HarpPanel,
   6: LampPanel,
   9: JusticePanel,
+  10: JarsPanel,
+  12: WisdomPanel,
+  13: GambitPanel,
+  14: TemplePanel,
+  15: FountainPanel,
+  17: LairPanel,
 }
-
-const MONUMENT_CAVERNS = new Set([3, 9, 12])
 
 export default function CavernTab({ snapshot, cavern, unlocked, tomePoints }) {
   const opalsFound = snapshot?.caverns?.opalsPerCavern?.[cavern.id] ?? 0
@@ -132,9 +141,7 @@ export default function CavernTab({ snapshot, cavern, unlocked, tomePoints }) {
         />
       )}
 
-      {details.list && MONUMENT_CAVERNS.has(cavern.id) && <MonumentBonusList bonuses={details.list.items} />}
-
-      {details.list && !MONUMENT_CAVERNS.has(cavern.id) && (
+      {details.list && (
         <div className="hole-card">
           <h3 className="hole-card-title">{details.list.title}</h3>
           <div className="hole-list">

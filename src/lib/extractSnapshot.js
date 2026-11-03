@@ -1158,10 +1158,19 @@ function parseSummoning(json, optLacc) {
 // amplifier LVs, [14] = monument [hours, ?] pairs, [16] / [17] = bell improvement / ring LVs, [18] = bell
 // [EXP, uses] pairs, [19] = harp string [LV, EXP] pairs, [22] = measurement LVs, [23] = Parallel Villagers,
 // [27] = study progress, [33] = fountain water bars.
-function parseCaverns(json) {
+// Jars (top-level save key) = jars on the shelf, each [type, tier exponent, x, y, roll]: one jar of tier
+// exponent e counts as 10^e jars (Toolbox getJarInventory). OptLacc[355] = Rupie Slug gem shop purchases.
+function parseCaverns(json, optLacc) {
   const holes = parseRaw(json['Holes']) ?? []
   const numbers = list => (list ?? []).map(value => Number(value) || 0)
+  const jars = parseRaw(json['Jars'])
   return {
+    jarProgress: numbers(holes[25]),
+    jarShelf: (Array.isArray(jars) ? jars : []).map(jar => ({
+      type: Math.round(Number(jar?.[0]) || 0),
+      tier: Math.round(Number(jar?.[1]) || 0) + 1,
+    })),
+    rupieSlug: Number(optLacc?.[355]) || 0,
     villagerLevels: numbers(holes[1]),
     villagerExp: numbers(holes[2]),
     opalsInvested: numbers(holes[3]),
@@ -1194,6 +1203,11 @@ function parseCaverns(json) {
     wishesUsed: holes[21] ?? [],
     fountainLevels: holes[31] ?? [],
     fountainMarbles: holes[32] ?? [],
+    // Fountain: Holes[29][space] = coin types piled on that ground space, Holes[30][currency] = LUCKY coins,
+    // OptLacc[601] = Rubber Ducky stacks
+    fountainSpaces: (holes[29] ?? []).map(space => numbers(space)),
+    fountainLucky: numbers(holes[30]),
+    fountainDucks: Number(optLacc?.[601]) || 0,
   }
 }
 
@@ -1357,8 +1371,16 @@ function parseMinehead(json) {
 
 // ── Crystal Glunko Cove (W5 caverns) ──────────────────────────────────────────
 // OptLacc[630 + t] = Glunko upgrade t level (values in data/cavernsMap.js glunkoUpgradeValues)
+// The Lair (Crystal Glunko Cove, W5 cavern 17): OptLacc[630 + t] = upgrade LV, [654 + i] = shapes owned (0-5 Gooey,
+// 6-11 Quartz), [668] = Glunko kills, [200] = normal Drop Rate (Rich Get Rich), [604] = upgrades bought today
 function parseGlunko(optLacc) {
-  return { upgradeLevels: Array.from({ length: 24 }, (_, t) => Number(optLacc[630 + t]) || 0) }
+  return {
+    upgradeLevels: Array.from({ length: 24 }, (_, t) => Number(optLacc[630 + t]) || 0),
+    shapes: Array.from({ length: 12 }, (_, i) => Math.max(0, Number(optLacc[654 + i]) || 0)),
+    kills: Number(optLacc[668]) || 0,
+    normalDropRate: Number(optLacc[200]) || 0,
+    boughtToday: Number(optLacc[604]) || 0,
+  }
 }
 
 // ── Account Options ───────────────────────────────────────────────────────────
@@ -1505,7 +1527,7 @@ export function extractSnapshot(rawJson) {
     islands: parseIslands(json, optLacc, charList.length),
     emperor: parseEmperor(optLacc),
     summoning: parseSummoning(json, optLacc),
-    caverns: parseCaverns(json),
+    caverns: parseCaverns(json, optLacc),
     zenith: parseZenith(json),
     hatRack: parseHatRack(json),
     capeVine: parseCapeVine(json),

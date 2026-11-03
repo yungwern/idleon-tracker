@@ -2,6 +2,7 @@ import { getBravery } from '../../utils/holeCavernUtils'
 import { formatHoleNumber } from '../../utils/holeUtils'
 import MonumentHourList from './MonumentHourList'
 import MonumentBonusList from './MonumentBonusList'
+import StatIconRow from './StatIconRow'
 
 // Bravery (cavern 4): AFK-hour unlocks (sword damage scales with hours here), the story stats and the bonus list.
 
@@ -33,9 +34,14 @@ export default function BraveryPanel({ snapshot, lead }) {
           <span className="hole-stat-card-value">
             {formatHoleNumber(bravery.damage.min)} ~ {formatHoleNumber(bravery.damage.max)}
           </span>
-          <span className="hole-stat-card-hint">
-            {bravery.swords} swords · {bravery.rethrows} re-throws · {bravery.retellings} retelling per story
-          </span>
+          <StatIconRow
+            items={[
+              { icon: 'images/hole/bravery/swords.png', value: bravery.swords, label: 'swords' },
+              { icon: 'images/hole/bravery/rethrow.png', value: bravery.rethrows, label: 're-throws' },
+              { icon: 'images/hole/bravery/retelling.png', value: bravery.retellings, label: 'retellings' },
+            ]}
+          />
+          <span className="hole-stat-card-hint">Per story.</span>
         </div>
         <div className="hole-card hole-stat-card">
           <span className="hole-stat-card-label">Reward multi</span>

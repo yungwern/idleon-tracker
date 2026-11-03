@@ -1,6 +1,7 @@
 import { getJustice } from '../../utils/holeCavernUtils'
 import MonumentHourList from './MonumentHourList'
 import MonumentBonusList from './MonumentBonusList'
+import StatIconRow from './StatIconRow'
 
 // Justice (cavern 10): AFK-hour unlocks (starting coins scale with hours here), the story stats and the bonus list.
 
@@ -21,11 +22,23 @@ export default function JusticePanel({ snapshot, lead }) {
           </span>
         </div>
         <div className="hole-card hole-stat-card">
-          <span className="hole-stat-card-label">Starting coins</span>
-          <span className="hole-stat-card-value">{justice.coins.toLocaleString()}</span>
-          <span className="hole-stat-card-hint">
-            {justice.health} Mental Health · {justice.dismissals} Dismissals · {justice.popularity} popularity per story
+          <span className="hole-stat-card-label">
+            <img
+              className="hole-inline-icon"
+              src="images/hole/justice/coin.png"
+              alt=""
+            />
+            Starting coins
           </span>
+          <span className="hole-stat-card-value">{justice.coins.toLocaleString()}</span>
+          <StatIconRow
+            items={[
+              { icon: 'images/hole/justice/health.png', value: justice.health, label: 'Mental Health' },
+              { icon: 'images/hole/justice/dismissals.png', value: justice.dismissals, label: 'Dismissals' },
+              { icon: 'images/hole/justice/popularity.png', value: justice.popularity, label: 'Popularity' },
+            ]}
+          />
+          <span className="hole-stat-card-hint">Per story.</span>
         </div>
         <div className="hole-card hole-stat-card">
           <span className="hole-stat-card-label">Reward multi</span>

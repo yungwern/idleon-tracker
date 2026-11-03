@@ -229,7 +229,7 @@ export const holeCaverns = [
     name: 'Gambit',
     biome: 'overgrowth',
     kind: 'Challenge',
-    opalSource: null,
+    opalSource: 'One opal per power of 10 Gambit Points (10, 100, 1,000...): the 2nd Gambit bonus.',
     guide: [
       'Daily timed trials. Your best time on each one gives Gambit Points, more points give valuable upgrades like Opals, Summoning Doublers and various other account-wide bonuses.',
     ],
@@ -239,7 +239,7 @@ export const holeCaverns = [
     name: 'The Temple',
     biome: 'overgrowth',
     kind: 'Combat',
-    opalSource: null,
+    opalSource: 'One opal per Sanctum cleared.',
     guide: [
       'Ancient Golems drop torches. Spend torches on Illuminate / Search / Amplify to push deeper layers. AFK is better for farming statues, active is better for pushing layers. Again, use Siege Breaker for active.',
     ],
@@ -269,7 +269,7 @@ export const holeCaverns = [
     name: 'The Lair',
     biome: 'sentinel',
     kind: 'Shop',
-    opalSource: null,
+    opalSource: 'The Opal Find upgrade: +1 opal per LV.',
     guide: [
       'Home of the Crystal Glunko. Various upgrades that increase gains in both this cavern and IdleOn account-wide bonuses. You can AFK here to speed up progression with multiple characters, but active Siege Breaker is still the best. ',
     ],
@@ -610,25 +610,165 @@ export const bellMethods = [
   { description: "+{% Bell Ring/hr", baseCost: 1500.0, boost: 15.0 },
 ]
 
-// Gambit bonuses (holesInfo[71]): x0 / x1 (1 = × log10 points), unlock at getGambitPointReq(i)
+// Gambit bonuses (holesInfo[71]): x0 / x1 (1 = × log10 points), unlock at getGambitPointReq(i).
+// name: { = bonus, } = 1 + bonus / 100 as a multi (game font: 而 = x, 梦 = the ? info marker, dropped).
+// description = the ? tooltip text (null when the game has none)
 export const gambitBonuses = [
-  { name: "{ Summoning Doublers &", x0: 1.0, x1: 1.0 },
-  { name: "1 Opal per POW 10 Points &", x0: 1.0, x1: 1.0 },
-  { name: "+{% Flurbos per party member &", x0: 20.0, x1: 0.0 },
-  { name: "+{% Resources from Caverns &", x0: 25.0, x1: 1.0 },
-  { name: "+{% Upgrade Stone Success", x0: 20.0, x1: 0.0 },
-  { name: "} Essence Gain &", x0: 25.0, x1: 1.0 },
-  { name: "{% chance for 2& ribbon combine &", x0: 35.0, x1: 0.0 },
-  { name: "} Coins from monsters &", x0: 10.0, x1: 1.0 },
-  { name: "} gains from clickers &", x0: 100.0, x1: 1.0 },
-  { name: "+1 Trim Slot and +100 Wiz Max LV &", x0: 1.0, x1: 0.0 },
-  { name: "2& extra Snail Mail every day", x0: 1.0, x1: 0.0 },
-  { name: "} Ninja Stealth &", x0: 25.0, x1: 1.0 },
-  { name: "2& Extra Bones on Deathbringer", x0: 1.0, x1: 0.0 },
-  { name: "2& daily particle bubble upg", x0: 1.0, x1: 0.0 },
-  { name: "+{% Spelunking EXP Gain", x0: 250.0, x1: 0.0 },
-  { name: "+{% Research AFK Gains rate", x0: 3.0, x1: 0.0 },
-  { name: "World 7 bonus... what will it be...?", x0: 1.0, x1: 0.0 },
-  { name: "World 8 bonus... what will it be...?", x0: 1.0, x1: 0.0 },
-  { name: "World 8 bonus... what will it be...?", x0: 1.0, x1: 0.0 },
+  { name: "{ Summoning Doublers", x0: 1.0, x1: 1.0, description: "Press the star button in a summoning upgrade to DOUBLE it! Get more Gambit Points to get more doublers! You have $ left, and can reset them at The Lamp" },
+  { name: "1 Opal per POW 10 Points", x0: 1.0, x1: 1.0, description: "You know how POW 10 works! You'll get an opal at 10 total score, then 100, then 1000, then 10000, etc..." },
+  { name: "+{% Flurbos per party member", x0: 20.0, x1: 0.0, description: "For example, having a party of 4 people would give 1.80x Flurbo Gain bonus" },
+  { name: "+{% Resources from Caverns", x0: 25.0, x1: 1.0, description: "This bonus INCREASES the more Gambit Points you have!" },
+  { name: "+{% Upgrade Stone Success", x0: 20.0, x1: 0.0, description: null },
+  { name: "} Essence Gain", x0: 25.0, x1: 1.0, description: "This bonus INCREASES the more Gambit Points you have!" },
+  { name: "{% chance for 2x ribbon combine", x0: 35.0, x1: 0.0, description: "For example, if you combined two T8 ribbons, theres a 35% chance for a T10 instead of T9." },
+  { name: "} Coins from monsters", x0: 10.0, x1: 1.0, description: "This bonus INCREASES the more Gambit Points you have!" },
+  { name: "} gains from clickers", x0: 100.0, x1: 1.0, description: "This includes Owl Feathers and Roo Fish. Also, this bonus INCREASES the more Gambit Points you have!" },
+  { name: "+1 Trim Slot and +100 Wiz Max LV", x0: 1.0, x1: 0.0, description: "Trim Slot means the gold Trimmed Construction slot, and Wiz means Wizard Towers in Construction." },
+  { name: "2x extra Snail Mail every day", x0: 1.0, x1: 0.0, description: null },
+  { name: "} Ninja Stealth", x0: 25.0, x1: 1.0, description: "This bonus INCREASES the more Gambit Points you have!" },
+  { name: "2x Extra Bones on Deathbringer", x0: 1.0, x1: 0.0, description: null },
+  { name: "2x daily particle bubble upg", x0: 1.0, x1: 0.0, description: null },
+  { name: "+{% Spelunking EXP Gain", x0: 250.0, x1: 0.0, description: "Spelunking is a World 7 skill" },
+  { name: "+{% Research AFK Gains rate", x0: 3.0, x1: 0.0, description: "Research is a World 7 skill" },
+  { name: "World 7 bonus... what will it be...?", x0: 1.0, x1: 0.0, description: null },
+  { name: "World 8 bonus... what will it be...?", x0: 1.0, x1: 0.0, description: null },
+  { name: "World 8 bonus... what will it be...?", x0: 1.0, x1: 0.0, description: null },
 ]
+
+// Jar types (Holes[11][37] = highest type unlocked): effect text holesInfo[65], { = the chance shown.
+// Names follow Toolbox the-jars.ts (the game draws them on the jar art).
+export const jarTypes = [
+  { name: "Simple Jar", effect: "Contains a random basic rupie" },
+  { name: "Tall Jar", effect: "Has a {% chance to contain an Opal" },
+  { name: "Ornate Jar", effect: "Has a {% chance to contain a new collectible" },
+  { name: "Great Jar", effect: "Contains a random decent rupie" },
+  { name: "Enchanted Jar", effect: "Has a {% chance to enchant a collectible doubling its bonus" },
+  { name: "Artisan Jar", effect: "Contains a white rupee" },
+  { name: "Epic Jar", effect: "Contains a random elegant rupie" },
+  { name: "Gilded Jar", effect: "Doubles the amount of rupies from the next jar opened" },
+  { name: "Ceremony Jar", effect: "Contains a dark rupie" },
+  { name: "Heirloom Jar", effect: "Contains the one and only master rupie" },
+]
+
+// Gambit trials (Holes[11][65 + i] = best time in seconds). Names and descriptions from the in-game Gambit screen (Eli),
+// icons = images/hole/gambit/gambit_<i>.png (Toolbox etc/Gambit_i). Trial 0 scores 100 points per second, the rest 200.
+export const gambitTrials = [
+  { name: "King's Gambit", description: 'Survive as long as you can...' },
+  { name: "Horsey's Gambit", description: 'You have but a single HP...' },
+  { name: "Bishop's Gambit", description: 'Damage done to me is done to thee...' },
+  { name: "Queen's Gambit", description: 'Jewels everywhere...' },
+  { name: "Castle's Gambit", description: 'One lane, one outcome...' },
+  { name: "Noob's Gambit", description: 'I like the grey ones!!!' },
+]
+
+// The Temple torch buys (Toolbox the-temple.ts). { = the bonus; LV = Holes[11][level] (Search has no LV: it costs a
+// quarter of your torches every time)
+export const templeTorchBonuses = [
+  { name: 'Illuminate', description: '{x chance for Search', level: 57 },
+  { name: 'Search', description: '{% Chance to awaken Centurion', level: null },
+  { name: 'Amplify', description: '{% Faster Golem Respawn', level: 59 },
+]
+
+// The Fountain (cavern 15): 20 upgrades per water (Holes[31][t][i] = LV, Holes[32][t][i] = marbleize tier).
+// prereq = upgrade that must reach LV 10 first (-1 = none; Blue 2 and 14 open at LV 1), currency = coin paid
+// (Holes[9][30 + currency]). cost = (LV + 1) × costMulti^LV when baseCost is 1, else baseCost × costMulti^LV.
+// Text: { = bonus, } = 1 + bonus / 100 as a multi, $ # ^ = values filled in by holeCavernUtils getFountain.
+export const fountainUpgrades = [
+  [
+    { name: "Yellow Water", description: "Unlock Yellow Water. Tap the Change Water button to toggle which water the Fountain is using. Also, }x Currency Value", prereq: 6, currency: 2, baseCost: 100000, costMulti: 1.1 },
+    { name: "Currency Booster I", description: "All currencies are worth +{% more. Currencies are ALL money types here at the Fountain, from coins to dollars and more!", prereq: 4, currency: 2, baseCost: 1500, costMulti: 1.2 },
+    { name: "Penny Lane", description: "Increases the value of Bronze Coins. All bronze coins you find have a base value of $ Your total Currency multi: ^ (Affects value of all Fountain money)", prereq: 9, currency: 0, baseCost: 1, costMulti: 1.06 },
+    { name: "Nickel and Diming", description: "You can now find Silver Coins. All silver coins you find have a base value of $", prereq: 12, currency: 1, baseCost: 1, costMulti: 1.12 },
+    { name: "Dubloon Desires", description: "You can now find Golden Coins. All golden coins you find have a base value of $", prereq: 8, currency: 2, baseCost: 1, costMulti: 1.13 },
+    { name: "Stackin' Silver", description: "Silver coins are worth }x more.", prereq: 3, currency: 0, baseCost: 10, costMulti: 1.1 },
+    { name: "Stackin' Gold", description: "Golden coins are worth }x more.", prereq: 19, currency: 1, baseCost: 15, costMulti: 1.1 },
+    { name: "Stackin' Dollars", description: "Dollar Bills are worth }x more.", prereq: 6, currency: 2, baseCost: 25, costMulti: 1.1 },
+    { name: "Money Back Guarantee", description: "Currency generated while at maximum capacity aren't wasted, and instead auto collected at $% of their value.", prereq: 5, currency: 1, baseCost: 25, costMulti: 1.15 },
+    { name: "Fountain Filling", description: "Every time the fountain fills up, it creates a new coin. This will happen in $ From empty, it takes: # to fill", prereq: -1, currency: 0, baseCost: 1, costMulti: 1.1 },
+    { name: "Extra Space", description: "Coins can appear in $ different areas on the ground. This means your current max coin capacity is # coins", prereq: 2, currency: 0, baseCost: 5, costMulti: 20 },
+    { name: "Taller Stacks", description: "Each area can stack up to $ coins, this upgrade increases it by +{. This means your current max coin capacity is # coins", prereq: 3, currency: 1, baseCost: 25, costMulti: 4 },
+    { name: "Water Bender", description: "The fountain fills up $x faster while you are actively standing in this cavern specifically.", prereq: 2, currency: 0, baseCost: 10, costMulti: 1.3 },
+    { name: "Monumental Boost", description: "All Bravery Monument bonuses are }x larger.", prereq: 18, currency: 2, baseCost: 250, costMulti: 2.5 },
+    { name: "Cosmological Boost", description: "Cosmo the Villager gains }x more EXP than normal.", prereq: 9, currency: 0, baseCost: 5, costMulti: 1.15 },
+    { name: "Golden Bucket Boost", description: "Your 1st bucket at The Well cavern is golden. Golden buckets have }x fill rate.", prereq: 16, currency: 1, baseCost: 25, costMulti: 1.1 },
+    { name: "Class EXP Boost", description: "Boosts Class EXP gain by }x", prereq: 14, currency: 0, baseCost: 50, costMulti: 1.12 },
+    { name: "Treasure Boost", description: "All Sailing Chests you open contain }x more Treasure to upgrade your Boats with!", prereq: 15, currency: 1, baseCost: 100, costMulti: 1.2 },
+    { name: "Orion Boost", description: "Permanently boost Feather Generation rate at Orion the Horned Owl by }x", prereq: 17, currency: 2, baseCost: 150, costMulti: 1.12 },
+    { name: "Mythril Transience", description: "Bronze, silver, and gold coins are worth +{% more per POW 10 Mythril you have, over at The Well cavern. Total Bonus:$x", prereq: 4, currency: 2, baseCost: 800, costMulti: 1.2 },
+  ],
+  [
+    { name: "Green Water", description: "Unlock Green Water. Also, }x Currency Value.", prereq: 1, currency: 5, baseCost: 1000000, costMulti: 1.1 },
+    { name: "Currency Booster II", description: "All currencies are worth +{% more.", prereq: 4, currency: 5, baseCost: 10000, costMulti: 1.2 },
+    { name: "Dolla Dolla Bills", description: "You can now find Dollar Bills. All dollar bills you find have a base value of $", prereq: 10, currency: 3, baseCost: 1, costMulti: 1.13 },
+    { name: "Credit Swisse", description: "You can now find Credit Bills. All credit bills you find have a base value of $", prereq: 12, currency: 4, baseCost: 1, costMulti: 1.14 },
+    { name: "In Gov We Trust", description: "You can now find Treasury Bills. All treasury bills you find have a base value of $", prereq: 9, currency: 5, baseCost: 1, costMulti: 1.15 },
+    { name: "Stackin' Creds", description: "Credit bills are worth }x more.", prereq: 3, currency: 3, baseCost: 50, costMulti: 1.1 },
+    { name: "Stackin' T-Bills", description: "Treasury bills are worth }x more.", prereq: 4, currency: 4, baseCost: 100, costMulti: 1.1 },
+    { name: "Stackin' Monayy", description: "Moolah Stacks are worth }x more.", prereq: 0, currency: 5, baseCost: 250, costMulti: 1.1 },
+    { name: "Royal Stacks", description: "There's a 1 in $ chance for a currency stack to become 'royal' when the fountain fills. All coins in a royal stack are worth more.", prereq: 5, currency: 3, baseCost: 100, costMulti: 1.15 },
+    { name: "Regal Riches", description: "Royal stacks are worth $x more, to be specific.", prereq: 8, currency: 4, baseCost: 250, costMulti: 1.25 },
+    { name: "Marble Filling", description: "Adds a new fountain bar, which when filled creates $ marble. Spend these on upgrades to multiply their bonuses via Marbleization.", prereq: -1, currency: 2, baseCost: 50000, costMulti: 1.1 },
+    { name: "Greatest Desire", description: "You can now click and HOLD on a currency at the top of the screen to DESIRE it, making them worth }x more when collected.", prereq: 9, currency: 4, baseCost: 500, costMulti: 1.15 },
+    { name: "Turn and Push", description: "You can now click a currency at the top to IGNORE it, so it's never created. Click again to undo this at any time. Also, +{% all currency", prereq: 2, currency: 3, baseCost: 250, costMulti: 1.15 },
+    { name: "Judicial Boost", description: "All Justice Monument bonuses are }x larger.", prereq: 18, currency: 5, baseCost: 5000, costMulti: 2.5 },
+    { name: "Skim Reading", description: "Boost the Study Rate for Bolaia the Villager by }x", prereq: 10, currency: 3, baseCost: 25, costMulti: 1.2 },
+    { name: "Fine Tuning", description: "All your Harp Strings gain }x more exp than normal", prereq: 16, currency: 4, baseCost: 250, costMulti: 1.15 },
+    { name: "Swingy O' Sword", description: "Boosts Damage for all characters by }x", prereq: 14, currency: 3, baseCost: 100, costMulti: 1.13 },
+    { name: "Summoneer", description: "All Summoning Essence generation is }x greater than before", prereq: 15, currency: 4, baseCost: 500, costMulti: 1.15 },
+    { name: "Better Poppy", description: "Permanently boost Fish Generation rate at Poppy the Kangaroo Mouse by }x", prereq: 17, currency: 5, baseCost: 1500, costMulti: 1.1 },
+    { name: "Sharp Surrogate", description: "Dollar, Credit, and Treasury bills are worth +{% more per POW 10 Sharp Notes you have, over at The Harp cavern. Total Bonus:$x", prereq: 6, currency: 5, baseCost: 10000, costMulti: 1.2 },
+  ],
+  [
+    { name: "Red Water", description: "Unlock Red Water... well, it will in the future. Also, }x Currency Value, at least THAT'S here in the present!", prereq: 6, currency: 8, baseCost: 1000000000, costMulti: 1.5 },
+    { name: "Currency Booster III", description: "All currencies are worth +{% more.", prereq: 5, currency: 6, baseCost: 10000000, costMulti: 1.7 },
+    { name: "Moolahleluja", description: "You can now find Moolah Stacks. All moolah stacks you find have a base value of $, but only get √(Total Currency Multi) which is: ^", prereq: 12, currency: 6, baseCost: 5000, costMulti: 1.4 },
+    { name: "Shillin Grillin", description: "You can now find Shilling Stacks. All shilling stacks you find have a base value of $, but only get √(Total Currency Multi) which is: ^", prereq: 8, currency: 7, baseCost: 20000, costMulti: 1.6 },
+    { name: "Rob Greane", description: "You can now find Greane Stacks. All greane stacks you find have a base value of $, but only get √(Total Currency Multi) which is: ^", prereq: 1, currency: 8, baseCost: 100000, costMulti: 1.8 },
+    { name: "Stackin' Shillin", description: "Shilling Stacks are worth }x more.", prereq: 3, currency: 6, baseCost: 50000, costMulti: 1.3 },
+    { name: "Stackin' Gbacks", description: "Greane Stacks are worth }x more.", prereq: 4, currency: 7, baseCost: 200000, costMulti: 1.5 },
+    { name: "Stackin' Funds", description: "Oldmoney Stacks are worth }x more.", prereq: 19, currency: 8, baseCost: 1000000, costMulti: 1.7 },
+    { name: "Luck fo' REAL", description: "All currencies collected have a 1 in $ of being LUCKY, multiplying the value of that currency type forever! Each additional one is 4x rarer", prereq: 2, currency: 6, baseCost: 10000, costMulti: 1.5 },
+    { name: "Skilluck", description: "Boosts bonus of each LUCKY coin to +$%. Also, you can see how many LUCKY coins of each type you have from the number of dots above them.", prereq: 11, currency: 8, baseCost: 350000, costMulti: 1.9 },
+    { name: "Lucky Ducky", description: "Boost Rubber Ducky chance and LUCKY coin chance by +{%", prereq: 11, currency: 8, baseCost: 100000, costMulti: 1.7 },
+    { name: "Ducktactular", description: "Your Rubber Duckies each boost the value of all coins you find by }x. Total Ducky Bonus: $x", prereq: 8, currency: 7, baseCost: 10000, costMulti: 1.5 },
+    { name: "Rubber Ducky", description: "Adds a new fountain bar, which when filled has a 1 in $ chance of giving +1 Rubber Ducky stack.", prereq: -1, currency: 5, baseCost: 10000000, costMulti: 10 },
+    { name: "Wisdom Boost", description: "All Wisdom Monument bonuses are }x larger.", prereq: 18, currency: 7, baseCost: 10000, costMulti: 50 },
+    { name: "Minaus Costs", description: "Minau the Villager's upgrades all are }x cheaper than before", prereq: 12, currency: 6, baseCost: 15000, costMulti: 8.5 },
+    { name: "Enchanterest", description: "Your Enchant chance over at The Jar cavern is }x larger than before", prereq: 17, currency: 7, baseCost: 25000, costMulti: 4 },
+    { name: "Pen N Paper", description: "Boosts Research EXP gain by }x", prereq: 14, currency: 6, baseCost: 50000, costMulti: 20 },
+    { name: "Cook Maxxing", description: "Boosts Cooking Mastery EXP gain by }x. Note that Cooking Mastery is unlocked at Rift 61.", prereq: 16, currency: 8, baseCost: 100000, costMulti: 6.2 },
+    { name: "Bubba Forever", description: "Permanently boost Meat Slice Production rate at Bubba the Seal by }x", prereq: 15, currency: 7, baseCost: 250000, costMulti: 5.4 },
+    { name: "Rupie Monie", description: "Moolah, Shilling, and Greane stacks are worth +{% more per POW 10 basic Red Rupie you have, over at The Jar cavern.", prereq: 1, currency: 7, baseCost: 1000000, costMulti: 2.5 },
+  ],
+]
+
+// The Lair / Crystal Glunko Cove (cavern 17): upgrade t LV = OptLacc[630 + t], paid in shape floor(t / 2)
+// (OptLacc[654 + shape]). Cost = (costBase^LV + LV) / (1 + upgrade 7 %), × 5 on odd t (Toolbox Cglunko_upgCost).
+// Bonus per LV = cavernsMap glunkoUpgradeValues. t 0-11 = Crystal tab (Gooey shapes), 12-23 = Jeweled tab (Quartz).
+export const lairUpgrades = [
+  { name: "Opal Find", description: "Get +1 opal to invest into Villagers!", costBase: 7.5 },
+  { name: "Slop Drop", description: "Boost Drop Rate here in The Cove by {%", costBase: 1.35 },
+  { name: "Reslime", description: "Increase Crystal Glunko respawn rate by +{%", costBase: 2.5 },
+  { name: "Droplier", description: "Mulitply Drop Rate here in this Cove by }x", costBase: 1.55 },
+  { name: "Killionaire", description: "+{% DR here in The Cove per POW 10 Glunko kills", costBase: 1.6 },
+  { name: "Insta-Ribbon", description: "Get a Rank 15 Ribbon for Cooking, instantly!", costBase: 5.0 },
+  { name: "Big Hit Multkill", description: "Boost your Multikill Per Dmg Tier here to {%", costBase: 2.0 },
+  { name: "Active Drops", description: "Decrease the cost of all upgrades here by $%", costBase: 1.5 },
+  { name: "Sleepy Drops", description: "Boost AFK Gains rate here by +{%", costBase: 1.75 },
+  { name: "One Big Blue", description: "}x Drop Value for your specified blue shape", costBase: 1.45 },
+  { name: "Blue Collector", description: "+{% DR here, per digit of Blue Shapes owned", costBase: 1.85 },
+  { name: "Researchy", description: "}x Research EXP gain for outside this cove", costBase: 1.25 },
+  { name: "Droplier+", description: "Mulitply Drop Rate here in this Cove by }x", costBase: 1.7 },
+  { name: "Sleepy Drops+", description: "Boost AFK Gains rate here by +{%", costBase: 2.0 },
+  { name: "Cavernicus", description: "Earn }x more resources from all caverns", costBase: 3.0 },
+  { name: "Multikill", description: "Boost base Multikill here by +{%", costBase: 1.75 },
+  { name: "One Big Purp", description: "}x Drop Value for your specified purp shape", costBase: 1.45 },
+  { name: "Slop Drop+", description: "Boost Drop Rate here by +{%", costBase: 1.35 },
+  { name: "Rich Get Rich", description: "Boost DR here by +{% per POW 10 normal DR", costBase: 3.0 },
+  { name: "DeEmGe", description: "Boost Total Damage for all chars by }x", costBase: 1.5 },
+  { name: "Grandioso", description: "Boost Grand Discovery Chance in Spelunking by }x", costBase: 1.12 },
+  { name: "Slop Drop++", description: "Boost Drop Rate here in Cavern 18 by {%", costBase: 1.4 },
+  { name: "Purp Collector", description: "+{% DR here, per digit of Purp Shapes owned", costBase: 1.95 },
+  { name: "IDK Broh", description: "World 7 Skill 3 my man, not yet.", costBase: 5.0 },
+]
+export const lairShapeNames = ["Gooey Triangle", "Gooey Square", "Gooey Pentagon", "Gooey Hexagon", "Gooey Heptagon", "Gooey Nonagon", "Quartz Prismagon", "Quartz Cubigon", "Quartz Pointagon", "Quartz Octergon", "Quartz Nullagon", "Quartz Brillagon"]
