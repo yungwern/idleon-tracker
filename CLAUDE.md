@@ -19,11 +19,11 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 src/
 ├── components/         # One folder per feature (see casing note below)
 │   ├── Section pages:  Breeding, Bubba (static guide, data in bubbaMap.js), Construction, Cooking, Farming, GearOptimizer,
-│   │                   CapeVine, HatRack, Hole (+ VillagerTab, CavernTab, *Panel per cavern, MonumentBonusList, StatIconRow), Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer (+ SaltMaterialsTab.jsx), Refinery, Shrines, Spelunking (+ LoreTab.jsx, RedJellyTab.jsx, ElixirTab.jsx), Statues, Summoning (+ BossesTab.jsx, DoublersTab.jsx), Worship
+│   │                   CapeVine, HatRack, Lab (+ ConsoleTab, ChipPlannerTab, MainframeTab, ConsoleColumn, ChipStorage), Hole (+ VillagerTab, CavernTab, *Panel per cavern, MonumentBonusList, StatIconRow), Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer (+ SaltMaterialsTab.jsx), Refinery, Shrines, Spelunking (+ LoreTab.jsx, RedJellyTab.jsx, ElixirTab.jsx), Statues, Summoning (+ BossesTab.jsx, DoublersTab.jsx), Worship
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, PremiumCollection (Hat Rack + Cape Vine body), CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
-│                       # sections.js = sidebar groups (empty ones hidden) + sectionIcons (sidebar sprite per section); statueWorlds lives in statueMap.js
+│                       # sections.js = sidebar groups (empty ones hidden) + sectionIcons (sidebar sprite per section); statueWorlds + statueBases live in statueMap.js
 │                       # Item names → itemMap.js; fixed UQ stats (keychains, etc.) → equipmentMap.js
 │                       # labChipMap.js, foodMap.js (golden/boost/potion/health): { name, img, effect }.
 │                       # fishingMap.js: toolkit weights + lines (depth/exp/speed/power) and fish.
@@ -96,8 +96,8 @@ src/
                         #   getCropEvolutionBreakdown = every crop evo multi (Toolbox getCropEvolution), each read
                         #   from its own system's utils; sources marked exact / partial (missing inner boosts) /
                         #   input (waits on a typed-in value, e.g. Crop Chapter needs Tome points) / missing.
-                        #   All match Toolbox on Eli's save; only partial: lab mainframe (vial, stamp, meal jewel)
-                        #   is assumed connected. Tome points are a per-browser input (see tomeUtils).
+                        #   All match Toolbox on Eli's save; lab mainframe parts read real connections (mainframeUtils).
+                        #   Tome points are a per-browser input (see tomeUtils).
                         #   getCropPushOutlook (Crop Evolution tab) = odds/time to the next undiscovered crops (stops at
                         #   crop 330): one evo roll per plot per growth, chance 30% × decay^tier × plot multi (cap 100%),
                         #   fresh plants climb one tier per growth; walks each plot's tier odds growth by growth.
@@ -118,7 +118,7 @@ src/
                         #   summoningUtils (winner bonuses), cavernUtils (lamp, monument), zenithUtils,
                         #   starSignUtils, characterUtils (played character = newest PTimeAway), tomeUtils,
                         #   equinoxUtils, eventShopUtils / gamingUtils (save-letter flags, saveCodeUtils),
-                        #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels + mainframe, assumed connected),
+                        #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels + mainframe bonuses, on/off from mainframeUtils connections),
                         #   divinityUtils (minor link bonuses), familyUtils (family bonus walk), coralReefUtils,
                         #   prayerUtils (bonus/curse at PrayOwned level = snapshot.worship.prayerLevels; cards sort prayers by id, utility prayers 3 and 5 last),
                         #   gamingUtils (superbits, palette), spelunkingUtils (shop upgrade bonus/cost/descriptions,
@@ -131,7 +131,7 @@ src/
                         #   in tomeUtils, entered in the Import Save modal). Their sources: menagerieUtils (unlocks/boosts),
                         #   clamWorkUtils, lootyUtils (Slab), breedingUtils getCrucibleBonus, gamingUtils MSA,
                         #   farmingUtils getCropDepotBonus, coralReefUtils getDancingCoralBonus, labUtils
-                        #   getAssumedMainframeBonus (Slab Sovereignty / Depot Studies + jewel).
+                        #   getLabBonus (Slab Sovereignty / Depot Studies + jewel).
                         #   talentUtils getMaxPossibleTalentLevel = best SM_i max (book) level + added + super levels,
                         #   for talents people only fill when needed. SL_i = current talent levels, SM_i = max levels. talentUtils getAddedTalentLevels = every added level
                         #   source (Arctis, Symbols, family, Equinox...), checked against Toolbox (246 on Eli's save).
@@ -206,8 +206,7 @@ GemItemsPurchased[111] Crystal 3D Printer = 2nd chamber, [112] More Sample Space
 Print Multis = the 5 in-game MULTI lines (`printerMultiMap`, `printerUtils getPrinterMultis`, inputs in snapshot.printer from OptLacc
 138/323/354/364/479 + Compass[0][43]); all 5 match the game on Eli's save (1.32/2/2/5/3x). Yet Another Printer Multi
 was shown but never applied until the Nov 1 2026 game update fixed it (Toolbox may still leave it out). `printerHiddenMultiMap` / getPrinterHiddenMultis = multis not on the
-in-game screen (Gold Relic OptLacc[125] days by artifact form, Skill Mastery + Lolly Flower added, Vote 11 = lower bound: vote multi
-not ported). Total (getPrinterTotalMulti) = product of all 8 (1472x on Eli's save; Toolbox's 490.68x × the 3x legend talent). value = the per-hour number the in-game
+in-game screen (Gold Relic OptLacc[125] days by artifact form, Skill Mastery + Lolly Flower added, Vote 11 = Bonus Ballot bonus 11). Total (getPrinterTotalMulti) = product of all 8 (1472x on Eli's save; Toolbox's 490.68x × the 3x legend talent). value = the per-hour number the in-game
 printer shows (matched Eli's screenshot). Row art `public/images/printer/row.png` = one 458x76 row of Toolbox PrintBG (saved at 4x),
 so positions in Printer.css are % of that row; slot.png = PrintSlot. Sampleable item sprites = `images/items/<rawName>.png`, names in
 itemMap.js PRINTER SAMPLES (Toolbox items.json Type ORE/LOG/FISH/BUG/MONSTER_DROP).
@@ -218,7 +217,11 @@ window printed. Tries every character set of that size; each set is filled by an
 getPlacementScore × 10 + continuity (printing now 2, in library 1). Placement: 5 = specialist line (getClassFit 2: class line passes
 the skill's tab in SKILL_SPECIALISTS: Warrior mining, Barbarian fishing, Mage choppin, Bowman catching), 2 = non-warrior main stat
 or monster drop, 1 = other non-warrior, 0 = warrior off its specialty (Eli: keep warriors on Copper, e.g. Caulifish overflow goes to a
-non-warrior). Eli: wrong-class prints get moved even if they cover the need (the tab shows the optimal setup). Ties keep more
+non-warrior). Eli: wrong-class prints get moved even if they cover the need (the tab shows the optimal setup). Then (local swaps after
+the Hungarian, never costing class score) a character prints only monster drops or only skilling items (Eli: no fighting/skilling
+setup swaps); this beats continuity. Tome (addTomePrint): one Oak Log (OakTree) print on a mage, the
+only printer Tome line the refinery doesn't cover (Eli: prints happen in statue weeks). Last priority: planned mage's spare
+chamber next to skilling > free mage > spare chamber next to a monster drop; never displaces a refinery input. Ties keep more
 warriors free. The Vman (last Voidwalker) always gets Spore Caps (Eli: portal runs). Copper takes no slot when anyone is left free.
 Window choice in localStorage (idleon_print_plan_window). The full view is the World 3 Refinery section
 (components/Refinery): tabs Rank Planner (RankPlannerTab.jsx) / Materials (cycle times, each salt's inputs per hour vs printed, storage time left for unprintables). Rank Planner = refineryUtils getSaltRankPlan (Toolbox getSaltsBalance): salt made per cycle = floor(min(250k, rank^1.3 × Panda multi, companion 35)), each salt's
@@ -265,7 +268,15 @@ compass 52, emperor 3 + schematic 102, tesseract 25, sushi 56; = 561 invested on
 at native 97px with "Created ✓" / cost / unlock LV along the bottom (public/images/hole/schematics/<i>.png = HoleUIbuildSq<bg> + HoleUIbuildUpg<i> pre-composited, To create/Locked/Created/All
 filter, cost = getSchematicCost incl. Lamp wish 5 discount). Measure cards: Measure_<i> icon + cost (getMeasurementCost) in
 its resource (images/hole/resources/<index>.png, trimmed: 0-9 well, 10-19 notes, 20-29 rupies, 30+ coins). Studies: Peripheral
-Vision = superbit 43, the studies either side of the active one. Parallel Villager chip = gem shop purchase, Holes[23][i] (2x EXP). Hole sprites (Cavern/Villager/Majik/Opal/measure/resources)
+Vision = superbit 43, the studies either side of the active one. Parallel Villager chip = gem shop purchase, Holes[23][i] (2x EXP).
+Villager EXP/hr (holeUtils getVillagerExpModel / getVillagerExpRate = Toolbox getVillagerExpPerHour, every source matches on Eli's save
+exactly on Eli's save; shown in the villager header with next-LV time). Split as base × shared multi ×
+villager multi × opals × Equal Spread (majik 5, per 5 opals in the emptiest unlocked villager) × (1 + (additive + Opal Enthusiasm (majik 0)
+× floor(opals/10))/100). Statue bonuses = utils/statueUtils.js getStatueBonus (snapshot.statues[i].grade = StuG; class statue talents not ported).
+Opal Planner = Villagers sub tab after the 5 villagers (OpalPlanner.jsx, utils/opalOptimizer.js, settings in localStorage idleon_opal_planner).
+Splits every opal (opals can be reset). Eli: late game only Bolaia's LVs matter (study rate), so default = max one villager (the others hold
+the same m for Equal Spread, m searched exactly: 40 on Eli's save); early game = target LVs reached soonest (min of the slowest finish, per m
+binary search on time). One split, no re-splits. Corgan's opal-calc is all-rights-reserved: ideas only, never his code. Hole sprites (Cavern/Villager/Majik/Opal/measure/resources)
 are saved at 4x nearest-neighbor like obols: set a CSS height, never pixelated. Tabs use the default page-tabs colour.
 Caverns: CavernTab = head card + opals card, then a full panel for caverns in CAVERN_PANELS (the panel gets the opals card as
 `lead` for its stat row) or getCavernDetails stat cards/list. Cavern math = utils/holeCavernUtils.js (Toolbox caverns/*.ts).
@@ -274,7 +285,7 @@ golden buckets = first 1-2 (Fountain 0/15 + schematic 104, × 1 + boost/100), bu
 bars top = Hyper Coral; outline colour tiers brown/silver/gold/blue/red/green, each grows over 20 expansions from 14 (fit to
 Eli's screenshot, green full at 114); sediment names wellSedimentNames (Eli); buckets pre-composited per sediment in
 images/hole/well/), DenPanel (score multi, amp effects, denRecommendedSetup = Eli's charges as a starting point), BraveryPanel
-(hour unlocks holesInfo[30]/[31], sword damage, reward multi; Meritocracy reward bonus flagged, not counted), BellPanel (4 rates +
+(hour unlocks holesInfo[30]/[31], sword damage, reward multi incl. Meritocracy bonus 7), BellPanel (4 rates +
 use reqs, ring bonuses, improvement methods with costs: coins/bits/particles = snapshot.currencies; Ring or Ping? card =
 getBellRingOrPing: full-bar time of the next Ring vs next Ping at current rates, within 10% = Either; only the selected
 action fills, Renew resets the ring count (Eli), pings never reset; crossover = ring # where Ring passes today's ping time).
@@ -312,8 +323,49 @@ study 17's 15% daily discount; upgrade t paid in shape floor(t%12/2) + 6 floor(t
 shapes OptLacc[654..665] art images/hole/lair/shape_i.png; Double Shape = schematics 101/103/105 +10% each (Toolbox 'double pickup')).
 Lair AFK = 10 + Sleepy Drops + Sleepy Drops+ (126% on Eli's save; in-game header shows 164%, extra source unknown). In-game Multikill
 = base + per tier × damage tiers (4,587 = 2,700 + 51 × 37 on Eli's screen); tiers not ported. Trench = layer cavern (unchanged).
-Not ported yet: villager EXP/hr, schematic Total Bonus lines, opal sources for caverns 11/15/16, Monument AFK gain, how LUCKY coins
+Not ported yet: schematic Total Bonus lines, opal sources for caverns 11/15/16, Monument AFK gain, how LUCKY coins
 combine into currency value.
+
+**Lab** (World 4, components/Lab): tabs Console / Chip Planner / Mainframe. Save = snapshot.lab (parseLab: Lab[0] tube x/y pairs,
+Lab[1+i] = character i's 7 chip slots (-1 empty), Lab[13] shop rotation, Lab[14] jewels owned, Lab[15] chips owned per index
+(equipped + storage), gem shop 123 × 2 souped up tubes, world7 = OptLacc[408] > 0 (Toolbox finishedWorlds.World6: chips with w7Effect
+swap text, e.g. Silkrode Motherboard = +10% Gallery Bonus Multi)). snapshot.labChips / labJewels stay (used by GearOptimizer,
+starSignUtils, labUtils). Data: labChipMap.js + labMap.js (labBonusMap, labJewelMap) are generated by IdleOn Resources/gen_lab.py
+<Toolbox clone>; labConsoleMap.js (hand-written) = CHIP_SLOT_LEVELS (Lab LV 5/10/15/25/35/50/75), CONSOLE_ROLES, CHIP_VALUES.
+Console column art = images/lab/console-column.png (Toolbox ConsoleColumn 60x390 at 4x; slots 42px at x 9, y 64 + 46k, % in Lab.css).
+Chip Planner (utils/consoleOptimizer.js getConsolePlan): roles Fighting / Skilling / Crystals (Fighting values + Chocolatey Chip) /
+Active (Eli's main: only one, picking another moves the old one to Fighting = setConsoleRole; resolveConsoleRoles keeps the first;
+best setup = 2 black + 4 orange + Chocolatey). Black/orange chips (PRIORITY_CHIP_STATS) are stacked before the flow (stackDoublers, Eli: full sets on
+fewer characters, not spread): DOUBLER_ROLE_ORDER Active, Crystals, Fighting, Skilling, then most already held, then save order;
+each takes every one it can use (black first) up to its slots minus 1 (DOUBLER_FREE_SLOTS). Then STACKED_CHIPS (Galvanic Nanochip on
+Fighting, resp 80: Eli's best AFK fighting chip after black/orange, ahead of one Conductive Software + Poker) fill every free slot
+of one Fighting character at a time (most already held first); planWithStacks moves one copy at a time from the biggest stack to
+the Fighting character with the fewest while anyone on that role has an empty or fallback (other-role) slot and the stacks differ
+by 2+ (Eli: spread when there aren't enough fighting chips). The rest = planRest (flow). Potato Chip only on Active/Crystals (AFK hits attack speed breakpoints easily; 74.5, just above Conductive
+Software since Fighting AFK does nothing while active). "Set all to" (setAllConsoleRoles) skips Active. Value = CHIP_VALUES[stat][role] (or all, or valuesFrom role; numbers = Eli's tier list, comments in labConsoleMap.js), else 20%
+of its value on the role's fallback (a short Fighting setup fills with skilling chips and back), × 0.75 per extra copy of a stackable
+chip, one-per-player chips once, Omega/Silkrode chips 0 when the card (CardEquip_i slot 0 / 7), upper keychain (EquipOrder slot 9),
+pendant (3) or trophy (10, pre-W7) is missing, +1 per chip kept; exact min-cost flow over owned copies and unlocked slots (a scarce
+chip worth the same everywhere goes where the chip it pushes out is weakest). Roles default from AFK target (mob = fighting, else
+skilling), picked roles saved per character name in localStorage idleon_console_roles. Planner columns: green slots only (Eli: no
+Off/On rows), 66px like the Console so 11 fit a row; slots ordered black, orange, rest, empties, Chocolatey last (CHIP_DISPLAY_GROUPS;
+green = added copies, marked bottom up). Tooltips: .lab-tooltip spans are display block; ConsoleColumn tooltipSide (left half of the
+row opens right, right half opens left); storage tiles pick a side on hover (data-tip). Console shows "LV" under names.
+Mainframe (utils/mainframeUtils.js): getMainframeConnections (cached per snapshot in a WeakMap; returns null while computing, which
+labUtils reads as owned/on, because line width reads meals → Black Diamond Rhinestone → labUtils) = Toolbox lab.ts: tube = AFK
+Laboratory or Arctis major (divinityUtils), chain from the prism (43, 229): a player joins within its own line width of the prism or
+a connected player; the map link = the closest such source (Prim-style), so short widths draw the daisy chain. Line width =
+floor((50 + 2 Lab LV) × 1.25 Sapphire Rhombol within 150px + PxLine meals) × (1 + (Purple Tube if right of a Bubonic + LinePct meals +
+12% per Conductive Motherboard + 20 Pet Arena (OptLacc[89] wave ≥ 150, snapshot.lab.arenaWave) + shiny + 30 souped)/100), with
+passive Line Width cards (cap 50px) added to the px part. Nodes on within range floor(80 × (1 +
+(Pyrite Rhombol + Viral 50)/100)) + merit [3][4] + Equinox 6 + summoning '+{ Lab Con Range' (fixed 80/100 for bonuses 8/13, jewels
+9/19/21-23), iterated. labUtils reads these: isLabBonusOn / isLabJewelOn / getLabBonus (bonusOn + jewel
+for 15/17, else bonusOff) / getLabJewelBonus, used by vials, stamps, refinery, slab, depot, meals, shiny, Shrine World Tour
+(shrineUtils/foodUtils) and Wired In (printerUtils: bonus on + character in a tube). Every Toolbox-matched total is unchanged on
+Eli's save (everything connected but Viaduct). getMainframeNotices (Lab sidebar badge + Mainframe tab badge + notices): characters
+right of the rightmost Bubonic-line character miss Green Tube (talent 536, +% Lab EXP; YungBru on Eli's save), Viaduct of the Gods
+connected (Eli: keep it off unless mass leveling bubbles or saving liquid for alchemy shop upgrades; off shows "Off (normal)"), any
+other bonus unconnected. Talent growth 535/536 in talentGrowthMap.
 
 **Death Note** (W3 Workbench, no page yet; planned World 3 section): data = deathNoteMap.js (IdleOn Resources/gen_deathnote.py
 from Toolbox shared-data deathNote/mapEnemies/mapPortals + monsters.json), math = utils/deathNoteUtils.js getDeathNote: account kills
@@ -352,6 +404,38 @@ Golden Vines fill from the front of the vine. Count (capeVineUtils getGoldenVine
 capes/EquipmentCape23.png exists.
 Character Card Premium Gear: hat and cape cards show a "Bonus in Hat Rack / Cape Vine" link (CharacterCard onOpenSection)
 instead of stats, since worn hats/capes give nothing.
+
+**Vote Ballot** (utils/voteUtils.js, data in data/voteBallotMap.js): both votes are ported. Multi Meritocracy:
+getMeritocracyBonus(snapshot, i) = meritocracyBonuses[i].value ( Toolbox ninjaExtraInfo[41]) × getMeritocracyMulti the week i wins (serverVars voteCat2[0]), else 0. Multi =
+0 until a character clears map 250 (Spirit Village, KLA ≤ 0), else Poppy (companion 161) × (base 1, or 0.25 before the Demonflesh
+OptLacc[472] + clam work 3 ×5 + Pufferblob 39 + legend 24 + arcade + event shop 23 ×20 + sushi 51 + jelly 33)/100; 4.52 on Eli's save
+(= Toolbox). Used by vials (20), monument reward (7), slab (23), sigils (21, Pipe Gauge), stamina (17), Seraph Cosmos (22), statues (26).
+Bonus Ballot: getBallotBonus(snapshot, i) = ballotBonuses[i].value (ninjaExtraInfo[38]) × getBallotMulti the week i wins
+(voteCategories[0]). Multi = Poppy × (1 + Meritocracy 9) × (1 + (Crystal Cuttlefish 41 + Equinox Voter Rights (upgrade 11) + IdleOn
+majik 3 Voter Integrity + summoning '+{% Ballot Bonus' + event shop 7 ×17 + 16 ×13 + Mashed Potato 19 + palette 32 + legend 22 + sushi
+50)/100); 8.66 on Eli's save (= Toolbox). Used by printer (11), refinery speed (33), crop ballot 29 (added to every land rank plot term:
+farmingUtils withCropBallotBonus(snapshot) = farming + cropBallotBonus, which the Land Ranks tab passes to the land rank functions).
+New vote uses: call getBallotBonus / getMeritocracyBonus, never flag them missing.
+
+**Shrines** (World 3, components/Shrines, math in utils/shrineUtils.js = Toolbox shrines.ts getShrineExpBonus): each character adds
+its own EXP/hr to every shrine it levels (same map, World Tour same world, or legend 38 anywhere): account multi (superbit 8, Moai
+Head form %, construction mastery 15, ballot 19) × building (1 + 10% LV) × (1 + (Crystal Shrine where it applies + Post Office box 17
+2nd bonus (POu_i) + Shrine Architect 639 + ShrineSpd vials + Golden Cheese)/100). Level req = floor(20 (L-1) + 6 L 1.63^(L-1)).
+Golden Cheese simulator (Eli): toggle Your setup / Beanstalk only / No Golden Cheese + 'Simulate +N levels'; simulateShrineLevels
+steps every shrine level up at once (Crystal LV ups speed the rest). 3,505,091/hr vs Toolbox 3,505,484 on Eli's save (RG Haungry
+for Gold added levels). Cheese = ~99% of his shrine EXP (91x). Golden food multi = foodUtils getGoldenFoodMulti (Toolbox
+getGoldenFoodMulti; Shimmeron × Warriors Rule for STR chars via getBubbleBonus mainStat, wows = Death Note maps + 3 extra, 107;
+gear/obol Gold Food lines not read) = Toolbox to 0.001%. getGoldenFoodBonus adds the Beanstalk copy (Jade 1, Ninja[104] rank,
+stack 1000 × 10^rank). Sigils: alchemyUtils getSigilBonus (refinery.sigilTiers × Chilled Yarn × Meritocracy 21).
+
+**Food / Prayers tabs** (Character Card, components/CharacterCard/FoodTab.jsx + PrayersTab.jsx, math in utils/foodUtils.js):
+food slots = snapshot.characters[i].food (EquipOrder_i[2] / EquipQTY_i[2], first 6). Unlocked = 2 + W3 merit 0 (2nd/4th buy) +
+gem shop 59 (max 2), labels in foodMap.js foodSlotUnlocks. getFoodCarryCap = Toolbox getItemCapacity('cFood') (bag, vault 11, bundles
+bon_w/x/y, gem 58, all-carry stamps, star sign Carry_Cap, guild Rucksack = snapshot.guildBonusLevels (export guildData only), star talent 634,
+Pantheon shrine × Chizoar card, Gigafrog, Ram Pet Mart+, bribe 23, Zerg curse floor 0.4 × Ruck Sack); every setup = Toolbox on all 11 of
+Eli's characters. Golden food stack factor = 0.05·L·(1 + L/2.14), L = log10(1 + qty): ratio of two = exact bonus change. Stacks persist after a
+carry prayer comes off (Eli). prayerUtils getEffectivePrayer: no prayers + superbit 9 or 39 → 1/5 per superbit (9/39/53) of every levelled
+prayer's bonus (not 5 Tachion), no curses (Toolbox getPrayerBonusAndCurse).
 
 **Buffs panel**: `BuffsPanel` (styles in global.css) is the centered unlocked/missing/unknown icon strip under the
 InfoPanel — BiS Setups (Card Buffs) and Shrines use it. Pass `active: null` when the save can't tell.

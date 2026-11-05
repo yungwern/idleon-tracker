@@ -10,7 +10,7 @@ import { getArtifactBonus } from './sailingUtils'
 import { getBubbleBonus } from './alchemyUtils'
 import { getPassiveCardBonus, getCardStars, isCardOwned } from './cardUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
-import { isMeritocracyBonusSelected } from './voteUtils'
+import { getMeritocracyBonus } from './voteUtils'
 import { getZenithBonus } from './zenithUtils'
 import { getMineheadBonus } from './mineheadUtils'
 import { getGlunkoBonus } from './cavernUtils'
@@ -302,14 +302,10 @@ export function getBestTool(spelunking) {
 // ── Stamina ───────────────────────────────────────────────────────────────────
 
 // Stamina every character regenerates per hour (Toolbox getStaminaRegenRate). Returns { value, missing }.
-// The Meritocracy bonus amount isn't ported yet, so a week it's the winning pick is flagged missing.
 export function getStaminaRegenRate(snapshot) {
   const spelunking = snapshot?.spelunking
   const totals = getSpelunkingTotals(snapshot)
   const missing = []
-  if (isMeritocracyBonusSelected(snapshot?.voteBallot, STAMINA_MERITOCRACY)) {
-    missing.push('Meritocracy stamina regen bonus (winning pick this week)')
-  }
   const legend = getLegendTalentBonus(STAMINA_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, STAMINA_LEGEND_TALENT))
   const rg = snapshot?.royalGuardian
   const compounding = rg?.compoundingUnlocked && rg?.compoundingIndex === STAMINA_COMPOUNDING
@@ -323,6 +319,7 @@ export function getStaminaRegenRate(snapshot) {
     + getPassiveCardBonus(STAMINA_CARD_EFFECT, snapshot?.cards)
   return {
     value: BASE_STAMINA_REGEN
+      * (1 + getMeritocracyBonus(snapshot, STAMINA_MERITOCRACY) / 100)
       * (1 + legend / 100)
       * compounding
       * (1 + getSushiBonus(snapshot?.sushi, STAMINA_SUSHI) / 100)

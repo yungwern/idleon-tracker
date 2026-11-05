@@ -1,6 +1,6 @@
 import { breedingMap, BASE_MAX_SHINY_LEVEL, PASSIVE_ORDER } from '../data/breedingMap'
 import { getShinyThreshold, getShinyLevel, parseWorldCoords, getMaxShinyLevelFor, getShinyPassiveTotal } from './breedingUtils'
-import { getAssumedJewelBonus } from './labUtils'
+import { getLabJewelBonus } from './labUtils'
 import { getCropDepotBonus, CROP_DEPOT_BONUSES } from './farmingUtils'
 import { getStarSignBonus } from './starSignUtils'
 import { getActiveCharacterIndex } from './characterUtils'
@@ -51,7 +51,7 @@ const overLevelMulti = overLevels => 1 + (OVER_LEVEL_BONUS * overLevels) / 100
 export function getShinyRate(snapshot) {
   const breeding = snapshot?.breeding
   const missing = []
-  const jewel = getAssumedJewelBonus(snapshot, EMERALD_ULTHURITE)
+  const jewel = getLabJewelBonus(snapshot, EMERALD_ULTHURITE)
   const depot = getCropDepotBonus(snapshot, CROP_DEPOT_BONUSES.shiny)
   const starSign = getStarSignBonus(snapshot, 'Shiny_Mob_LV_spd', getActiveCharacterIndex(snapshot))
   const upgradeLevels = breeding?.petUpgradeLevels

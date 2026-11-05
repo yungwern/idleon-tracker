@@ -57,7 +57,7 @@ import { getStampBonusByEffect } from './stampUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { isSuperbitUnlocked, getPaletteBonus } from './gamingUtils'
 import { getExoticBonus } from './exoticUtils'
-import { isMeritocracyBonusSelected } from './voteUtils'
+import { getMeritocracyBonus } from './voteUtils'
 import { getArcadeBonus } from './arcadeUtils'
 
 // The Hole caverns (W5): one section per cavern for components/Hole/CavernTab and its panels.
@@ -296,11 +296,9 @@ export function getMonumentRewardMulti(snapshot, t) {
     + legend / 24
   const maxLinear = 86400 * days
   const value = (Math.min(time, maxLinear) / 72e3 + ((1 + Math.max(0, time - maxLinear) / 72e3) ** 0.3 - 1))
+    * (1 + getMeritocracyBonus(snapshot, MONUMENT_REWARD_MERIT) / 100)
     * (1 + legend / 100)
-  const missing = isMeritocracyBonusSelected(snapshot?.voteBallot, MONUMENT_REWARD_MERIT)
-    ? ['Meritocracy reward bonus (winning pick this week)']
-    : []
-  return { value, missing }
+  return { value, missing: [] }
 }
 
 export function getBravery(snapshot) {

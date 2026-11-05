@@ -16,7 +16,7 @@ import { isAchievementComplete } from './achievementUtils'
 import { getKillroyBonus, KILLROY_CROP_EVO } from './killroyUtils'
 import { getSkillLevel, isSkillMasteryBonusUnlocked } from './skillUtils'
 import { getSushiBonus } from './sushiUtils'
-import { isBallotBonusSelected } from './voteUtils'
+import { getBallotBonus } from './voteUtils'
 import { getStampBonusByEffect } from './stampUtils'
 import { getMealBonusByStat } from './cookingUtils'
 import { getWinnerBonusByName } from './summoningUtils'
@@ -32,7 +32,7 @@ import { getEmperorBonus } from './emperorUtils'
 import { getGemShopPurchases } from './gemShopUtils'
 import { isJadeUnlocked, getCharmBonus } from './sneakingUtils'
 import { getMeritBonus } from './meritUtils'
-import { getAssumedMainframeBonus, LAB_BONUSES } from './labUtils'
+import { getLabBonus, LAB_BONUSES } from './labUtils'
 
 // Farming math, checked against IdleonToolbox parsers/world-6/farming.ts.
 // `farming` is snapshot.farming (see parseFarming in lib/extractSnapshot.js).
@@ -337,8 +337,9 @@ export function cropsForExoticLevels(targetLevels, farming, legendTalentLevel, o
 
 // ── Land Rank Database ────────────────────────────────────────────────────────
 // Scoring and optimizer ported from Toolbox getLandRankGoalScore /
-// getOptimizedLandRankUpgrades. Not modeled: the vote ballot bonus (vote 29)
-// and the grimoire part of the 5th column max level, which the snapshot doesn't parse.
+// getOptimizedLandRankUpgrades. Not modeled: the grimoire part of the 5th column max level, which the
+// snapshot doesn't parse. Ballot bonus 29 (+% crop value, evo and EXP the week it wins) adds to every
+// plot's rank term: land rank functions read it from farming.cropBallotBonus (withCropBallotBonus).
 
 // Each Overgrowth doubles a crop's value, capped at 1e9x, which OG 30 (2^30) passes
 export const OG_MAX = 30
@@ -402,6 +403,15 @@ export function getSeedRankMaxLevel(snapshot) {
 
 // The plots each goal sums over (Toolbox getOptimizedLandRankUpgrades): growing plots,
 // or every plot between harvests. Soil EXP Boost reads the plot physically before each one.
+// snapshot.farming plus this week's ballot bonus 29, for the land rank functions below
+const CROP_BALLOT = 29 // Bonus Ballot: +% crop value, Farming EXP and next crop chance
+export function withCropBallotBonus(snapshot) {
+  return {
+    ...(snapshot?.farming ?? {}),
+    cropBallotBonus: getBallotBonus(snapshot, CROP_BALLOT),
+  }
+}
+
 function getPlotContext(farming) {
   const ranks = farming?.farmingRanks ?? []
   const plots = farming?.plots?.length
@@ -415,6 +425,7 @@ function getPlotContext(farming) {
     plotPrevRanks: scored.map(p => ranks[Math.max(0, p.index - 1)] ?? 0),
     cropValueConstant: constant,
     cropValueCap: cap,
+    voteBonus: Number(farming?.cropBallotBonus) || 0,
   }
 }
 
@@ -440,19 +451,20 @@ function cropValueParts(farming, skip = {}) {
 // `b(i)` = bonus of upgrade i at the levels being scored.
 function goalScore(goal, b, ctx) {
   const { plotRanks, plotPrevRanks, cropValueConstant, cropValueCap } = ctx
+  const vote = ctx.voteBonus ?? 0
   const sumPlots = fn => Math.log(plotRanks.reduce((sum, rank, i) => sum + fn(rank, i), 0))
   if (goal === 'evolution') {
     // With a crop target, evolution past what that crop needs scores nothing (evoCap per plot)
     if (!plotRanks.length) return 0
     const cap = ctx.evoCap ?? Infinity
     const shared = (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100)
-    return sumPlots(rank => Math.min(cap, shared * (1 + b(0) * rank / 100)))
+    return sumPlots(rank => Math.min(cap, shared * (1 + (b(0) * rank + vote) / 100)))
   }
   if (goal === 'cropValue') {
     // Past the cap a plot gains nothing, so capped value is what gets scored
     if (!plotRanks.length) return 0
     const shared = cropValueConstant * (1 + (b(8) + b(17)) / 100)
-    return sumPlots(rank => Math.min(cropValueCap, shared * (1 + b(1) * rank / 100)))
+    return sumPlots(rank => Math.min(cropValueCap, shared * (1 + (b(1) * rank + vote) / 100)))
   }
   if (goal === 'rankExp') {
     if (!plotRanks.length) return 0
@@ -482,7 +494,7 @@ export function getLandRankTotals(farming, rankMulti) {
   const ctx = getPlotContext(farming)
   const plotCount = ctx.plotRanks.length
   const shared = ctx.cropValueConstant * (1 + (b(8) + b(17)) / 100)
-  const plotValues = ctx.plotRanks.map(rank => Math.round(shared * (1 + b(1) * rank / 100)))
+  const plotValues = ctx.plotRanks.map(rank => Math.round(shared * (1 + (b(1) * rank + ctx.voteBonus) / 100)))
   return {
     // Average land rank evolution multi per scored plot
     cropEvolution: plotCount ? Math.exp(goalScore('evolution', b, ctx)) / plotCount : 1,
@@ -702,7 +714,7 @@ export function optimizeLandRanks(farming, rankMulti, { seedLevel, includeFarmin
   if (Number.isFinite(evoCap)) {
     const trial = [...levels]
     const trialLeft = greedyAllocate(['evolution'], left, trial, rankMulti, ctx, totalRankPoints)
-    const lowestLand = Math.min(...ctx.plotRanks.map(rank => landEvoMulti(trial, rankMulti, rank)))
+    const lowestLand = Math.min(...ctx.plotRanks.map(rank => landEvoMulti(trial, rankMulti, rank, ctx.voteBonus)))
     target = {
       reachable: lowestLand >= evoCap,
       // Best land rank evo multi on the lowest plot with every remaining point in evolution
@@ -770,9 +782,9 @@ export function compareLandRankPlans(farming, rankMulti, before, after) {
 }
 
 // Land rank evolution multi on one plot: the shared total × (1 + Evolution Boost × plot rank)
-function landEvoMulti(levels, rankMulti, rank) {
+function landEvoMulti(levels, rankMulti, rank, vote = 0) {
   const b = bonusesAt(levels, rankMulti)
-  return (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100) * (1 + b(0) * rank / 100)
+  return (1 + b(3) / 100) * (1 + b(10) / 100) * (1 + b(15) / 100) * (1 + (b(0) * rank + vote) / 100)
 }
 
 // What a crop evolution target asks of the land ranks. Evolving into a crop is one roll from the
@@ -806,9 +818,9 @@ export function getEvoTarget(farming, rankMulti, evo, cropId, chancePct) {
 
 // Scored plots (see getPlotContext) whose land rank evo multi reaches `landNeeded` at `levels`
 export function countPlotsMet(farming, rankMulti, levels, landNeeded) {
-  const { plotRanks } = getPlotContext(farming)
+  const { plotRanks, voteBonus } = getPlotContext(farming)
   return {
-    plotsMet: plotRanks.filter(rank => landEvoMulti(levels, rankMulti, rank) >= landNeeded).length,
+    plotsMet: plotRanks.filter(rank => landEvoMulti(levels, rankMulti, rank, voteBonus) >= landNeeded).length,
     scoredPlots: plotRanks.length,
   }
 }
@@ -820,10 +832,10 @@ export function countPlotsMet(farming, rankMulti, levels, landNeeded) {
 // True when every scored plot stays at the crop value cap even with `skip` left out
 function cropValueCappedWithout(farming, rankMulti, skip) {
   const b = bonusesAt(farming?.upgradesLevels ?? [], rankMulti)
-  const { plotRanks } = getPlotContext(farming)
+  const { plotRanks, voteBonus } = getPlotContext(farming)
   const { constant, cap } = cropValueParts(farming, skip)
   const shared = constant * (1 + (b(8) + b(17)) / 100)
-  return plotRanks.length > 0 && plotRanks.every(rank => Math.round(shared * (1 + b(1) * rank / 100)) >= cap)
+  return plotRanks.length > 0 && plotRanks.every(rank => Math.round(shared * (1 + (b(1) * rank + voteBonus) / 100)) >= cap)
 }
 
 const BEAN_EXOTICS = [16, 17, 18, 19, 20]
@@ -832,7 +844,7 @@ const FREEXOTIC_CAP = 50
 
 // { exotic: Map(index → reason), market: Map(index → reason) }
 export function getLowValueUpgrades(snapshot, rankMulti) {
-  const farming = snapshot?.farming
+  const farming = withCropBallotBonus(snapshot)
   const exotic = new Map()
   const market = new Map()
   const levels = farming?.marketLevels ?? []
@@ -903,7 +915,6 @@ const CROP_EVO_VAULT_UPGRADE = 78
 const SACRIFICE_OF_HARVEST_GRIMOIRE = 14
 const LIL_OVERGROWTH_ACHIEVEMENT = 355
 const CROP_EVO_SUSHI = 35
-const CROP_EVO_BALLOT = 29
 const CROP_EVO_STAMP_EFFECT = 'Crop Evolution Chance'
 // The game's crop evo formula reads Button slot 5, even though the name list labels slot 7
 // "Crop Evo" (same as Toolbox; checked against the in-game Crop Evolution Multi)
@@ -954,7 +965,7 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = 
   const b = bonusesAt(farming.upgradesLevels ?? [], rankMulti)
   const ranks = farming.farmingRanks ?? []
   const avgRank = ranks.length ? ranks.reduce((sum, rank) => sum + rank, 0) / ranks.length : 0
-  const voteSelected = isBallotBonusSelected(snapshot?.voteBallot, CROP_EVO_BALLOT)
+  const vote = getBallotBonus(snapshot, CROP_BALLOT)
 
   const cropius = getBubbleBonus(snapshot, CROPIUS_MAPPER_BUBBLE)
   const cropChapter = getBubbleBonus(snapshot, CROP_CHAPTER_BUBBLE)
@@ -1006,10 +1017,8 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = 
     source('massIrrigation', 'Mass Irrigation (talent)', 'Talents', Math.max(1, massIrrigation.value), {
       note: `LV ${getAccountTalentLevel(snapshot, MASS_IRRIGATION_TALENT).value}`,
     }),
-    source('landRankPlot', 'Evolution Boost × plot rank', 'Farming land ranks', 1 + b(0) * avgRank / 100, {
-      status: voteSelected ? 'partial' : 'exact',
-      missing: voteSelected ? ['Vote ballot bonus'] : [],
-      note: 'Average plot rank',
+    source('landRankPlot', 'Evolution Boost × plot rank', 'Farming land ranks', 1 + (b(0) * avgRank + vote) / 100, {
+      note: vote > 0 ? `Average plot rank, + ${Math.round(vote)}% ballot bonus` : 'Average plot rank',
     }),
     ...sproutlucks.map(i => source(`sproutluck${i}`, exoticMarketMap[i].label, 'Exotic market', 1 + getExoticBonus(farming, i) / 100)),
     source('button', 'The Button', 'Button (W7)', 1 + getButtonBonus(snapshot, CROP_EVO_BUTTON) / 100),
@@ -1027,6 +1036,7 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = 
     // swap in one plot's own rank (getCropPushOutlook)
     perRankBonus: b(0),
     avgRank,
+    ballotBonus: vote,
   }
 }
 
@@ -1100,8 +1110,9 @@ function walkPlot(seed, startTier, multi, maxTier, cycles, onCycle) {
 
 // One plot's evo multi: the breakdown total uses the average plot rank, so swap in this plot's
 function plotMulti(evo, rank) {
-  const avgTerm = 1 + evo.perRankBonus * evo.avgRank / 100
-  return evo.total / avgTerm * (1 + evo.perRankBonus * rank / 100)
+  const vote = evo.ballotBonus ?? 0
+  const avgTerm = 1 + (evo.perRankBonus * evo.avgRank + vote) / 100
+  return evo.total / avgTerm * (1 + (evo.perRankBonus * rank + vote) / 100)
 }
 
 // Plots grouped by (rank, starting tier), planted with `seed`: plots already growing it keep
@@ -1320,7 +1331,7 @@ export const CROP_DEPOT_BONUSES = {
 export function getCropDepotBonus(snapshot, bonus) {
   const farming = snapshot?.farming
   if (!bonus || !isJadeUnlocked(snapshot?.sneaking, bonus.jade)) return { value: 0, missing: [] }
-  const lab = getAssumedMainframeBonus(snapshot, LAB_BONUSES.depotStudiesPhd)
+  const lab = getLabBonus(snapshot, LAB_BONUSES.depotStudiesPhd)
   const extra = (1 + lab.value / 100)
     * (1 + (getGrimoireBonus(snapshot?.grimoire, DEPOT_GRIMOIRE)
       + getExoticBonus(farming, DEPOT_EXOTIC)

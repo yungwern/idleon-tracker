@@ -33,6 +33,12 @@ export const statueMap = {
   31: 'Coral',
 }
 
+// Bonus per statue LV (Toolbox shared-data statues[i].bonus), math in utils/statueUtils.js
+export const statueBases = [
+  3, 0.1, 0.3, 1, 3, 0.4, 0.3, 1, 0.3, 0.3, 0.1, 0.5, 0.5, 0.2, 0.8, 0.3,
+  0.3, 0.1, 0.5, 1, 0.3, 0.4, 0.2, 1, 0.5, 0.4, 0.3, 0.6, 0.3, 0.2, 0.1, 0.02,
+]
+
 export const statueWorlds = [
   {
     world: 'World 1',

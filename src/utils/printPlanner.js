@@ -16,6 +16,13 @@ import { getClassMainStat } from './characterUtils'
 //   because warriors are kept free for Copper Ore / atoms; a warrior only takes a non-mining print
 //   when nobody else can), then keeping what's already printing (or already in the library).
 //   Wrong-class prints are moved even when they already cover the need (Eli: the tab shows the optimal setup).
+// - Between class and continuity: a character's chambers hold only monster drops or only skilling items when
+//   possible (Eli: one character printing both has to swap between a fighting and a skilling setup to take
+//   them). Never costs class score; it can override keeping a print that's already set up.
+// - Tome: one Oak Log print on a mage (Tome "Largest Oak Log Printer Sample"; prints are mostly done in statue
+//   weeks, the time to push Tome score). The refinery already covers the other 4 printer Tome lines (Copper,
+//   Spore Cap, Goldfish, Fly). Last priority: only a mage's spare chamber or a free mage, never in place of a
+//   refinery input, but ahead of Copper / anything else for that mage. See addTomePrint.
 
 // Storage windows the tab offers (hours); Infinity = print every material the refinery uses
 export const PRINT_PLAN_WINDOWS = [
@@ -56,6 +63,9 @@ export function getPlacementScore(character, skill) {
   if (isWarrior(character)) return 0
   return fit === 1 ? 2 : 1
 }
+
+// Monster drops are printed in a fighting setup, everything else in a skilling one
+const isFightingItem = entry => SKILL_MAIN_STATS[entry.skill] === null
 
 function makeSlot(entry, action, character) {
   const fit = fitOf(character, entry.skill)
@@ -196,7 +206,19 @@ function buildPlan(snapshot, windowHours, skipItem) {
   const weightFor = (entry, index) => {
     const holder = holderOf(entry.item, index)
     const continuity = holder?.printing ? 2 : holder ? 1 : 0
-    return getPlacementScore(characters[index], entry.skill) * 10 + continuity
+    return getPlacementScore(characters[index], entry.skill) * PLACEMENT_WEIGHT + continuity
+  }
+
+  // Characters printing both a monster drop and a skilling item (the Vman's pinned Spore Caps count)
+  const countMixed = (columns, assignment) => {
+    const kinds = new Map()
+    if (pinVman) kinds.set(vmanIndex, new Set([isFightingItem(sporeCap)]))
+    rows.forEach((entry, r) => {
+      const index = columns[assignment[r]]
+      if (!kinds.has(index)) kinds.set(index, new Set())
+      kinds.get(index).add(isFightingItem(entry))
+    })
+    return [...kinds.values()].filter(set => set.size > 1).length
   }
 
   let best = null
@@ -208,7 +230,28 @@ function buildPlan(snapshot, windowHours, skipItem) {
       r < rows.length ? weightFor(rows[r], columns[c]) : 0
     )))
     const assignment = hungarian(weights)
-    const total = rows.reduce((sum, entry, r) => sum + weights[r][assignment[r]], 0)
+    // The Hungarian result is best on class + continuity; swapping chambers (or moving into an empty
+    // one) then splits monster drops from skilling items wherever that keeps the class score
+    const scoreOf = order => rows.reduce((sum, entry, r) => sum + weights[r][order[r]], 0)
+      - MIXED_PENALTY * countMixed(columns, order)
+    let total = scoreOf(assignment)
+    for (let improved = true; improved;) {
+      improved = false
+      for (let r = 0; r < rows.length; r++) {
+        for (let s = 0; s < size; s++) {
+          if (s === r || columns[assignment[r]] === columns[assignment[s]]) continue
+          const swapped = [...assignment]
+          swapped[r] = assignment[s]
+          swapped[s] = assignment[r]
+          const score = scoreOf(swapped)
+          if (score > total) {
+            assignment.splice(0, size, ...swapped)
+            total = score
+            improved = true
+          }
+        }
+      }
+    }
     // Ties: leave more warriors free for Copper
     const warriorsUsed = subset.filter(index => isWarrior(characters[index])).length
     if (!best || total > best.total || (total === best.total && warriorsUsed < best.warriorsUsed)) {
@@ -265,16 +308,70 @@ function buildPlan(snapshot, windowHours, skipItem) {
 // anyone is left free, their Copper prints cover Redox Salts and copper takes no plan slot.
 const ATOM_ITEM = 'Copper'
 
+// Assignment score scales: class (PLACEMENT_WEIGHT per placement point) > not mixing monster drops with
+// skilling items (MIXED_PENALTY per character) > continuity (2 = printing now, 1 = in the library)
+const PLACEMENT_WEIGHT = 1000
+const MIXED_PENALTY = 10
+
+// Tome "Largest Oak Log Printer Sample": one Oak Log print on a mage (choppin specialist line). Picks, in order:
+// a planned mage's spare chamber next to skilling prints, a free mage, then a planned mage's spare chamber next
+// to a monster drop (mixed setups are the last resort). Inside each group: already printing it, then in the library.
+const TOME_ITEM = 'OakTree'
+const TOME_ENTRY = { item: TOME_ITEM, skill: 'chopping' }
+
+function addTomePrint(snapshot, result) {
+  if (result.plan.some(character => character.slots.some(slot => slot.item === TOME_ITEM))) return result
+  const characters = snapshot?.characters ?? []
+  const printers = snapshot?.printer?.characters ?? []
+  const isMage = index => getClassMainStat(characters[index]?.class) === 'WIS'
+  const continuityOf = index => {
+    if ((printers[index]?.printing ?? []).some(sample => sample?.item === TOME_ITEM)) return 2
+    return getLibrary(printers[index]).some(sample => sample.item === TOME_ITEM) ? 1 : 0
+  }
+  const actionOf = index => ['sample', 'swap', 'keep'][continuityOf(index)]
+  const pick = indexes => indexes.reduce((best, index) => (
+    best === null || continuityOf(index) > continuityOf(best) ? index : best
+  ), null)
+
+  const spare = result.plan.filter(character => isMage(character.index)
+    && character.slots.length < result.slotsPerCharacter)
+  const spareSkilling = pick(spare.filter(character => !character.slots.some(isFightingItem)).map(c => c.index))
+  const freeMage = pick(result.free.filter(character => isMage(character.index)).map(c => c.index))
+  const spareMixed = pick(spare.map(character => character.index))
+
+  const tomeSlot = index => ({
+    ...makeSlot(TOME_ENTRY, actionOf(index), characters[index]),
+    tome: true,
+  })
+  const target = spareSkilling ?? freeMage ?? spareMixed
+  if (target === null) return result
+  if (target === freeMage && spareSkilling === null) {
+    const character = characters[target]
+    return {
+      ...result,
+      plan: [...result.plan, { index: target, name: character.name, class: character.class, slots: [tomeSlot(target)] }],
+      free: result.free.filter(entry => entry.index !== target),
+      tome: true,
+    }
+  }
+  return {
+    ...result,
+    plan: result.plan.map(character => (character.index === target
+      ? { ...character, slots: [...character.slots, tomeSlot(target)] }
+      : character)),
+    tome: true,
+  }
+}
+
 export function getPrintPlan(snapshot, windowHours) {
   const withoutCopper = buildPlan(snapshot, windowHours, ATOM_ITEM)
   if (!withoutCopper) return null
   const copperNeeded = withoutCopper.needed.some(entry => entry.item === ATOM_ITEM)
-  if (!copperNeeded) return withoutCopper
+  if (!copperNeeded) return addTomePrint(snapshot, withoutCopper)
   if (withoutCopper.free.length > 0) {
-    return {
-      ...withoutCopper,
-      copperByFree: true,
-    }
+    const withTome = addTomePrint(snapshot, { ...withoutCopper, copperByFree: true })
+    // The Tome mage was the last free character: Redox Salts' copper needs a planned slot again
+    if (withTome.free.length > 0) return withTome
   }
-  return buildPlan(snapshot, windowHours, null)
+  return addTomePrint(snapshot, buildPlan(snapshot, windowHours, null))
 }

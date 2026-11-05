@@ -2318,3 +2318,272 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* ── Opal Planner (Villagers > Opal Planner) ── */
+.hole-opal-goals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hole-opal-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.hole-opal-goal:hover {
+  border-color: rgba(251, 146, 60, 0.35);
+}
+
+.hole-opal-goal--active {
+  background: rgba(251, 146, 60, 0.08);
+  border-color: rgba(251, 146, 60, 0.6);
+}
+
+.hole-opal-goal-label {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hole-opal-goal--active .hole-opal-goal-label {
+  color: #fdba74;
+}
+
+.hole-opal-goal-text {
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.hole-opal-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hole-opal-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 6px;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.hole-opal-pick:hover {
+  color: #e5e7eb;
+}
+
+.hole-opal-pick--active {
+  color: #fdba74;
+  background: rgba(251, 146, 60, 0.08);
+  border-color: rgba(251, 146, 60, 0.6);
+}
+
+.hole-opal-pick-icon {
+  height: 26px;
+  width: auto;
+  opacity: 0.6;
+}
+
+.hole-opal-pick--active .hole-opal-pick-icon,
+.hole-opal-pick:hover .hole-opal-pick-icon {
+  opacity: 1;
+}
+
+.hole-opal-targets {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 70px 96px 1fr;
+  align-items: center;
+  gap: 0 12px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #d1d5db;
+}
+
+.hole-opal-target {
+  display: contents;
+}
+
+.hole-opal-target > * {
+  padding: 5px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hole-opal-target > .hole-opal-input {
+  padding: 4px 8px;
+}
+
+.hole-opal-target-gain {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.hole-opal-target--set .hole-opal-target-gain {
+  color: #fdba74;
+  font-weight: 600;
+}
+
+.hole-opal-clear {
+  margin-top: 8px;
+  padding: 0;
+  color: #9ca3af;
+  font-size: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.hole-opal-clear:hover {
+  color: #e5e7eb;
+}
+
+.hole-opal-input {
+  width: 80px;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  -moz-appearance: textfield;
+  color: #e5e7eb;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+}
+
+.hole-opal-input::-webkit-outer-spin-button,
+.hole-opal-input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.hole-opal-input::placeholder {
+  color: #6b7280;
+}
+
+.hole-opal-input:focus {
+  outline: none;
+  border-color: rgba(251, 146, 60, 0.6);
+}
+
+.hole-opal-table {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 110px 1fr 1fr;
+  gap: 0 12px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: #d1d5db;
+}
+
+.hole-opal-head {
+  padding-bottom: 4px;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.hole-opal-row {
+  display: contents;
+}
+
+.hole-opal-row > * {
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hole-opal-row--focus > * {
+  color: #fdba74;
+  font-weight: 600;
+}
+
+.hole-opal-villager {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hole-opal-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hole-opal-diff {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.hole-opal-diff--up {
+  color: #4ade80;
+}
+
+.hole-opal-diff--down {
+  color: #f87171;
+}
+
+@media (max-width: 600px) {
+  .hole-opal-table {
+    grid-template-columns: auto auto 1fr 1fr;
+    gap: 0 8px;
+    font-size: 12px;
+  }
+}
+
+.hole-opal-villager .hole-villager-icon {
+  height: 24px;
+}
+
+.hole-opal-tab-icon {
+  height: 32px;
+  width: auto;
+  margin: 4px 0;
+}
+
+/* ── Villager header stats ── */
+.hole-villager-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin-top: 8px;
+}
+
+.hole-villager-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hole-villager-stat-label {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hole-villager-stat-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 600;
+}

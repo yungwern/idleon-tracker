@@ -141,7 +141,7 @@ function MultiChip({ multi }) {
         src={multi.img}
         alt={multi.name}
       />
-      <span className="printer-multi-value">{formatMulti(multi.multi)}{multi.partial ? '+' : ''}</span>
+      <span className="printer-multi-value">{formatMulti(multi.multi)}</span>
       <span className="tooltip tooltip--wrap buff-tooltip">
         <span className="buff-tooltip-name">{multi.name}</span>
         <span className="buff-tooltip-source">{multi.source}</span>
@@ -149,7 +149,6 @@ function MultiChip({ multi }) {
           {multi.effect.replace('{', multi.perDay ?? '?').replace('$', multi.maxDays ?? '?')}
         </span>
         <span className="buff-tooltip-line">{getMultiDetail(multi)}</span>
-        {multi.partial && <span className="buff-tooltip-warning">⚠ At least this much: the vote multi isn't calculated yet</span>}
       </span>
     </div>
   )
@@ -160,7 +159,6 @@ function MultiChip({ multi }) {
 function PrintMultis({ multis, hiddenMultis }) {
   if (multis.length === 0) return null
   const total = getPrinterTotalMulti(multis, hiddenMultis)
-  const partial = hiddenMultis.some(multi => multi.partial)
   return (
     <div className="printer-multis">
       <span className="printer-multis-title">Print Multis</span>
@@ -187,7 +185,7 @@ function PrintMultis({ multis, hiddenMultis }) {
       )}
       <div className="printer-multi printer-multi--total tooltip-anchor">
         <span className="printer-multi-label">Total</span>
-        <span className="printer-multi-value">{formatMulti(total)}{partial ? '+' : ''}</span>
+        <span className="printer-multi-value">{formatMulti(total)}</span>
         <span className="tooltip tooltip--wrap buff-tooltip">
           <span className="buff-tooltip-name">Total printer multi</span>
           <span className="buff-tooltip-line">Every multi above multiplied together.</span>

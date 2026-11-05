@@ -1,0 +1,487 @@
+/* ============================================================
+   LAB (World 4)
+   ============================================================ */
+
+.lab-tabs {
+  margin-top: 16px;
+}
+
+.lab-summary {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.lab-summary strong {
+  color: #e5e7eb;
+}
+
+.lab-summary .lab-summary-warn {
+  color: #fbbf24;
+}
+
+.lab-section-title {
+  display: block;
+  margin: 24px 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* ── Console columns (art = images/lab/console-column.png, 60x390 game art saved at 4x) ──
+   Positions are % of the 60x390 art: slots are 42px squares at x 9, y 64 + 46 per slot. */
+.lab-console {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.lab-console-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 66px;
+}
+
+.lab-console-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--class-color, #e5e7eb);
+}
+
+.lab-console-art {
+  position: relative;
+  width: 64px;
+  height: 416px;
+  background-image: url("/images/lab/console-column.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.lab-console-head {
+  position: absolute;
+  left: 18.33%;
+  top: 2.82%;
+  width: 61.67%;
+  height: 9.23%;
+  background-image: var(--class-icon);
+  background-size: 80%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.lab-console-level {
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.lab-console-slot {
+  position: absolute;
+  left: 15%;
+  width: 70%;
+  height: 10.77%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lab-console-slot--0 {
+  top: 16.41%;
+}
+
+.lab-console-slot--1 {
+  top: 28.21%;
+}
+
+.lab-console-slot--2 {
+  top: 40%;
+}
+
+.lab-console-slot--3 {
+  top: 51.79%;
+}
+
+.lab-console-slot--4 {
+  top: 63.59%;
+}
+
+.lab-console-slot--5 {
+  top: 75.38%;
+}
+
+.lab-console-slot--6 {
+  top: 87.18%;
+}
+
+.lab-console-slot--locked {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.lab-console-slot-req {
+  font-size: 9px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.lab-console-slot--changed {
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px #4ade80, 0 0 10px rgba(74, 222, 128, 0.6);
+}
+
+.lab-chip-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ── Tooltips (inside the shared .tooltip from global.css): one line per span ── */
+.lab-tooltip {
+  min-width: 180px;
+  padding: 6px 10px;
+}
+
+.lab-tooltip > span {
+  display: block;
+}
+
+/* Columns on the left half open tooltips rightward, the right half leftward (ConsoleColumn tooltipSide);
+   storage tiles pick their side on hover (ChipStorage data-tip), so nothing runs off the page */
+.lab-console-column--tip-right .lab-tooltip,
+.lab-storage-tile[data-tip="right"] .lab-tooltip {
+  left: 0;
+  right: auto;
+  transform: none;
+}
+
+.lab-console-column--tip-left .lab-tooltip,
+.lab-storage-tile[data-tip="left"] .lab-tooltip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.lab-tooltip-name {
+  margin-bottom: 4px;
+  padding-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f3f4f6;
+  border-bottom: 1px solid #374151;
+}
+
+.lab-tooltip-line {
+  color: #d1d5db;
+}
+
+.lab-tooltip-target {
+  margin-top: 4px;
+  color: #a0c4ff;
+}
+
+.lab-tooltip-target--warn {
+  color: #fbbf24;
+}
+
+.lab-tooltip-note {
+  margin-top: 4px;
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.lab-tooltip-status {
+  margin-top: 4px;
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.lab-tooltip-status--muted {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* ── Chip storage ── */
+.lab-storage-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.lab-storage-tile {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  padding: 5px;
+  box-sizing: border-box;
+  background: #1c2a5c;
+  border: 1px solid #3b5bab;
+  border-radius: 6px;
+}
+
+.lab-storage-tile--missing .lab-chip-img {
+  opacity: 0.25;
+}
+
+.lab-storage-count {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #f3f4f6;
+  text-shadow: 0 0 3px #000000, 0 0 3px #000000;
+}
+
+.lab-storage-tile--missing .lab-storage-count {
+  color: #6b7280;
+}
+
+/* ── Chip Planner ── */
+.lab-plan-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.lab-plan-summary strong {
+  color: #e5e7eb;
+}
+
+.lab-plan-score {
+  color: #4ade80;
+}
+
+.lab-plan-reset {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: inherit;
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.lab-plan-reset:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.lab-console--plan {
+  align-items: flex-start;
+}
+
+.lab-plan-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 66px;
+}
+
+.lab-plan-column .lab-plan-role {
+  width: 100%;
+  padding: 3px 0;
+  font-size: 10px;
+  text-align: center;
+  text-align-last: center;
+  appearance: none;
+}
+
+/* ── Mainframe ── */
+.lab-notice {
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.lab-notice-text {
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.5;
+}
+
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.lab-chip-stat {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.lab-chip-stat strong {
+  color: #e5e7eb;
+}
+
+.lab-map-scroll {
+  overflow-x: auto;
+}
+
+.lab-map {
+  display: block;
+  width: 100%;
+  min-width: 1100px;
+  height: auto;
+}
+
+.lab-map-bg {
+  fill: #13204a;
+  stroke: #3b5bab;
+  stroke-width: 3;
+}
+
+.lab-map-prism {
+  fill: #fde68a;
+  stroke: #f59e0b;
+  stroke-width: 3;
+}
+
+.lab-map-node--off {
+  opacity: 0.25;
+}
+
+.lab-map-range {
+  fill: rgba(160, 196, 255, 0.04);
+  stroke: rgba(160, 196, 255, 0.18);
+  stroke-width: 2;
+}
+
+.lab-map-link {
+  stroke: #fde68a;
+  stroke-width: 3;
+  stroke-opacity: 0.7;
+}
+
+.lab-map-player circle {
+  fill: rgba(255, 255, 255, 0.08);
+  stroke: #6b7280;
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+
+.lab-map-player text {
+  font-size: 16px;
+  fill: #6b7280;
+}
+
+.lab-map-player--uploaded circle {
+  fill: var(--class-color, #a0c4ff);
+  stroke: #ffffff;
+  stroke-dasharray: none;
+}
+
+.lab-map-player--uploaded text {
+  fill: #e5e7eb;
+  font-weight: 700;
+}
+
+.lab-bonus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+}
+
+.lab-bonus-card {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.lab-bonus-card--off .lab-bonus-img,
+.lab-bonus-card--off .lab-jewel-img {
+  opacity: 0.5;
+}
+
+.lab-bonus-card--missing .lab-jewel-img {
+  opacity: 0.3;
+}
+
+.lab-bonus-card--missing .lab-bonus-name {
+  color: #9ca3af;
+}
+
+.lab-bonus-img,
+.lab-jewel-img {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.lab-bonus-text {
+  display: flex;
+  text-align: left;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.lab-bonus-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.lab-bonus-tag {
+  padding: 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ca3af;
+  border: 1px solid rgba(156, 163, 175, 0.4);
+  border-radius: 999px;
+}
+
+.lab-bonus-tag--on {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.lab-bonus-tag--off {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.4);
+  cursor: help;
+}
+
+.lab-bonus-desc {
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.4;
+}
+
+.lab-bonus-note {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.4;
+}

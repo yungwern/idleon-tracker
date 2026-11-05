@@ -3,7 +3,7 @@ import { isRiftBonusUnlocked } from './riftUtils'
 import { getShinyPassiveTotal } from './breedingUtils'
 import { getTesseractBonus } from './tesseractUtils'
 import { getSkillLevel } from './skillUtils'
-import { isMeritocracyBonusSelected } from './voteUtils'
+import { getMeritocracyBonus } from './voteUtils'
 
 // Star sign bonuses, from IdleonToolbox parsers/starSigns.ts getStarSignBonus.
 // Counted for a character: its equipped signs plus every unlocked sign within Infinite Stars.
@@ -45,8 +45,7 @@ export function getStarSignBonus(snapshot, effect, characterIndex) {
     const chipMulti = hasChip && infiniteStars >= 1 ? 2 : 1
     const astrology = Math.min(getTesseractBonus(snapshot?.tesseract, ASTROLOGY_CULTISM), 10)
     const seraph = Math.min(5, Math.pow(1.1 + astrology / 100, Math.ceil((summoningLevel + 1) / 20)))
-    if (isMeritocracyBonusSelected(snapshot?.voteBallot, SERAPH_MERITOCRACY)) missing.push('Meritocracy')
-    total *= chipMulti * seraph
+    total *= chipMulti * (1 + getMeritocracyBonus(snapshot, SERAPH_MERITOCRACY) / 100) * seraph
   }
   return { value: total, missing }
 }

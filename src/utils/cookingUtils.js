@@ -5,7 +5,7 @@ import { getCompanionBonus } from './companionUtils'
 import { getArmorSetBonus } from './armorSetUtils'
 import { getJellyBonus } from './jellyUtils'
 import { getCloudBonus, EQUINOX_CLOUDS } from './equinoxUtils'
-import { getAssumedJewelBonus } from './labUtils'
+import { getLabJewelBonus } from './labUtils'
 
 // ── Ribbons ───────────────────────────────────────────────────────────────────
 // Highest ribbon rank in the game (CookingR('RibbonsMaxLV'))
@@ -78,7 +78,7 @@ export function getMealBonus(snapshot, index) {
   const base = level * (meal?.baseStat ?? 0)
   if (!base) return { value: 0, missing: [] }
   const shiny = getShinyPassiveTotal(snapshot?.breeding, MEAL_SHINY_PASSIVE)
-  const jewel = getAssumedJewelBonus(snapshot, BLACK_DIAMOND_RHINESTONE)
+  const jewel = getLabJewelBonus(snapshot, BLACK_DIAMOND_RHINESTONE)
   const winner = getWinnerBonusByName(snapshot, '<x Meal Bonuses')
   const companion = getCompanionBonus(snapshot?.companions, WICKERLIGHT_SPIRIT)
   const ribbon = getAccountRibbonMulti(snapshot, cooking?.mealRibbons?.[index] ?? 0)

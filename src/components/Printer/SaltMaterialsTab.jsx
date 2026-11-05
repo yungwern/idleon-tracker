@@ -101,6 +101,9 @@ function PlanCard({ character, slotsPerCharacter }) {
           <span className="tooltip tooltip--wrap buff-tooltip">
             <span className="buff-tooltip-name">{getItemName(slot.item)}</span>
             {slot.pinned && <span className="buff-tooltip-source">Vman: always prints Spore Caps (portal runs)</span>}
+            {slot.tome && (
+              <span className="buff-tooltip-source">Tome: Largest Oak Log Printer Sample (not a refinery input, last priority)</span>
+            )}
             <span className="buff-tooltip-line">{ACTION_NOTES[slot.action]}</span>
             <span className="buff-tooltip-line">{getFitNote(slot)}</span>
             {slot.warriorOffCopper && (
@@ -195,7 +198,7 @@ export default function SaltMaterialsTab({ snapshot }) {
         <span className="salt-plan-summary">
           {plan.needed.length === 0
             ? 'Nothing runs out that soon: every character is free.'
-            : `${plan.plan.length} characters cover ${plan.needed.length} materials (${plan.printingNow} print salt materials now). ${plan.free.length} free for other prints.`}
+            : `${plan.plan.length} characters cover ${plan.needed.length} materials${plan.tome ? ' + Oak Log for the Tome' : ''} (${plan.printingNow} print salt materials now). ${plan.free.length} free for other prints.`}
         </span>
       </div>
 

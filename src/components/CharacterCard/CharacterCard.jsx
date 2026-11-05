@@ -3,6 +3,8 @@ import PremiumGearTab from '../PremiumGear/PremiumGear.jsx'
 import Keychains from '../Keychains/Keychains.jsx'
 import AnvilProduction from '../AnvilProduction/AnvilProduction.jsx'
 import { CharacterBoard, ObolStatsPanel } from '../Obols/ObolBoard.jsx'
+import FoodTab from './FoodTab.jsx'
+import PrayersTab from './PrayersTab.jsx'
 import { getCharacterNotices } from '../../utils/characterNotices.js'
 import { getClassMainStat } from '../../utils/characterUtils.js'
 import {
@@ -331,6 +333,8 @@ function CharacterNotices({ charIndex, snapshot, obolCheckMode, onViewObols, onV
   )
 }
 
+const CARD_TABS = ['overview', 'skills', 'obols', 'food', 'prayers']
+
 export default function CharacterCard({ character, charIndex, snapshot, obolCheckMode, initialTab = 'overview', onOpenSection }) {
   const [activeTab, setActiveTab] = useState(initialTab)
   const slug = toClassSlug(character.class)
@@ -408,8 +412,8 @@ export default function CharacterCard({ character, charIndex, snapshot, obolChec
       )}
 
       {/* ── Tab Navigation ── */}
-      <div className="card-tabs" style={{ '--tab-count': 3 }}>
-        {['overview', 'skills', 'obols'].map(tab => (
+      <div className="card-tabs" style={{ '--tab-count': CARD_TABS.length }}>
+        {CARD_TABS.map(tab => (
           <button
             key={tab}
             className={activeTab === tab ? 'active' : ''}
@@ -468,7 +472,21 @@ export default function CharacterCard({ character, charIndex, snapshot, obolChec
           />
         )}
 
+        {activeTab === 'food' && (
+          <FoodTab
+            charIndex={charIndex}
+            snapshot={snapshot}
+          />
+        )}
+
+        {activeTab === 'prayers' && (
+          <PrayersTab
+            charIndex={charIndex}
+            snapshot={snapshot}
+          />
+        )}
+
       </div>
     </div>
   )
-}
+}

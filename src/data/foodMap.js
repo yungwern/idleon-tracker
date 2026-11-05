@@ -415,3 +415,85 @@ export const foodMap = {
     effect: 'Auto-Used when your health goes below 75%. Restores 80 HP. Has a 20 second Cooldown. The favorite snack of all bloblytes!',
   },
 }
+
+// ── Food slots ──
+// 6 food slots per character. Unlocked = 2 to start, W3 Merit Shop item 0 (TaskZZ2[2][0]: its 2nd and 4th
+// purchase each add one), Gem Shop "Food Slot" (GemItemsPurchased[59], max 2). The game keeps locked
+// slots as 'Blank' too, so the unlock count comes from these sources, not from the save's slot list.
+export const FOOD_SLOT_COUNT = 6
+export const FOOD_SLOT_MERIT = { world: 2, index: 0 }
+export const FOOD_SLOT_GEM_SHOP = 59
+export const foodSlotUnlocks = [
+  { source: 'start', label: 'Unlocked from the start' },
+  { source: 'start', label: 'Unlocked from the start' },
+  { source: 'merit', meritLevel: 2, label: 'W3 Merit Shop: 2nd purchase of "+1 Build Slot / +1 Food Slot"' },
+  { source: 'merit', meritLevel: 4, label: 'W3 Merit Shop: 4th purchase of "+1 Build Slot / +1 Food Slot"' },
+  { source: 'gem', purchases: 1, label: 'Gem Shop: Food Slot (1st purchase)' },
+  { source: 'gem', purchases: 2, label: 'Gem Shop: Food Slot (2nd purchase)' },
+]
+
+// ── Food carry capacity ──
+// Inputs of Toolbox getItemCapacity('cFood') / getAllCap (parsers/misc.ts). One slot holds at most this many.
+export const foodCarryCap = {
+  hardCap: 2.05e9,
+  gemShopCarry: 58, // GemItemsPurchased[58]: +25% carry capacity each
+  vaultUpgrade: 11, // Upgrade Vault "Carry Capacity": +{ per slot
+  bundles: ['bon_w', 'bon_x', 'bon_y'], // +1000 base each
+  allCarryStampEffect: 'Carry Capacity for ALL item types',
+  starSignEffect: 'Carry_Cap',
+  guildBonus: { index: 2, func: 'decay', x1: 70, x2: 50 }, // Rucksack
+  starTalent: 634, // Telekinetic Storage
+  shrine: 3, // Pantheon (snapshot.shrines[3], Construction building 21)
+  shrinePassiveCard: '+{% Shrine Effects (Passive)', // Chaotic Chizoar
+  companion: 18, // Gigafrog
+  ramCompanion: 2, // Dedotated Ram with Pet Mart+ level 1+: +30%
+  ramBonus: 30,
+  bribe: { index: 23, value: 5 }, // Bottomless Bags
+  prayerCurseFloor: 0.4, // Zerg Rushogen's curse can't take more than 60% off
+}
+
+// ── Golden food bonus ──
+// Golden food bonus = Amount × golden food multi × stack factor (Toolbox getGoldenFoodBonus, parsers/misc.ts).
+// Golden foods by item id: amount = items.json Amount, effect = items.json Effect (the game adds every golden
+// food sharing an Effect). Only the ones the app calculates are listed.
+export const goldenFoodEffects = {
+  FoodG8: { amount: 20, effect: 'ShrineEffect' }, // Golden Cheese: +{% shrine EXP from claiming AFK gains
+}
+
+// Gold Food Beanstalk (W6 Jade Emporium upgrade 1): the foods in save order (Ninja[104][i] = rank, Toolbox
+// ninjaExtraInfo[29]). A food on the stalk counts as a stack of 1000 × 10^rank for every character, on top of
+// the equipped ones.
+export const GOLD_FOOD_BEANSTALK_JADE = 1
+export const beanstalkFoods = [
+  'PeanutG', 'ButterBar', 'FoodG1', 'FoodG2', 'FoodG3', 'FoodG4', 'FoodG5', 'FoodG6', 'FoodG7', 'FoodG8',
+  'FoodG9', 'FoodG10', 'FoodG11', 'FoodG12', 'FoodG13', 'FoodG14', 'FoodG15',
+]
+
+// Every source of the golden food multi (Toolbox getGoldenFoodMulti). Equipment / obol "% Gold Food Effect"
+// lines aren't read (0 on Eli's save).
+export const goldenFoodMultiSources = {
+  familyClass: 'Shaman', // FamBonusQTYs[66]: a factor, at least 1
+  talent: 99, // Haungry for Gold
+  stampEffect: 'Effect from Golden Food',
+  achievement: { index: 37, value: 5 },
+  achievements: [{ index: 380, value: 2 }, { index: 383, value: 3 }],
+  bubble: '_18', // Shimmeron (× Warriors Rule for STR characters)
+  sigil: { index: 14, tiers: [10, 25, 40, 60, 80] }, // EMOJI_VEGGIE: unlock, boost, jade, ethereal, eclectic
+  charm: 'Gumm Stick',
+  mealStat: 'zGoldFood',
+  starSignEffect: 'Golden_Food',
+  bribe: { index: 36, value: 10 }, // Gold from Lead
+  ballot: 26,
+  apocalypseWow: 209, // talent, best on the account, × wows of the last Death Bringer
+  wowKills: 1e9,
+  // Fighting maps that count for wows but aren't Death Note maps (map index → its first portal kills)
+  wowExtraMaps: [{ mapIndex: 9, portalKills: 0 }, { mapIndex: 30, portalKills: 0 }, { mapIndex: 166, portalKills: 100 }],
+  companions: [48, 155], // Purp Mushroom, Vanillie
+  verminous: 174, // +10000% additive and +50% multiplier per bonus point
+  legendTalent: 25, // Midusian Appetite
+  cards: ['cropfallEvent1', 'anni5Event1'], // each capped at 50
+  cardCap: 50,
+  vault: 86,
+  jelly: [10, 51],
+  armorSet: 'SECRET_SET',
+}

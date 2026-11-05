@@ -33,6 +33,7 @@ import {
   OG_MAX,
   PER_PLOT_RANKS,
   getRankMulti,
+  withCropBallotBonus,
   getSeedRankMaxLevel,
   getLandRankTotals,
   optimizeLandRanks,
@@ -262,7 +263,9 @@ function CropTargetPicker({ cropId, onChange, farming, evoTotal }) {
   )
 }
 
-function LandRanksTab({ snapshot, farming, tomePoints }) {
+function LandRanksTab({ snapshot, tomePoints }) {
+  // The save's farming plus this week's crop ballot bonus, which every land rank plot term adds
+  const farming = useMemo(() => withCropBallotBonus(snapshot), [snapshot])
   const upgradesLevels = useMemo(() => farming.upgradesLevels ?? [], [farming.upgradesLevels])
   const totalRankPoints = farming.totalRankPoints ?? 0
   const usedRankPoints = farming.usedRankPoints ?? 0
@@ -1517,7 +1520,7 @@ export default function Farming({ snapshot, tomePoints }) {
         ))}
       </div>
 
-      {activeTab === 'landranks' && <LandRanksTab snapshot={snapshot} farming={farming} tomePoints={tomePoints} />}
+      {activeTab === 'landranks' && <LandRanksTab snapshot={snapshot} tomePoints={tomePoints} />}
       {activeTab === 'market' && <MarketTab snapshot={snapshot} farming={farming} />}
       {activeTab === 'exotic' && <ExoticMarketTab snapshot={snapshot} farming={farming} />}
       {activeTab === 'cropEvo' && <CropEvolutionTab

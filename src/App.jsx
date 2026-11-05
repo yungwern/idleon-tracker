@@ -6,6 +6,7 @@ import { getMinibossNoticeCount } from './utils/minibossNotices.js'
 import { getObolNoticeCount } from './utils/obolNotices.js'
 import { getIslandNoticeCount } from './utils/islandNotices.js'
 import { getHoleNoticeCount } from './utils/holeNotices.js'
+import { getMainframeNotices } from './utils/mainframeUtils.js'
 import { getClassRoles } from './utils/characterUtils.js'
 import { sections, sectionIcons } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
@@ -29,6 +30,7 @@ import Printer from './components/Printer/Printer.jsx'
 import Refinery from './components/Refinery/Refinery.jsx'
 import HatRack from './components/HatRack/HatRack.jsx'
 import CapeVine from './components/CapeVine/CapeVine.jsx'
+import Lab from './components/Lab/Lab.jsx'
 import Bubba from './components/Bubba/Bubba.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
@@ -88,6 +90,7 @@ export default function App() {
     Obols: getObolNoticeCount(snapshot, obolCheckMode),
     Islands: getIslandNoticeCount(snapshot),
     'The Hole': getHoleNoticeCount(snapshot),
+    Lab: getMainframeNotices(snapshot).count,
   }), [snapshot, obolCheckMode])
 
   function handleClearSave() {
@@ -170,6 +173,7 @@ export default function App() {
     if (current === 'Bubba') return <Bubba />
     if (current === 'Cooking') return <Cooking snapshot={snapshot} />
     if (current === 'Breeding') return <Breeding snapshot={snapshot} />
+    if (current === 'Lab') return <Lab snapshot={snapshot} />
     if (current === 'Farming') return <Farming snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'The Hole') return <Hole snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'Summoning') return <Summoning snapshot={snapshot} />

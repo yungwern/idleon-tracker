@@ -5,13 +5,14 @@ import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { getSushiBonus } from './sushiUtils'
 import { getUpgradeVaultBonus } from './upgradeVaultUtils'
 import { isRiftBonusUnlocked } from './riftUtils'
-import { isMeritocracyBonusSelected } from './voteUtils'
+import { getMeritocracyBonus } from './voteUtils'
 import { getTesseractBonus } from './tesseractUtils'
 import { getArcadeBonus } from './arcadeUtils'
 import { getCompanionBonus } from './companionUtils'
 import { getJellyBonus } from './jellyUtils'
-import { getAssumedLabBonus, LAB_BONUSES } from './labUtils'
+import { getLabBonus, LAB_BONUSES } from './labUtils'
 import { getPaletteBonus } from './gamingUtils'
+import { getArtifactBonus } from './sailingUtils'
 
 // Alchemy (W2) bonus math, ported from IdleonToolbox parsers/world-2/alchemy.ts.
 // Each function returns { value, missing } where `missing` lists the parts of the
@@ -68,15 +69,41 @@ function rawBubbleValue(snapshot, bubbleIndex, prisma) {
   return isPrismaBubble(snapshot, bubbleIndex) ? value * prisma : value
 }
 
-// A bubble's bonus as the game applies it account-wide (no class bubble multiplier)
-export function getBubbleBonus(snapshot, bubbleIndex) {
+// Class bubbles (Warriors Rule / Archer Or Bust / Mage Is Best, index 1 of their cauldron) and the main stat
+// they serve
+const CLASS_BUBBLE_STAT = { _: 'STR', a: 'AGI', b: 'WIS' }
+
+// A bubble's bonus as the game applies it account-wide. options.mainStat = the character's main stat
+// (characterUtils getClassMainStat) for bubbles the class bubble scales (Toolbox isClassMultiplied: cauldron
+// index 2-29 except 16, no passive / Construction ones; the caller knows which): × that cauldron's class
+// bubble when the stat matches.
+export function getBubbleBonus(snapshot, bubbleIndex, options = {}) {
   const prisma = getPrismaMulti(snapshot)
   let value = rawBubbleValue(snapshot, bubbleIndex, prisma)
   const prefix = bubbleIndex[0]
   if (CAULDRON_BOOSTED[prefix]?.has(Number(bubbleIndex.slice(1)))) {
     value *= rawBubbleValue(snapshot, `${prefix}16`, prisma)
   }
+  if (options.mainStat && CLASS_BUBBLE_STAT[prefix] === options.mainStat) {
+    value *= rawBubbleValue(snapshot, `${prefix}1`, prisma)
+  }
   return value
+}
+
+// ── Sigils ────────────────────────────────────────────────────────────────────
+
+const CHILLED_YARN_MERITOCRACY = 21 // Meritocracy: }x all sigils
+
+// Sigil `index` at its tier (CauldronP2W[4], snapshot.refinery.sigilTiers: -1 not found, 0 unlocked ... 4 eclectic)
+// × Chilled Yarn artifact × Meritocracy sigil bonus (Toolbox getSigilBonus + applyArtifactBonusOnSigil).
+// tiers = the sigil's bonus per tier (Toolbox sigils: unlock, boost, jade, ethereal, eclectic).
+export function getSigilBonus(snapshot, index, tiers) {
+  const tier = snapshot?.refinery?.sigilTiers?.[index] ?? -1
+  const base = tier >= 0 ? tiers[tier] ?? 0 : 0
+  if (!base) return 0
+  return base
+    * (1 + getArtifactBonus(snapshot?.sailing, 'Chilled Yarn'))
+    * (1 + getMeritocracyBonus(snapshot, CHILLED_YARN_MERITOCRACY) / 100)
 }
 
 // ── Vials ─────────────────────────────────────────────────────────────────────
@@ -88,16 +115,16 @@ const VIAL_MERITOCRACY = 20
 // Multiplier on every vial (Toolbox getVialMultiplier). My 1st Chemistry Set (lab) doubles
 // vials while it's connected.
 export function getVialMultiplier(snapshot) {
-  const chemistrySet = getAssumedLabBonus(LAB_BONUSES.myFirstChemistrySet)
+  const chemistrySet = getLabBonus(snapshot, LAB_BONUSES.myFirstChemistrySet)
   const vialMastery = isRiftBonusUnlocked(snapshot?.rift, 'vialMastery')
     ? 2 * Object.values(snapshot?.alchemy?.vialLevels ?? {}).filter(level => level >= MAX_VIAL_LEVEL).length
     : 0
   const vault = getUpgradeVaultBonus(snapshot?.upgradeVault, VIAL_VAULT_UPGRADE)
-  const missing = [...chemistrySet.missing]
-  if (isMeritocracyBonusSelected(snapshot?.voteBallot, VIAL_MERITOCRACY)) missing.push('Meritocracy')
   return {
-    value: chemistrySet.value * (1 + (vialMastery + vault) / 100),
-    missing,
+    value: chemistrySet.value
+      * (1 + (vialMastery + vault) / 100)
+      * (1 + getMeritocracyBonus(snapshot, VIAL_MERITOCRACY) / 100),
+    missing: [...chemistrySet.missing],
   }
 }
 

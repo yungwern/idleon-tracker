@@ -129,3 +129,20 @@ export const shrineBuffMap = {
     effect: 'Shrines gain EXP from AFK gains no matter what world you\'re in',
   },
 }
+
+// Shrine EXP per hour of AFK gains (Toolbox getShrineExpBonus, game "ShrineExpBonus"). Each character adds its
+// own rate to every shrine it levels: built shrines on its map, in its world with Shrine World Tour, or anywhere
+// with legend talent 38. Level n needs floor(20 (n - 1) + 6 n × 1.63^(n - 1)) EXP.
+export const shrineExpSources = {
+  crystalShrine: 2, // snapshot.shrines index: +% shrine EXP where it applies
+  superbit: 8, // Shrine Speed: 1.5x
+  moaiHeadForms: [0, 0, 100, 200, 300, 400, 500, 750], // Moai Head artifact: +% by form (Sailing[3][0])
+  skillMasteryBonus: 1, // Construction skill mastery (rift): +15%
+  skillMasteryValue: 15,
+  postOfficeBox: { index: 17, unlockLevel: 24.9, func: 'decay', x1: 75, x2: 200 }, // Construction Container, 2nd bonus
+  starTalent: 639, // Shrine Architect
+  vialStat: 'ShrineSpd',
+  ballot: 19,
+  worldOrderLegendTalent: 38, // shrines level from any world
+  buildingPerLevel: 10, // +10% per Construction building level
+}

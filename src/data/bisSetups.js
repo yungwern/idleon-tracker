@@ -355,6 +355,7 @@ export const BIS_SETUPS = [
       'FoodG12',
       'FoodG9',
       'FoodChoppin1',
+      'FoodEvent2',
     ],
     chips: [
       'ConsoleChip21',

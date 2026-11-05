@@ -7,7 +7,18 @@ export { itemMap } from './itemMap'
 export { equipmentMap, GEAR_SETS, GEAR_SET_PIECES } from './equipmentMap'
 export { GEAR_BONUSES } from './gearBonuses'
 export { premiumGearNames, premiumGearMap } from './premiumGear'
-export { foodMap } from './foodMap'
+export {
+  foodMap,
+  FOOD_SLOT_COUNT,
+  FOOD_SLOT_MERIT,
+  FOOD_SLOT_GEM_SHOP,
+  foodSlotUnlocks,
+  foodCarryCap,
+  goldenFoodEffects,
+  GOLD_FOOD_BEANSTALK_JADE,
+  beanstalkFoods,
+  goldenFoodMultiSources,
+} from './foodMap'
 export { fishingWeightMap, fishingLineMap, fishMap } from './fishingMap'
 export { cardMap, cardSetMap } from './cardMap'
 export { BIS_SETUPS, BIS_CATEGORIES } from './bisSetups'
@@ -40,7 +51,7 @@ export {
 } from './miniBosses'
 
 // ── World 1 ───────────────────────────────────────────────────────────────────
-export { statueMap, statueWorlds, statueCandyMobs } from './statueMap'
+export { statueMap, statueBases, statueWorlds, statueCandyMobs } from './statueMap'
 export { anvilMap, anvilMapById } from './anvilMap'
 
 // ── World 2 ───────────────────────────────────────────────────────────────────
@@ -53,7 +64,7 @@ export { islandMap, ISLAND_COST_STEPS, ISLAND_PATH, ISLAND_PATH_NOTE, BOTTLES_BA
 
 // ── World 3 ───────────────────────────────────────────────────────────────────
 export { cogMap, BOARD_ROWS, BOARD_COLS, COG_BORDER_CLASS, COG_PLACEMENTS, saltMap } from './constructionMap'
-export { shrineMap, shrineBuffMap } from './shrineMap'
+export { shrineMap, shrineBuffMap, shrineExpSources } from './shrineMap'
 export { worshipMap, soulsMap, towerMap } from './worshipMap'
 export { prayerMap } from './prayerMap'
 export { refinerySalts, REFINERY_BASE_CYCLE_SECONDS, REFINERY_SPEED_SOURCES, REFINERY_POWER_CAPS, REFINERY_SALT_COMPANION, SKILL_MAIN_STATS, SKILL_SPECIALISTS, VMAN_CLASS, VMAN_ITEM } from './refineryMap'
@@ -65,6 +76,8 @@ export { deathNoteMobs, deathNoteMiniBosses, DEATH_NOTE_RANKS, MINI_BOSS_DEATH_N
 
 // ── World 4 ───────────────────────────────────────────────────────────────────
 export { labChipMap } from './labChipMap'
+export { labBonusMap, labJewelMap } from './labMap'
+export { CHIP_SLOT_LEVELS, CONSOLE_ROLES, ACTIVE_REPLACED_ROLE, PRIORITY_CHIP_STATS, DOUBLER_ROLE_ORDER, DOUBLER_FREE_SLOTS, STACKED_CHIPS, CHIP_DISPLAY_GROUPS, CHIP_DISPLAY_LAST, CHIP_VALUES, CHIP_FALLBACK_SHARE, CHIP_STACK_DECAY, CHIP_KEEP_BONUS } from './labConsoleMap'
 export { cookingMap, cookingBonusTypes } from './cookingMap'
 export { mealMap } from './mealMap'
 export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, CRUCIBLE_WAVES, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
@@ -92,3 +105,4 @@ export { researchGridSquares, researchObservationBonuses, stickerBaseBonuses, me
 export { buttonBonusMap } from './buttonMap'
 export { mineheadOpponentBonuses } from './mineheadMap'
 export { spelunkingUpgradeMap, spelunkingUpgradeGroups, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, spelunkingTunnels, amberTiers, spelunkingLoreTomeBonuses, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES, spelunkingElixirMap, spelunkingElixirSetups } from './spelunkingMap'
+export { ballotBonuses, meritocracyBonuses } from './voteBallotMap'

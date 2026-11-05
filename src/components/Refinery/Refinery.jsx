@@ -88,7 +88,6 @@ function CycleTimes({ cycleTimes }) {
         ))}
         <span className="buff-tooltip-line">× {cycleTimes.labMulti} Gilded Cyclical Tubing (lab) · × {(1 + cycleTimes.legend / 100).toFixed(2)} More Soot More Salt</span>
         <span className="buff-tooltip-line">Polymerize also +{Math.round(cycleTimes.polymerBonus)}% (meal + research)</span>
-        {cycleTimes.partial && <span className="buff-tooltip-warning">⚠ The vote bonus or Chilled Yarn meritocracy is active this week and isn't counted</span>}
       </span>
     </div>
   )

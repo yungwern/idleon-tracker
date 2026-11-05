@@ -4,11 +4,14 @@ import { getVillagers, getUnlockedCaverns, getOpalSources, formatHoleNumber, CAV
 import InfoPanel from '../InfoPanel/InfoPanel'
 import VillagerTab from './VillagerTab'
 import CavernTab from './CavernTab'
+import OpalPlanner from './OpalPlanner'
 import { getHoleNotices } from '../../utils/holeNotices'
 
 import './Hole.css'
 
 // The Hole (World 5 caverns): top tabs = Villagers + one per biome; inside, one sub tab per villager / cavern
+
+const OPAL_TAB = 'opals' // Villagers sub tab after the five villagers
 
 const TOP_TABS = [
   { id: 'villagers', label: 'Villagers' },
@@ -49,6 +52,7 @@ export default function Hole({ snapshot, tomePoints }) {
         intro="Your World 5 caverns: five villagers run the Hole, and 18 caverns across four biomes give opals and bonuses."
         items={[
           'Villagers: level, EXP and opals invested for each villager, plus what they unlock. Villager EXP comes before everything else.',
+          'Opal Planner: the best way to split your opals, either for the most EXP on one villager (Bolaia late game) or to reach chosen villager LVs soonest.',
           'Each biome tab has one tab per cavern: what it does, how it gives opals, and your progress there.',
         ]}
       />
@@ -133,12 +137,33 @@ export default function Hole({ snapshot, tomePoints }) {
                 {villager.tabLabel}
               </button>
             ))}
+            <button
+              type="button"
+              className={`page-tab-btn hole-icon-tab${activeVillager === OPAL_TAB ? ' page-tab-btn--active' : ''}`}
+              onClick={() => setActiveVillager(OPAL_TAB)}
+            >
+              <img
+                className="hole-opal-tab-icon"
+                src="images/hole/Opal.png"
+                alt=""
+              />
+              Opal Planner
+            </button>
           </div>
-          <VillagerTab
-            snapshot={snapshot}
-            tomePoints={tomePoints}
-            villager={villagers.find(villager => villager.tab === activeVillager)}
-          />
+          {activeVillager === OPAL_TAB
+            ? (
+              <OpalPlanner
+                snapshot={snapshot}
+                tomePoints={tomePoints}
+              />
+            )
+            : (
+              <VillagerTab
+                snapshot={snapshot}
+                tomePoints={tomePoints}
+                villager={villagers.find(villager => villager.tab === activeVillager)}
+              />
+            )}
         </>
       ) : (
         <>

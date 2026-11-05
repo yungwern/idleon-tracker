@@ -6,8 +6,10 @@ import { isCompanionActive } from './companionUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { SKILLS, isSkillMasteryBonusUnlocked } from './skillUtils'
 import { getCharmBonus } from './sneakingUtils'
-import { isBallotBonusSelected } from './voteUtils'
+import { getBallotBonus } from './voteUtils'
 import { isMajorGodActive, GODS } from './divinityUtils'
+import { isLabBonusOn, LAB_BONUSES } from './labUtils'
+import { isInLabTube } from './mainframeUtils'
 
 // Gem shop printer unlocks. null = the save has no gem shop data (older import)
 export function getPrinterUnlocks(snapshot) {
@@ -77,7 +79,6 @@ export function getPrinterMultis(snapshot) {
 const SKILL_MASTERY_SKILLS = Object.keys(SKILLS).filter(skill => SKILLS[skill] >= 1 && SKILLS[skill] <= 18)
 
 // Printer multis that apply but aren't on the in-game screen. Same shape as getPrinterMultis;
-// `partial` = a lower bound (the vote multi isn't ported yet).
 export function getPrinterHiddenMultis(snapshot) {
   const printer = snapshot?.printer
   if (printer?.daysSinceSample === undefined) return []
@@ -88,7 +89,7 @@ export function getPrinterHiddenMultis(snapshot) {
     .filter(skill => isSkillMasteryBonusUnlocked(snapshot, skill, src.skillMasteryRank)).length
   const skillMastery = src.skillMasteryBase + masteredSkills
   const lolly = getCharmBonus(snapshot.sneaking, src.lollyFlowerCharm)
-  const voteWins = isBallotBonusSelected(snapshot.voteBallot, src.voteBonus)
+  const vote = getBallotBonus(snapshot, src.voteBonus)
 
   const values = {
     goldRelic: {
@@ -102,9 +103,8 @@ export function getPrinterHiddenMultis(snapshot) {
       detail: `Skill Mastery +${skillMastery}% (${masteredSkills} / ${SKILL_MASTERY_SKILLS.length} skills) · Lolly Flower +${lolly}%`,
     },
     vote: {
-      multi: voteWins ? 1 + src.voteBasePercent / 100 : 1,
-      detail: voteWins ? 'Winning this week' : 'Not winning this week',
-      partial: voteWins,
+      multi: 1 + vote / 100,
+      detail: vote > 0 ? `Winning this week: +${Math.round(vote)}%` : 'Not winning this week',
     },
   }
   return printerHiddenMultiMap.map(entry => ({
@@ -120,11 +120,10 @@ export function getPrinterTotalMulti(multis, hiddenMultis) {
     .reduce((product, multi) => product * multi.multi, 1)
 }
 
-// Per-character printer multis: Wired In (lab bonus, assumed connected) for characters AFK in the
-// lab or with Arctis's major bonus, and Harriep's major bonus. Returns { wiredIn, harriep, multi }.
+// Per-character printer multis: Wired In (lab bonus, while connected) for characters in a lab tube (AFK in
+// the lab or with Arctis's major bonus), and Harriep's major bonus. Returns { wiredIn, harriep, multi }.
 export function getCharacterPrintMulti(snapshot, characterIndex) {
-  const character = snapshot?.characters?.[characterIndex]
-  const wiredIn = character?.afkTarget === 'Laboratory' || isMajorGodActive(snapshot, characterIndex, GODS.Arctis)
+  const wiredIn = isLabBonusOn(snapshot, LAB_BONUSES.wiredIn) && isInLabTube(snapshot, characterIndex)
   const harriep = isMajorGodActive(snapshot, characterIndex, GODS.Harriep)
   return {
     wiredIn,

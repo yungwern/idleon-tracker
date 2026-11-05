@@ -13,9 +13,9 @@ import { getAccountFamilyBonuses } from './talentUtils'
 import { getResearchGridBonus } from './researchUtils'
 import { getMealBonusByStat } from './cookingUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
-import { getAssumedLabBonus, LAB_BONUSES } from './labUtils'
+import { getLabBonus, LAB_BONUSES } from './labUtils'
 import { getArtifactBonus } from './sailingUtils'
-import { isBallotBonusSelected, isMeritocracyBonusSelected } from './voteUtils'
+import { getBallotBonus, getMeritocracyBonus } from './voteUtils'
 import { getPrintedPerHour } from './printerUtils'
 import { getCompanionBonus } from './companionUtils'
 
@@ -23,13 +23,15 @@ import { getCompanionBonus } from './companionUtils'
 // computeRefineryCycleTimes, calcCost, getSaltsBalance).
 
 const SRC = REFINERY_SPEED_SOURCES
-const CHILLED_YARN_MERITOCRACY = 21
+const CHILLED_YARN_MERITOCRACY = 21 // Meritocracy: }x all sigils
 
-// Pipe Gauge sigil: tier bonus × Chilled Yarn artifact (sigils are boosted by it)
+// Pipe Gauge sigil: tier bonus × Chilled Yarn artifact × Meritocracy sigil bonus (Toolbox applyArtifactBonusOnSigil)
 function getPipeGaugeBonus(snapshot) {
   const tier = snapshot?.refinery?.sigilTiers?.[SRC.pipeGaugeSigil] ?? -1
   const base = tier >= 0 ? SRC.pipeGaugeTiers[tier] ?? 0 : 0
-  return base * (1 + getArtifactBonus(snapshot?.sailing, 'Chilled Yarn'))
+  return base
+    * (1 + getArtifactBonus(snapshot?.sailing, 'Chilled Yarn'))
+    * (1 + getMeritocracyBonus(snapshot, CHILLED_YARN_MERITOCRACY) / 100)
 }
 
 // Construction mastery tier 1: floor(total building levels / 10) once the rift reaches 40
@@ -44,21 +46,19 @@ function getConstructMasteryBonus(snapshot) {
 export function getRefineryCycleTimes(snapshot) {
   const lickLevel = Math.min(snapshot?.refinery?.saltLickLevels?.[SRC.saltLickUpgrade] ?? 0, SRC.saltLickMaxLevel)
   const vial = getVialBonusByStat(snapshot, 'RefSpd')
-  const lab = getAssumedLabBonus(LAB_BONUSES.gildedCyclicalTubing)
+  const lab = getLabBonus(snapshot, LAB_BONUSES.gildedCyclicalTubing)
   const meal = getMealBonusByStat(snapshot, 'PolyRefSpd')
-  const voteWins = isBallotBonusSelected(snapshot?.voteBallot, SRC.voteBonus)
-  const yarnMeritocracy = isMeritocracyBonusSelected(snapshot?.voteBallot, CHILLED_YARN_MERITOCRACY)
 
   const speedSources = [
     { name: 'Red Malt (vial)', value: vial.value },
     { name: 'Salt Lick', value: SRC.saltLickPerLevel * lickLevel },
     { name: 'Family (Divine Knight)', value: getAccountFamilyBonuses(snapshot)['Divine Knight'] ?? 0 },
-    { name: 'Pipe Gauge (sigil)', value: getPipeGaugeBonus(snapshot), partial: yarnMeritocracy },
+    { name: 'Pipe Gauge (sigil)', value: getPipeGaugeBonus(snapshot) },
     { name: 'Stamps', value: getStampBonusByEffect(snapshot, '+{% Faster refinery cycles').value },
     { name: 'Shinies', value: getShinyPassiveTotal(snapshot?.breeding, '+{%_Faster_Refinery_Speed') },
     { name: 'Construction mastery', value: getConstructMasteryBonus(snapshot) },
     { name: 'Arcade', value: getArcadeBonus(snapshot, 'Refinery Speed') },
-    { name: 'Vote', value: 0, partial: voteWins },
+    { name: 'Bonus Ballot', value: getBallotBonus(snapshot, SRC.voteBonus) },
     { name: 'Polymer Refinery (research)', value: getResearchGridBonus(snapshot, SRC.researchGridSpeed) },
   ]
   const speed = speedSources.reduce((sum, source) => sum + (Number(source.value) || 0), 0)
@@ -72,7 +72,6 @@ export function getRefineryCycleTimes(snapshot) {
     labMulti: lab.value,
     legend,
     polymerBonus,
-    partial: speedSources.some(source => source.partial),
     combustion: REFINERY_BASE_CYCLE_SECONDS.combustion / factor,
     synthesis: REFINERY_BASE_CYCLE_SECONDS.synthesis / factor,
     polymerize: REFINERY_BASE_CYCLE_SECONDS.polymerize / (factor * (1 + polymerBonus / 100)),

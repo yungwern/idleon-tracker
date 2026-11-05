@@ -70,6 +70,8 @@ const extractors = {
   talentMaxLevels: (json, i) => parseRaw(json[`SM_${i}`]) ?? {},
   // AFKtarget_i = map / activity the character is AFK on ('Laboratory' = in the lab)
   afkTarget: (json, i) => json[`AFKtarget_${i}`] ?? null,
+  // CardEquip_i = equipped card rawNames in slot order ('B' = empty). Slot 0 = top left, 7 = bottom right
+  equippedCards: (json, i) => (parseRaw(json[`CardEquip_${i}`]) ?? []).map(card => (card && card !== 'B' ? card : null)),
   // CauldronBubbles[i] = the character's equipped active bubbles ('c21' style ids, 0 = empty)
   equippedBubbles: (json, i) => ((parseRaw(json['CauldronBubbles']) ?? [])[i] ?? []).filter(id => typeof id === 'string'),
   // PTimeAway_i = when this character was last left; the played character's keeps moving
@@ -77,6 +79,19 @@ const extractors = {
   // PVtStarSign_i = '69,64,6,' — equipped star sign indexes (see data/starSignMap.js)
   starSigns: (json, i) => String(json[`PVtStarSign_${i}`] ?? '').split(',').filter(Boolean).map(Number),
   equipOrder: (json, i) => json[`EquipOrder_${i}`]?.[0] ?? {},
+  // Food slots = EquipOrder_i[2] / EquipQTY_i[2] (16 save slots, only the first 6 exist in game; 'Blank' = empty)
+  food: (json, i) => {
+    const order = parseRaw(json[`EquipOrder_${i}`])?.[2] ?? {}
+    const qty = parseRaw(json[`EquipQTY_${i}`])?.[2] ?? {}
+    return Array.from({ length: 6 }, (_, slot) => ({
+      item: order[slot] ?? 'Blank',
+      qty: Number(qty[slot]) || 0,
+    }))
+  },
+  // CurrentMap_i = map the character stands on (shrines only work on their own map without Moai Head)
+  currentMap: (json, i) => Number(json[`CurrentMap_${i}`]) || 0,
+  // POu_i = Post Office box levels (box points spent), in Toolbox postOffice order (17 = Construction Container)
+  postOfficeBoxes: (json, i) => (parseRaw(json[`POu_${i}`]) ?? []).map(level => Number(level) || 0),
   // Keychains, one entry per copy (each copy rolls its own stats, so the merged inventory map can't be used).
   // Equipped = EquipOrder_i[0] (slots 9 and 11), rolls in EMm0_i[slot]; spares = InventoryOrder_i, rolls in IMm_i[idx].
   keychains: (json, i) => {
@@ -273,10 +288,12 @@ function parseArmorSmithySets(optLacc) {
 }
 
 // ── Statues ─────────────────────────────────────────────────────────────────
+// grade = StuG[id]: 0 normal, 1 gold, 2 onyx, 3 zenith
 function parseStatues(json) {
   const raw = json['StatueLevels_0']
   const arr = parseRaw(raw) ?? []
-  return arr.map(([level, xp], id) => ({ id, level, xp }))
+  const grades = parseRaw(json['StuG']) ?? []
+  return arr.map(([level, xp], id) => ({ id, level, xp, grade: Number(grades[id]) || 0 }))
 }
 
 // ── Anvil ─────────────────────────────────────────────────────────────────
@@ -1011,11 +1028,13 @@ function parseStamps(json) {
 // Ninja[107][i] = 1 once Pristine Charm i is unlocked (see data/sneakingMap.js)
 // OptLacc[232] = ninja mastery tier
 // Ninja[102][9] = Jade Emporium unlocks as save letters (index i ↔ SAVE_LETTERS[i])
+// Ninja[104][i] = Gold Food Beanstalk rank of golden food i (beanstalkFoods order, 0 = not added)
 function parseSneaking(json, optLacc) {
   const ninja = parseRaw(json['Ninja']) ?? []
   return {
     pristineCharms: (ninja[107] ?? []).map(unlocked => unlocked === 1),
     jadeUnlocks: String(ninja[102]?.[9] ?? ''),
+    beanstalk: (ninja[104] ?? []).map(rank => Number(rank) || 0),
     ninjaMasteryTier: Number(optLacc[232]) || 0,
   }
 }
@@ -1400,6 +1419,31 @@ function parseLabJewels(json) {
   return { owned: (lab[14] ?? []).map(owned => owned === 1) }
 }
 
+// ── Lab (W4) ─────────────────────────────────────────────────────────────────
+// Lab[0] = mainframe x, y per character (pairs), Lab[1 + i] = character i's 7 console chip slots (chip index,
+// -1 = empty), Lab[13] = this week's chip/jewel shop rotation, Lab[14] = jewels owned, Lab[15] = chips owned
+// per chip index (equipped + storage; -1 = chip not in the game yet). Gem shop 123 = Souped Up Tube (2 tubes each).
+// OptLacc[408] > 0 = World 7 portal restored (Toolbox finishedWorlds.World6): some chips change text.
+// OptLacc[89] = highest Pet Arena wave (wave 150 = +20% lab line width).
+function parseLab(json, charCount, optLacc) {
+  const lab = parseRaw(json['Lab']) ?? []
+  const coords = lab[0] ?? []
+  const gems = parseRaw(json['GemItemsPurchased']) ?? []
+  return {
+    positions: Array.from({ length: charCount }, (_, i) => ({
+      x: Math.round(Number(coords[2 * i]) || 0),
+      y: Math.round(Number(coords[2 * i + 1]) || 0),
+    })),
+    chipSlots: Array.from({ length: charCount }, (_, i) => (lab[i + 1] ?? []).map(chip => Number(chip))),
+    chipTotals: (lab[15] ?? []).map(count => Math.max(0, Number(count) || 0)),
+    jewelsOwned: (lab[14] ?? []).map(owned => owned === 1),
+    rotation: lab[13] ?? [],
+    soupedUpTubes: 2 * (Number(gems[123]) || 0),
+    world7: (Number(optLacc[408]) || 0) > 0,
+    arenaWave: Number(optLacc[89]) || 0,
+  }
+}
+
 // ── Divinity (W5) ─────────────────────────────────────────────────────────────
 // Divinity[12 + i] = god slot character i is linked to (-1 none), [25] = gods unlocked.
 // Slots index data/divinityMap.js.
@@ -1429,11 +1473,13 @@ function parseCoralReef(optLacc) {
 // ── Vote Ballot ───────────────────────────────────────────────────────────────
 // serverVars (outside data) holds this week's vote: voteCategories[0] = the winning
 // ballot bonus, voteCat2[0] = the winning Meritocracy bonus.
-function parseVoteBallot(rawJson) {
+// demonfleshHandedIn = OptLacc[472] (Meritocracy base 100% instead of 25%)
+function parseVoteBallot(rawJson, optLacc) {
   const serverVars = rawJson?.serverVars ?? {}
   return {
     selectedBonus: serverVars.voteCategories?.[0] ?? null,
     selectedMeritocracy: serverVars.voteCat2?.[0] ?? null,
+    demonfleshHandedIn: Number(optLacc?.[472]) === 1,
   }
 }
 
@@ -1498,6 +1544,7 @@ export function extractSnapshot(rawJson) {
     legendTalents: parseLegendTalents(json),
     cards: parseCards(json, optLacc),
     labChips: parseLabChips(json, charList.length),
+    lab: parseLab(json, charList.length, optLacc),
     royalGuardian: parseRoyalGuardian(json),
     alchemy: parseAlchemy(json),
     droppedTrophies: parseDroppedTrophies(json),
@@ -1513,7 +1560,7 @@ export function extractSnapshot(rawJson) {
     rift: parseRift(json),
     killroy: parseKillroy(optLacc),
     sushi: parseSushi(json),
-    voteBallot: parseVoteBallot(rawJson),
+    voteBallot: parseVoteBallot(rawJson, optLacc),
     stamps: parseStamps(json),
     sneaking: parseSneaking(json, optLacc),
     companions: parseCompanions(rawJson, optLacc),
@@ -1522,6 +1569,10 @@ export function extractSnapshot(rawJson) {
     arcade: parseArcade(json),
     gemShop: parseGemShop(json),
     merits: parseMerits(json),
+    // BribeStatus[i] = 1 bought (Toolbox bribes)
+    bribes: (parseRaw(json['BribeStatus']) ?? []).map(status => Number(status) === 1),
+    // Guild bonus levels = export guildData.stats[0] (Toolbox getGuild). Cloud saves have no guildData: null
+    guildBonusLevels: rawJson?.guildData ? (rawJson.guildData.stats?.[0] ?? []).map(Number) : null,
     bundles: parseBundles(json),
     sailing: parseSailing(json),
     islands: parseIslands(json, optLacc, charList.length),

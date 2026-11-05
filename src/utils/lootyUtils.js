@@ -1,8 +1,8 @@
 import { isSuperbitUnlocked } from './gamingUtils'
-import { getAssumedMainframeBonus, LAB_BONUSES } from './labUtils'
+import { getLabBonus, LAB_BONUSES } from './labUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { getUpgradeVaultBonus } from './upgradeVaultUtils'
-import { isMeritocracyBonusSelected } from './voteUtils'
+import { getMeritocracyBonus } from './voteUtils'
 
 // The Slab (Looty), from IdleonToolbox getSlabBonus (parsers/world-5/sailing.ts).
 // snapshot.lootedItemCount = different items ever looted. Returns { value, missing }.
@@ -17,17 +17,14 @@ export const SLAB_BONUSES = {
 }
 
 function getSlabMulti(snapshot) {
-  const sovereignty = getAssumedMainframeBonus(snapshot, LAB_BONUSES.slabSovereignty)
+  const sovereignty = getLabBonus(snapshot, LAB_BONUSES.slabSovereignty)
   const legend = getLegendTalentBonus(SLAB_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, SLAB_LEGEND_TALENT))
-  const missing = [...sovereignty.missing]
-  if (isMeritocracyBonusSelected(snapshot?.voteBallot, SLAB_MERITOCRACY)) {
-    missing.push('Meritocracy slab bonus (winning pick this week)')
-  }
   return {
     value: (1 + sovereignty.value / 100)
+      * (1 + getMeritocracyBonus(snapshot, SLAB_MERITOCRACY) / 100)
       * (1 + legend / 100)
       * (1 + getUpgradeVaultBonus(snapshot?.upgradeVault, SLAB_VAULT) / 100),
-    missing,
+    missing: [...sovereignty.missing],
   }
 }
 

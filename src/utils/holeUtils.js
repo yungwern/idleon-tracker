@@ -9,8 +9,9 @@ import {
   lampWishes,
   jarCollectibles,
   godMap,
+  bellRingBonuses,
 } from '../data'
-import { getFountainBonus } from './cavernUtils'
+import { getFountainBonus, getMonumentBonus } from './cavernUtils'
 import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { formatBigNumber } from './cogBoardUtils'
 import { getGemShopPurchases } from './gemShopUtils'
@@ -21,7 +22,17 @@ import { getTesseractBonus } from './tesseractUtils'
 import { getSushiBonus } from './sushiUtils'
 import { isSuperbitUnlocked } from './gamingUtils'
 import { getStampBonusByEffect } from './stampUtils'
-import { getMeasurementBaseBonus, getMeasurementStat } from './measureUtils'
+import { getMeasurementBaseBonus, getMeasurementStat, getMeasurementTotal } from './measureUtils'
+import { getPassiveCardBonus } from './cardUtils'
+import { getEventShopBonus } from './eventShopUtils'
+import { getArcadeBonus } from './arcadeUtils'
+import { getCharmBonus } from './sneakingUtils'
+import { getExoticBonus } from './exoticUtils'
+import { isBundleOwned } from './bundleUtils'
+import { getUpgradeVaultBonus } from './upgradeVaultUtils'
+import { getWinnerBonusByName } from './summoningUtils'
+import { getLoreTomeBonus } from './spelunkingUtils'
+import { getStatueBonus } from './statueUtils'
 
 // The Hole (World 5 caverns): villagers and per-cavern numbers for components/Hole.
 // Formulas reimplemented from IdleonToolbox parsers/world-5/hole.ts and parsers/world-5/caverns/*.
@@ -114,6 +125,137 @@ export function getVillagers(snapshot) {
       parallel: (caverns?.parallelVillagers?.[villager.id] ?? 0) > 0,
     }
   })
+}
+
+// ── Villager EXP / hr ── (game VillagerExpPerHour, Toolbox hole.ts getVillagerExpPerHour)
+// rate = base × shared multi × villager multi × opals
+//   × (1 + Equal Spread × floor(least opals / 5) / 100)
+//   × (1 + (additive + Opal Enthusiasm × floor(opals / 10)) / 100)
+// Split out like this so the opal optimizer (utils/opalOptimizer.js) can try other opal counts.
+
+const OPAL_DIVIDENDS = 0 // schematic: 125 EXP/hr per opal instead of 100
+const OPAL_DIVIDENDS_BONUS = 25
+const GLOOMIE_OPIE = 48 // schematic: +10% per Grotto colony conquered
+const GLOOMIE_OPIE_PER_COLONY = 10
+const VILLAGER_COMPASS = 59 // Villagerz Learnz: +1% per LV
+const VILLAGER_LEGEND_TALENT = 12
+const VILLAGER_CHARM = 'Candy Cache'
+const VILLAGER_COMPANION = 13 // 3x
+const VILLAGER_STATUE = 28
+const VILLAGER_JARS = [4, 10, 12, 22, 29, 35]
+const VILLAGER_EVENT_SHOP = 6 // +25%
+const VILLAGER_LORE_BONUS = 1 // Tome lore bonus (needs Tome points)
+const VILLAGER_BUNDLE = 'bun_u' // +50%
+const VILLAGER_EXOTIC = 51 // Grapevine
+const VILLAGER_ARCADE = 'Villager XP multi'
+const VILLAGER_GRIMOIRE = 29
+const VILLAGER_TESSERACT = 32
+const VILLAGER_MONUMENT = 3 // + 10t: one per monument (Bravery, Justice, Wisdom)
+const VILLAGER_MEASUREMENTS = [0, 7]
+const VILLAGER_CARD = '+{% Villager EXP (Passive)'
+const VILLAGER_BELL_RING = 1
+const VILLAGER_SUMMONING = '+{% Villager EXP'
+const VILLAGER_VAULT = 73
+const EXPLORER_CATCH_UP_CAVERNS = 13 // Explorer gets 1.5^OptLacc[355] until 13 caverns are unlocked
+const CONJUROR_FOUNTAIN = [0, 14]
+export const OPAL_ENTHUSIASM = 0 // villager majik: +x% per 10 opals in that villager
+export const EQUAL_SPREAD = 5 // villager majik: +x% per 5 opals in the villager with the fewest
+const CONTENTED_CREATOR = 1 // villager majik: +x% per schematic created
+const COSMO_ENHANCE = 2 // villager majik: flat +x%
+
+const majik = (caverns, i) => getMajikBonus(1, i, Number(caverns?.villageMajiks?.[i]) || 0)
+const isBuilt = (caverns, i) => Number(caverns?.schematics?.[i]) === 1
+
+// Unlocked = LV 1+. The least opals among them feeds Equal Spread.
+export function getLeastOpals(opals, unlocked) {
+  const counts = opals.filter((_, t) => unlocked[t])
+  return counts.length ? Math.min(...counts) : 0
+}
+
+export function getVillagerExpModel(snapshot, tomePoints) {
+  const caverns = snapshot?.caverns
+  const missing = []
+  const statue = getStatueBonus(snapshot, VILLAGER_STATUE)
+  missing.push(...statue.missing)
+  const loreUnlocked = (snapshot?.spelunking?.loreBonusesUnlocked ?? 0) > VILLAGER_LORE_BONUS
+  if (loreUnlocked && !(Number(tomePoints) > 0)) missing.push('Tome points (Tome lore bonus: add them in Import Save)')
+  const jars = VILLAGER_JARS.reduce((sum, i) => sum + getJarBonus(snapshot, i), 0)
+  const legend = getLegendTalentBonus(VILLAGER_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, VILLAGER_LEGEND_TALENT))
+
+  const multis = [
+    { label: 'Compass', value: 1 + (snapshot?.compassUpgrades?.levels?.[VILLAGER_COMPASS] ?? 0) / 100 },
+    { label: 'Legend Talent', value: 1 + legend / 100 },
+    { label: 'Charm', value: 1 + getCharmBonus(snapshot?.sneaking, VILLAGER_CHARM) / 100 },
+    { label: 'Companion', value: isCompanionActive(snapshot?.companions, VILLAGER_COMPANION) ? 3 : 1 },
+    { label: 'Statue', value: 1 + statue.value / 100 },
+    { label: 'Jars', value: 1 + jars / 100 },
+    { label: 'Event shop', value: 1 + (25 * getEventShopBonus(snapshot?.eventShop, VILLAGER_EVENT_SHOP)) / 100 },
+    { label: 'Tome', value: 1 + getLoreTomeBonus(snapshot, VILLAGER_LORE_BONUS, tomePoints) / 100 },
+    { label: 'Bundle', value: isBundleOwned(snapshot?.bundles, VILLAGER_BUNDLE) ? 1.5 : 1 },
+  ]
+  const lateMultis = [
+    { label: 'Exotic Market', value: 1 + getExoticBonus(snapshot?.farming, VILLAGER_EXOTIC) / 100 },
+    { label: 'Arcade', value: 1 + getArcadeBonus(snapshot, VILLAGER_ARCADE) / 100 },
+    { label: 'Grimoire', value: 1 + getGrimoireBonus(snapshot?.grimoire, VILLAGER_GRIMOIRE) / 100 },
+    { label: 'Tesseract', value: 1 + getTesseractBonus(snapshot?.tesseract, VILLAGER_TESSERACT) / 100 },
+  ]
+  const built = (caverns?.schematics ?? []).filter(value => Number(value) === 1).length
+  const additives = [
+    { label: 'Monuments', value: [0, 1, 2].reduce((sum, t) => sum + getMonumentBonus(snapshot, t, VILLAGER_MONUMENT), 0) },
+    { label: 'Measurements', value: VILLAGER_MEASUREMENTS.reduce((sum, t) => sum + getMeasurementTotal(snapshot, t, tomePoints), 0) },
+    { label: 'Village Majiks', value: majik(caverns, CONTENTED_CREATOR) * built + majik(caverns, COSMO_ENHANCE) },
+    { label: 'Gloomie Opie', value: isBuilt(caverns, GLOOMIE_OPIE) ? GLOOMIE_OPIE_PER_COLONY * (caverns?.extra?.[HOLE_EXTRA.grottoColony] ?? 0) : 0 },
+    { label: 'Cards', value: getPassiveCardBonus(VILLAGER_CARD, snapshot?.cards) },
+    { label: 'Bell', value: (caverns?.bellRingLevels?.[VILLAGER_BELL_RING] ?? 0) * (bellRingBonuses[VILLAGER_BELL_RING]?.perLevel ?? 0) },
+    { label: 'Summoning', value: getWinnerBonusByName(snapshot, VILLAGER_SUMMONING) },
+    { label: 'Upgrade Vault', value: getUpgradeVaultBonus(snapshot?.upgradeVault, VILLAGER_VAULT) },
+  ]
+
+  const unlockedCaverns = getUnlockedCaverns(snapshot)
+  const villagerMultis = holeVillagers.map(villager => {
+    const t = villager.id
+    const own = t === 0 && unlockedCaverns < EXPLORER_CATCH_UP_CAVERNS
+      ? 1.5 ** (Number(caverns?.rupieSlug) || 0)
+      : t === 2
+        ? 1 + getFountainBonus(caverns, ...CONJUROR_FOUNTAIN) / 100
+        : 1
+    return own * (1 + (Number(caverns?.parallelVillagers?.[t]) || 0))
+  })
+
+  return {
+    base: 100 + (isBuilt(caverns, OPAL_DIVIDENDS) ? OPAL_DIVIDENDS_BONUS : 0),
+    sharedMulti: Math.max(1, multis.reduce((product, m) => product * m.value, 1))
+      * lateMultis.reduce((product, m) => product * m.value, 1),
+    multis: [...multis, ...lateMultis],
+    additive: additives.reduce((sum, a) => sum + a.value, 0),
+    additives,
+    villagerMultis,
+    enthusiasm: majik(caverns, OPAL_ENTHUSIASM),
+    equalSpread: majik(caverns, EQUAL_SPREAD),
+    unlocked: holeVillagers.map(villager => (caverns?.villagerLevels?.[villager.id] ?? 0) >= 1),
+    missing,
+  }
+}
+
+// EXP / hr for villager t holding `opals`, with `leastOpals` in the emptiest unlocked villager
+export function getVillagerExpRate(model, t, opals, leastOpals) {
+  return model.base
+    * model.sharedMulti
+    * model.villagerMultis[t]
+    * opals
+    * (1 + (model.equalSpread * Math.floor(leastOpals / 5)) / 100)
+    * (1 + (model.additive + model.enthusiasm * Math.floor(opals / 10)) / 100)
+}
+
+// Every villager's EXP / hr with the opals they hold now
+export function getVillagerExpRates(snapshot, tomePoints) {
+  const model = getVillagerExpModel(snapshot, tomePoints)
+  const opals = holeVillagers.map(villager => snapshot?.caverns?.opalsInvested?.[villager.id] ?? 0)
+  const least = getLeastOpals(opals, model.unlocked)
+  return {
+    model,
+    rates: holeVillagers.map((villager, t) => getVillagerExpRate(model, t, opals[t], least)),
+  }
 }
 
 // Explorer LV = caverns unlocked (Toolbox: min(18, LV))

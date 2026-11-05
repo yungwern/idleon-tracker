@@ -17,6 +17,10 @@ export const EQUINOX_UPGRADES = {
     index: 10, // Equinox Symbols: +1 talent LV per level
     bonusPerLevel: 1,
   },
+  voterRights: {
+    index: 11, // Voter Rights: +1% Bonus Ballot multi per level
+    bonusPerLevel: 1,
+  },
 }
 
 export function getEquinoxUpgradeBonus(equinox, upgrade) {

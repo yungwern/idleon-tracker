@@ -7,7 +7,7 @@ import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 import { getSushiBonus } from './sushiUtils'
 import { getArmorSetBonus } from './armorSetUtils'
 import { getJellyBonus } from './jellyUtils'
-import { getAssumedLabBonus, LAB_BONUSES } from './labUtils'
+import { getLabBonus, LAB_BONUSES } from './labUtils'
 import { getEventShopBonus } from './eventShopUtils'
 import { getPaletteBonus } from './gamingUtils'
 
@@ -58,7 +58,7 @@ export function getStampBonus(snapshot, rawName) {
 
   // Combat and skill stamps (not misc) get Liqorice Rolle and the Certified Stamp Book
   const charm = tree !== 2 ? getCharmBonus(snapshot?.sneaking, 'Liqorice Rolle') : 0
-  const stampBook = tree !== 2 ? getAssumedLabBonus(LAB_BONUSES.certifiedStampBook) : { value: 1, missing: [] }
+  const stampBook = tree !== 2 ? getLabBonus(snapshot, LAB_BONUSES.certifiedStampBook) : { value: 1, missing: [] }
   missing.push(...stampBook.missing)
   const vault = BASE_STAT.test(stamp.effect ?? '') ? getUpgradeVaultBonus(snapshot?.upgradeVault, 16) : 0
   let exalted = 1

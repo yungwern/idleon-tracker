@@ -8,6 +8,7 @@ import {
   getUnlockedCaverns,
   getHoleResourceImage,
   getStudyRate,
+  getVillagerExpRates,
   formatHoleNumber,
 } from '../../utils/holeUtils'
 import { formatWait } from '../../utils/farmingUtils'
@@ -332,6 +333,9 @@ const BODIES = {
 export default function VillagerTab({ snapshot, tomePoints, villager }) {
   if (!villager) return null
   const Body = BODIES[villager.tab]
+  const { model, rates } = getVillagerExpRates(snapshot, tomePoints)
+  const rate = rates[villager.id]
+  const hoursToLevel = rate > 0 ? Math.max(0, villager.expReq - villager.exp) / rate : Infinity
   return (
     <div className="hole-body">
       <div className="hole-card hole-villager-head">
@@ -358,18 +362,42 @@ export default function VillagerTab({ snapshot, tomePoints, villager }) {
           >
             <div className="hole-bar-fill" />
           </div>
-          <p className="hole-text hole-text--note">
-            EXP {formatHoleNumber(villager.exp)} / {formatHoleNumber(villager.expReq)}
-            {villager.readyToLevel && <span className="hole-good"> · ready to level up</span>}
-            {' · '}
-            <img
-              className="hole-inline-icon"
-              src="images/hole/Opal.png"
-              alt=""
-            />
-            {villager.opals.toLocaleString()} opals invested
-            {villager.opalRate && ` · guide: ${villager.opalRate} of your opals`}
-          </p>
+          <div className="hole-villager-stats">
+            <div className="hole-villager-stat">
+              <span className="hole-villager-stat-label">EXP</span>
+              <span className="hole-villager-stat-value">
+                {formatHoleNumber(villager.exp)} / {formatHoleNumber(villager.expReq)}
+              </span>
+            </div>
+            {villager.level > 0 && (
+              <div
+                className="hole-villager-stat"
+                title={model.missing.length ? `At least this much: leaves out ${model.missing.join(', ')}` : undefined}
+              >
+                <span className="hole-villager-stat-label">EXP / hr{model.missing.length ? ' (at least)' : ''}</span>
+                <span className="hole-villager-stat-value">{formatHoleNumber(rate)}</span>
+              </div>
+            )}
+            {villager.level > 0 && (
+              <div className="hole-villager-stat">
+                <span className="hole-villager-stat-label">Next LV</span>
+                <span className={`hole-villager-stat-value${villager.readyToLevel ? ' hole-good' : ''}`}>
+                  {villager.readyToLevel ? 'Ready to level up' : `in ${formatWait(hoursToLevel * 3600)}`}
+                </span>
+              </div>
+            )}
+            <div className="hole-villager-stat">
+              <span className="hole-villager-stat-label">Opals invested</span>
+              <span className="hole-villager-stat-value">
+                <img
+                  className="hole-inline-icon"
+                  src="images/hole/Opal.png"
+                  alt=""
+                />
+                {villager.opals.toLocaleString()}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
       {Body && (

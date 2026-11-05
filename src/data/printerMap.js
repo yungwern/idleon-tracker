@@ -114,7 +114,6 @@ export const PRINTER_MULTI_SOURCES = {
   skillMasteryRank: 5,
   lollyFlowerCharm: 'Lolly Flower',
   voteBonus: 11,
-  voteBasePercent: 20,
 }
 
 // Per-character printer multis (Toolbox parsers/world-3/printer.ts)
