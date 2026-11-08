@@ -128,8 +128,9 @@
 
 .mc-outpost-world-head {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
   padding: 10px 14px;
   cursor: pointer;
   list-style: none;
@@ -140,19 +141,25 @@
   display: none;
 }
 
-.mc-outpost-world-head::before {
+.mc-outpost-world-head:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mc-outpost-world-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mc-outpost-world-top::before {
   content: '▸';
   color: var(--world-color);
   font-size: 12px;
   transition: transform 0.15s;
 }
 
-.mc-outpost-world[open] > .mc-outpost-world-head::before {
+.mc-outpost-world[open] .mc-outpost-world-top::before {
   transform: rotate(90deg);
-}
-
-.mc-outpost-world-head:hover {
-  background: rgba(255, 255, 255, 0.03);
 }
 
 .mc-outpost-world-title {
@@ -168,88 +175,183 @@
   white-space: nowrap;
 }
 
-.mc-outpost-world-chips {
+.mc-outpost-world-top .notice-badge {
+  margin-left: 0;
+}
+
+/* Glorified / Purified counts on the right of the world heading */
+.mc-outpost-world-stars {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 6px;
+  gap: 12px;
   margin-left: auto;
 }
 
-.mc-outpost-world-chip {
-  padding: 1px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  color: #d1d5db;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.mc-outpost-world-chip--notice {
-  border-color: rgba(251, 146, 60, 0.4);
-  color: #fb923c;
-}
-
-.mc-outpost-world-chip--pts {
-  border-color: rgba(74, 222, 128, 0.4);
-  color: #4ade80;
-}
-
-.mc-outpost-world-chip--save {
-  border-color: rgba(251, 146, 60, 0.4);
-  color: #fb923c;
-}
-
-.mc-outpost-world-chip.tooltip-anchor {
+.mc-outpost-world-star-count {
   position: relative;
-}
-
-/* Opens below and to the left so it stays on screen at the right edge */
-.mc-outpost-world-chip .mc-outpost-world-tip {
-  top: calc(100% + 6px);
-  right: 0;
-  bottom: auto;
-  left: auto;
-  width: 260px;
-  transform: none;
-  white-space: normal;
-  line-height: 1.5;
-  text-align: left;
-}
-
-/* Names run inline and wrap, so a world with many outposts stays a few lines tall */
-.mc-outpost-world-tip-group {
-  display: block;
-}
-
-.mc-outpost-world-tip-group + .mc-outpost-world-tip-group {
-  margin-top: 4px;
-}
-
-.mc-outpost-world-tip-label {
-  color: #fb923c;
-}
-
-.mc-outpost-world-tip-name strong {
-  color: #f3f4f6;
-}
-
-.mc-outpost-world-tip-more {
-  color: #9ca3af;
-}
-
-/* Commander / Priest chip: [unit] → [mob] Outpost */
-.mc-outpost-world-chip--unit {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 0 8px 0 4px;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
 }
 
+/* The world's to-do list, one line each, lined up under the title */
+.mc-outpost-world-notices {
+  padding-left: 22px;
+}
+
+/* ── Stars: Glorified = orblet blue, Purified = red ── */
+.mc-outpost-stars {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.mc-outpost-star {
+  position: relative;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.mc-outpost-star--glorified {
+  color: #68d5ff;
+  text-shadow: 0 0 6px rgba(104, 213, 255, 0.45);
+}
+
+.mc-outpost-star--purified {
+  color: #f87171;
+  text-shadow: 0 0 6px rgba(248, 113, 113, 0.45);
+}
+
+/* ── Notice lines (world headings and outpost cards) ──
+   Fixed icon column so every line's text starts at the same place */
+.mc-outpost-notices {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mc-outpost-notices:empty {
+  display: none;
+}
+
+.mc-outpost-notice {
+  --notice-color: #9ca3af;
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: center;
+  gap: 8px;
+  color: #d1d5db;
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: default;
+}
+
+.mc-outpost-notice--action {
+  --notice-color: #fb923c;
+}
+
+.mc-outpost-notice--spend {
+  --notice-color: #4ade80;
+}
+
+.mc-outpost-notice--save {
+  --notice-color: #fbbf24;
+}
+
+.mc-outpost-notice--info {
+  --notice-color: #6b7280;
+  color: #9ca3af;
+}
+
+.mc-outpost-notice-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+.mc-outpost-notice-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--notice-color);
+}
+
+.mc-outpost-notice-text strong {
+  color: #f3f4f6;
+  font-weight: 600;
+}
+
+.mc-outpost-notice--action .mc-outpost-notice-text {
+  color: var(--notice-color);
+}
+
+.mc-outpost-notice--spend .mc-outpost-notice-text {
+  color: var(--notice-color);
+}
+
+.mc-outpost-notice--save .mc-outpost-notice-text {
+  color: var(--notice-color);
+}
+
+.mc-outpost-notice-text .mc-outpost-mob-img {
+  margin: 0 3px;
+  vertical-align: -5px;
+}
+
+.mc-outpost-notice-sub {
+  margin-left: 6px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.mc-outpost-notice--info .mc-outpost-notice-sub:first-child {
+  margin-left: 0;
+}
+
+/* Tooltips: wrap text, open below the line on the left so they stay on screen.
+   Doubled-up selector beats the global .tooltip's nowrap, which loads later */
+.mc-outpost-notice .mc-outpost-tip,
+.mc-outpost-slots .mc-outpost-tip,
+.mc-outpost-meta-line .mc-outpost-tip {
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: 0;
+  width: 280px;
+  transform: none;
+  white-space: normal;
+  line-height: 1.5;
+  font-weight: 400;
+  text-align: left;
+}
+
+.mc-outpost-tip-row {
+  display: block;
+}
+
+.mc-outpost-tip-row strong {
+  color: #f3f4f6;
+}
+
+.mc-outpost-tip-note {
+  margin-top: 4px;
+  color: #9ca3af;
+}
+
+/* Unit / Commander / Priest sprites */
 .mc-outpost-unit-img {
   width: 20px;
   height: 20px;
+  object-fit: contain;
+}
+
+.mc-outpost-unit-sprite {
+  height: 18px;
+  object-fit: contain;
 }
 
 /* Trimmed mob sprites (images/mobs/trimmed, square, cropped to the mob) so every one sits the same */
@@ -260,18 +362,13 @@
   image-rendering: pixelated;
 }
 
-.mc-outpost-world-tip-note {
-  margin-top: 4px;
-  color: #9ca3af;
-}
-
 .mc-outpost-empty {
   padding: 0 14px 12px;
 }
 
 .mc-outpost-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 10px;
   padding: 4px 14px 14px;
 }
@@ -280,19 +377,19 @@
 .mc-outpost-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-top: 2px solid var(--world-color);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.02);
+  text-align: left;
 }
 
 .mc-outpost-head {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .mc-outpost-name {
@@ -300,56 +397,97 @@
   font-size: 13px;
   font-weight: 700;
   line-height: 1.3;
-  text-align: center;
 }
 
-.mc-outpost-glorified {
-  position: relative;
-  margin-right: 5px;
-  color: var(--class-color);
-}
-
-.mc-outpost-tags {
+/* What the outpost is doing: Support Camp link, boost, Priests */
+.mc-outpost-meta {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: -4px;
+}
+
+.mc-outpost-meta-line {
+  position: relative;
+  display: flex;
+  align-items: center;
   gap: 4px;
+  color: #9ca3af;
+  font-size: 11px;
+  line-height: 1.4;
+  cursor: default;
 }
 
-.mc-outpost-tag {
-  padding: 0 6px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  color: #d1d5db;
-  font-size: 10px;
+.mc-outpost-meta-line strong {
   font-weight: 600;
-  line-height: 16px;
 }
 
-.mc-outpost-tag--support {
-  border-color: #60a5fa;
+.mc-outpost-meta-line--support {
+  display: block;
   color: #93c5fd;
 }
 
-.mc-outpost-tag--savage {
-  border-color: #f87171;
+.mc-outpost-meta-line--support strong {
+  color: #dbeafe;
+}
+
+.mc-outpost-meta-line--savage {
   color: #fca5a5;
 }
 
-.mc-outpost-tag--purified {
-  border-color: #a78bfa;
+.mc-outpost-meta-line--priest {
   color: #c4b5fd;
 }
 
-/* Long-running goals (Glorify), shown quietly rather than as a notice */
-.mc-outpost-tag--pending {
-  border-color: rgba(255, 255, 255, 0.08);
-  color: #6b7280;
+.mc-outpost-meta-line .mc-outpost-unit-img {
+  width: 16px;
+  height: 16px;
 }
 
-.mc-outpost-tag--priest {
-  border-color: rgba(167, 139, 250, 0.5);
-  color: #c4b5fd;
+/* ── Unit slot row: one box per slot, up to 7 ── */
+.mc-outpost-slots {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  cursor: default;
+}
+
+.mc-outpost-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Slot tint = the bar that unit feeds */
+.mc-outpost-slot--u1 {
+  border-color: rgba(18, 172, 73, 0.6);
+  background: rgba(18, 172, 73, 0.12);
+}
+
+.mc-outpost-slot--u3 {
+  border-color: rgba(157, 75, 177, 0.7);
+  background: rgba(157, 75, 177, 0.15);
+}
+
+.mc-outpost-slot--empty {
+  border-style: dashed;
+  background: transparent;
+}
+
+.mc-outpost-slot--locked {
+  border-color: rgba(255, 255, 255, 0.04);
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0,
+    rgba(255, 255, 255, 0.03) 3px,
+    transparent 3px,
+    transparent 6px
+  );
 }
 
 /* ── Rank bars ──
@@ -444,118 +582,46 @@
   text-align: right;
 }
 
-/* ── Upgrades + PTS plan: levels, what the unspent PTS buy, and what comes next ── */
-.mc-outpost-pts {
+/* ── Upgrade levels: one stat box each, green +N = what the unspent PTS buy ── */
+.mc-outpost-upgrades {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 6px;
+}
+
+.mc-outpost-upgrade {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding-top: 7px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 4px 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.mc-section-body .mc-outpost-upgrades {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 12px;
+.mc-outpost-upgrade-label {
   color: #6b7280;
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.mc-outpost-upgrade strong {
-  color: #d1d5db;
+.mc-outpost-upgrade-value {
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .mc-outpost-upgrade-gain {
   margin-left: 3px;
   color: #4ade80;
-  font-weight: 700;
-}
-
-.mc-section-body .mc-outpost-pts-line {
-  position: relative;
-  color: #9ca3af;
   font-size: 11px;
-  line-height: 1.5;
-  text-align: center;
-  cursor: default;
 }
 
-.mc-section-body .mc-outpost-pts-line--spend {
-  color: #4ade80;
-  font-weight: 600;
-}
-
-.mc-section-body .mc-outpost-pts-line--save {
-  color: #fbbf24;
-}
-
-.mc-outpost-pts-save {
-  color: #9ca3af;
-  font-weight: 400;
-}
-
-/* ── Support Camp links ── */
-.mc-section-body .mc-outpost-link {
-  color: #93c5fd;
-  font-size: 11px;
-  line-height: 1.4;
-  text-align: center;
-}
-
-.mc-section-body .mc-outpost-link.tooltip-anchor {
-  position: relative;
-  cursor: default;
-}
-
-.mc-outpost-link strong {
-  color: #dbeafe;
-  font-weight: 600;
-}
-
-/* ── Suggestions (only shown when there's something to do) ── */
-.mc-outpost-advice {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.mc-outpost-advice:empty {
-  display: none;
-}
-
-.mc-section-body .mc-outpost-advice-line {
-  position: relative;
-  color: #9ca3af;
-  font-size: 11px;
-  line-height: 1.5;
-  cursor: default;
-}
-
-.mc-section-body .mc-outpost-advice-line--change {
-  color: #fb923c;
-  font-weight: 600;
-}
-
-.mc-section-body .mc-outpost-advice-line--settled {
-  color: #4fa6c8;
-  font-weight: 600;
-}
-
-.mc-section-body .mc-outpost-advice-line--best {
-  color: var(--class-color);
-  font-weight: 600;
-}
-
-/* Doubled-up selector so this beats the global .tooltip's nowrap, which loads later */
-.mc-outpost-advice-line .mc-outpost-advice-tip,
-.mc-outpost-pts-line .mc-outpost-advice-tip,
-.mc-outpost-link .mc-outpost-advice-tip {
-  width: 240px;
-  white-space: normal;
-  line-height: 1.5;
-  font-weight: 400;
-  text-align: left;
+/* Card notices sit under a divider, apart from the stats */
+.mc-outpost-card > .mc-outpost-notices {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }

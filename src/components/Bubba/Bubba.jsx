@@ -5,8 +5,11 @@ import {
   BUBBA_GIFT_HAPPINESS,
   BUBBA_CHARISMA_GOALS,
   BUBBA_PHASES,
+  BUBBA_MEGAFLESH_GIFTS,
 } from '../../data'
+import { useState } from 'react'
 import InfoPanel from '../InfoPanel/InfoPanel'
+import MegafleshTab from './MegafleshTab'
 import './Bubba.css'
 
 // ============================================================
@@ -114,6 +117,38 @@ function Hero() {
             <span className="bubba-hero-step-label">Open a gift</span>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// MEGAFLESH GIFTS
+// ============================================================
+
+function MegafleshGifts() {
+  return (
+    <div className="bubba-card bubba-gifts-card">
+      <div className="bubba-card-title">Megaflesh gifts</div>
+      <p className="bubba-gifts-note">The only two worth picking each run.</p>
+      <div className="bubba-gifts">
+        {BUBBA_MEGAFLESH_GIFTS.map(gift => (
+          <div
+            key={gift.name}
+            className="bubba-gift"
+          >
+            <img
+              src={gift.img}
+              alt=""
+              className="bubba-gift-img"
+            />
+            <div className="bubba-gift-text">
+              <span className="bubba-gift-name">{gift.name}</span>
+              <span className="bubba-gift-line">{gift.passive}</span>
+              <span className="bubba-gift-line bubba-gift-line--trigger">When opened: {gift.trigger}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -258,27 +293,54 @@ function Phases() {
 // PAGE
 // ============================================================
 
-export default function Bubba() {
+const TABS = [
+  { id: 'guide', label: 'Run Guide' },
+  { id: 'megaflesh', label: 'Megaflesh & Bonuses' },
+]
+
+export default function Bubba({ snapshot }) {
+  const [activeTab, setActiveTab] = useState('guide')
+
   return (
     <div className="page bubba-page">
       <h2 className="page-title">Bubba</h2>
 
       <InfoPanel
-        intro="A step-by-step route for a Bubba run, from the first candies to the hourly pat loop."
+        intro="A step-by-step route for a Bubba run, plus your Megaflesh and the bonuses Bubba gives the rest of the game."
         items={[
           'This mechanic used to be very easy to mess up leaving your account bricked for up to months at a time. It\'s much more forgiving now, but it\'s still easy to get stuck if you make too many mistakes.',
           'Each gift should unlock the next upgrade. If one doesn\'t, you need more Smoker levels or a better dice roll.',
           'The Charisma goals are rough targets, not requirements.',
+          'Megaflesh & Bonuses: hover a Megaflesh to read what it does. Bubba\'s bonuses grow every 7 Bubba Boon levels.',
         ]}
       />
 
-      <Hero />
-
-      <div className="bubba-goals-row">
-        <CharismaGoals />
+      <div className="page-tabs bubba-tabs">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`page-tab-btn${activeTab === tab.id ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <Phases />
+      {activeTab === 'guide' && (
+        <>
+          <Hero />
+
+          <div className="bubba-goals-row">
+            <CharismaGoals />
+            <MegafleshGifts />
+          </div>
+
+          <Phases />
+        </>
+      )}
+      {activeTab === 'megaflesh' && <MegafleshTab snapshot={snapshot} />}
     </div>
   )
 }

@@ -1,22 +1,59 @@
 import { useMemo } from 'react'
 import { buildOutpostSummary, OUTPOST_UPGRADES, SUPPORT_CAMP_MODE, SAVAGE_STRONGHOLD_MODE, PURITY_RANK, formatOutpostExp } from '../../data'
 import { optimizeOutposts, formatDuration, HORIZON_DAYS, BARRACKS_COST } from '../../utils/outpostOptimizer'
+import { getOutpostNotices } from '../../utils/outpostNotices'
 import InfoPanel from '../InfoPanel/InfoPanel'
 
 import './RoyalOutposts.css'
 
-// Glorifying and purifying take a long time, so unfinished ones are plain status tags, not notices.
-// Purity only shows once the world has a Priest (the rank bar already shows the progress).
-function outpostStatusTags(outpost, summary, priestsHere) {
-  return [
-    summary.glorifyUnlocked && !outpost.glorified && { key: 'unglorified', label: 'Not Glorified', mod: 'pending' },
-    priestsHere > 0 && {
-      key: 'priests',
-      label: `${priestsHere} Priest${priestsHere === 1 ? '' : 's'} here`,
-      mod: 'priest',
-    },
-  ].filter(Boolean)
+const RG_IMG = 'images/masterclass/royal guardian'
+const COMMANDER_IMG = `${RG_IMG}/RGcommander.png`
+const PRIEST_IMG = `${RG_IMG}/RGpriest.png`
+// Slot unit types: 0 Worker, 1 Trader, 2 Guard, 3 Surveyor (RGunit0-3)
+const UNIT_NAMES = ['Worker', 'Trader', 'Guard', 'Surveyor']
+const UNIT_IMG = type => `${RG_IMG}/RGunit${type}.png`
+const UNIT_TRADER = 1
+const UNIT_SURVEYOR = 3
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
+
+function MobIcon({ mobKey }) {
+  if (!mobKey) return null
+  return <img src={`images/mobs/trimmed/${mobKey}.png`} alt="" className="mc-outpost-mob-img" />
 }
+
+// Glorified = blue (orblet) star, Purified = red star. Only the ones that are true are shown.
+function OutpostStars({ glorified, purified }) {
+  return (
+    <span className="mc-outpost-stars">
+      {glorified && (
+        <span className="mc-outpost-star mc-outpost-star--glorified tooltip-anchor">
+          ★<span className="tooltip">Glorified</span>
+        </span>
+      )}
+      {purified && (
+        <span className="mc-outpost-star mc-outpost-star--purified tooltip-anchor">
+          ★<span className="tooltip">Purified</span>
+        </span>
+      )}
+    </span>
+  )
+}
+
+// One notice line, shared by world headers and outpost cards: icon column + text, coloured by kind.
+//   kind: 'action' (something to change), 'spend' (PTS to spend), 'save' (hold PTS), 'info' (all good / what's next)
+function Notice({ kind, icon, children, tip }) {
+  return (
+    <span className={`mc-outpost-notice mc-outpost-notice--${kind}${tip ? ' tooltip-anchor' : ''}`}>
+      <span className="mc-outpost-notice-icon">{icon ?? <span className="mc-outpost-notice-dot" />}</span>
+      <span className="mc-outpost-notice-text">{children}</span>
+      {tip && <span className="tooltip mc-outpost-tip">{tip}</span>}
+    </span>
+  )
+}
+
+const UnitIcon = ({ type }) => <img src={UNIT_IMG(type)} alt="" className="mc-outpost-unit-sprite" />
+const SpriteIcon = ({ src }) => <img src={src} alt="" className="mc-outpost-unit-img" />
 
 function OutpostRankRow({ bar }) {
   return (
@@ -31,7 +68,55 @@ function OutpostRankRow({ bar }) {
   )
 }
 
+// Unit slots like the in-game row: filled slots with their unit, empty ones dashed, locked ones (more Barracks) dim
+function UnitSlots({ opt }) {
+  const free = opt.passiveUnits
+    .map((n, type) => n > 0 && plural(n, UNIT_NAMES[type]))
+    .filter(Boolean)
+  return (
+    <div className="mc-outpost-slots tooltip-anchor">
+      {Array.from({ length: opt.maxSlots }, (_, i) => {
+        const type = opt.slotUnits[i]
+        if (i >= opt.slots) return <span key={i} className="mc-outpost-slot mc-outpost-slot--locked" />
+        if (type === undefined || type < 0) return <span key={i} className="mc-outpost-slot mc-outpost-slot--empty" />
+        return (
+          <span key={i} className={`mc-outpost-slot mc-outpost-slot--u${type}`}>
+            <UnitIcon type={type} />
+          </span>
+        )
+      })}
+      <span className="tooltip mc-outpost-tip">
+        {opt.slots} of {opt.maxSlots} unit slots unlocked (1 + Barracks LV).
+        {free.length > 0 && ` Command rank also gives ${free.join(', ')} for free.`}
+      </span>
+    </div>
+  )
+}
+
 const UPGRADE_KEYS = ['barracks', 'logistics', 'education']
+
+// Upgrade levels as three stat boxes; a green +N shows what the unspent PTS buy
+function UpgradeStats({ outpost, opt }) {
+  const gains = {}
+  opt?.ptsPlan.now.forEach(step => { gains[step.upgrade] = step.levels })
+  return (
+    <div className="mc-outpost-upgrades">
+      {OUTPOST_UPGRADES.map((upg, i) => {
+        if (outpost.upgrades[i] === 0 && i === 1) return null
+        const gain = gains[UPGRADE_KEYS[i]]
+        return (
+          <span key={upg.name} className="mc-outpost-upgrade">
+            <span className="mc-outpost-upgrade-label">{upg.short}</span>
+            <span className="mc-outpost-upgrade-value">
+              {outpost.upgrades[i]}
+              {gain > 0 && <span className="mc-outpost-upgrade-gain">+{gain}</span>}
+            </span>
+          </span>
+        )
+      })}
+    </div>
+  )
+}
 
 // "Education to LV 74, then Barracks 6"
 function upcomingText(upcoming) {
@@ -42,122 +127,102 @@ function upcomingText(upcoming) {
     .join(', then ')
 }
 
-// "Barracks +1, Education +2"
+// "Barracks +1 and Education +2"
 function spendText(now) {
-  return now.map(step => `${step.upgrade === 'barracks' ? 'Barracks' : 'Education'} +${step.levels}`).join(', ')
+  return now.map(step => `${step.upgrade === 'barracks' ? 'Barracks' : 'Education'} +${step.levels}`).join(' and ')
 }
 
 function ptsReason(plan, educationUnlocked) {
   if (!educationUnlocked) return 'Greater Education isn\'t unlocked yet, so PTS go to Barracks.'
-  if (plan.educationUntil === null) return 'Barracks is maxed at 6 unit slots, so every PTS goes to Education.'
+  if (plan.educationUntil === null) {
+    return 'Barracks has every unit slot (7), so every PTS goes to Education. More Barracks levels only add Resource Collection Rate.'
+  }
   return `Education raises every bar's EXP; a Barracks level adds a Trader slot for ${BARRACKS_COST} PTS. `
     + `Here Education is the better buy until LV ${plan.educationUntil}, then Barracks.`
 }
 
-// Upgrade levels with what the unspent PTS should buy, so several can be spent at once
-function OutpostUpgrades({ outpost, opt, educationUnlocked }) {
-  const plan = opt?.ptsPlan
-  const gains = {}
-  plan?.now.forEach(step => { gains[step.upgrade] = step.levels })
-
-  let line = null
-  if (plan) {
-    const tip = (
-      <span className="tooltip mc-outpost-advice-tip">
-        {opt.pts.left} of {opt.pts.total} PTS unspent. {ptsReason(plan, educationUnlocked)}
-      </span>
-    )
-    if (plan.spend > 0) {
-      line = (
-        <p className="mc-outpost-pts-line mc-outpost-pts-line--spend tooltip-anchor">
-          Spend {plan.spend} PTS: {spendText(plan.now)}
-          {plan.saveFor && <span className="mc-outpost-pts-save"> · save rest for Barracks {plan.saveFor}</span>}
-          {tip}
-        </p>
-      )
-    } else if (plan.saveFor) {
-      line = (
-        <p className="mc-outpost-pts-line mc-outpost-pts-line--save tooltip-anchor">
-          Saving for Barracks {plan.saveFor}: {opt.pts.left} / {BARRACKS_COST} PTS
-          {tip}
-        </p>
-      )
-    } else if (plan.upcoming.length > 0) {
-      line = (
-        <p className="mc-outpost-pts-line tooltip-anchor">
-          Next PTS: {upcomingText(plan.upcoming)}
-          {tip}
-        </p>
-      )
-    }
-  }
-
-  return (
-    <div className="mc-outpost-pts">
-      <div className="mc-outpost-upgrades">
-        {OUTPOST_UPGRADES.map((upg, i) => {
-          if (outpost.upgrades[i] === 0 && i === 1) return null
-          const gain = gains[UPGRADE_KEYS[i]]
-          return (
-            <span key={upg.name} className={`mc-outpost-upgrade${gain ? ' mc-outpost-upgrade--gain' : ''}`}>
-              {upg.short} <strong>{outpost.upgrades[i]}</strong>
-              {gain > 0 && <span className="mc-outpost-upgrade-gain">+{gain}</span>}
-            </span>
-          )
-        })}
-      </div>
-      {line}
-    </div>
-  )
+// "Swap 5 Surveyors to Traders" / "Set 3 slots to Surveyors until Intel 40"
+function swapText(swap) {
+  const what = swap.from ? `Swap ${plural(swap.count, swap.from.slice(0, -1))} to ${swap.to}` : `Set ${plural(swap.count, 'slot')} to ${swap.to}`
+  return swap.until ? `${what} until Intel ${swap.until}` : what
 }
 
-// Only the recommendations that need action; details live in the tooltips
-function OutpostAdvice({ opt, world, worldCommanders, isBestCommand, commandersSettled }) {
-  const { flexSlots, plan } = opt
-  const best = opt.allTradersNow
-    ? `${flexSlots} Traders`
-    : `${flexSlots} Surveyors until Intel ${plan.switchAt}, then Traders`
-  const unitsMatch = flexSlots === 0
-    || (opt.allTradersNow ? opt.slotTraders === flexSlots : opt.slotSurveyors === flexSlots)
-  const kept = [
-    opt.slotWorkers > 0 && `${opt.slotWorkers} Worker${opt.slotWorkers === 1 ? '' : 's'}`,
-    opt.slotGuards > 0 && `${opt.slotGuards} Guard${opt.slotGuards === 1 ? '' : 's'}`,
-  ].filter(Boolean)
-  const cmd = opt.command
-  const commanders = Math.max(1, worldCommanders)
-
-  return (
-    <div className="mc-outpost-advice">
-      {!unitsMatch && (
-        <p className="mc-outpost-advice-line mc-outpost-advice-line--change tooltip-anchor">
-          Swap to {best} (+{(opt.projectedBest - opt.projectedNow).toFixed(1)} Trade)
-          <span className="tooltip mc-outpost-advice-tip">
-            Now: {opt.slotTraders} Traders, {opt.slotSurveyors} Surveyors.
+// Everything to do on this outpost, as notice lines (most important first)
+function OutpostNotices({ outpost, opt, optimizer }) {
+  const lines = []
+  const swap = opt.unitSwap
+  if (swap) {
+    lines.push(
+      <Notice
+        key="swap"
+        kind="action"
+        icon={<UnitIcon type={swap.to === 'Traders' ? UNIT_TRADER : UNIT_SURVEYOR} />}
+        tip={(
+          <>
+            Now: {plural(opt.slotTraders, 'Trader')}, {plural(opt.slotSurveyors, 'Surveyor')}.
             Trade rank in {HORIZON_DAYS} days: {opt.projectedNow.toFixed(1)} as-is, {opt.projectedBest.toFixed(1)} after
-            swapping.{kept.length > 0 && ` Your ${kept.join(' and ')} stay as they are.`}
-          </span>
-        </p>
-      )}
-      {isBestCommand && commandersSettled && (
-        <p className="mc-outpost-advice-line mc-outpost-advice-line--settled tooltip-anchor">
-          ★ Commanders Active ★
-          <span className="tooltip mc-outpost-advice-tip">
-            All of World {world}'s Commanders are on the right outpost. Command {cmd.rank} → {cmd.target} adds a{' '}
-            {cmd.unit} in about {formatDuration(cmd.hoursPerCommander / commanders)}.
-          </span>
-        </p>
-      )}
-      {isBestCommand && !commandersSettled && (
-        <p className="mc-outpost-advice-line mc-outpost-advice-line--best tooltip-anchor">
-          ★ Send Commanders Here ★
-          <span className="tooltip mc-outpost-advice-tip">
-            Fastest free Trader in World {world}: Command {cmd.rank} → {cmd.target} adds a {cmd.unit} in about{' '}
-            {formatDuration(cmd.hoursPerCommander / commanders)} with all {commanders} Commanders here.
-          </span>
-        </p>
-      )}
-    </div>
-  )
+            swapping.
+            {swap.until && ` Surveyors raise Intel, which boosts every bar; once Intel reaches ${swap.until}, swap them back to Traders.`}
+            {(opt.slotWorkers > 0 || opt.slotGuards > 0) && ' Workers and Guards stay as they are.'}
+          </>
+        )}
+      >
+        {swapText(swap)} <span className="mc-outpost-notice-sub">+{swap.gain.toFixed(1)} Trade ranks in {HORIZON_DAYS} days</span>
+      </Notice>,
+    )
+  } else if (!opt.allTradersNow && opt.slotSurveyors > 0) {
+    lines.push(
+      <Notice key="survey" kind="info" icon={<UnitIcon type={UNIT_SURVEYOR} />}>
+        Keep Surveyors until Intel {opt.plan.switchAt}, then Traders
+      </Notice>,
+    )
+  }
+
+  // Commanders: only on the outpost they should be working
+  const commanderAdvice = optimizer.commanderAdvice.get(outpost.world)
+  if (commanderAdvice?.best.mapIndex === outpost.mapIndex) {
+    const cmd = opt.command
+    const eta = formatDuration(cmd.hoursPerCommander / Math.max(1, commanderAdvice.commanders))
+    lines.push(commanderAdvice.needsMove ? (
+      <Notice
+        key="cmd"
+        kind="action"
+        icon={<SpriteIcon src={COMMANDER_IMG} />}
+        tip={`Fastest free Trader in World ${outpost.world}: Command ${cmd.rank} to ${cmd.target} in about ${eta} with all ${commanderAdvice.commanders} Commanders here.`}
+      >
+        Send Commanders here
+      </Notice>
+    ) : (
+      <Notice key="cmd" kind="info" icon={<SpriteIcon src={COMMANDER_IMG} />}>
+        Commanders here <span className="mc-outpost-notice-sub">next Trader in {eta}</span>
+      </Notice>
+    ))
+  }
+
+  const plan = opt.ptsPlan
+  const ptsTip = `${opt.pts.left} of ${opt.pts.total} PTS unspent. ${ptsReason(plan, optimizer.educationUnlocked)}`
+  if (plan.spend > 0) {
+    lines.push(
+      <Notice key="pts" kind="spend" tip={ptsTip}>
+        Spend {plan.spend} PTS: {spendText(plan.now)}
+        {plan.saveFor && <span className="mc-outpost-notice-sub">then save for Barracks {plan.saveFor}</span>}
+      </Notice>,
+    )
+  } else if (plan.saveFor) {
+    lines.push(
+      <Notice key="pts" kind="save" tip={ptsTip}>
+        Saving for Barracks {plan.saveFor} <span className="mc-outpost-notice-sub">{opt.pts.left} / {BARRACKS_COST} PTS</span>
+      </Notice>,
+    )
+  } else if (plan.upcoming.length > 0) {
+    lines.push(
+      <Notice key="pts" kind="info" tip={ptsTip}>
+        <span className="mc-outpost-notice-sub">Next PTS: {upcomingText(plan.upcoming)}</span>
+      </Notice>,
+    )
+  }
+
+  return <div className="mc-outpost-notices">{lines}</div>
 }
 
 function OutpostCard({ outpost, summary, optimizer }) {
@@ -167,76 +232,58 @@ function OutpostCard({ outpost, summary, optimizer }) {
   // Purity only matters once the world has a Priest (or the outpost already has some)
   const showPurity = summary.priestWorlds.has(outpost.world) || outpost.purified
   const ranks = outpost.ranks.filter(bar => bar.unlocked && (bar.type !== PURITY_RANK || showPurity))
-  const tags = [
-    isSupport && { key: 'support', label: 'Support Camp', mod: 'support' },
-    outpost.mode === SAVAGE_STRONGHOLD_MODE && { key: 'savage', label: 'Savage Stronghold', mod: 'savage' },
-    outpost.purified && { key: 'purified', label: 'Purified', mod: 'purified' },
-    ...outpostStatusTags(outpost, summary, priestsHere),
-  ].filter(Boolean)
 
   return (
     <div className="mc-outpost-card">
       <div className="mc-outpost-head">
-        <span className="mc-outpost-name">
-          {outpost.glorified && <span className="mc-outpost-glorified tooltip-anchor">★<span className="tooltip">Glorified</span></span>}
-          {outpost.name}
-        </span>
-        {tags.length > 0 && (
-          <div className="mc-outpost-tags">
-            {tags.map(tag => (
-              <span key={tag.key} className={`mc-outpost-tag mc-outpost-tag--${tag.mod}`}>{tag.label}</span>
-            ))}
-          </div>
-        )}
+        <MobIcon mobKey={outpost.mobKey} />
+        <span className="mc-outpost-name">{outpost.name}</span>
+        <OutpostStars glorified={outpost.glorified} purified={outpost.purified} />
       </div>
+
+      {(isSupport || outpost.mode === SAVAGE_STRONGHOLD_MODE || outpost.supportedBy.length > 0 || priestsHere > 0) && (
+        <div className="mc-outpost-meta">
+          {isSupport && (
+            <span className="mc-outpost-meta-line mc-outpost-meta-line--support">
+              {outpost.supportTargets.length > 0
+                ? <>Support Camp for <strong>{outpost.supportTargets.map(summary.nameOf).join(', ')}</strong></>
+                : 'Support Camp, not linked'}
+            </span>
+          )}
+          {outpost.mode === SAVAGE_STRONGHOLD_MODE && (
+            <span className="mc-outpost-meta-line mc-outpost-meta-line--savage">Savage Stronghold</span>
+          )}
+          {outpost.supportedBy.length > 0 && (
+            <span className="mc-outpost-meta-line mc-outpost-meta-line--support tooltip-anchor">
+              Boosted{opt ? <> <strong>+{Math.round(opt.supportBoost)}%</strong></> : ''} by{' '}
+              {plural(outpost.supportedBy.length, 'Support Camp')}
+              <span className="tooltip mc-outpost-tip">{outpost.supportedBy.map(summary.nameOf).join(', ')}</span>
+            </span>
+          )}
+          {priestsHere > 0 && (
+            <span className="mc-outpost-meta-line mc-outpost-meta-line--priest">
+              <SpriteIcon src={PRIEST_IMG} />
+              {plural(priestsHere, 'Priest')} purifying
+            </span>
+          )}
+        </div>
+      )}
+
+      {opt && <UnitSlots opt={opt} />}
 
       <div className="mc-outpost-ranks">
         {ranks.map(bar => <OutpostRankRow key={bar.type} bar={bar} />)}
       </div>
 
-      {isSupport && (
-        <p className="mc-outpost-link">
-          {outpost.supportTargets.length > 0
-            ? <>Supports <strong>{outpost.supportTargets.map(summary.nameOf).join(', ')}</strong></>
-            : 'Not linked to an outpost'}
-        </p>
-      )}
-      {outpost.supportedBy.length > 0 && (
-        <p className="mc-outpost-link tooltip-anchor">
-          Boosted{opt ? <> <strong>+{Math.round(opt.supportBoost)}%</strong></> : ''} by{' '}
-          {outpost.supportedBy.length} Support Camp{outpost.supportedBy.length === 1 ? '' : 's'}
-          <span className="tooltip mc-outpost-advice-tip">
-            {outpost.supportedBy.map(summary.nameOf).join(', ')}
-          </span>
-        </p>
-      )}
+      <UpgradeStats outpost={outpost} opt={opt} />
 
-      <OutpostUpgrades outpost={outpost} opt={opt} educationUnlocked={optimizer.educationUnlocked} />
-
-      {opt && (
-        <OutpostAdvice
-          opt={opt}
-          world={outpost.world}
-          worldCommanders={optimizer.commandersByWorld.get(outpost.world) ?? 0}
-          isBestCommand={optimizer.bestCommandTarget.get(outpost.world) === outpost.mapIndex}
-          commandersSettled={optimizer.commanderAdvice.get(outpost.world)?.needsMove === false}
-        />
-      )}
+      {opt && <OutpostNotices outpost={outpost} opt={opt} optimizer={optimizer} />}
     </div>
   )
 }
 
-const COMMANDER_IMG = 'images/masterclass/royal guardian/RGcommander.png'
-const PRIEST_IMG = 'images/masterclass/royal guardian/RGpriest.png'
-
-function MobIcon({ mobKey }) {
-  if (!mobKey) return null
-  return <img src={`images/mobs/trimmed/${mobKey}.png`} alt="" className="mc-outpost-mob-img" />
-}
-
-// Splits a world's unspent PTS into two notices:
-//   education: outposts that just spend everything on Education (one total, no outpost list needed)
-//   barracks: outposts that buy a Barracks level now or hold PTS for the next one (these need names)
+// Splits a world's unspent PTS into: outposts that spend it all on Education (one total) and outposts that
+// buy a Barracks level now or hold PTS for the next one (these need names)
 function worldPtsNotices(outposts, optimizer) {
   const education = []
   const buy = []
@@ -260,167 +307,197 @@ function worldPtsNotices(outposts, optimizer) {
   }
 }
 
-// Education levels bought before the Barracks step, e.g. "+3 Education first"
-function educationFirst(plan) {
-  const first = plan.now[0]
-  return first?.upgrade === 'education' ? first.levels : 0
+// Names inline while they fit on a line; past that, a count with the names in the tooltip
+const MAX_INLINE_NAMES = 3
+
+function NameRun({ names }) {
+  if (names.length > MAX_INLINE_NAMES) return <strong>{plural(names.length, 'outpost')}</strong>
+  return names.map((name, i) => (
+    <span key={name}>
+      <strong>{name}</strong>
+      {i < names.length - 1 && ', '}
+    </span>
+  ))
 }
 
-// Barracks tooltip lists at most this many outposts, so a world where many outposts hit a save
-// point together stays a few lines tall. The rest are marked on their own cards.
-const MAX_LISTED = 6
-
-function NameList({ rows, detail }) {
-  const shown = rows.slice(0, MAX_LISTED)
-  const hidden = rows.length - shown.length
-  return (
-    <>
-      {shown.map(({ outpost, opt, plan }, i) => (
-        <span key={outpost.mapIndex} className="mc-outpost-world-tip-name">
-          <strong>{outpost.name}</strong>
-          {detail?.(opt, plan)}
-          {educationFirst(plan) > 0 && ` (+${educationFirst(plan)} Edu first)`}
-          {(i < shown.length - 1 || hidden > 0) && ', '}
-        </span>
-      ))}
-      {hidden > 0 && <span className="mc-outpost-world-tip-more">+{hidden} more</span>}
-    </>
-  )
-}
-
-// Hold-PTS line. When most of the world is saving, naming the few that aren't is shorter.
-function SaveList({ save, outposts }) {
-  const saving = new Set(save.map(r => r.outpost.mapIndex))
-  const others = outposts.filter(o => !saving.has(o.mapIndex))
-  if (save.length > MAX_LISTED && others.length <= MAX_LISTED) {
-    return (
-      <>
-        <span className="mc-outpost-world-tip-label">Don't spend PTS in any outpost here</span>
-        {others.length > 0 ? (
-          <>
-            {' '}except{' '}
-            {others.map((o, i) => (
-              <span key={o.mapIndex} className="mc-outpost-world-tip-name">
-                <strong>{o.name}</strong>{i < others.length - 1 && ', '}
-              </span>
-            ))}
-          </>
-        ) : ''}
-        {' '}(saving for Barracks).
-      </>
-    )
-  }
-  return (
-    <>
-      <span className="mc-outpost-world-tip-label">Don't spend, saving for Barracks:</span>{' '}
-      <NameList rows={save} detail={(opt, plan) => ` ${opt.pts.left - plan.spend}/${BARRACKS_COST}`} />
-    </>
-  )
-}
-
-function OutpostWorld({ group, summary, optimizer }) {
+function OutpostWorld({ group, summary, optimizer, notices }) {
   const pts = worldPtsNotices(group.outposts, optimizer)
-  const barracksCount = pts.buy.length + pts.save.length
-  const commanderAdvice = optimizer.commanderAdvice.get(group.world)
-  const commanderTarget = commanderAdvice?.best.mapIndex
-  const priestAdvice = optimizer.priestAdvice.get(group.world)
   const describePosts = postedAt => [...postedAt]
     .map(([mapIndex, n]) => `${n} at ${mapIndex >= 0 ? summary.nameOf(mapIndex) : 'no outpost'}`)
     .join(', ')
+  const swapsTo = to => notices?.swaps.filter(row => row.swap.to === to) ?? []
+  const nameOf = row => row.outpost.name
+  const lines = []
 
+  if (notices?.commander) {
+    const target = notices.commander.best.mapIndex
+    lines.push(
+      <Notice
+        key="cmd"
+        kind="action"
+        icon={<SpriteIcon src={COMMANDER_IMG} />}
+        tip={`Now: ${describePosts(notices.commander.postedAt)}. ${summary.nameOf(target)} reaches its next free ${notices.commander.best.unit} fastest.`}
+      >
+        Move Commanders to <MobIcon mobKey={summary.mobOf(target)} /><strong>{summary.nameOf(target)}</strong>
+      </Notice>,
+    )
+  }
+  if (notices?.priest) {
+    const target = notices.priest.target
+    lines.push(
+      <Notice
+        key="priest"
+        kind="action"
+        icon={<SpriteIcon src={PRIEST_IMG} />}
+        tip={(
+          <>
+            Now: {describePosts(notices.priest.postedAt)}.{' '}
+            {notices.priest.global
+              ? `Purifying ${summary.nameOf(target)} triples the ${target === 1 ? 'Intel' : 'Command'} bar on every outpost, so it comes first.`
+              : 'Priests on one outpost purify it sooner than spread out; this is the closest to Purity Rank 1.'}
+          </>
+        )}
+      >
+        Move Priests to <MobIcon mobKey={summary.mobOf(target)} /><strong>{summary.nameOf(target)}</strong>
+      </Notice>,
+    )
+  }
+  if (notices?.camps.length > 0) {
+    const target = optimizer.priestAdvice.get(group.world).target
+    lines.push(
+      <Notice
+        key="camps"
+        kind="action"
+        icon={<SpriteIcon src={PRIEST_IMG} />}
+        tip={(
+          <>
+            {notices.camps.map(camp => (
+              <span key={camp.mapIndex} className="mc-outpost-tip-row">
+                <strong>{camp.name}</strong>
+                {camp.supportTargets.length > 0
+                  ? ` (now boosts ${camp.supportTargets.map(summary.nameOf).join(', ')})`
+                  : ' (not linked)'}
+              </span>
+            ))}
+            <span className="mc-outpost-tip-row mc-outpost-tip-note">
+              The Priests are purifying {summary.nameOf(target)}. Support Camps speed up Purity like any other rank, and
+              every Purified Map adds Collection Rate to all outposts, so it's worth what the old link was helping.
+            </span>
+          </>
+        )}
+      >
+        Link {plural(notices.camps.length, 'Support Camp')} to <MobIcon mobKey={summary.mobOf(target)} />
+        <strong>{summary.nameOf(target)}</strong>
+      </Notice>,
+    )
+  }
+  ;[['Surveyors', UNIT_SURVEYOR], ['Traders', UNIT_TRADER]].forEach(([to, type]) => {
+    const rows = swapsTo(to)
+    if (rows.length === 0) return
+    lines.push(
+      <Notice
+        key={`swap-${to}`}
+        kind="action"
+        icon={<UnitIcon type={type} />}
+        tip={(
+          <>
+            {rows.map(({ outpost, swap }) => (
+              <span key={outpost.mapIndex} className="mc-outpost-tip-row">
+                <strong>{outpost.name}</strong>: {swapText(swap)} (+{swap.gain.toFixed(1)} Trade ranks)
+              </span>
+            ))}
+            <span className="mc-outpost-tip-row mc-outpost-tip-note">
+              {to === 'Surveyors'
+                ? 'More Intel raises every bar on the outpost, so Surveyors win for a while before Traders take over.'
+                : 'Intel is high enough that Traders now earn more Trade ranks (PTS) than more Intel would.'}
+            </span>
+          </>
+        )}
+      >
+        {to === 'Surveyors' ? 'Switch to Surveyors' : 'Switch to Traders'}: <NameRun names={rows.map(nameOf)} />
+      </Notice>,
+    )
+  })
+  if (pts.buy.length > 0) {
+    lines.push(
+      <Notice
+        key="buy"
+        kind="spend"
+        tip={(
+          <>
+            {pts.buy.map(({ outpost, plan }) => (
+              <span key={outpost.mapIndex} className="mc-outpost-tip-row">
+                <strong>{outpost.name}</strong>: {spendText(plan.now)}
+              </span>
+            ))}
+          </>
+        )}
+      >
+        Buy Barracks: <NameRun names={pts.buy.map(nameOf)} />
+      </Notice>,
+    )
+  }
+  if (pts.educationPts > 0) {
+    lines.push(
+      <Notice
+        key="edu"
+        kind="spend"
+        tip={`Spend every unspent PTS on Greater Education (${plural(pts.educationCount, 'outpost')}).${pts.save.length + pts.buy.length > 0 ? ' The Barracks outposts are the exception.' : ''}`}
+      >
+        Spend {pts.educationPts} PTS on Education <span className="mc-outpost-notice-sub">{plural(pts.educationCount, 'outpost')}</span>
+      </Notice>,
+    )
+  }
+  if (pts.save.length > 0) {
+    lines.push(
+      <Notice
+        key="save"
+        kind="save"
+        tip={(
+          <>
+            <span className="mc-outpost-tip-row">Don't spend PTS here yet:</span>
+            {pts.save.map(({ outpost, opt, plan }) => (
+              <span key={outpost.mapIndex} className="mc-outpost-tip-row">
+                <strong>{outpost.name}</strong>: {opt.pts.left - plan.spend} / {BARRACKS_COST} PTS for Barracks {plan.saveFor}
+              </span>
+            ))}
+          </>
+        )}
+      >
+        Saving for Barracks: <NameRun names={pts.save.map(nameOf)} />
+      </Notice>,
+    )
+  }
+
+  const showGlorified = summary.glorifyUnlocked
+  const showPurified = summary.purityUnlocked
   return (
     <details className={`mc-outpost-world mc-outpost-world--w${group.world}`}>
       <summary className="mc-outpost-world-head">
-        <span className="mc-outpost-world-title">World {group.world}</span>
-        <span className="mc-outpost-world-stat">{group.outposts.length} outposts</span>
-        <span className="mc-outpost-world-chips">
-          {pts.educationPts > 0 && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--pts tooltip-anchor">
-              {pts.educationPts} PTS → Education
-              <span className="tooltip mc-outpost-world-tip">
-                Spend every unspent PTS on Greater Education ({pts.educationCount} outpost
-                {pts.educationCount === 1 ? '' : 's'}).
-                {barracksCount > 0 && ' The outposts in the Barracks notice are the exception.'}
-              </span>
-            </span>
-          )}
-          {barracksCount > 0 && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--save tooltip-anchor">
-              {pts.buy.length > 0 && `${pts.buy.length} Barracks to buy`}
-              {pts.buy.length > 0 && pts.save.length > 0 && ' · '}
-              {pts.save.length > 0 && `${pts.save.length} saving for Barracks`}
-              <span className="tooltip mc-outpost-world-tip">
-                {pts.buy.length > 0 && (
-                  <span className="mc-outpost-world-tip-group">
-                    <span className="mc-outpost-world-tip-label">Buy Barracks now:</span>{' '}
-                    <NameList rows={pts.buy} />
-                  </span>
-                )}
-                {pts.save.length > 0 && (
-                  <span className="mc-outpost-world-tip-group">
-                    <SaveList save={pts.save} outposts={group.outposts} />
-                  </span>
-                )}
-                <span className="mc-outpost-world-tip-group mc-outpost-world-tip-note">
-                  Each outpost's card shows its full split.
+        <span className="mc-outpost-world-top">
+          <span className="mc-outpost-world-title">World {group.world}</span>
+          <span className="mc-outpost-world-stat">{plural(group.outposts.length, 'outpost')}</span>
+          {notices?.count > 0 && <span className="notice-badge">{notices.count}</span>}
+          {group.outposts.length > 0 && (showGlorified || showPurified) && (
+            <span className="mc-outpost-world-stars">
+              {showGlorified && (
+                <span className="mc-outpost-world-star-count tooltip-anchor">
+                  <span className="mc-outpost-star mc-outpost-star--glorified">★</span>
+                  {group.glorified}/{group.outposts.length}
+                  <span className="tooltip">Glorified</span>
                 </span>
-              </span>
-            </span>
-          )}
-          {commanderAdvice?.needsMove && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice mc-outpost-world-chip--unit tooltip-anchor">
-              <img src={COMMANDER_IMG} alt="Commanders" className="mc-outpost-unit-img" />
-              <span>→</span>
-              <MobIcon mobKey={summary.mobOf(commanderTarget)} />
-              <span>{summary.nameOf(commanderTarget)}</span>
-              <span className="tooltip mc-outpost-world-tip">
-                Move this world's Commanders to {summary.nameOf(commanderTarget)}. Now:{' '}
-                {describePosts(commanderAdvice.postedAt)}.{' '}
-                It reaches its next free {commanderAdvice.best.unit} fastest.
-              </span>
-            </span>
-          )}
-          {priestAdvice?.needsMove && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice mc-outpost-world-chip--unit tooltip-anchor">
-              <img src={PRIEST_IMG} alt="Priests" className="mc-outpost-unit-img" />
-              <span>→</span>
-              <MobIcon mobKey={summary.mobOf(priestAdvice.target)} />
-              <span>{summary.nameOf(priestAdvice.target)}</span>
-              <span className="tooltip mc-outpost-world-tip">
-                Move this world's Priests to {summary.nameOf(priestAdvice.target)}. Now:{' '}
-                {describePosts(priestAdvice.postedAt)}.{' '}
-                {priestAdvice.global
-                  ? `Purifying ${summary.nameOf(priestAdvice.target)} triples the ${priestAdvice.target === 1 ? 'Intel' : 'Command'} bar on every outpost, so it comes first.`
-                  : 'Priests on one outpost purify it sooner than spread out; this is the closest to Purity Rank 1.'}
-              </span>
-            </span>
-          )}
-          {priestAdvice?.campsToLink.length > 0 && (
-            <span className="mc-outpost-world-chip mc-outpost-world-chip--notice mc-outpost-world-chip--unit tooltip-anchor">
-              <span>{priestAdvice.campsToLink.length} Support Camp{priestAdvice.campsToLink.length === 1 ? '' : 's'}</span>
-              <span>→</span>
-              <MobIcon mobKey={summary.mobOf(priestAdvice.target)} />
-              <span>{summary.nameOf(priestAdvice.target)}</span>
-              <span className="tooltip mc-outpost-world-tip">
-                <span className="mc-outpost-world-tip-group">
-                  Link these Support Camps to {summary.nameOf(priestAdvice.target)}, where the Priests are purifying:
+              )}
+              {showPurified && (
+                <span className="mc-outpost-world-star-count tooltip-anchor">
+                  <span className="mc-outpost-star mc-outpost-star--purified">★</span>
+                  {group.purified}/{group.outposts.length}
+                  <span className="tooltip">Purified</span>
                 </span>
-                {priestAdvice.campsToLink.map(camp => (
-                  <span key={camp.mapIndex} className="mc-outpost-world-tip-group">
-                    <strong>{camp.name}</strong>
-                    {camp.supportTargets.length > 0
-                      ? ` (now boosts ${camp.supportTargets.map(summary.nameOf).join(', ')})`
-                      : ' (not linked)'}
-                  </span>
-                ))}
-                <span className="mc-outpost-world-tip-group mc-outpost-world-tip-note">
-                  Their boost speeds up Purity like any other rank. Every Purified Map adds Collection Rate to all
-                  outposts, so it's worth the Trade or Command ranks the old link was helping.
-                </span>
-              </span>
+              )}
             </span>
           )}
         </span>
+        {lines.length > 0 && <span className="mc-outpost-notices mc-outpost-world-notices">{lines}</span>}
       </summary>
       {group.outposts.length === 0 ? (
         <p className="mc-outpost-empty">No outposts built in this world yet.</p>
@@ -440,6 +517,8 @@ export default function RoyalOutposts({ snapshot }) {
   const summary = useMemo(() => buildOutpostSummary(rg), [rg])
   // Simulates every outpost; only re-runs when a new save is imported
   const optimizer = useMemo(() => optimizeOutposts(rg, summary.outposts), [rg, summary])
+  // Per-world notices (same source as the sidebar badge)
+  const notices = useMemo(() => getOutpostNotices(rg, summary.outposts), [rg, summary])
 
   if (snapshot && !rg?.outposts) {
     return <p>Re-import your save to see your outposts.</p>
@@ -462,8 +541,9 @@ export default function RoyalOutposts({ snapshot }) {
       <InfoPanel
         intro="Your Kingdom's outposts by world."
         items={[
-          `Outposts trader ranks are suggested between Barracks and Education, worked out by simulating each outpost ${HORIZON_DAYS} days ahead for the most Trade ranks (PTS).`,
-          'Most information and suggested changes are shown on the World headings, but you can also click into each World to see info for each outpost.',
+          `Units (Traders vs Surveyors) and PTS (Barracks vs Education) are suggested by simulating each outpost ${HORIZON_DAYS} days ahead for the most Trade ranks (PTS).`,
+          'Everything to change is listed under each World heading; open a World to see each outpost.',
+          'Blue star = Glorified, red star = Purified. Barracks unlocks up to 7 unit slots; levels past that only add Resource Collection Rate.',
         ]}
       />
 
@@ -517,7 +597,13 @@ export default function RoyalOutposts({ snapshot }) {
       )}
 
       {summary.worlds.map(group => (
-        <OutpostWorld key={group.world} group={group} summary={summary} optimizer={optimizer} />
+        <OutpostWorld
+          key={group.world}
+          group={group}
+          summary={summary}
+          optimizer={optimizer}
+          notices={notices.byWorld.get(group.world)}
+        />
       ))}
     </div>
   )

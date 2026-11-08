@@ -18,9 +18,9 @@ A React fan companion app for the idle game **IdleOn**. Reads a player's exporte
 ```
 src/
 ├── components/         # One folder per feature (see casing note below)
-│   ├── Section pages:  Breeding, Bubba (static guide, data in bubbaMap.js), Construction, Cooking, Farming, GearOptimizer,
+│   ├── Section pages:  Breeding, Bubba (tabs Run Guide (static, bubbaMap.js; Megaflesh gifts card = BUBBA_MEGAFLESH_GIFTS, Eli: only Beeg Slice + Slabcakes are worth taking) / Megaflesh & Bonuses = MegafleshTab.jsx), Orion, Poppy, Construction, Cooking, Farming, GearOptimizer,
 │   │                   CapeVine, HatRack, Lab (+ ConsoleTab, ChipPlannerTab, MainframeTab, ConsoleColumn, ChipStorage), Hole (+ VillagerTab, CavernTab, *Panel per cavern, MonumentBonusList, StatIconRow), Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer (+ SaltMaterialsTab.jsx), Refinery, Shrines, Spelunking (+ LoreTab.jsx, RedJellyTab.jsx, ElixirTab.jsx), Statues, Summoning (+ BossesTab.jsx, DoublersTab.jsx), Worship
-│   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, PremiumCollection (Hat Rack + Cape Vine body), CharacterCard, CogBoardMap, ImportModal, InfoPanel,
+│   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, Clicker (ClickerStats/Megas/Bonuses/Upgrades + Clicker.css, Orion/Poppy/Bubba), PremiumCollection (Hat Rack + Cape Vine body), CharacterCard, CogBoardMap, ImportModal, InfoPanel,
 │                       ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar groups (empty ones hidden) + sectionIcons (sidebar sprite per section); statueWorlds + statueBases live in statueMap.js
@@ -235,6 +235,17 @@ Harriep 3x (getCharacterPrintMulti, divinityUtils isMajorGodActive). Family DK b
 (talentUtils getAccountFamilyBonuses; 62.3 vs Toolbox 62.6, per-character added levels not ported). Exalted stamp multi is complete now
 (atoms, compass 76, event shop 18, palette 23, exalted fragments).
 
+**Clickers** (sidebar group: Orion, Poppy, Bubba): Orion/Poppy pages = hero portrait + ClickerStats, Mega grid (hover text, last Mega
+stacks: ×copies), 'rest-of-the-game' bonuses, upgrade cards (cost green when affordable). Shared panels in components/Clicker
+(--clicker-color via .clicker--orion/poppy/bubba). Data = orionMap.js / poppyMap.js (IdleOn Resources/gen_clickers.py <Toolbox clone>:
+owlData, poppyBonuses, poppyTarBonuses + Mega texts/bonus lines copied from Toolbox owl.ts / kangaroo.ts), BUBBA_MEGAFLESH / BUBBA_BONUSES
+in bubbaMap.js. Save: snapshot.orion (OptLacc 253-264, levels 254+i, 262 = Megafeathers), snapshot.poppy (OptLacc 267-305, levels 268+i,
+279 = Megafish, Tar Pit 297+i, fish/tar banks 288/305 added like the game does when the menu opens), snapshot.bubba (Bubba[1] levels,
+[1][8] = Megaflesh, [1][3] = Bubba Boon). Math = orionUtils / poppyUtils / bubbaUtils + clickerUtils (Furry Friends legend 26 ×, Santas
+Little Helper companion 51 ×). Rates, costs, bonuses and Mega multis all = Toolbox on Eli's save (Orion 643.5x, Poppy 239.25x, Bubba 10.2x).
+Sprites 4x nearest-neighbor in images/orion, images/poppy, images/bubba (Bubba_<r> bonus icons); Mega art (Feaz/RooMG/BubbaMF) native
+size. Poppy.png = Poppy cropped from Toolbox RooA (her fishing sprite). Not ported: Poppy reset bonuses/shiny multis, Bubba upgrades/meat rate.
+
 **Summoning** (World 6, components/Summoning): tab row like Refinery (InfoPanel text per tab = TAB_INFO), tabs Bosses / Doublers. Bosses = 7 summoning stone
 bosses (`summoningStoneBosses` in summoningMap.js: Toolbox summoningEnemies[106+i] + stone maps). Kills = KRbest SummzTrz<i> =
 `snapshot.summoning.stoneKills`; next fight HP = 2 × baseHp × 4000^kills; colour upgrades × (1 + kills) (summoningUtils
@@ -326,7 +337,8 @@ Lair AFK = 10 + Sleepy Drops + Sleepy Drops+ (126% on Eli's save; in-game header
 Not ported yet: schematic Total Bonus lines, opal sources for caverns 11/15/16, Monument AFK gain, how LUCKY coins
 combine into currency value.
 
-**Lab** (World 4, components/Lab): tabs Console / Chip Planner / Mainframe. Save = snapshot.lab (parseLab: Lab[0] tube x/y pairs,
+**Lab** (World 4, components/Lab): page InfoPanel (PAGE_INFO, one line per tab) stays put like every section; Chip Planner /
+Mainframe add their own TAB_INFO panel under the tab row. Tabs Console / Chip Planner / Mainframe. Save = snapshot.lab (parseLab: Lab[0] tube x/y pairs,
 Lab[1+i] = character i's 7 chip slots (-1 empty), Lab[13] shop rotation, Lab[14] jewels owned, Lab[15] chips owned per index
 (equipped + storage), gem shop 123 × 2 souped up tubes, world7 = OptLacc[408] > 0 (Toolbox finishedWorlds.World6: chips with w7Effect
 swap text, e.g. Silkrode Motherboard = +10% Gallery Bonus Multi)). snapshot.labChips / labJewels stay (used by GearOptimizer,

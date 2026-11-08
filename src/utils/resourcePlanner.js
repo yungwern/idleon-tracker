@@ -7,6 +7,7 @@
 // in the save is drained each day anyway, so only reach and node size matter.
 // ============================================================
 
+import { OUTPOST_MAX_UNIT_SLOTS } from '../data/royalOutposts'
 import { ROYAL_NODES, OUTPOST_MAP_POSITIONS, MAP_ANCHOR, NODE_ANCHOR, REACH_SLACK, NODES_PER_WORLD, nodeCapacity } from '../data/royalResources'
 
 const RESOURCE_DEPOT = 0
@@ -16,7 +17,7 @@ const CONNECTION_SLOTS = 1
 const MAX_NODE_LINK = 999
 const UNIT_GUARD = 2
 const UNIT_DIGIT_OFFSET = 2
-const MAX_UNIT_SLOTS = 6
+const MAX_UNIT_SLOTS = OUTPOST_MAX_UNIT_SLOTS
 
 const ARMORY_GREAT_GUARDS = 21 // +5px per Guard per level, on top of 25px
 const ARMORY_MILITARY_RANK = 74 // +2px per Military rank per level

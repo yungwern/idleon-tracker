@@ -11,9 +11,12 @@
 // keep resource nodes in range, so the optimizer never touches them.
 // ============================================================
 
-import { outpostRankThreshold, MAPS_PER_WORLD, SUPPORT_CAMP_MODE } from '../data/royalOutposts'
+import { outpostRankThreshold, MAPS_PER_WORLD, SUPPORT_CAMP_MODE, OUTPOST_MAX_UNIT_SLOTS } from '../data/royalOutposts'
 
 export const HORIZON_DAYS = 30
+// A Trader/Surveyor swap is only suggested when it's worth at least this many Trade ranks over HORIZON_DAYS,
+// so near-ties don't nag. Cards, world headers and the sidebar badge all read unitSwap, so they agree.
+export const SWAP_MIN_GAIN = 0.25
 const STEP_HOURS = 2
 const HORIZON_STEPS = (HORIZON_DAYS * 24) / STEP_HOURS
 
@@ -29,7 +32,7 @@ const UNIT_GUARD = 2
 const UNIT_SURVEYOR = 3
 const UNIT_DIGIT_OFFSET = 2
 
-const MAX_UNIT_SLOTS = 6
+const MAX_UNIT_SLOTS = OUTPOST_MAX_UNIT_SLOTS
 export const BARRACKS_SLOT_CAP = MAX_UNIT_SLOTS - 1
 export const BARRACKS_COST = 12
 const LOGISTICS_COST = 2
@@ -125,6 +128,8 @@ function outpostState(o, ctx, supportCount, commanders, militia) {
     logistics,
     education,
     slots,
+    // Unit type per slot (-1 = empty), for the card's slot row
+    slotUnits,
     // Slots the optimizer may fill with Traders/Surveyors (everything but Workers and Guards)
     flexSlots: slots - slotWorkers - slotGuards,
     slotWorkers,
@@ -467,7 +472,17 @@ export function getPriestAdvice(rg, outposts) {
 
 // Returns { byMap: Map(mapIndex → result), commandersByWorld, bestCommandTarget: Map(world → mapIndex), commanderAdvice,
 //   priestAdvice, educationUnlocked }
+// Cached per parsed save: the page, the world headers and the sidebar badge all ask for it
+const optimizeCache = new WeakMap()
+
 export function optimizeOutposts(rg, outposts) {
+  if (rg && optimizeCache.has(rg)) return optimizeCache.get(rg)
+  const result = runOptimizer(rg, outposts)
+  if (rg) optimizeCache.set(rg, result)
+  return result
+}
+
+function runOptimizer(rg, outposts) {
   const ctx = accountContext(rg)
   const built = new Set(outposts.map(o => o.mapIndex))
 
@@ -492,8 +507,27 @@ export function optimizeOutposts(rg, outposts) {
     })
 
     const pts = outpostPts(ctx, state)
+    const allTradersNow = plan.switchAt <= state.ranks[INTEL]
+    const target = allTradersNow ? UNIT_TRADER : UNIT_SURVEYOR
+    const targetCount = allTradersNow ? state.slotTraders : state.slotSurveyors
+    const otherCount = allTradersNow ? state.slotSurveyors : state.slotTraders
+    const swapGain = plan.trade - current.trade
+    // { to: 'Traders' | 'Surveyors', count, from: 'Traders' | 'Surveyors' | null (some slots are empty), until, gain }
+    const unitSwap = targetCount < state.flexSlots && swapGain >= SWAP_MIN_GAIN
+      ? {
+          to: target === UNIT_TRADER ? 'Traders' : 'Surveyors',
+          count: state.flexSlots - targetCount,
+          from: otherCount === state.flexSlots - targetCount ? (target === UNIT_TRADER ? 'Surveyors' : 'Traders') : null,
+          until: allTradersNow ? null : plan.switchAt,
+          gain: swapGain,
+        }
+      : null
     const result = {
       slots: state.slots,
+      maxSlots: MAX_UNIT_SLOTS,
+      slotUnits: state.slotUnits,
+      // Free units from Command rank (Worker, Trader, Guard, Surveyor); they take no slot
+      passiveUnits: [UNIT_WORKER, UNIT_TRADER, UNIT_GUARD, UNIT_SURVEYOR].map(u => passiveUnits(state.ranks[COMMAND], u)),
       flexSlots: state.flexSlots,
       slotWorkers: state.slotWorkers,
       slotGuards: state.slotGuards,
@@ -501,7 +535,8 @@ export function optimizeOutposts(rg, outposts) {
       slotSurveyors: state.slotSurveyors,
       intel: state.ranks[INTEL],
       plan,
-      allTradersNow: plan.switchAt <= state.ranks[INTEL],
+      allTradersNow,
+      unitSwap,
       projectedNow: current.trade,
       projectedBest: plan.trade,
       pts,

@@ -167,3 +167,58 @@ export const BUBBA_PHASES = [
     ],
   },
 ]
+
+// ============================================================
+// MEGAFLESH GIFTS (Toolbox generalSpelunky[39] names, [40] texts; icons data/BubbaGift<i>.png)
+// The gifts picked at the start of a run (2 once Megaflesh 3 is owned). Eli: only Beeg Slice (gift 0)
+// and Slabcakes (gift 4) are ever worth taking.
+// ============================================================
+
+export const BUBBA_MEGAFLESH_GIFTS = [
+  {
+    name: 'Beeg Slice',
+    img: 'images/bubba/BubbaGift0.png',
+    passive: 'Extra Meat Slice production',
+    trigger: 'Generates 20 minutes of Meat Slices',
+  },
+  {
+    name: 'Slabcakes',
+    img: 'images/bubba/BubbaGift4.png',
+    passive: 'Chance for 10x smoked meat',
+    trigger: 'Smokes you up a new smoked meat',
+  },
+]
+
+// ============================================================
+// MEGAFLESH + IDLEON BONUSES (Toolbox generalSpelunky[38] / [33], parsers/clickers/bubba.ts)
+// Megaflesh i owned once Bubba[1][8] (the Megaflesh upgrade LV) > i; the 12th stacks (LV - 11 copies).
+// $ in the 1st = 1 + total upgrade LVs / 100, in the 12th = 2 + max(0, LV - 12) / 5.
+// Icons images/bubba/BubbaMF<i>.png.
+// ============================================================
+
+export const BUBBA_MEGAFLESH = [
+  '+1% Meat Slices produced per total upgrade level. Current bonus: $x',
+  'Bubba\'s IdleOn Bonuses are all 1.20x higher',
+  'You can now select 2 Gifts at the start of each run',
+  'Bubba\'s IdleOn Bonuses are now all 1.40x higher',
+  '+1 Dice rolled, +5 max sides per Dice, and worser rolls are ignored',
+  'Double tap a Charisma Attribute to emulsify it, making it give 3x bonus',
+  'Bubba\'s IdleOn Bonuses are now 1.60x higher',
+  'Start each new run with 50 Pats to make Bubba happy!',
+  'You now have a 75% chance to get free meat when upgrading the Smoke Room',
+  'Bubba\'s IdleOn Bonuses are all 1.80x higher',
+  'Your chance to find Dollars, Quarters, and Nickels is now double',
+  'Bubba\'s IdleOn Bonuses are all $x higher',
+]
+
+// Bubba's IdleOn bonuses (game: BubbaRoG_Bonuses): bonus r = value × (1 + 20% per Megaflesh 2/4/7/10 and per
+// 12th copy) × ceil((Bubba Boon LV - (r - 1)) / 7). Atom Cost lowers costs. Icons images/bubba/Bubba_<r>.png.
+export const BUBBA_BONUSES = [
+  { name: 'Build Rate', value: 10 },
+  { name: 'Critter Gain', value: 5 },
+  { name: 'Soul Gain', value: 5 },
+  { name: 'Total Damage', value: 15 },
+  { name: 'All Kills', value: 1 },
+  { name: 'EXP Multi', value: 4 },
+  { name: 'Atom Cost', value: 3, negative: true },
+]

@@ -149,6 +149,10 @@ export const MAPS_PER_WORLD = 50
 export const OUTPOST_RANK_NAMES = ['Trade', 'Intel', 'Command', 'Military', 'Purity']
 export const PURITY_RANK = 4
 
+// Unit slots = 1 + Expanded Barracks LV, up to 7 (LV 6; it was 6 slots before game version 2.3.561).
+// Levels past that only add +10% Resource Collection Rate each (capped at 5x), see Toolbox getBarracksResourceMulti.
+export const OUTPOST_MAX_UNIT_SLOTS = 7
+
 export const OUTPOST_UPGRADES = [
   { name: 'Expanded Barracks', short: 'Barracks' },
   { name: 'Advanced Logistics', short: 'Logistics' },

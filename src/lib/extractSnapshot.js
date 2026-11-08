@@ -1470,6 +1470,54 @@ function parseCoralReef(optLacc) {
   }
 }
 
+// ── Clickers: Orion / Poppy / Bubba ───────────────────────────────────────────
+// Orion (OptLacc 253-264): 253 feathers, 254 + i upgrade levels (262 = Great Mega Reset LV = Megafeathers),
+// 263 feathers made (unlocks), 264 shiny feathers. Toolbox parsers/world-1/owl.ts.
+function parseOrion(optLacc) {
+  const num = index => Number(optLacc[index]) || 0
+  return {
+    feathers: num(253),
+    levels: Array.from({ length: 9 }, (_, i) => num(254 + i)),
+    megafeathers: num(262),
+    feathersMade: num(263),
+    shinyFeathers: num(264),
+  }
+}
+
+// Poppy (OptLacc 267-305): 267 fish, 268 + i upgrade levels (279 = Greatest Catch LV = Megafish), 280 fish caught
+// (unlocks), 281-286 shiny fish caught per kind, 288 / 305 banked seconds the game turns into fish / tar fish when
+// Poppy's menu opens, 291-295 reset bonus points, 296 tar fish, 297 + i Tar Pit levels. Toolbox parsers/world-2/kangaroo.ts.
+function parsePoppy(optLacc) {
+  const num = index => Number(optLacc[index]) || 0
+  return {
+    fish: num(267),
+    levels: Array.from({ length: 12 }, (_, i) => num(268 + i)),
+    megafish: num(279),
+    fishCaught: num(280),
+    shinyCaught: Array.from({ length: 6 }, (_, i) => num(281 + i)),
+    fishBank: num(288),
+    resetPoints: Array.from({ length: 5 }, (_, i) => num(291 + i)),
+    tarFish: num(296),
+    tarLevels: Array.from({ length: 8 }, (_, i) => num(297 + i)),
+    tarFishBank: num(305),
+  }
+}
+
+// Bubba: Bubba[0] = run state (0 meat slices, 4 meat made this run), [1] upgrade levels (8 = Megaflesh LV =
+// Megaflesh owned), [2] prestige levels. Toolbox parsers/clickers/bubba.ts.
+function parseBubba(json) {
+  const bubba = parseRaw(json['Bubba'])
+  if (!Array.isArray(bubba)) return null
+  const row = i => (Array.isArray(bubba[i]) ? bubba[i] : []).map(value => Number(value) || 0)
+  return {
+    meatSlices: Number(bubba[0]?.[0]) || 0,
+    meatMade: Number(bubba[0]?.[4]) || 0,
+    levels: row(1),
+    prestige: row(2),
+    megaflesh: Number(bubba[1]?.[8]) || 0,
+  }
+}
+
 // ── Vote Ballot ───────────────────────────────────────────────────────────────
 // serverVars (outside data) holds this week's vote: voteCategories[0] = the winning
 // ballot bonus, voteCat2[0] = the winning Meritocracy bonus.
@@ -1598,5 +1646,8 @@ export function extractSnapshot(rawJson) {
     coralReef: parseCoralReef(optLacc),
     minehead: parseMinehead(json),
     glunko: parseGlunko(optLacc),
+    orion: parseOrion(optLacc),
+    poppy: parsePoppy(optLacc),
+    bubba: parseBubba(json),
   }
 }

@@ -1,7 +1,7 @@
 // Sidebar groups. Empty groups are hidden until they get a section.
 export const sections = {
   'Global': ['MasterClasses', 'Minibosses', 'BiS Setups'],
-  'Clickers': ['Bubba'],
+  'Clickers': ['Orion', 'Poppy', 'Bubba'],
   'World 1': ['Statues'],
   'World 2': ['Obols', 'Islands'],
   'World 3': ['Construction', 'Shrines', 'Worship', 'Printer', 'Refinery', 'Hat Rack'],
@@ -17,6 +17,8 @@ export const sectionIcons = {
   'Minibosses': 'images/mobs/Dr_Defecaus.png',
   'BiS Setups': 'images/premium gear/armor/EquipmentGown9.png',
 
+  'Orion': 'images/orion/Orion.png',
+  'Poppy': 'images/poppy/Poppy.png',
   'Bubba': 'images/bubba/Bubba.png',
 
   'Statues': 'images/statues/EquipmentStatues1.png',

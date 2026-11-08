@@ -1,0 +1,332 @@
+/* ============================================================
+   CLICKERS (Orion, Poppy, Bubba's Megaflesh tab)
+   Shared panels in components/Clicker. Set --clicker-color on the page
+   with a .clicker--<name> class to change the accent.
+   ============================================================ */
+
+.clicker-page {
+  max-width: 1000px;
+  --clicker-color: #a0c4ff;
+}
+
+.clicker--orion {
+  --clicker-color: #f5b041;
+}
+
+.clicker--poppy {
+  --clicker-color: #5ec8f2;
+}
+
+.clicker--bubba {
+  --clicker-color: #60a5fa;
+}
+
+/* ── Hero: portrait next to the summary chips ── */
+.clicker-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 16px 0;
+}
+
+.clicker-hero-img {
+  height: 112px;
+  flex-shrink: 0;
+}
+
+/* ── Summary chips ── */
+.clicker-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.clicker-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 140px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.clicker-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.clicker-stat-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.clicker-stat-icon {
+  height: 20px;
+}
+
+.clicker-stat-sub {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* ── Panels ── */
+.clicker-panel {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.clicker-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.clicker-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--clicker-color);
+}
+
+.clicker-panel-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.clicker-panel-note {
+  margin: -4px 0 10px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ── Megas ── */
+.clicker-megas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.clicker-mega {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: default;
+}
+
+.clicker-mega:hover {
+  border-color: var(--clicker-color);
+}
+
+.clicker-mega-img {
+  height: 52px;
+}
+
+.clicker-mega--missing .clicker-mega-img {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.clicker-mega-num {
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.clicker-mega-copies {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: var(--clicker-color);
+  color: #0a0a0f;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+}
+
+.clicker-mega-next {
+  display: flex;
+  text-align: left;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  color: #d1d5db;
+}
+
+.clicker-mega-next-img {
+  height: 28px;
+  flex-shrink: 0;
+}
+
+/* ── Bonuses ── */
+.clicker-bonuses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 32px;
+}
+
+.clicker-bonus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+}
+
+.clicker-bonus-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.clicker-bonus-icon {
+  height: 20px;
+}
+
+.clicker-bonus-name {
+  flex: 1;
+  text-align: left;
+  color: #d1d5db;
+}
+
+.clicker-bonus-value {
+  font-weight: 700;
+  color: var(--clicker-color);
+}
+
+.clicker-bonus--zero .clicker-bonus-value {
+  color: #6b7280;
+}
+
+/* ── Upgrades ── */
+.clicker-upgrades {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.clicker-upgrade {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--clicker-color);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.clicker-upgrade--locked {
+  border-left-color: #374151;
+  opacity: 0.6;
+}
+
+.clicker-upgrade-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clicker-upgrade-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.clicker-upgrade-icon {
+  max-width: 64px;
+  max-height: 36px;
+}
+
+.clicker-upgrade-name {
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.clicker-upgrade-level {
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--clicker-color);
+  white-space: nowrap;
+}
+
+.clicker-upgrade-desc {
+  flex: 1;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9ca3af;
+}
+
+.clicker-upgrade-foot {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 12px;
+}
+
+.clicker-upgrade-cost {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: #f87171;
+}
+
+.clicker-upgrade-cost--ok {
+  color: #4ade80;
+}
+
+.clicker-upgrade-cost-icon {
+  height: 16px;
+}
+
+.clicker-upgrade-lock {
+  color: #6b7280;
+}

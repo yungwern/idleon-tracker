@@ -32,6 +32,8 @@ import HatRack from './components/HatRack/HatRack.jsx'
 import CapeVine from './components/CapeVine/CapeVine.jsx'
 import Lab from './components/Lab/Lab.jsx'
 import Bubba from './components/Bubba/Bubba.jsx'
+import Orion from './components/Orion/Orion.jsx'
+import Poppy from './components/Poppy/Poppy.jsx'
 import Cooking from './components/Cooking/Cooking.jsx'
 import Breeding from './components/Breeding/Breeding.jsx'
 import Farming from './components/Farming/Farming.jsx'
@@ -170,7 +172,9 @@ export default function App() {
     if (current === 'Refinery') return <Refinery snapshot={snapshot} />
     if (current === 'Hat Rack') return <HatRack snapshot={snapshot} />
     if (current === 'The Cape Vine') return <CapeVine snapshot={snapshot} />
-    if (current === 'Bubba') return <Bubba />
+    if (current === 'Orion') return <Orion snapshot={snapshot} />
+    if (current === 'Poppy') return <Poppy snapshot={snapshot} />
+    if (current === 'Bubba') return <Bubba snapshot={snapshot} />
     if (current === 'Cooking') return <Cooking snapshot={snapshot} />
     if (current === 'Breeding') return <Breeding snapshot={snapshot} />
     if (current === 'Lab') return <Lab snapshot={snapshot} />

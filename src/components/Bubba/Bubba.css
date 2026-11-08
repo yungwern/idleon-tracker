@@ -6,6 +6,10 @@
   max-width: 900px;
 }
 
+.bubba-tabs {
+  margin-top: 16px;
+}
+
 /* ── Attribute colors (Charisma Chart) ── */
 [data-attr="hustle"] {
   --attr-color: #fbbf24;
@@ -162,12 +166,15 @@
 /* ── Charisma goals ── */
 .bubba-goals-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  align-items: stretch;
+  gap: 16px;
   margin-bottom: 28px;
 }
 
 .bubba-goals-row .bubba-card {
-  width: 100%;
+  flex: 1 1 400px;
   max-width: 520px;
 }
 
@@ -211,6 +218,64 @@
 
 .bubba-goals td.bubba-goals-zero {
   color: #374151;
+}
+
+/* ── Megaflesh gifts ── */
+.bubba-goals-row .bubba-gifts-card {
+  flex: 1 1 300px;
+  max-width: 520px;
+}
+
+.bubba-gifts-note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+.bubba-gifts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.bubba-gift {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bubba-gift-img {
+  height: 48px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.bubba-gift-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.bubba-gift-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.bubba-gift-line {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #9ca3af;
+}
+
+.bubba-gift-line--trigger {
+  color: #6b7280;
 }
 
 /* ── Phases ── */
