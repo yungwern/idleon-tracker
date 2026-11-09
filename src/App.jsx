@@ -14,6 +14,7 @@ import { useTomePoints } from './hooks/useTomePoints.js'
 import { useObolCheckMode } from './hooks/useObolCheckMode.js'
 import { useCollapsedGroups } from './hooks/useCollapsedGroups.js'
 import { useCloudSave } from './hooks/useCloudSave.js'
+import { useTooltipPlacement } from './hooks/useTooltipPlacement.js'
 import { PROVIDER_LABELS } from './lib/idleonCloud.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
@@ -43,6 +44,7 @@ import './components/Cooking/Cooking.css'
 import './components/Breeding/Breeding.css'
 import './components/Farming/Farming.css'
 import './components/Hole/Hole.css'
+import './components/Sneaking/Sneaking.css'
 import './components/Summoning/Summoning.css'
 import './components/Spelunking/Spelunking.css'
 import './App.css'
@@ -70,6 +72,7 @@ const Cooking = lazy(() => import('./components/Cooking/Cooking.jsx'))
 const Breeding = lazy(() => import('./components/Breeding/Breeding.jsx'))
 const Farming = lazy(() => import('./components/Farming/Farming.jsx'))
 const Hole = lazy(() => import('./components/Hole/Hole.jsx'))
+const Sneaking = lazy(() => import('./components/Sneaking/Sneaking.jsx'))
 const Summoning = lazy(() => import('./components/Summoning/Summoning.jsx'))
 const Spelunking = lazy(() => import('./components/Spelunking/Spelunking.jsx'))
 
@@ -86,6 +89,8 @@ export default function App() {
   const { tomePoints, setTomePoints } = useTomePoints()
   const { obolCheckMode, setObolCheckMode } = useObolCheckMode()
   const { isCollapsed, toggleGroup } = useCollapsedGroups()
+  // Keeps every tooltip inside the content area (see hooks/useTooltipPlacement.js)
+  useTooltipPlacement()
   // Logged-in cloud save: auto-syncs only while the loaded save came from the cloud (or there is none),
   // so a pasted or test save is never overwritten behind the player's back
   const isCloudSave = snapshot?.source === 'cloud'
@@ -209,6 +214,7 @@ export default function App() {
     if (current === 'Lab') return <Lab snapshot={snapshot} />
     if (current === 'Farming') return <Farming snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'The Hole') return <Hole snapshot={snapshot} tomePoints={tomePoints} />
+    if (current === 'Sneaking') return <Sneaking snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'Summoning') return <Summoning snapshot={snapshot} />
     if (current === 'Spelunking') return <Spelunking snapshot={snapshot} tomePoints={tomePoints} />
     if (!sectionItems.includes(current)) {

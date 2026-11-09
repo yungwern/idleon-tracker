@@ -456,6 +456,7 @@ export const talentGrowthMap = {
   235: { func: 'decay', x1: 50, x2: 200 }, // Amber Hoard: % cheaper Spelunking shop per Royal Statue LV
   238: { func: 'decayMulti', x1: 20, x2: 400 }, // Grand Vein: }x Grand Discovery chance
   589: { func: 'decayMulti', x1: 1, x2: 500 }, // Overwhelming Energy: }x max map bonus
+  432: { func: 'decayMulti', x1: 3, x2: 300 }, // Generational Gemstones: }x all gemstone bonuses
   597: { func: 'bigBase', x1: 100, x2: 0.15 }, // Absolute Stardom: summoning doublers give +{% instead of +100%
   634: { func: 'decay', x1: 30, x2: 60 }, // Telekinetic Storage (star talent): +% Carry Cap
   639: { func: 'decay', x1: 50, x2: 50 }, // Shrine Architect (star talent): +% Shrine EXP

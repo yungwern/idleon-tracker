@@ -7,7 +7,7 @@ export const sections = {
   'World 3': ['Construction', 'Shrines', 'Worship', 'Printer', 'Refinery', 'Hat Rack'],
   'World 4': ['Cooking', 'Breeding', 'Lab', 'The Cape Vine'],
   'World 5': ['The Hole'],
-  'World 6': ['Farming', 'Summoning'],
+  'World 6': ['Farming', 'Sneaking', 'Summoning'],
   'World 7': ['Spelunking'],
 }
 
@@ -41,6 +41,7 @@ export const sectionIcons = {
   'The Hole': 'images/hole/Villager_0.png',
 
   'Farming': 'images/skills/farming.png',
+  'Sneaking': 'images/skills/sneaking.png',
   'Summoning': 'images/skills/summoning.png',
   
   'Spelunking': 'images/skills/spelunking.png',

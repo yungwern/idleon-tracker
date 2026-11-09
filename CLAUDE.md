@@ -35,6 +35,7 @@ Each page/system has its own notes file in `notes/` (save layout, formulas, what
 | `notes/printer-refinery.md` | Printer, print planner, Salt Materials, Refinery rank planner |
 | `notes/royal-guardian.md` | Royal Guardian outposts optimizer and chips |
 | `notes/shrines.md` | Shrine EXP, Golden Cheese simulator, sigils |
+| `notes/sneaking.md` | Sneaking page: inventory/symbols, emporium, knowledge, charms, gemstones, mastery |
 | `notes/spelunking.md` | Lore reads, elixirs, Red Jellyfish, spelunkingUtils |
 | `notes/summoning.md` | Summoning stone bosses, doubler planner |
 | `notes/talents.md` | Max possible / added talent levels |
@@ -49,7 +50,7 @@ src/
 ├── components/         # One folder per feature (see casing note below)
 │   ├── Section pages:  Breeding, Bubba, Orion, Poppy, Construction, Cooking, Farming, GearOptimizer, CapeVine, HatRack,
 │   │                   Lab, Hole, Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer, Refinery,
-│   │                   Shrines, Spelunking, Statues, Summoning, Worship (sub-tab files: see each notes file)
+│   │                   Shrines, Sneaking, Spelunking, Statues, Summoning, Worship (sub-tab files: see each notes file)
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, Clicker, PremiumCollection (Hat Rack + Cape Vine body),
 │                       CharacterCard, CogBoardMap, ImportModal, InfoPanel, Keychains, ObolBoard (in Obols/), PremiumGear, TierList
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
@@ -64,16 +65,16 @@ src/
 │                       #   { } $ text placeholders → utils/legendTalentUtils.js
 │                       # Growth-curve data (func/x1/x2, bonus = growth() in utils/mathUtils.js) lives on
 │                       #   bubbleMap + stampMap entries, vialMap.js, talentMap.js talentGrowthMap. Generated
-│                       #   from Toolbox: grimoireMap, upgradeVaultMap, sushiMap, sneakingMap (pristine
-│                       #   charms), mealMap (every meal: baseStat/stat), companionMap, tesseractMap, arcadeMap,
-│                       #   jellyMap, meritMap, emperorMap, artifactMap, summoningMap, cavernsMap, zenithMap,
+│                       #   from Toolbox: grimoireMap, upgradeVaultMap, sushiMap, sneakingMap (gen_sneaking.py:
+│                       #   ninja items, knowledge, emporium, gems, mastery, charms, door HP, floor difficulty; sneakingSetups.js is hand-written), mealMap (every meal: baseStat/stat),
+│                       #   companionMap, tesseractMap, arcadeMap, jellyMap, meritMap, emperorMap, artifactMap, summoningMap, cavernsMap, zenithMap,
 │                       #   starSignMap, researchMap (grid squares, observations, stickers), buttonMap,
 │                       #   divinityMap (godMap by slot), gamingMap (paletteMap), spelunkingMap (shop upgrades with
 │                       #   readable keys for Toolbox x1-x8, lore chapters, tunnel rocks/lore bosses, amber tiers),
 │                       #   mineheadMap (opponent bonuses), cavernsMap glunkoUpgradeValues (Crystal Glunko Cove).
 │                       # classes.js also has CLASS_TALENT_TABS (class lines) and CLASS_FAMILY_BONUSES.
 │                       # Data files never import utils; computed tables (e.g. ribbonData) live in utils.
-├── hooks/              # useSaveImport.js, useTomePoints.js (Tome points typed into the Import Save modal's
+├── hooks/              # useTooltipPlacement.js (keeps every tooltip on screen), useSaveImport.js, useTomePoints.js (Tome points typed into the Import Save modal's
                         #   Manual Inputs, held in App and passed to pages; add new uses to TOME_POINTS_USES),
                         #   useCloudSave.js (logged-in cloud save, see notes/cloud-login.md)
 ├── lib/                # extractSnapshot.js — parses raw save JSON; idleonCloud.js — cloud login + save read
@@ -144,6 +145,10 @@ match the real filename exactly. Three components are lowercase on disk:
 - e.g. `shrine-preview-*`, `statue-preview-*`, `miniboss-*`
 - Shared layout classes and reusable components live in `global.css` — adding to global is preferred where it makes sense so future components can reuse them.
 - Always use `global.css` if possible, especially for tooltips.
+- **Tooltips**: always `.tooltip-anchor` + `.tooltip` (+ `.tooltip--wrap` for long text) from global.css. `hooks/useTooltipPlacement.js`
+  (run once in App) places every hovered tooltip with `position: fixed` inside `.content`: nudged away from the sidebar and page edge,
+  flipped below when there's no room above, and shown outside scroll boxes. So don't add per-page tooltip positioning
+  (left/right/transform tweaks, edge variants, JS placement) or custom tooltip elements; if one still gets cut off, fix the hook.
 - `global.css` `.dropdown-panel` = shared click-to-open `<details>` section.
 
 **CSS formatting**: multi-line format — each property on its own line

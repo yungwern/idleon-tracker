@@ -19,6 +19,10 @@ export const TOME_POINTS_USES = [
     page: 'The Hole',
     use: 'Measurements multiplied by Tome Score',
   },
+  {
+    page: 'Sneaking',
+    use: 'Stealth Chapter bubble in ninja stealth (Detection tab)',
+  },
 ]
 
 // Tome bubbles (Crop Chapter, Tome Strength...) give their bonus once per 2000 points above 5000

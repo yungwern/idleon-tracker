@@ -108,6 +108,19 @@ h2 {
   transform: none;
 }
 
+/* Set by hooks/useTooltipPlacement.js on every hovered tooltip: placed with position: fixed inside the
+   content area, so it's never cut off by the sidebar, the page edge or a scroll box. !important so page
+   rules that move a tooltip (left/right/transform tweaks) can't fight the placement. */
+.tooltip.tooltip--placed {
+  position: fixed !important;
+  top: var(--tip-top, 0px) !important;
+  left: var(--tip-left, 0px) !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  z-index: 1000;
+}
+
 /* ============================================================
    FORM CONTROLS
    ============================================================ */

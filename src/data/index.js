@@ -95,7 +95,19 @@ export { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel, gl
 export { holeVillagers, holeBiomes, holeCaverns, holeMajiks, lampWishes, holeSchematics, holeSchematicOrder, holeMeasurements, holeStudies, harpStringTypes, harpNoteNames, bellRingBonuses, denAmplifiers, monumentBonusText, jarCollectibles, denAmpMax, denRecommendedSetup, wellSedimentNames, wellSedimentCapBonus, monumentHourReqs, monumentHourRewards, bellMethods, gambitBonuses, jarTypes, gambitTrials, templeTorchBonuses, fountainUpgrades, lairUpgrades, lairShapeNames } from './holeMap'
 
 // ── World 6 ───────────────────────────────────────────────────────────────────
-export { pristineCharmMap } from './sneakingMap'
+export {
+  ninjaItemMap,
+  pristineCharmMap,
+  NINJA_KNOWLEDGE_ROOT,
+  ninjaMasteryPrereqs,
+  ninjaKnowledgeMap,
+  jadeEmporiumMap,
+  gemstoneMap,
+  ninjaMasteryMap,
+  doorBaseHp,
+  floorBaseDifficulty,
+} from './sneakingMap'
+export { sneakingSetups, BEST_NUNCHAKU } from './sneakingSetups'
 export { emperorBonusOrder } from './emperorMap'
 export { summoningBonuses, summoningEnemyBonuses, summoningEndless, summoningStoneBosses, summoningColourNames, summoningUpgrades, summoningEssenceUpgrades, summoningDoublerModel, summoningDoublerNotes } from './summoningMap'
 export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, exoticCap, landRankMap, calcRankBonus } from './farmingMap'

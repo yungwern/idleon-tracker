@@ -1,0 +1,976 @@
+/* ============================================================
+   SNEAKING (World 6)
+   ============================================================ */
+
+.sneaking-page {
+  --sneaking-color: #34d399;
+}
+
+.sneaking-tabs {
+  --tab-color: #34d399;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 16px;
+}
+
+.sneaking-section-title {
+  margin: 4px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #9ca3af;
+  text-align: left;
+}
+
+/* ── Header: mastery box + jade + stat chips ── */
+.sneaking-header {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.sneaking-mastery-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  flex-shrink: 0;
+  min-width: 112px;
+  padding: 6px 12px;
+  background: linear-gradient(180deg, #3b2a1a 0%, #24190f 100%);
+  border: 2px solid #a87b45;
+  border-radius: 10px;
+}
+
+.sneaking-mastery-label {
+  font-size: 10px;
+  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #d6b98c;
+}
+
+.sneaking-mastery-tier {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fde68a;
+}
+
+.sneaking-mastery-sub {
+  font-size: 10px;
+  white-space: nowrap;
+  color: #b8a080;
+}
+
+.sneaking-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sneaking-jade {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(52, 211, 153, 0.06);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 10px;
+}
+
+.sneaking-jade-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.sneaking-jade-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #6ee7b7;
+}
+
+.sneaking-jade-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.sneaking-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sneaking-stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 110px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.sneaking-stat.tooltip-anchor {
+  cursor: help;
+}
+
+.sneaking-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.sneaking-stat-info {
+  margin-left: 4px;
+  color: #4b5563;
+}
+
+.sneaking-stat-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+/* ── Inventory slots ──
+   Background = the game's symbol frame for the slot's symbol LV (NjBorderS1-9); LV 0 / no-symbol slots get
+   a plain frame. */
+.sneaking-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 56px;
+  flex-shrink: 0;
+  background: #2b2118;
+  background-size: 100% 100%;
+  border: 2px solid #4a3a2b;
+  border-radius: 5px;
+}
+
+.sneaking-slot--empty {
+  opacity: 0.85;
+}
+
+.sneaking-slot[class*="sneaking-slot--sym"] {
+  border: none;
+  border-radius: 0;
+}
+
+.sneaking-slot--sym1 {
+  background-image: url("/images/sneaking/NjBorderS1.png");
+}
+
+.sneaking-slot--sym2 {
+  background-image: url("/images/sneaking/NjBorderS2.png");
+}
+
+.sneaking-slot--sym3 {
+  background-image: url("/images/sneaking/NjBorderS3.png");
+}
+
+.sneaking-slot--sym4 {
+  background-image: url("/images/sneaking/NjBorderS4.png");
+}
+
+.sneaking-slot--sym5 {
+  background-image: url("/images/sneaking/NjBorderS5.png");
+}
+
+.sneaking-slot--sym6 {
+  background-image: url("/images/sneaking/NjBorderS6.png");
+}
+
+.sneaking-slot--sym7 {
+  background-image: url("/images/sneaking/NjBorderS7.png");
+}
+
+.sneaking-slot--sym8 {
+  background-image: url("/images/sneaking/NjBorderS8.png");
+}
+
+.sneaking-slot--sym9 {
+  background-image: url("/images/sneaking/NjBorderS9.png");
+}
+
+.sneaking-slot-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+/* Item LV, top-left like the game */
+.sneaking-slot-level {
+  position: absolute;
+  top: 1px;
+  left: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: #67e8f9;
+  text-shadow: 0 0 2px #000000, 0 0 2px #000000;
+  pointer-events: none;
+}
+
+.sneaking-slot-tip-symbol {
+  color: #6ee7b7;
+}
+
+/* ── Loadout: one card per ninja, two columns like the game ── */
+.sneaking-ninjas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sneaking-ninja {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--class-color, #6b7280);
+  border-radius: 10px;
+}
+
+.sneaking-ninja-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sneaking-ninja-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--class-color, #e5e7eb);
+}
+
+.sneaking-ninja-level {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.sneaking-ninja-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #6ee7b7;
+}
+
+.sneaking-ninja-status--tied,
+.sneaking-ninja-status--ko {
+  color: #f87171;
+}
+
+.sneaking-ninja-status--breaching,
+.sneaking-ninja-status--untying {
+  color: #fbbf24;
+}
+
+.sneaking-ninja-status-icon {
+  height: 16px;
+  max-width: 24px;
+  object-fit: contain;
+}
+
+.sneaking-ninja-slots {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Storage: the game's 3 rows of 13. Too wide for a half-width page, so the box scrolls sideways
+   (fit-content keeps it centred when it fits). Tooltips still show: they're placed outside the box. ── */
+.sneaking-storage {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.sneaking-storage-row {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Simple cards (Emporium, Upgrades, Charms, Mastery) ── */
+.sneaking-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sneaking-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px 10px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.sneaking-card--done {
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.sneaking-card--locked {
+  opacity: 0.5;
+}
+
+.sneaking-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.sneaking-card-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.sneaking-card-icon {
+  max-width: 40px;
+  max-height: 40px;
+  object-fit: contain;
+}
+
+.sneaking-card-icon--wide {
+  max-width: 64px;
+  width: 64px;
+  height: 39px;
+  max-height: 39px;
+  flex-shrink: 0;
+}
+
+.sneaking-card-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.sneaking-card-check {
+  font-size: 14px;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.sneaking-card-level {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e7eb;
+  white-space: nowrap;
+}
+
+.sneaking-card-level--omnijade {
+  color: #fbbf24;
+}
+
+.sneaking-card-desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+.sneaking-card-desc--muted {
+  font-style: italic;
+  color: #6b7280;
+}
+
+.sneaking-card-note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #fbbf24;
+}
+
+.sneaking-card-note-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.sneaking-card-lock {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.sneaking-card-cost {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f87171;
+}
+
+.sneaking-card-cost--ok {
+  color: #34d399;
+}
+
+.sneaking-card-cost-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Pristine Charms: compact rows ── */
+.sneaking-charms-count {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.sneaking-charms-count strong {
+  color: #6ee7b7;
+}
+
+.sneaking-charms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 4px 8px;
+}
+
+.sneaking-charm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px;
+  text-align: left;
+  background: rgba(244, 114, 182, 0.05);
+  border: 1px solid rgba(244, 114, 182, 0.18);
+  border-radius: 8px;
+}
+
+.sneaking-charm--missing {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.sneaking-charm-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.sneaking-charm-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.sneaking-charm-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.sneaking-charm-bonus {
+  font-size: 11px;
+  color: #f9a8d4;
+}
+
+/* ── Mastery: one panel like the game's Sneak Mastery window ── */
+.sneaking-mastery-panel {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 10px 16px 12px;
+  background: linear-gradient(180deg, #2a2f45 0%, #1f2336 100%);
+  border: 2px solid #a87b45;
+  border-radius: 10px;
+}
+
+.sneaking-mastery-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sneaking-mastery-panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.sneaking-mastery-panel-tier {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fde68a;
+}
+
+.sneaking-mastery-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sneaking-mastery-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 2px 4px;
+  font-size: 13px;
+  text-align: left;
+  color: #6b7280;
+}
+
+.sneaking-mastery-line-tier {
+  min-width: 32px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  text-align: right;
+  color: #6b7280;
+}
+
+.sneaking-mastery-line--reached {
+  color: #e5e7eb;
+}
+
+.sneaking-mastery-line--reached .sneaking-mastery-line-tier {
+  color: #fde68a;
+}
+
+.sneaking-mastery-line-amp {
+  color: #6b7280;
+}
+
+.sneaking-mastery-line--reached .sneaking-mastery-line-bonus {
+  font-weight: 700;
+  color: #6ee7b7;
+}
+
+.sneaking-mastery-line-empty {
+  font-style: italic;
+}
+
+.sneaking-mastery-panel-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-top: 10px;
+  padding-top: 8px;
+  font-size: 12px;
+  color: #9ca3af;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sneaking-mastery-panel-progress {
+  color: #fde68a;
+}
+
+/* ── Gemstones ── */
+.sneaking-gems {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+}
+
+.sneaking-gem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.sneaking-gem-counter {
+  font-size: 12px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+/* --gem-percent = fill toward the max bonus, --tick-at = a breakpoint's spot on the bar */
+.sneaking-gem-bar {
+  position: relative;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.sneaking-gem-bar-fill {
+  width: var(--gem-percent, 0%);
+  height: 100%;
+  background: linear-gradient(90deg, #059669 0%, #34d399 100%);
+  border-radius: 5px;
+}
+
+.sneaking-gem-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--tick-at, 0%);
+  width: 2px;
+  margin-left: -1px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.sneaking-gem-tick--reached {
+  background: rgba(6, 78, 59, 0.9);
+}
+
+.sneaking-gem-values {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6ee7b7;
+}
+
+.sneaking-gem-max {
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.sneaking-gem-breakpoints .milestone {
+  --milestone-color: #34d399;
+}
+
+@media (max-width: 1024px) {
+  .sneaking-ninjas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Detection: ninja table ── */
+.sneaking-detect-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.sneaking-detect-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) 48px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--class-color, #6b7280);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sneaking-detect-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sneaking-detect-row--head {
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #6b7280;
+  background: none;
+  border-color: transparent;
+  cursor: default;
+}
+
+.sneaking-detect-row--head:hover {
+  background: none;
+}
+
+.sneaking-detect-row--selected {
+  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.45);
+  border-left-color: var(--class-color, #6b7280);
+}
+
+.sneaking-detect-name {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--class-color, #e5e7eb);
+}
+
+.sneaking-detect-zero {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.sneaking-detect--safe {
+  color: #34d399;
+}
+
+.sneaking-detect--risky {
+  color: #fbbf24;
+}
+
+.sneaking-detect--caught {
+  color: #f87171;
+}
+
+/* ── Detection: stealth breakdown ── */
+.sneaking-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.sneaking-breakdown-total {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #9ca3af;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sneaking-breakdown-total strong {
+  color: #e5e7eb;
+}
+
+.sneaking-breakdown-total .sneaking-detect--safe strong {
+  color: #34d399;
+}
+
+.sneaking-breakdown-total .sneaking-detect--risky strong {
+  color: #fbbf24;
+}
+
+.sneaking-breakdown-total .sneaking-detect--caught strong {
+  color: #f87171;
+}
+
+.sneaking-breakdown-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.sneaking-breakdown-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.sneaking-breakdown-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: 13px;
+  color: #e5e7eb;
+}
+
+.sneaking-breakdown-line--off {
+  opacity: 0.45;
+}
+
+.sneaking-breakdown-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sneaking-breakdown-detail {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.sneaking-breakdown-value {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: #6ee7b7;
+  white-space: nowrap;
+}
+
+.sneaking-breakdown-line--off .sneaking-breakdown-value {
+  font-weight: 400;
+  font-style: italic;
+  color: #9ca3af;
+}
+
+/* ── Setups ── */
+.sneaking-setups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.sneaking-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.sneaking-setup-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sneaking-setup-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.sneaking-setup-goal {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.sneaking-setup-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sneaking-setup-role {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 8px;
+}
+
+.sneaking-setup-role-name {
+  display: flex;
+  flex-direction: column;
+  width: 110px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.sneaking-setup-role-count {
+  font-size: 11px;
+  font-weight: 400;
+  color: #9ca3af;
+}
+
+.sneaking-setup-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.sneaking-setup-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.sneaking-setup-item-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.sneaking-setup-item-name {
+  white-space: nowrap;
+}
+
+.sneaking-setup-needs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sneaking-setup-need {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6ee7b7;
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 999px;
+}
+
+.sneaking-setup-need--short {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.sneaking-setup-need-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}

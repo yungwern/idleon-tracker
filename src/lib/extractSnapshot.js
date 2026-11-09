@@ -1025,17 +1025,51 @@ function parseStamps(json) {
 }
 
 // ── Sneaking (W6) ─────────────────────────────────────────────────────────────
-// Ninja[107][i] = 1 once Pristine Charm i is unlocked (see data/sneakingMap.js)
-// OptLacc[232] = ninja mastery tier
+// Ninja[i] (one row per character) = [floor (0-based), activity (< 0 KO'd, 0 tied up, else working), ...]
+// Ninja[12 + 4i .. 15 + 4i] = character i's [hat, gloves/nunchaku/kunai, charm, charm] as [rawName, level]
+// Ninja[60..98] = the 39 storage slots, same shape ('Blank' = empty)
+// Ninja[100][floor] = damage dealt to that floor's door; Ninja[102][1] = Jade Coins
 // Ninja[102][9] = Jade Emporium unlocks as save letters (index i ↔ SAVE_LETTERS[i])
-// Ninja[104][i] = Gold Food Beanstalk rank of golden food i (beanstalkFoods order, 0 = not added)
-function parseSneaking(json, optLacc) {
+// Ninja[103][i] = Ninja Knowledge upgrade levels; Ninja[104][i] = Gold Food Beanstalk rank of golden food i
+// Ninja[106] = raw names of every item ever found (gemstones count as unlocked once found)
+// Ninja[107][i] = 1 once Pristine Charm i is unlocked (see data/sneakingMap.js)
+// OptLacc[231] = mastery being played, [232] = highest ninja mastery tier, [233 + i] = gemstone i counter,
+//   [402] = charm rolls today
+// Spelunk[14][slot] = symbol level of a slot, Spelunk[13][3] = Spelunking-unlocked knowledge upgrades,
+//   Spelunk[15][floor] = Funeral Flower stacks
+// Menagerie[6][i] = Omnijade placed on knowledge upgrade i, Menagerie[7][i] = its Omnijade levels
+function parseSneaking(json, optLacc, charCount) {
   const ninja = parseRaw(json['Ninja']) ?? []
+  const spelunk = parseRaw(json['Spelunk']) ?? []
+  const menagerie = parseRaw(json['Menagerie']) ?? []
+  const numbers = list => (list ?? []).map(value => Number(value) || 0)
+  const toItem = entry => ({
+    raw: typeof entry?.[0] === 'string' ? entry[0] : 'Blank',
+    level: Number(entry?.[1]) || 0,
+  })
   return {
     pristineCharms: (ninja[107] ?? []).map(unlocked => unlocked === 1),
     jadeUnlocks: String(ninja[102]?.[9] ?? ''),
     beanstalk: (ninja[104] ?? []).map(rank => Number(rank) || 0),
     ninjaMasteryTier: Number(optLacc[232]) || 0,
+    selectedMastery: Number(optLacc[231]) || 0,
+    jadeCoins: Number(ninja[102]?.[1]) || 0,
+    ninjas: Array.from({ length: charCount }, (_, i) => ({
+      floor: Number(ninja[i]?.[0]) || 0,
+      activity: Number(ninja[i]?.[1]) || 0,
+      equipment: [0, 1, 2, 3].map(slot => toItem(ninja[12 + 4 * i + slot])),
+    })),
+    storage: ninja.slice(60, 99).map(toItem),
+    doorDamage: numbers(ninja[100]),
+    upgradeLevels: numbers(ninja[103]),
+    foundItems: (ninja[106] ?? []).filter(name => typeof name === 'string'),
+    gemstoneCounters: Array.from({ length: 8 }, (_, i) => Number(optLacc[233 + i]) || 0),
+    charmRollsToday: Number(optLacc[402]) || 0,
+    symbolLevels: numbers(spelunk[14]),
+    spelunkingUnlocks: Number(spelunk[13]?.[3]) || 0,
+    funeralFlowers: numbers(spelunk[15]),
+    omnijadePlaced: (menagerie[6] ?? []).map(value => Number(value) >= 1),
+    omnijadeLevels: numbers(menagerie[7]),
   }
 }
 
@@ -1610,7 +1644,7 @@ export function extractSnapshot(rawJson) {
     sushi: parseSushi(json),
     voteBallot: parseVoteBallot(rawJson, optLacc),
     stamps: parseStamps(json),
-    sneaking: parseSneaking(json, optLacc),
+    sneaking: parseSneaking(json, optLacc, charList.length),
     companions: parseCompanions(rawJson, optLacc),
     jellyOperator: parseJellyOperator(json),
     tesseract: parseTesseract(json),
