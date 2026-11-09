@@ -969,12 +969,6 @@
   color: #9ca3af;
 }
 
-.spelunk-planner-warn {
-  font-size: 11px;
-  line-height: 1.45;
-  color: #fbbf24;
-}
-
 .spelunk-planner-bonuses {
   display: flex;
   flex-direction: column;

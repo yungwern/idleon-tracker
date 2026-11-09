@@ -159,8 +159,7 @@ export const OUTPOST_UPGRADES = [
   { name: 'Greater Education', short: 'Education' },
 ]
 
-// RoyalMaps[10]
-export const OUTPOST_MODES = ['Resource Depot', 'Support Camp', 'Savage Stronghold']
+// RoyalMaps[10]: 0 Resource Depot, 1 Support Camp, 2 Savage Stronghold
 export const SUPPORT_CAMP_MODE = 1
 export const SAVAGE_STRONGHOLD_MODE = 2
 
@@ -177,7 +176,7 @@ export const KINGDOM_SOVEREIGNTY_ARMORY = 68
 
 // Movable Unit recruit order (game tables royalRecruitOrder / royalRecruitClasses).
 // Priests are the only units that raise Purity Rank, so a world can't be purified until it has one.
-export const RECRUIT_ROLES = ['Commander', 'Knight', 'Priest']
+// Roles: 0 Commander, 1 Knight, 2 Priest
 export const PRIEST_ROLE = 2
 export const RECRUIT_ORDER = {
   role: [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 0, 1, 2, 2],

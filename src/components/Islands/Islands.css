@@ -357,13 +357,6 @@
   object-fit: contain;
 }
 
-.islands-shop-icon--small {
-  width: 17px;
-  height: 16px;
-  justify-self: center;
-  image-rendering: pixelated;
-}
-
 .islands-shop-name {
   display: flex;
   flex-direction: column;

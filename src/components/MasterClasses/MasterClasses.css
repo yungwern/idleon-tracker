@@ -2,73 +2,6 @@
    MASTER CLASSES PAGE
    ============================================================ */
 
-/* ── Class List ── */
-.mc-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-width: 760px;
-}
-
-/* ── Class Header (main toggle button) ── */
-.mc-class-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.15s;
-}
-
-.mc-class-header:hover {
-  border-color: rgba(160, 196, 255, 0.3);
-  background: rgba(160, 196, 255, 0.06);
-}
-
-.mc-header-item-img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-
-.mc-header-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--class-color);
-}
-
-.mc-class-icon {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.mc-class-icon-img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
-
-.mc-class-name {
-  flex: 1;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--class-color);
-  letter-spacing: 0.5px;
-}
-
-.mc-class-chevron {
-  font-size: 11px;
-  color: #6b7280;
-}
-
 /* ── Class Body (contains sections) ── */
 .mc-class-body {
   padding: 12px 16px;
@@ -83,18 +16,6 @@
   overflow: visible;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   margin-bottom: 8px;
-}
-
-.mc-section-title {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--class-color);
-  padding: 10px 14px 6px;
-  margin: 0;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* ── Section Body ── */
@@ -428,11 +349,6 @@
   height: 22px;
   image-rendering: pixelated;
   object-fit: contain;
-}
-
-.mc-header-pill-label {
-  font-size: 0.75rem;
-  color: #6b7280;
 }
 
 .mc-header-pill-count {

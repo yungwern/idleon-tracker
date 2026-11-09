@@ -675,14 +675,6 @@ export function getMaxDailyReads(snapshot) {
   return 5 + (isSkillMasteryBonusUnlocked(snapshot, 'spelunking', PAGE_READS_MASTERY) ? 3 : 0)
 }
 
-// "34.4M", "500k", "1,250,000" → pages (0 if unreadable)
-export function parsePages(text) {
-  const match = String(text ?? '').trim().toLowerCase().replace(/,/g, '').match(/^(\d*\.?\d+)\s*([kmb])?$/)
-  if (!match) return 0
-  const scale = { k: 1e3, m: 1e6, b: 1e9 }[match[2]] ?? 1
-  return Math.floor(Number(match[1]) * scale)
-}
-
 // Spending `pages` of chapter `chapter` over `reads` reads. An even split always gives the most LVs
 // (each read's LVs grow with log(pages), so smaller stacks are worth more per page). Returns the stack
 // per read, LVs per read and in total, which bonuses the stack opens up and the LVs each can expect,

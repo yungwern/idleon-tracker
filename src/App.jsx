@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, lazy, Suspense } from 'react'
 import { toClassSlug } from './utils/appUtils.js'
 import { getCharacterNotices } from './utils/characterNotices.js'
 import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
@@ -17,32 +17,61 @@ import { useCloudSave } from './hooks/useCloudSave.js'
 import { PROVIDER_LABELS } from './lib/idleonCloud.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
-import MasterClasses from './components/MasterClasses/MasterClasses.jsx'
-import Minibosses from './components/Minibosses/minibosses.jsx'
-import GearOptimizer from './components/GearOptimizer/GearOptimizer.jsx'
-import Statues from './components/Statues/statues.jsx'
-import Obols from './components/Obols/Obols.jsx'
-import Islands from './components/Islands/Islands.jsx'
-import Construction from './components/Construction/Construction.jsx'
-import Shrines from './components/Shrines/shrines.jsx'
-import Worship from './components/Worship/Worship.jsx'
-import Printer from './components/Printer/Printer.jsx'
-import Refinery from './components/Refinery/Refinery.jsx'
-import HatRack from './components/HatRack/HatRack.jsx'
-import CapeVine from './components/CapeVine/CapeVine.jsx'
-import Lab from './components/Lab/Lab.jsx'
-import Bubba from './components/Bubba/Bubba.jsx'
-import Orion from './components/Orion/Orion.jsx'
-import Poppy from './components/Poppy/Poppy.jsx'
-import Cooking from './components/Cooking/Cooking.jsx'
-import Breeding from './components/Breeding/Breeding.jsx'
-import Farming from './components/Farming/Farming.jsx'
-import Hole from './components/Hole/Hole.jsx'
-import Summoning from './components/Summoning/Summoning.jsx'
-import Spelunking from './components/Spelunking/Spelunking.jsx'
-
+// Page CSS loads up front, in this order, before App.css and global.css, even though page code is lazy.
+// Some page rules tie with global.css rules and global has to keep winning, so don't move or reorder these.
+import './components/TierList/TierList.css'
+import './components/InfoPanel/InfoPanel.css'
+import './components/MasterClasses/RoyalOutposts.css'
+import './components/MasterClasses/RoyalResources.css'
+import './components/MasterClasses/MasterClasses.css'
+import './components/Minibosses/minibosses.css'
+import './components/GearOptimizer/GearOptimizer.css'
+import './components/Statues/statues.css'
+import './components/Obols/Obols.css'
+import './components/Islands/Islands.css'
+import './components/CogBoardMap/CogBoardMap.css'
+import './components/Construction/Construction.css'
+import './components/Shrines/shrines.css'
+import './components/Worship/Worship.css'
+import './components/Printer/Printer.css'
+import './components/Refinery/Refinery.css'
+import './components/PremiumCollection/PremiumCollection.css'
+import './components/Lab/Lab.css'
+import './components/Clicker/Clicker.css'
+import './components/Bubba/Bubba.css'
+import './components/Cooking/Cooking.css'
+import './components/Breeding/Breeding.css'
+import './components/Farming/Farming.css'
+import './components/Hole/Hole.css'
+import './components/Summoning/Summoning.css'
+import './components/Spelunking/Spelunking.css'
 import './App.css'
 import './styles/global.css'
+
+// Section pages load the first time they're opened, so the site starts with a small bundle
+const MasterClasses = lazy(() => import('./components/MasterClasses/MasterClasses.jsx'))
+const Minibosses = lazy(() => import('./components/Minibosses/minibosses.jsx'))
+const GearOptimizer = lazy(() => import('./components/GearOptimizer/GearOptimizer.jsx'))
+const Statues = lazy(() => import('./components/Statues/statues.jsx'))
+const Obols = lazy(() => import('./components/Obols/Obols.jsx'))
+const Islands = lazy(() => import('./components/Islands/Islands.jsx'))
+const Construction = lazy(() => import('./components/Construction/Construction.jsx'))
+const Shrines = lazy(() => import('./components/Shrines/shrines.jsx'))
+const Worship = lazy(() => import('./components/Worship/Worship.jsx'))
+const Printer = lazy(() => import('./components/Printer/Printer.jsx'))
+const Refinery = lazy(() => import('./components/Refinery/Refinery.jsx'))
+const HatRack = lazy(() => import('./components/HatRack/HatRack.jsx'))
+const CapeVine = lazy(() => import('./components/CapeVine/CapeVine.jsx'))
+const Lab = lazy(() => import('./components/Lab/Lab.jsx'))
+const Bubba = lazy(() => import('./components/Bubba/Bubba.jsx'))
+const Orion = lazy(() => import('./components/Orion/Orion.jsx'))
+const Poppy = lazy(() => import('./components/Poppy/Poppy.jsx'))
+const Cooking = lazy(() => import('./components/Cooking/Cooking.jsx'))
+const Breeding = lazy(() => import('./components/Breeding/Breeding.jsx'))
+const Farming = lazy(() => import('./components/Farming/Farming.jsx'))
+const Hole = lazy(() => import('./components/Hole/Hole.jsx'))
+const Summoning = lazy(() => import('./components/Summoning/Summoning.jsx'))
+const Spelunking = lazy(() => import('./components/Spelunking/Spelunking.jsx'))
 
 // ============================================================
 // APP
@@ -341,7 +370,15 @@ export default function App() {
 
       {/* ── Main Content ── */}
       <div className="content">
-        {renderContent()}
+        <Suspense
+          fallback={(
+            <div className="page">
+              <p className="page-empty">Loading…</p>
+            </div>
+          )}
+        >
+          {renderContent()}
+        </Suspense>
       </div>
     </div>
   )

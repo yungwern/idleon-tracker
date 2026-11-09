@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { cogMap, COG_BORDER_CLASS } from '../../data'
 import CogBoardMap from '../CogBoardMap/CogBoardMap'
 import InfoPanel from '../InfoPanel/InfoPanel'
@@ -10,14 +10,14 @@ import './Construction.css'
 // ============================================================
 
 function Numpad({ value, onChange }) {
-  function handleKey(key) {
+  const handleKey = useCallback(key => {
     if (key === 'backspace') {
       onChange(value.slice(0, -1))
     } else {
       if (value.length >= 6) return
       onChange(value + key)
     }
-  }
+  }, [value, onChange])
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -26,7 +26,7 @@ function Numpad({ value, onChange }) {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [value])
+  }, [handleKey])
 
   return (
     <div className="numpad">

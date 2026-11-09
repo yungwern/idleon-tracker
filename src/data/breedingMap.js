@@ -552,21 +552,6 @@ export const breedingMap = {
   },
 }
 
-export const eggMap = {
-  PetEgg1: { id: 1 },
-  PetEgg2: { id: 2 },
-  PetEgg3: { id: 3 },
-  PetEgg4: { id: 4 },
-  PetEgg5: { id: 5 },
-  PetEgg6: { id: 6 },
-  PetEgg7: { id: 7 },
-  PetEgg8: { id: 8 },
-  PetEgg9: { id: 9 },
-  PetEgg10: { id: 10 },
-  PetEgg11: { id: 11 },
-  PetEgg12: { id: 12 },
-}
-
 export const spiceMap = {
   CookingSpice0: {
     name: 'Grasslands',

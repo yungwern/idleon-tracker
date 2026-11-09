@@ -257,12 +257,16 @@ function StepCard({ step, number }) {
   )
 }
 
-function Phases() {
-  let stepNumber = 0
+// Steps are numbered across every phase: the number each phase starts counting from
+const PHASE_STEP_STARTS = BUBBA_PHASES.reduce(
+  (starts, phase, i) => [...starts, i === 0 ? 0 : starts[i - 1] + BUBBA_PHASES[i - 1].steps.length],
+  []
+)
 
+function Phases() {
   return (
     <div className="bubba-phases">
-      {BUBBA_PHASES.map(phase => (
+      {BUBBA_PHASES.map((phase, phaseIndex) => (
         <section
           key={phase.title}
           className="bubba-phase"
@@ -272,16 +276,13 @@ function Phases() {
             <span className="bubba-phase-subtitle">{phase.subtitle}</span>
           </div>
           <div className="bubba-steps">
-            {phase.steps.map(step => {
-              stepNumber += 1
-              return (
-                <StepCard
-                  key={step.title}
-                  step={step}
-                  number={stepNumber}
-                />
-              )
-            })}
+            {phase.steps.map((step, stepIndex) => (
+              <StepCard
+                key={step.title}
+                step={step}
+                number={PHASE_STEP_STARTS[phaseIndex] + stepIndex + 1}
+              />
+            ))}
           </div>
         </section>
       ))}

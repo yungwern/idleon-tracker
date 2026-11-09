@@ -4,7 +4,7 @@ export { sections, sectionIcons } from './sections'
 export { talentMap, talentGrowthMap } from './talentMap'
 export { MASTERCLASSES } from './masterClasses'
 export { itemMap } from './itemMap'
-export { equipmentMap, GEAR_SETS, GEAR_SET_PIECES } from './equipmentMap'
+export { equipmentMap, GEAR_SETS } from './equipmentMap'
 export { GEAR_BONUSES } from './gearBonuses'
 export { premiumGearNames, premiumGearMap } from './premiumGear'
 export {
@@ -31,7 +31,7 @@ export { tesseractMap } from './tesseractMap' // Arcane Cultist class system
 export { meritMap } from './meritMap'
 export { starSignMap } from './starSignMap'
 export { ROYAL_STATUES, PARCHMENT_KEY, royalStatueOddsN, royalStatueBonus, formatStatueMultiplier, STATUE_FLAIR_MARBLE, statueFlairCost, statueFlairExpMulti } from './royalGuardianMap'
-export { buildOutpostSummary, OUTPOST_UPGRADES, OUTPOST_MODES, SUPPORT_CAMP_MODE, SAVAGE_STRONGHOLD_MODE, PURITY_RANK, formatOutpostExp } from './royalOutposts'
+export { buildOutpostSummary, OUTPOST_UPGRADES, SUPPORT_CAMP_MODE, SAVAGE_STRONGHOLD_MODE, PURITY_RANK, formatOutpostExp } from './royalOutposts'
 export {
   MINIBOSSES,
   RANK_THRESHOLDS,
@@ -84,7 +84,7 @@ export { labBonusMap, labJewelMap } from './labMap'
 export { CHIP_SLOT_LEVELS, CONSOLE_ROLES, ACTIVE_REPLACED_ROLE, PRIORITY_CHIP_STATS, DOUBLER_ROLE_ORDER, DOUBLER_FREE_SLOTS, STACKED_CHIPS, CHIP_DISPLAY_GROUPS, CHIP_DISPLAY_LAST, CHIP_VALUES, CHIP_FALLBACK_SHARE, CHIP_STACK_DECAY, CHIP_KEEP_BONUS } from './labConsoleMap'
 export { cookingMap, cookingBonusTypes } from './cookingMap'
 export { mealMap } from './mealMap'
-export { breedingMap, eggMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, CRUCIBLE_WAVES, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
+export { breedingMap, spiceMap, geneMap, PASSIVE_CATEGORIES, PASSIVE_ORDER, fightingTierList, fightingComps, territoryComps, breedingBuffMap, BASE_MAX_SHINY_LEVEL, CRUCIBLE_WAVES, TERRITORY_POWER_REQ, FORAGE_GENE_IDS, COMBAT_GENE_IDS, GENE } from './breedingMap'
 export { premiumCapes, CAPE_VINE_SHARE, GOLDEN_VINE_SHARE, LOVELY_BALLOON, GOLDEN_VINE_PACK, GOLDEN_VINE_LEVEL_STEP, CAPE_VINE_EVENT_SHOP, CAPE_VINE_EVENT_SHOP_BONUS } from './capeVineMap'
 
 // ── World 5 ───────────────────────────────────────────────────────────────────

@@ -320,13 +320,17 @@ function CompRow({ comp }) {
 // MAIN COMPONENT
 // ============================================================
 
+// Shared fallbacks so a save without breeding data doesn't make a new value every render
+const NO_SHINY_LEVELS = []
+const NO_FENCE_PETS = {}
+
 export default function Breeding({ snapshot }) {
   const [activeTab, setActiveTab] = useState('shiny')
   const [hideMaxed, setHideMaxed] = useState(false)
   const [bonusFilter, setBonusFilter] = useState('')
 
-  const shinyPetsLevels = snapshot?.breeding?.shinyPetsLevels ?? []
-  const fencePets = snapshot?.breeding?.fencePets ?? {}
+  const shinyPetsLevels = snapshot?.breeding?.shinyPetsLevels ?? NO_SHINY_LEVELS
+  const fencePets = snapshot?.breeding?.fencePets ?? NO_FENCE_PETS
   const breedingBuffs = useMemo(() => getBreedingBuffs(snapshot?.breeding), [snapshot?.breeding])
   const maxShinyLevel = getMaxShinyLevel(breedingBuffs)
   const overLevels = useMemo(() => getShinyOverLevels(snapshot?.breeding), [snapshot?.breeding])

@@ -749,7 +749,7 @@ export default function MasterClasses({ snapshot }) {
       {/* ── Main Masterclass Info Panel ── */}
       <InfoPanel
       intro="This page breaks down each Masterclass and their unique progression systems. The AFK item for the active class is displayed at the top for a quick overview of your accumulated AFK hours."
-      items={[,
+      items={[
         'AFK items are tracked per Masterclass — the count shown is combined together from all of your characters and storage.',
         'Some sections contain tier lists, farm recommendations, and map bonuses that update automatically with your save data.',
       ]}
