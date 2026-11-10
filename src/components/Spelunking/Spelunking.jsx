@@ -109,7 +109,7 @@ function Overview({ summary, pow, amberGain, tomeMissing }) {
           `${formatPow(amberGain)}x Amber gain${tomeMissing ? '*' : ''}`,
         ]}
         tooltip={tomeMissing
-          ? '*Leaves out the Tome lore bonus to Amber: enter your Tome points in Import Save to include it.'
+          ? '*Leaves out the Tome lore bonus to Amber: enter your Tome points in Home > Settings to include it.'
           : null}
       >
         <AmberIcon tier={amberTier} />
@@ -641,7 +641,7 @@ export default function Spelunking({ snapshot, tomePoints }) {
       <InfoPanel
         intro="Your World 7 Spelunking progress and the Amber shop."
         items={[
-          'POW and Amber gain at the top are your account totals. Amber gain uses the Tome points you entered in Import Save for the Tome\'s Amber lore bonus.',
+          'POW and Amber gain at the top are your account totals. Amber gain uses the Tome points you entered in Home > Settings for the Tome\'s Amber lore bonus.',
           'Costs include your shop discounts (Woahtermelon meal, sushi, jelly and the Royal Guardian Amber Hoard talent) and are shown in your current amber color, like in game.',
           'Turn on Max Amber Hoard to see prices with Amber Hoard at the highest level your account can reach, the way you\'d set it before a shopping trip.',
           'Green upgrades are affordable with the amber you have right now. Faded ones are locked behind the upgrade named on them.',

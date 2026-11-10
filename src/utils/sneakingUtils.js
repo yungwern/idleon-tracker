@@ -427,7 +427,7 @@ function getCharmTotal(ninja, subType, goldScroll) {
 // Every ninja's stealth, split into sources so the page can show where it comes from.
 // sources: [{ id, label, multi, scope: 'ninja' | 'account', detail?, active }]; base = flat base stealth.
 // The game reads Farming LV, star signs and the statue as the logged-in character (newest PTimeAway).
-// tomePoints = the Tome total typed into the Import Save modal (Stealth Chapter bubble).
+// tomePoints = the Tome total typed into Home > Settings (Stealth Chapter bubble).
 export function getNinjaStealth(snapshot, tomePoints) {
   const sneaking = snapshot?.sneaking
   const { ninjas, storage } = getNinjaLoadouts(snapshot)
@@ -465,7 +465,7 @@ export function getNinjaStealth(snapshot, tomePoints) {
       multi: percent(stealthChapter + ninjaTwin),
       detail: tomePoints
         ? `Bubble ${formatSneakingNumber(stealthChapter)}% (Tome ×${tomeMulti}), star sign ${formatSneakingNumber(ninjaTwin)}%`
-        : `Star sign ${formatSneakingNumber(ninjaTwin)}%. Enter your Tome points in Import Save to count the bubble`,
+        : `Star sign ${formatSneakingNumber(ninjaTwin)}%. Enter your Tome points in Home > Settings to count the bubble`,
     },
     { id: 'statue', label: 'Stealth Statue', multi: percent(getStatueBonus(snapshot, STEALTH_STATUE).value) },
     { id: 'card', label: 'Card: Crystal Candalight', multi: percent(getPassiveCardBonus(CRYSTAL_CANDALIGHT, snapshot?.cards)) },

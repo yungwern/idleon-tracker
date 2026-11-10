@@ -1,4 +1,5 @@
 import { cogMap, COG_BORDER_CLASS } from '../data'
+import { getLegendTalentBonus, getLegendTalentLevel } from './legendTalentUtils'
 
 // ============================================================
 // COG NAMES — same tables IdleonToolbox uses (parsers/world-3/construction.ts)
@@ -114,4 +115,21 @@ export function formatBigNumber(value) {
   }
   const power = Math.floor(Math.log10(e))
   return `${Math.floor(e / 10 ** power * 100) / 100}e${power}`
+}
+
+// ============================================================
+// TRIMMED (GILDED) CONSTRUCTION SLOTS
+// Build speed multi (Toolbox construction.ts getGildedBoostioBonus):
+// (3 + Nitrogen atom bonus / 100) × (1 + legend talent 33 "Inevitable Builder" / 100).
+// Nitrogen - Construction Trimmer = atom 6, +15% per LV. legendLevel overrides talent 33's LV.
+// ============================================================
+
+const TRIMMED_BASE = 3
+const NITROGEN_ATOM = 6
+const NITROGEN_PER_LEVEL = 15
+const TRIMMED_LEGEND_TALENT = 33
+
+export function getTrimmedSlotSpeedMulti(snapshot, legendLevel = getLegendTalentLevel(snapshot?.legendTalents, TRIMMED_LEGEND_TALENT)) {
+  const nitrogen = (snapshot?.atoms?.levels?.[NITROGEN_ATOM] ?? 0) * NITROGEN_PER_LEVEL
+  return (TRIMMED_BASE + nitrogen / 100) * (1 + getLegendTalentBonus(TRIMMED_LEGEND_TALENT, legendLevel) / 100)
 }

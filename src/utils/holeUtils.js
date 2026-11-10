@@ -178,7 +178,7 @@ export function getVillagerExpModel(snapshot, tomePoints) {
   const statue = getStatueBonus(snapshot, VILLAGER_STATUE)
   missing.push(...statue.missing)
   const loreUnlocked = (snapshot?.spelunking?.loreBonusesUnlocked ?? 0) > VILLAGER_LORE_BONUS
-  if (loreUnlocked && !(Number(tomePoints) > 0)) missing.push('Tome points (Tome lore bonus: add them in Import Save)')
+  if (loreUnlocked && !(Number(tomePoints) > 0)) missing.push('Tome points (Tome lore bonus: add them in Home > Settings)')
   const jars = VILLAGER_JARS.reduce((sum, i) => sum + getJarBonus(snapshot, i), 0)
   const legend = getLegendTalentBonus(VILLAGER_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, VILLAGER_LEGEND_TALENT))
 

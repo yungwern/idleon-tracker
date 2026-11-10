@@ -194,7 +194,7 @@ function MeasureStat({ measure }) {
   if (stat.value == null) {
     return (
       <span className="hole-measure-by">
-        {stat.label}: {stat.label === 'Tome Score' ? 'add it in Import Save' : 'not tracked yet'}
+        {stat.label}: {stat.label === 'Tome Score' ? 'add it in Home > Settings' : 'not tracked yet'}
       </span>
     )
   }

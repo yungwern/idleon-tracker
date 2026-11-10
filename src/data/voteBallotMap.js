@@ -70,3 +70,14 @@ export const meritocracyBonuses = [
   { text: "All of your Statues give }x higher bonuses than normal", value: 50 },
   { text: "Multiplies Class EXP gain by }x", value: 150 },
 ]
+
+// Name and box sprite for each weekly vote (Home rows, Weekly Votes tabs)
+export const voteTitles = {
+  ballot: 'Bonus Ballot',
+  meritocracy: 'Meritocracy',
+}
+
+export const voteIcons = {
+  ballot: 'images/home/vote-ballot.png',
+  meritocracy: 'images/home/meritocracy.png',
+}

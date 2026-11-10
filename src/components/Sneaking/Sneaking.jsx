@@ -45,7 +45,7 @@ export default function Sneaking({ snapshot, tomePoints }) {
           'Inventory: each ninja\'s hat, gloves/nunchaku/kunai and two charms, then your 39 storage slots. Slot colours are symbol levels (each LV = +50% to the charm in that slot). Hover a slot for its stats.',
           'Jade Emporium, Upgrades, Pristine Charms and Mastery: what you own and what\'s left.',
           'Gemstones: each bar fills toward the bonus at a full 10M counter, with breakpoints along the way.',
-          'Detection: each ninja\'s stealth and detection on its floor. Click a ninja to see every stealth source, including the ones you don\'t have yet. The Stealth Chapter bubble needs your Tome points (Import Save > Manual Inputs).',
+          'Detection: each ninja\'s stealth and detection on its floor. Click a ninja to see every stealth source, including the ones you don\'t have yet. The Stealth Chapter bubble needs your Tome points (Home > Settings).',
           'Setups: gear setups for door breaking, Funeral Flower pushes, item farming and EXP, with how many of each item you own.',
         ]}
       />

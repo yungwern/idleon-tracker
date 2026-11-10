@@ -1,0 +1,159 @@
+/* ============================================================
+   WEEKLY VOTES
+   Next week's Bonus Ballot / Meritocracy options (this week's winners are on Home)
+   ============================================================ */
+
+/* Bonus Ballot is World 2 gold, Meritocracy World 7 cyan (same as Home's vote rows) */
+.weekly-votes-tabs .page-tab-btn[data-vote="ballot"] {
+  --tab-color: #fbbf24;
+}
+
+.weekly-votes-tabs .page-tab-btn[data-vote="meritocracy"] {
+  --tab-color: #22d3ee;
+}
+
+.weekly-votes {
+  --vote-color: #fbbf24;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 2px solid var(--vote-color);
+  border-radius: 10px;
+}
+
+.weekly-votes[data-vote="meritocracy"] {
+  --vote-color: #22d3ee;
+}
+
+.weekly-votes-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weekly-votes-icon {
+  width: 38px;
+  height: 40px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.weekly-votes-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.weekly-votes-name {
+  color: #f3f4f6;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.weekly-votes-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.weekly-votes-multi {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--vote-color);
+  font-weight: 700;
+}
+
+.weekly-votes-timer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.weekly-votes-timer-label {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.weekly-votes-timer-time {
+  color: #f3f4f6;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.weekly-votes-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.weekly-votes-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.weekly-votes-bonus-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.weekly-votes-text {
+  flex: 1;
+  min-width: 0;
+  color: #9ca3af;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.weekly-votes-option--leading .weekly-votes-text {
+  color: #f3f4f6;
+}
+
+.weekly-votes-percent {
+  flex-shrink: 0;
+  color: #9ca3af;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.weekly-votes-option--leading .weekly-votes-percent {
+  color: var(--vote-color);
+}
+
+/* Vote share bar along the bottom of the row */
+.weekly-votes-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--vote-share, 0%);
+  height: 3px;
+  background: #4b5563;
+}
+
+.weekly-votes-option--leading .weekly-votes-bar {
+  background: var(--vote-color);
+}

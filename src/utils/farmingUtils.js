@@ -944,7 +944,7 @@ const statusOf = ({ missing }) => ({
   missing,
 })
 
-// tomePoints: total Tome points typed in by the player in Import Save (not in the save).
+// tomePoints: total Tome points typed in by the player in Home > Settings (not in the save).
 export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = {}) {
   const farming = snapshot?.farming ?? {}
   const market = farming.marketLevels ?? []
@@ -994,7 +994,7 @@ export function getCropEvolutionBreakdown(snapshot, rankMulti, { tomePoints } = 
       ? source('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 1 + cropChapter * tomeMulti / 100, {
         note: `${Number(tomePoints).toLocaleString()} Tome points (x${tomeMulti})`,
       })
-      : needsInput('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Enter your Tome points in Import Save (the save doesn\'t store them)'),
+      : needsInput('cropChapter', 'Crop Chapter (bubble)', 'Alchemy', 'Enter your Tome points in Home > Settings (the save doesn\'t store them)'),
     source('cropius', 'Cropius Mapper (bubble)', 'Alchemy', 1 + cropius * clearedW6Maps / 100, {
       note: `${clearedW6Maps} World 6 maps cleared across characters`,
     }),

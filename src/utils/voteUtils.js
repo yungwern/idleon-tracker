@@ -89,3 +89,52 @@ export function getBallotBonus(snapshot, index) {
   if (!isBallotBonusSelected(snapshot?.voteBallot, index)) return 0
   return (ballotBonuses[index]?.value ?? 0) * getBallotMulti(snapshot)
 }
+
+// ── Home vote cards ──
+// A bonus value the way the game prints it in vote text
+function formatVoteNumber(value) {
+  const digits = value < 10 ? 2 : value < 100 ? 1 : 0
+  return Number(value.toFixed(digits)).toLocaleString()
+}
+
+// Vote text with its value filled in: "{" = the % value, "}" = 1 + value/100 as a multiplier (Toolbox fillVoteText)
+export function fillVoteText(text, value) {
+  return (text ?? '')
+    .replace('{', formatVoteNumber(value))
+    .replace('}', `${formatVoteNumber(1 + value / 100)}`)
+}
+
+function voteEntry(list, iconPrefix, index, multi, percent) {
+  const base = list[index]?.value ?? 0
+  const value = base * multi
+  return {
+    index,
+    text: fillVoteText(list[index]?.text ?? `Unknown bonus ${index}`, value),
+    value,
+    icon: `images/vote/${iconPrefix}${index}.png`,
+    percent,
+  }
+}
+
+// One vote for a Home card: { multi, current, options } where current = this week's winning bonus and
+// options = next week's choices with their vote % when the save was pulled. null without vote data.
+export function getVoteSummary(snapshot, kind) {
+  const ballot = snapshot?.voteBallot
+  if (!ballot) return null
+  const isBallot = kind === 'ballot'
+  const list = isBallot ? ballotBonuses : meritocracyBonuses
+  const multi = isBallot ? getBallotMulti(snapshot) : getMeritocracyMulti(snapshot)
+  const selected = isBallot ? ballot.selectedBonus : ballot.selectedMeritocracy
+  const prefix = isBallot ? 'VoteBon' : 'MeritBon'
+  const options = (isBallot ? ballot.bonusOptions : ballot.meritocracyOptions) ?? null
+  return {
+    multi,
+    current: selected == null ? null : voteEntry(list, prefix, Number(selected), multi),
+    options: options?.map(option => voteEntry(list, prefix, option.index, multi, option.percent)) ?? null,
+  }
+}
+
+// "8.74x" for a vote multi
+export function formatVoteMulti(multi) {
+  return `${Number(multi.toFixed(2))}x`
+}

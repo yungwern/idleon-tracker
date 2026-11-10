@@ -1,0 +1,264 @@
+/* ── Legend Talents (World 7) ── */
+.legend-card {
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.legend-card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  margin: 0 0 12px;
+  color: #e5e7eb;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.legend-card-stat {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.legend-points {
+  position: relative;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: help;
+}
+
+.legend-points strong {
+  color: #fde68a;
+  font-size: 13px;
+}
+
+.legend-points-tooltip {
+  min-width: 220px;
+}
+
+.legend-points-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.legend-points-line--source {
+  padding-left: 10px;
+  color: #9ca3af;
+}
+
+/* Row colours, matching the in-game scroll colours */
+.legend-slot--yellow,
+.legend-detail--yellow {
+  --legend-row-color: #f5c04a;
+}
+
+.legend-slot--red,
+.legend-detail--red {
+  --legend-row-color: #e89ad6;
+}
+
+.legend-slot--brown,
+.legend-detail--brown {
+  --legend-row-color: #f0b0a8;
+}
+
+.legend-slot--green,
+.legend-detail--green {
+  --legend-row-color: #6fdc9a;
+}
+
+.legend-slot--white,
+.legend-detail--white {
+  --legend-row-color: #a5d8f3;
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  max-width: 640px;
+  margin: 0 auto 12px;
+}
+
+.legend-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 5px 2px 4px;
+  background: color-mix(in srgb, var(--legend-row-color, #9ca3af) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--legend-row-color, #9ca3af) 30%, transparent);
+  border-radius: 8px;
+  color: #e5e7eb;
+  font: inherit;
+  cursor: pointer;
+}
+
+.legend-slot:hover {
+  border-color: color-mix(in srgb, var(--legend-row-color, #9ca3af) 70%, transparent);
+}
+
+.legend-slot--selected {
+  border-color: var(--legend-row-color);
+  box-shadow: 0 0 0 2px var(--legend-row-color);
+}
+
+.legend-slot-img {
+  width: 100%;
+  max-width: 48px;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.legend-slot-level {
+  color: #d1d5db;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.legend-slot--maxed .legend-slot-level {
+  color: var(--legend-row-color);
+}
+
+.legend-slot--empty .legend-slot-img {
+  opacity: 0.35;
+}
+
+.legend-slot--empty .legend-slot-level {
+  color: #6b7280;
+}
+
+.legend-slot--locked {
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  cursor: default;
+}
+
+.legend-slot-unknown {
+  color: #4b5563;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.legend-detail {
+  display: flex;
+  text-align: left;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid color-mix(in srgb, var(--legend-row-color) 35%, transparent);
+  border-radius: 8px;
+}
+
+.legend-detail-img {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.legend-detail-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.legend-detail-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-detail-name {
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.legend-detail-spot {
+  padding: 1px 6px;
+  border: 1px solid color-mix(in srgb, var(--legend-row-color) 50%, transparent);
+  border-radius: 999px;
+  color: var(--legend-row-color);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.legend-detail-level {
+  margin-left: auto;
+  color: #d1d5db;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.legend-detail-level--maxed {
+  color: var(--legend-row-color);
+}
+
+.legend-detail-text {
+  color: #d1d5db;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.legend-detail-meta {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.legend-detail-meta--missing {
+  color: #6b7280;
+}
+
+/* ── Tabs + Tier List tab ── */
+.legend-tabs {
+  --tab-color: #f5c04a;
+}
+
+.legend-card .tl-root {
+  max-width: 640px;
+  margin: 0 auto 12px;
+}
+
+[data-variant="legend-talents"] .tl-item-img {
+  padding: 2px;
+}
+
+[data-variant="legend-talents"] .legend-tier-item--maxed .tl-item-img {
+  opacity: 0.4;
+}
+
+[data-variant="legend-talents"] .legend-tier-item--maxed .tl-item-caption {
+  color: #6b7280;
+}
+
+.legend-detail-tier {
+  padding: 1px 6px;
+  border: 1px solid var(--tier-color);
+  border-radius: 999px;
+  color: var(--tier-color);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.legend-detail-note {
+  color: #fde68a;
+  font-size: 11px;
+  font-style: italic;
+}

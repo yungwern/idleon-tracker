@@ -24,6 +24,15 @@
   align-items: center;
   gap: 10px;
   padding: 0 6px 14px;
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-brand:hover .sidebar-brand-title {
+  color: #c7dcff;
 }
 
 /* 16px pixel art saved at 192px: 48px is an exact 1/4 scale, so pixels stay even */
@@ -181,6 +190,11 @@
   font-weight: 700;
   line-height: 16px;
   text-align: center;
+}
+
+/* ── Home (above the groups) ── */
+.sidebar-home-btn {
+  margin-top: 8px;
 }
 
 /* ── Section Groups ── */

@@ -1110,8 +1110,16 @@ function parseTesseract(json) {
 
 // ── Arcade (W2) ───────────────────────────────────────────────────────────────
 // ArcadeUpg[i] = level of gold ball shop upgrade i (see data/arcadeMap.js)
-function parseArcade(json) {
-  return { levels: parseRaw(json['ArcadeUpg']) ?? [] }
+// Ball counts from OptLacc (Toolbox parsers/world-2/arcade.ts): balls [74], goldBalls [75],
+// royalBalls [324] (spent on Lv 101 Super upgrades), omegaBalls [625] (Lv 102 Omega upgrades)
+function parseArcade(json, optLacc) {
+  return {
+    levels: parseRaw(json['ArcadeUpg']) ?? [],
+    balls: Number(optLacc?.[74]) || 0,
+    goldBalls: Number(optLacc?.[75]) || 0,
+    royalBalls: Number(optLacc?.[324]) || 0,
+    omegaBalls: Number(optLacc?.[625]) || 0,
+  }
 }
 
 // ── Gem Shop ──────────────────────────────────────────────────────────────────
@@ -1271,6 +1279,8 @@ function parseCurrencies(json) {
     .reduce((sum, key) => sum + (parseFloat(json[key]) || 0), 0)
   return {
     money: (parseFloat(json['MoneyBANK']) || 0) + characterMoney,
+    // CYColosseumTickets = colosseum tickets held (Toolbox currencies.ColosseumTickets)
+    colosseumTickets: Number(json['CYColosseumTickets']) || 0,
     bits: Number(parseRaw(json['Gaming'])?.[0]) || 0,
     particles: Number(parseRaw(json['Divinity'])?.[39]) || 0,
   }
@@ -1554,14 +1564,37 @@ function parseBubba(json) {
 
 // ── Vote Ballot ───────────────────────────────────────────────────────────────
 // serverVars (outside data) holds this week's vote: voteCategories[0] = the winning
-// ballot bonus, voteCat2[0] = the winning Meritocracy bonus.
+// ballot bonus, voteCat2[0] = the winning Meritocracy bonus. The rest of each list is the bonuses
+// being voted on for next week, and votePercent / votePercent2 their vote shares (same order)
+// when the save was pulled (Toolbox parsers/world-2/voteBallot.ts).
 // demonfleshHandedIn = OptLacc[472] (Meritocracy base 100% instead of 25%)
 function parseVoteBallot(rawJson, optLacc) {
   const serverVars = rawJson?.serverVars ?? {}
+  const options = (categories, percents) => (categories ?? []).slice(1).map((index, i) => ({
+    index: Number(index),
+    percent: Number(percents?.[i]) || 0,
+  }))
   return {
     selectedBonus: serverVars.voteCategories?.[0] ?? null,
     selectedMeritocracy: serverVars.voteCat2?.[0] ?? null,
+    bonusOptions: options(serverVars.voteCategories, serverVars.votePercent),
+    meritocracyOptions: options(serverVars.voteCat2, serverVars.votePercent2),
     demonfleshHandedIn: Number(optLacc?.[472]) === 1,
+  }
+}
+
+// ── Resets ────────────────────────────────────────────────────────────────────
+// The account's own daily/weekly resets, for Home's timers (utils/resetUtils.js).
+// savedAt = TimeAway.GlobalTime (s), shopRestock = seconds from savedAt to the daily reset,
+// daysUntilWeekly = OptLacc[39] (days from that daily reset to the weekly one). Toolbox getNextResetAt.
+function parseResets(json, optLacc) {
+  const timeAway = parseRaw(json['TimeAway']) ?? {}
+  const savedAt = Number(timeAway?.GlobalTime)
+  const shopRestock = Number(timeAway?.ShopRestock)
+  return {
+    savedAt: Number.isFinite(savedAt) ? savedAt : null,
+    shopRestock: Number.isFinite(shopRestock) ? shopRestock : null,
+    daysUntilWeekly: Number(optLacc?.[39]) || 0,
   }
 }
 
@@ -1643,12 +1676,13 @@ export function extractSnapshot(rawJson) {
     killroy: parseKillroy(optLacc),
     sushi: parseSushi(json),
     voteBallot: parseVoteBallot(rawJson, optLacc),
+    resets: parseResets(json, optLacc),
     stamps: parseStamps(json),
     sneaking: parseSneaking(json, optLacc, charList.length),
     companions: parseCompanions(rawJson, optLacc),
     jellyOperator: parseJellyOperator(json),
     tesseract: parseTesseract(json),
-    arcade: parseArcade(json),
+    arcade: parseArcade(json, optLacc),
     gemShop: parseGemShop(json),
     merits: parseMerits(json),
     // BribeStatus[i] = 1 bought (Toolbox bribes)

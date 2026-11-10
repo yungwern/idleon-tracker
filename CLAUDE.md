@@ -29,8 +29,10 @@ Each page/system has its own notes file in `notes/` (save layout, formulas, what
 | `notes/farming.md` | Market, land rank optimizer, crop evolution + push outlook |
 | `notes/hat-rack-cape-vine.md` | Hat Rack and The Cape Vine (PremiumCollection) |
 | `notes/hole.md` | The Hole: villagers, opal planner, every cavern panel |
+| `notes/home.md` | Home page: last-page memory, reset timers, weekly votes, Settings (notification toggles, inputs) |
 | `notes/islands.md` | Islands (World 2) |
 | `notes/lab.md` | Lab console, chip planner, mainframe connections |
+| `notes/legend-talents.md` | Legend Talents: tier list, board grid order/icons, max LV (Fever/Menagerie), points |
 | `notes/obols.md` | Obol roll check, boards, stats panel |
 | `notes/printer-refinery.md` | Printer, print planner, Salt Materials, Refinery rank planner |
 | `notes/royal-guardian.md` | Royal Guardian outposts optimizer and chips |
@@ -39,7 +41,7 @@ Each page/system has its own notes file in `notes/` (save layout, formulas, what
 | `notes/spelunking.md` | Lore reads, elixirs, Red Jellyfish, spelunkingUtils |
 | `notes/summoning.md` | Summoning stone bosses, doubler planner |
 | `notes/talents.md` | Max possible / added talent levels |
-| `notes/vote-ballot.md` | Meritocracy and Bonus Ballot multis |
+| `notes/vote-ballot.md` | Meritocracy and Bonus Ballot multis, Weekly Votes page |
 
 ---
 
@@ -48,11 +50,11 @@ Each page/system has its own notes file in `notes/` (save layout, formulas, what
 ```
 src/
 ├── components/         # One folder per feature (see casing note below)
-│   ├── Section pages:  Breeding, Bubba, Orion, Poppy, Construction, Cooking, Farming, GearOptimizer, CapeVine, HatRack,
-│   │                   Lab, Hole, Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer, Refinery,
+│   ├── Section pages:  Home (landing page, eager not lazy), WeeklyVotes, Breeding, Bubba, Orion, Poppy, Construction, Cooking, Farming, GearOptimizer, CapeVine, HatRack,
+│   │                   Lab, LegendTalents, Hole, Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer, Refinery,
 │   │                   Shrines, Sneaking, Spelunking, Statues, Summoning, Worship (sub-tab files: see each notes file)
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, Clicker, PremiumCollection (Hat Rack + Cape Vine body),
-│                       CharacterCard, CogBoardMap, ImportModal, InfoPanel, Keychains, ObolBoard (in Obols/), PremiumGear, TierList
+│                       CharacterCard, CogBoardMap, ImportModal (+ ImportPanel, also on Home), InfoPanel, Keychains, ObolBoard (in Obols/), PremiumGear, TierList (Legend Talents)
 ├── data/               # Game data; index.js barrel file re-exports everything, grouped by world
 │                       # sections.js = sidebar groups (empty ones hidden) + sectionIcons (sidebar sprite per section); statueWorlds + statueBases live in statueMap.js
 │                       # Item names → itemMap.js; fixed UQ stats (keychains, etc.) → equipmentMap.js
@@ -61,7 +63,7 @@ src/
 │                       # cardMap.js (all cards + cardSetMap) adds bonus/perTier/set; effect has { for
 │                       #   the value. Card stars from the save (snapshot.cards) → utils/cardUtils.js.
 │                       # bisSetups.js only holds ids.
-│                       # legendTalentMap.js: W7 legend talents by save index (Spelunk[18]); math and
+│                       # legendTalentMap.js: W7 legend talents by save index (Spelunk[18]), icons by grid position; math and
 │                       #   { } $ text placeholders → utils/legendTalentUtils.js
 │                       # Growth-curve data (func/x1/x2, bonus = growth() in utils/mathUtils.js) lives on
 │                       #   bubbleMap + stampMap entries, vialMap.js, talentMap.js talentGrowthMap. Generated
@@ -74,14 +76,16 @@ src/
 │                       #   mineheadMap (opponent bonuses), cavernsMap glunkoUpgradeValues (Crystal Glunko Cove).
 │                       # classes.js also has CLASS_TALENT_TABS (class lines) and CLASS_FAMILY_BONUSES.
 │                       # Data files never import utils; computed tables (e.g. ribbonData) live in utils.
-├── hooks/              # useTooltipPlacement.js (keeps every tooltip on screen), useSaveImport.js, useTomePoints.js (Tome points typed into the Import Save modal's
-                        #   Manual Inputs, held in App and passed to pages; add new uses to TOME_POINTS_USES),
+├── hooks/              # useTooltipPlacement.js (keeps every tooltip on screen), useSaveImport.js, useTomePoints.js (Tome points typed into Home > Settings,
+                        #   held in App and passed to pages; add new uses to TOME_POINTS_USES),
+                        #   useNoticeSettings.js (notification on/off, store in utils/noticeSettings.js),
+                        #   useNow.js (1 s clock for countdowns),
                         #   useCloudSave.js (logged-in cloud save, see notes/cloud-login.md)
 ├── lib/                # extractSnapshot.js — parses raw save JSON; idleonCloud.js — cloud login + save read
 ├── styles/             # global.css — shared layout classes and reusable components
 └── utils/              # appUtils.js (toClassSlug, statueLevelColor, shrineLevelColor),
                         # talentUtils.js (super talent points for Overview notifications),
-                        # cogBoardUtils.js (cog names, board border groups, big-number format),
+                        # cogBoardUtils.js (cog names, board border groups, big-number format, trimmed slot speed),
                         # cookingUtils.js (ribbonMulti/ribbonTierClass from the game formula, max rank 25;
                         #   masteryNodeMulti for Cooking Mastery yellow nodes = snapshot.cooking.masteryNodes),
                         # *Notices.js (notification counts, see Notifications below)
@@ -100,7 +104,7 @@ src/
                         #   divinityUtils (minor link bonuses), familyUtils (family bonus walk), coralReefUtils,
                         #   prayerUtils (bonus/curse at PrayOwned level = snapshot.worship.prayerLevels; cards sort prayers by id, utility prayers 3 and 5 last),
                         #   gamingUtils (superbits, palette), spelunkingUtils (notes/spelunking.md), mineheadUtils,
-                        #   cavernUtils getGlunkoBonus.
+                        #   cavernUtils getGlunkoBonus, crystalMobUtils (daily guaranteed crystal mobs).
                         #   New bonus sources go in their system's util, never in the page that uses them.
 
 public/images/brand/    # Site logo (logo.png = sidebar + favicon; 16px art at 12x, options + generator in
@@ -209,8 +213,11 @@ talent tab and built from that tab's talents (Toolbox talents.json); `characterU
 
 **Notifications**: each count has one source so every badge agrees. `utils/characterNotices.js` (character
 Overview), `utils/masterclassNotices.js` (returns `{ masterclassId: { sectionId: count } }`, feeding the sidebar
-badge and the masterclass/section nav badges), `utils/minibossNotices.js`.
+badge and the masterclass/section nav badges), `utils/minibossNotices.js`, `utils/legendTalentNotices.js`.
 Sidebar badges are wired in `sectionNotices` in `App.jsx`; in-page badges use the shared `.notice-badge` class in `global.css`.
+Players can turn notices off in Home > Settings: every notice util checks `isNoticeOn(section, type)` from
+`utils/noticeSettings.js`, and a new notice kind gets a row in its `NOTICE_SECTIONS` and a line in Home's To do
+(`utils/homeTodo.js`) (see notes/home.md).
 
 **Line endings**: files use Windows CRLF. Keep them CRLF when editing so git diffs stay clean.
 

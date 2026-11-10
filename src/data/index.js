@@ -113,7 +113,7 @@ export { summoningBonuses, summoningEnemyBonuses, summoningEndless, summoningSto
 export { seedInfo, getSeedByCropId, marketMap, exoticMarketMap, calcExoticBonus, exoticCap, landRankMap, calcRankBonus } from './farmingMap'
 
 // ── World 7 ───────────────────────────────────────────────────────────────────
-export { legendTalentMap, LEGEND_TALENT_ORDER } from './legendTalentMap'
+export { legendTalentMap, LEGEND_TALENT_ORDER, LEGEND_TALENT_ROWS, LEGEND_TALENT_MAX_LEVEL_GROUPS, LEGEND_TALENT_TIERS, LEGEND_TALENT_TIER_NOTES } from './legendTalentMap'
 export { sushiUniqueBonuses } from './sushiMap'
 export { jellyObstructions } from './jellyMap'
 export { zenithMarketMap } from './zenithMap'
@@ -121,4 +121,4 @@ export { researchGridSquares, researchObservationBonuses, stickerBaseBonuses, me
 export { buttonBonusMap } from './buttonMap'
 export { mineheadOpponentBonuses } from './mineheadMap'
 export { spelunkingUpgradeMap, spelunkingUpgradeGroups, spelunkingChapterMap, spelunkingTunnelRocks, SPELUNKING_ROCK_LETTERS, spelunkingLoreBosses, spelunkingReadLevels, READ_LEVEL_GROWTH, spelunkingReadOdds, spelunkingTunnels, amberTiers, spelunkingLoreTomeBonuses, MAX_GRAND_DISCOVERIES, MAX_ELIXIR_TYPES, MAX_ELIXIR_SLOTS, MAX_ELIXIR_DUPLICATES, spelunkingElixirMap, spelunkingElixirSetups } from './spelunkingMap'
-export { ballotBonuses, meritocracyBonuses } from './voteBallotMap'
+export { ballotBonuses, meritocracyBonuses, voteTitles, voteIcons } from './voteBallotMap'

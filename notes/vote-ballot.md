@@ -11,3 +11,10 @@ majik 3 Voter Integrity + summoning '+{% Ballot Bonus' + event shop 7 ×17 + 16 
 50)/100); 8.66 on Eli's save (= Toolbox). Used by printer (11), refinery speed (33), crop ballot 29 (added to every land rank plot term:
 farmingUtils withCropBallotBonus(snapshot) = farming + cropBallotBonus, which the Land Ranks tab passes to the land rank functions).
 New vote uses: call getBallotBonus / getMeritocracyBonus, never flag them missing.
+
+## Weekly Votes page (Global, `components/WeeklyVotes/`)
+Tabs for Bonus Ballot and Meritocracy (tab colours gold / cyan, same as Home's rows). For now each tab only shows
+next week's three options (`NextVoteTab.jsx`): `voteBallot.bonusOptions / meritocracyOptions` from serverVars
+(voteCategories / voteCat2 after [0], votePercent / votePercent2), each at the current multi, leader highlighted,
+share bar, vote countdown and "as of" save time. This week's winner is on Home. Names/sprites: `voteTitles` /
+`voteIcons` in voteBallotMap.js; `voteUtils formatVoteMulti`; clock: `hooks/useNow.js`. More to come (Eli).

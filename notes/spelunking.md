@@ -24,7 +24,7 @@ has 15 tunnel slots, only 10 tunnels exist. Best Nova Blast tool only knows the 
 how Scepter/Mjolnir unlock isn't in Toolbox data), mineheadUtils, cavernUtils getGlunkoBonus.
 spelunkingUtils getSpelunkingPow / getAmberGain = Toolbox getPower / getAmberGain (both
 match on Eli's saves); amber's Tome lore bonus needs the typed-in Tome points (TOME_POINTS_KEY
-in tomeUtils, entered in the Import Save modal). Their sources: menagerieUtils (unlocks/boosts),
+in tomeUtils, entered in Home > Settings). Their sources: menagerieUtils (unlocks/boosts),
 clamWorkUtils, lootyUtils (Slab), breedingUtils getCrucibleBonus, gamingUtils MSA,
 farmingUtils getCropDepotBonus, coralReefUtils getDancingCoralBonus, labUtils
 getLabBonus (Slab Sovereignty / Depot Studies + jewel).

@@ -1,18 +1,29 @@
 import { MINIBOSSES, getAvailableKills, getOptimalKills, getDeathNotePoints, getDeathNoteMission } from '../data'
+import { isNoticeOn } from './noticeSettings'
 
 // Sidebar badge for Minibosses: +1 for every spawned miniboss (W3-W6) with its optimal stack ready,
 // +1 when the W7 Menagerie "Deathnote Boss PTS" mission can be claimed
 export function getMinibossNoticeCount(snapshot) {
-  return getSpawnNoticeCount(snapshot) + (getDeathNoteMissionClaimable(snapshot) > 0 ? 1 : 0)
+  const { ready, deathNoteClaims } = getMinibossNotices(snapshot)
+  return ready.length + (deathNoteClaims > 0 ? 1 : 0)
 }
 
-function getSpawnNoticeCount(snapshot) {
+// The same checks as a list (Home's To do panel): ready = minibosses with their optimal stack,
+// deathNoteClaims = Death Note mission claims waiting. Kinds turned off in Home > Settings come back empty.
+export function getMinibossNotices(snapshot) {
+  return {
+    ready: isNoticeOn('Minibosses', 'spawns') ? getReadyMinibosses(snapshot) : [],
+    deathNoteClaims: isNoticeOn('Minibosses', 'deathNote') ? getDeathNoteMissionClaimable(snapshot) : 0,
+  }
+}
+
+function getReadyMinibosses(snapshot) {
   const days = snapshot?.miniBossDays
-  if (!days) return 0
+  if (!days) return []
   return MINIBOSSES.filter(boss => {
     if (!boss.spawnTimer || days[boss.rawName] == null) return false
     return getAvailableKills(boss.spawnTimer, days[boss.rawName]) >= getOptimalKills(boss.spawnTimer)
-  }).length
+  })
 }
 
 export function getDeathNoteTotalPoints(kills) {

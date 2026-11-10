@@ -8,6 +8,7 @@ import { getMeritBonus } from './meritUtils'
 import { getWinnerBonusByName } from './summoningUtils'
 import { getLabJewelValue } from './labUtils'
 import { getPassiveCardBonus } from './cardUtils'
+import { isNoticeOn } from './noticeSettings'
 
 // Lab mainframe connections (Mainframe tab), from IdleonToolbox parsers/world-4/lab.ts. Separate from
 // labUtils because it reads meals/talents/summoning, which themselves read labUtils.
@@ -255,11 +256,12 @@ export function getMainframeNotices(snapshot) {
       count: 0,
     }
   }
-  const greenTube = getGreenTubeCheck(snapshot)
+  // Kinds turned off in Home > Settings read as clear (utils/noticeSettings.js)
+  const greenTube = isNoticeOn('Lab', 'greenTube') ? getGreenTubeCheck(snapshot) : null
   const connections = getMainframeConnections(snapshot)
   const anyConnected = connections.players.some(player => player.connected)
-  const viaductOn = !!connections.bonuses[VIADUCT_OF_THE_GODS]
-  const offBonuses = anyConnected
+  const viaductOn = isNoticeOn('Lab', 'viaduct') && !!connections.bonuses[VIADUCT_OF_THE_GODS]
+  const offBonuses = anyConnected && isNoticeOn('Lab', 'offBonuses')
     ? labBonusMap.filter(bonus => bonus.index !== VIADUCT_OF_THE_GODS && !connections.bonuses[bonus.index])
     : []
   return {

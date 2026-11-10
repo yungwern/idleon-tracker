@@ -3,9 +3,10 @@
 // =========================
 // Source: IdleonToolbox (Morta1/IdleonToolbox) shared-data.json "legendTalents" + generalSpelunky[26].
 // Keyed by talent index — the save stores levels in Spelunk[18][index] (snapshot.legendTalents).
-// Images: public/images/legend talents/LegendTalentIcon<index>.png
+// Images: public/images/legend talents/LegendTalentIcon<N>.png, where N is the talent's spot in the in-game
+//   grid (LEGEND_TALENT_ORDER position), not its index: Toolbox numbers the icon files by grid position.
 //
-// maxLevel = base max (Research grid "Fever" squares and a Menagerie unlock can raise it)
+// maxLevel = base max (Research grid "Fever" squares and a Menagerie unlock raise it, see LEGEND_TALENT_MAX_LEVEL_GROUPS)
 // perLevel = bonus gained per level: bonus = round(perLevel × level)
 // bonus / description placeholders, filled by utils/legendTalentUtils.js:
 //   {  → bonus value          }  → multiplier (1 + bonus / 100)
@@ -14,7 +15,7 @@
 export const legendTalentMap = {
   0: {
     name: 'Coral Restoration',
-    img: 'images/legend talents/LegendTalentIcon0.png',
+    img: 'images/legend talents/LegendTalentIcon19.png',
     maxLevel: 2,
     perLevel: 30,
     bonus: '+{% Daily Coral gain',
@@ -22,7 +23,7 @@ export const legendTalentMap = {
   },
   1: {
     name: 'Greatest Drop Party Ever',
-    img: 'images/legend talents/LegendTalentIcon1.png',
+    img: 'images/legend talents/LegendTalentIcon15.png',
     maxLevel: 4,
     perLevel: 500,
     bonus: '+{% Drop Rate',
@@ -30,7 +31,7 @@ export const legendTalentMap = {
   },
   2: {
     name: 'Double Aint Enough',
-    img: 'images/legend talents/LegendTalentIcon2.png',
+    img: 'images/legend talents/LegendTalentIcon5.png',
     maxLevel: 3,
     perLevel: 100,
     bonus: '$x Statue and Gold Food drops',
@@ -38,7 +39,7 @@ export const legendTalentMap = {
   },
   3: {
     name: 'Extended Database',
-    img: 'images/legend talents/LegendTalentIcon3.png',
+    img: 'images/legend talents/LegendTalentIcon7.png',
     maxLevel: 3,
     perLevel: 10,
     bonus: '+{ Max LV for 5th column',
@@ -46,7 +47,7 @@ export const legendTalentMap = {
   },
   4: {
     name: 'Familiar Firesale',
-    img: 'images/legend talents/LegendTalentIcon4.png',
+    img: 'images/legend talents/LegendTalentIcon10.png',
     maxLevel: 2,
     perLevel: 40,
     bonus: '{% chance for no Familiar cost increase',
@@ -54,7 +55,7 @@ export const legendTalentMap = {
   },
   5: {
     name: 'Kruk be Bubblin\'',
-    img: 'images/legend talents/LegendTalentIcon5.png',
+    img: 'images/legend talents/LegendTalentIcon9.png',
     maxLevel: 5,
     perLevel: 10,
     bonus: '+{ LVs per day from Kattlekruk',
@@ -62,7 +63,7 @@ export const legendTalentMap = {
   },
   6: {
     name: 'The Charms got Rizz',
-    img: 'images/legend talents/LegendTalentIcon6.png',
+    img: 'images/legend talents/LegendTalentIcon30.png',
     maxLevel: 2,
     perLevel: 25,
     bonus: '}x higher bonuses',
@@ -70,7 +71,7 @@ export const legendTalentMap = {
   },
   7: {
     name: 'Super Duper Talents',
-    img: 'images/legend talents/LegendTalentIcon7.png',
+    img: 'images/legend talents/LegendTalentIcon1.png',
     maxLevel: 5,
     perLevel: 10,
     bonus: '+{ LVs',
@@ -78,7 +79,7 @@ export const legendTalentMap = {
   },
   8: {
     name: 'Buy One Get One Free',
-    img: 'images/legend talents/LegendTalentIcon8.png',
+    img: 'images/legend talents/LegendTalentIcon29.png',
     maxLevel: 2,
     perLevel: 100,
     bonus: '}x more LVs',
@@ -86,7 +87,7 @@ export const legendTalentMap = {
   },
   9: {
     name: 'Superb Gallerium',
-    img: 'images/legend talents/LegendTalentIcon9.png',
+    img: 'images/legend talents/LegendTalentIcon11.png',
     maxLevel: 2,
     perLevel: 2,
     bonus: '{ showcase slots are 1 grade higher',
@@ -94,7 +95,7 @@ export const legendTalentMap = {
   },
   10: {
     name: 'Picasso Gaming',
-    img: 'images/legend talents/LegendTalentIcon10.png',
+    img: 'images/legend talents/LegendTalentIcon35.png',
     maxLevel: 5,
     perLevel: 25,
     bonus: '}x higher Palette bonuses',
@@ -102,7 +103,7 @@ export const legendTalentMap = {
   },
   11: {
     name: 'Davey Jones Returns',
-    img: 'images/legend talents/LegendTalentIcon11.png',
+    img: 'images/legend talents/LegendTalentIcon26.png',
     maxLevel: 4,
     perLevel: 15,
     bonus: '}x higher bonuses, and {% less minimum time',
@@ -110,7 +111,7 @@ export const legendTalentMap = {
   },
   12: {
     name: 'Opa Opal Style',
-    img: 'images/legend talents/LegendTalentIcon12.png',
+    img: 'images/legend talents/LegendTalentIcon27.png',
     maxLevel: 3,
     perLevel: 100,
     bonus: '}x Villager EXP gains',
@@ -118,7 +119,7 @@ export const legendTalentMap = {
   },
   13: {
     name: 'Blue Ribbon Certification',
-    img: 'images/legend talents/LegendTalentIcon13.png',
+    img: 'images/legend talents/LegendTalentIcon6.png',
     maxLevel: 4,
     perLevel: 1,
     bonus: '+{ more daily Ribbons',
@@ -126,7 +127,7 @@ export const legendTalentMap = {
   },
   14: {
     name: 'Recycled Particle Upgrades',
-    img: 'images/legend talents/LegendTalentIcon14.png',
+    img: 'images/legend talents/LegendTalentIcon3.png',
     maxLevel: 1,
     perLevel: 100,
     bonus: '{% of unspent upgrades are spent',
@@ -134,7 +135,7 @@ export const legendTalentMap = {
   },
   15: {
     name: 'Reduced Jail Sentence',
-    img: 'images/legend talents/LegendTalentIcon15.png',
+    img: 'images/legend talents/LegendTalentIcon24.png',
     maxLevel: 2,
     perLevel: 150,
     bonus: '}x Lab and Divinity EXP gain',
@@ -150,7 +151,7 @@ export const legendTalentMap = {
   },
   17: {
     name: 'Yet Another Printer Multi',
-    img: 'images/legend talents/LegendTalentIcon17.png',
+    img: 'images/legend talents/LegendTalentIcon23.png',
     maxLevel: 2,
     perLevel: 5,
     bonus: '+{% daily printer output, maxed out at 20 days',
@@ -158,7 +159,7 @@ export const legendTalentMap = {
   },
   18: {
     name: 'Cog Lover',
-    img: 'images/legend talents/LegendTalentIcon18.png',
+    img: 'images/legend talents/LegendTalentIcon8.png',
     maxLevel: 2,
     perLevel: 2,
     bonus: '+{ daily Jeweled Cog claims',
@@ -166,7 +167,7 @@ export const legendTalentMap = {
   },
   19: {
     name: 'More Soot More Salt',
-    img: 'images/legend talents/LegendTalentIcon19.png',
+    img: 'images/legend talents/LegendTalentIcon22.png',
     maxLevel: 2,
     perLevel: 75,
     bonus: '}x faster Refinery cycles',
@@ -182,7 +183,7 @@ export const legendTalentMap = {
   },
   21: {
     name: 'Flopping a Full House',
-    img: 'images/legend talents/LegendTalentIcon21.png',
+    img: 'images/legend talents/LegendTalentIcon34.png',
     maxLevel: 5,
     perLevel: 15,
     bonus: '}x Active Card bonuses',
@@ -190,7 +191,7 @@ export const legendTalentMap = {
   },
   22: {
     name: 'Democracy FTW',
-    img: 'images/legend talents/LegendTalentIcon22.png',
+    img: 'images/legend talents/LegendTalentIcon38.png',
     maxLevel: 1,
     perLevel: 25,
     bonus: '+{% higher Ballot Bonus',
@@ -198,7 +199,7 @@ export const legendTalentMap = {
   },
   23: {
     name: 'Daily Shopping Spree',
-    img: 'images/legend talents/LegendTalentIcon23.png',
+    img: 'images/legend talents/LegendTalentIcon12.png',
     maxLevel: 3,
     perLevel: 8,
     bonus: '+{ daily cheap upgrades',
@@ -206,7 +207,7 @@ export const legendTalentMap = {
   },
   24: {
     name: 'May the Best Man Win',
-    img: 'images/legend talents/LegendTalentIcon24.png',
+    img: 'images/legend talents/LegendTalentIcon39.png',
     maxLevel: 1,
     perLevel: 20,
     bonus: '+{% higher Meritocracy Multi',
@@ -214,7 +215,7 @@ export const legendTalentMap = {
   },
   25: {
     name: 'Midusian Appetite',
-    img: 'images/legend talents/LegendTalentIcon25.png',
+    img: 'images/legend talents/LegendTalentIcon17.png',
     maxLevel: 3,
     perLevel: 500,
     bonus: '+{% Golden Food bonus',
@@ -222,7 +223,7 @@ export const legendTalentMap = {
   },
   26: {
     name: 'Furry Friends Forever',
-    img: 'images/legend talents/LegendTalentIcon26.png',
+    img: 'images/legend talents/LegendTalentIcon33.png',
     maxLevel: 2,
     perLevel: 200,
     bonus: '}x bigger \'rest-of-the-game\' bonuses',
@@ -230,7 +231,7 @@ export const legendTalentMap = {
   },
   27: {
     name: 'Best Story Ever Told',
-    img: 'images/legend talents/LegendTalentIcon27.png',
+    img: 'images/legend talents/LegendTalentIcon28.png',
     maxLevel: 3,
     perLevel: 50,
     bonus: '}x higher Reward Multi',
@@ -238,7 +239,7 @@ export const legendTalentMap = {
   },
   28: {
     name: '+1 Slab',
-    img: 'images/legend talents/LegendTalentIcon28.png',
+    img: 'images/legend talents/LegendTalentIcon36.png',
     maxLevel: 2,
     perLevel: 15,
     bonus: '}x bigger Slab bonuses',
@@ -246,7 +247,7 @@ export const legendTalentMap = {
   },
   29: {
     name: 'Whats in your Jar?',
-    img: 'images/legend talents/LegendTalentIcon29.png',
+    img: 'images/legend talents/LegendTalentIcon37.png',
     maxLevel: 2,
     perLevel: 20,
     bonus: '}x collectible bonuses',
@@ -254,7 +255,7 @@ export const legendTalentMap = {
   },
   30: {
     name: 'Lightning Fast Naps',
-    img: 'images/legend talents/LegendTalentIcon30.png',
+    img: 'images/legend talents/LegendTalentIcon32.png',
     maxLevel: 2,
     perLevel: 25,
     bonus: '}x faster Stamina Regen',
@@ -262,7 +263,7 @@ export const legendTalentMap = {
   },
   31: {
     name: 'Big Sig Fig',
-    img: 'images/legend talents/LegendTalentIcon31.png',
+    img: 'images/legend talents/LegendTalentIcon21.png',
     maxLevel: 3,
     perLevel: 150,
     bonus: '}x Sigil level up speed',
@@ -270,7 +271,7 @@ export const legendTalentMap = {
   },
   32: {
     name: 'Purebred Eggs',
-    img: 'images/legend talents/LegendTalentIcon32.png',
+    img: 'images/legend talents/LegendTalentIcon25.png',
     maxLevel: 1,
     perLevel: 900,
     bonus: '}x Breeding Egg luck',
@@ -278,7 +279,7 @@ export const legendTalentMap = {
   },
   33: {
     name: 'Inevitable Builder',
-    img: 'images/legend talents/LegendTalentIcon33.png',
+    img: 'images/legend talents/LegendTalentIcon13.png',
     maxLevel: 2,
     perLevel: 75,
     bonus: '}x Trimmed slot build speed',
@@ -286,7 +287,7 @@ export const legendTalentMap = {
   },
   34: {
     name: 'Blessed Be Thy Luck',
-    img: 'images/legend talents/LegendTalentIcon34.png',
+    img: 'images/legend talents/LegendTalentIcon31.png',
     maxLevel: 2,
     perLevel: 100,
     bonus: '}x better Blessing luck',
@@ -294,7 +295,7 @@ export const legendTalentMap = {
   },
   35: {
     name: 'Obsolete No More',
-    img: 'images/legend talents/LegendTalentIcon35.png',
+    img: 'images/legend talents/LegendTalentIcon4.png',
     maxLevel: 1,
     perLevel: 25,
     bonus: 'Perma Metal Detector, and }x Equinox Bar Fill Rate',
@@ -302,7 +303,7 @@ export const legendTalentMap = {
   },
   36: {
     name: 'Wowa Woowa',
-    img: 'images/legend talents/LegendTalentIcon36.png',
+    img: 'images/legend talents/LegendTalentIcon18.png',
     maxLevel: 5,
     perLevel: 3,
     bonus: '+{% higher Prisma and Exalted bonuses',
@@ -310,7 +311,7 @@ export const legendTalentMap = {
   },
   37: {
     name: '6 O\'Clock Crystals',
-    img: 'images/legend talents/LegendTalentIcon37.png',
+    img: 'images/legend talents/LegendTalentIcon14.png',
     maxLevel: 1,
     perLevel: 300,
     bonus: '}x more Daily Guaranteed Crystal Mobs',
@@ -318,7 +319,7 @@ export const legendTalentMap = {
   },
   38: {
     name: 'Shrine World Order Bill',
-    img: 'images/legend talents/LegendTalentIcon38.png',
+    img: 'images/legend talents/LegendTalentIcon2.png',
     maxLevel: 1,
     perLevel: 1,
     bonus: 'All 7 Worlds will ratify this bill into the IdleOn constitution',
@@ -326,7 +327,7 @@ export const legendTalentMap = {
   },
   39: {
     name: 'Super Talent Points',
-    img: 'images/legend talents/LegendTalentIcon39.png',
+    img: 'images/legend talents/LegendTalentIcon0.png',
     maxLevel: 1,
     perLevel: 1,
     bonus: 'Unlocks this system for all characters!',
@@ -354,3 +355,38 @@ export const legendTalentMap = {
 export const LEGEND_TALENT_ORDER = [
   39, 7, 38, 14, 35, 2, 13, 3, 18, 5, 4, 9, 23, 33, 37, 1, 16, 25, 36, 0, 20, 31, 19, 17, 15, 32, 11, 12, 27, 8, 6, 34, 30, 26, 21, 10, 28, 29, 22, 24, 40, 41,
 ]
+
+// In-game rows of 10 (LEGEND_TALENT_ORDER positions 0-9, 10-19...). The game names a talent by its row
+// colour and spot ("Yellow 1"). Yellow/Red/Brown/Green match the Research grid "Legendary <colour>
+// Fever" squares; the 5th row is White (its talents are unlocked through the Menagerie).
+export const LEGEND_TALENT_ROWS = ['Yellow', 'Red', 'Brown', 'Green', 'White']
+
+// Talents whose max LV goes up (Toolbox shared-data legendTalentMaxLevelGroups):
+// fever: +1 max LV per level of that Research grid square (max 3)
+// menagerie: +bonus max LV once that Menagerie unlock is owned
+export const LEGEND_TALENT_MAX_LEVEL_GROUPS = [
+  { color: 'Yellow', gridSquare: 130, talents: [2, 13, 3, 18, 5] },
+  { color: 'Red', gridSquare: 131, talents: [9, 23, 33, 1, 16] },
+  { color: 'Brown', gridSquare: 132, talents: [20, 31, 19, 27, 8] },
+  { color: 'Green', gridSquare: 152, talents: [34, 30, 29, 6, 26] },
+  { menagerieUnlock: 19, bonus: 3, talents: [35, 33, 36, 0, 20, 31, 15, 32, 6] },
+]
+
+// Tier list (Legend Talents > Tier List tab). Based on Pulse's Legend Talent Tier List (patch 12.03.2026,
+// ver 1.1, Bright Hollow), balanced around World 7 progression. Eli's changes: a Must Buy row for the cheap
+// essentials (Super Talent Points, Shrine World Order Bill, May the Best Man Win, all 1 point), and the two
+// White talents (not on Pulse's list) in A: big boosts, but 6 points each for one minigame.
+// talents = talent indexes; the page shows them in grid order.
+export const LEGEND_TALENT_TIERS = [
+  { id: 'must', label: '★', sublabel: 'Must buy', talents: [39, 38, 24] },
+  { id: 's', label: 'S', talents: [35, 2, 3, 4, 23, 36, 20, 27, 8, 21, 10] },
+  { id: 'a', label: 'A', talents: [7, 18, 33, 37, 1, 26, 40, 41] },
+  { id: 'b', label: 'B', talents: [13, 5, 25, 19, 15, 30, 22] },
+  { id: 'c', label: 'C', talents: [9, 16, 0, 31, 17, 32, 11, 12, 6, 34, 28, 29] },
+  { id: 'd', label: 'D', talents: [14] },
+]
+
+// Extra context shown with a talent in the tier list
+export const LEGEND_TALENT_TIER_NOTES = {
+  24: 'Can be very strong or very weak depending on the week\'s vote.',
+}

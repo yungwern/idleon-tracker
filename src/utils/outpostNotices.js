@@ -1,4 +1,5 @@
 import { optimizeOutposts } from './outpostOptimizer'
+import { isNoticeOn } from './noticeSettings'
 
 // Every Outposts notice, per world. The world headers, their count badges and the Royal Guardian
 // sidebar badge all read from here, so they always agree.
@@ -7,7 +8,9 @@ import { optimizeOutposts } from './outpostOptimizer'
 //   camps: Support Camps to link to the Priests' target ([] when none)
 //   swaps: outposts whose Trader/Surveyor split should change ([{ outpost, swap }])
 //   count: +1 for each kind of notice the world has (so 5 swaps still count once)
+// Turned off in Home > Settings (utils/noticeSettings.js): the advice lines stay, only the counts go to 0
 export function getOutpostNotices(rg, outposts) {
+  const counted = isNoticeOn('MasterClasses', 'outposts')
   const optimizer = optimizeOutposts(rg, outposts)
   const worlds = new Set(outposts.map(o => o.world))
   const byWorld = new Map()
@@ -25,7 +28,9 @@ export function getOutpostNotices(rg, outposts) {
       camps: priest?.campsToLink ?? [],
       swaps,
     }
-    notices.count = [notices.commander, notices.priest, notices.camps.length > 0, swaps.length > 0].filter(Boolean).length
+    notices.count = counted
+      ? [notices.commander, notices.priest, notices.camps.length > 0, swaps.length > 0].filter(Boolean).length
+      : 0
     count += notices.count
     byWorld.set(world, notices)
   })

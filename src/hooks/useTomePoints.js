@@ -9,7 +9,7 @@ function loadTomePoints() {
   }
 }
 
-// Tome points the player typed in (Import Save modal). Held in App so every page sees edits right away.
+// Tome points the player typed in (Home > Settings). Held in App so every page sees edits right away.
 export function useTomePoints() {
   const [tomePoints, setTomePointsState] = useState(loadTomePoints)
 

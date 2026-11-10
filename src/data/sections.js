@@ -1,6 +1,6 @@
 // Sidebar groups. Empty groups are hidden until they get a section.
 export const sections = {
-  'Global': ['MasterClasses', 'Minibosses', 'BiS Setups'],
+  'Global': ['MasterClasses', 'Minibosses', 'BiS Setups', 'Weekly Votes'],
   'Clickers': ['Orion', 'Poppy', 'Bubba'],
   'World 1': ['Statues'],
   'World 2': ['Obols', 'Islands'],
@@ -8,7 +8,7 @@ export const sections = {
   'World 4': ['Cooking', 'Breeding', 'Lab', 'The Cape Vine'],
   'World 5': ['The Hole'],
   'World 6': ['Farming', 'Sneaking', 'Summoning'],
-  'World 7': ['Spelunking'],
+  'World 7': ['Spelunking', 'Legend Talents'],
 }
 
 // Small sprite shown next to each section in the sidebar (paths without a leading slash)
@@ -16,6 +16,7 @@ export const sectionIcons = {
   'MasterClasses': 'images/masterclass/royal guardian/Orblet.png',
   'Minibosses': 'images/mobs/Dr_Defecaus.png',
   'BiS Setups': 'images/premium gear/armor/EquipmentGown9.png',
+  'Weekly Votes': 'images/home/vote-ballot.png',
 
   'Orion': 'images/orion/Orion.png',
   'Poppy': 'images/poppy/Poppy.png',
@@ -45,4 +46,5 @@ export const sectionIcons = {
   'Summoning': 'images/skills/summoning.png',
   
   'Spelunking': 'images/skills/spelunking.png',
+  'Legend Talents': 'images/legend talents/LegendTalentIcon0.png',
 }

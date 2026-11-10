@@ -1,0 +1,752 @@
+/* ============================================================
+   HOME
+   Landing page: import panel (no save), reset timers, weekly votes, Settings popup
+   ============================================================ */
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  text-align: left;
+}
+
+.home-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+}
+
+/* 16px pixel art saved at 192px: 64px is an exact 1/3 scale, so pixels stay even */
+.home-brand-logo {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.home-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.home-brand-owner {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.home-brand-title {
+  color: #a0c4ff;
+  font-size: 32px;
+  font-weight: bold;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.home-settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  color: #d1d5db;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.home-settings-btn:hover {
+  color: #a0c4ff;
+  border-color: #a0c4ff;
+}
+
+.home-settings-btn-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.home-section-title {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── Import (no save) ── */
+.home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+}
+
+.home-card-title {
+  color: #f3f4f6;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.home-card-desc {
+  color: #9ca3af;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.import-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Account summary ── */
+/* Three per row; a short last row is centred under the full ones */
+.home-stats {
+  --stat-gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--stat-gap);
+}
+
+.home-stats > .home-stat {
+  flex: 0 0 calc((100% - 2 * var(--stat-gap)) / 3);
+  box-sizing: border-box;
+}
+
+@media (max-width: 760px) {
+  .home-stats > .home-stat {
+    flex-basis: calc((100% - var(--stat-gap)) / 2);
+  }
+}
+
+.home-stat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+}
+
+.home-stat-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* Class icon from the CLASS THEMES block in global.css (data-class) */
+.home-stat-class {
+  background-image: var(--class-icon, none);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.home-stat-value {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  color: #f3f4f6;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+/* One line per fact in a stat tooltip */
+.home-stat-tip > span {
+  display: block;
+}
+
+.home-stat-tip-title {
+  font-weight: 600;
+}
+
+.home-coin {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.home-coin-icon {
+  width: 20px;
+  height: 22px;
+  object-fit: contain;
+}
+
+/* ── Tome points reminder ── */
+.home-tome-reminder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 14px;
+  font-size: 12px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 8px;
+}
+
+.home-tome-reminder-btn {
+  padding: 4px 10px;
+  background: none;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 6px;
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.home-tome-reminder-btn:hover {
+  background: rgba(251, 191, 36, 0.12);
+}
+
+/* ── To do ── */
+.home-todo {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+}
+
+.home-todo .char-notice-clear {
+  grid-column: 1 / -1;
+}
+
+.home-todo-group {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 3px solid #fbbf24;
+  border-radius: 8px;
+}
+
+.home-todo-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #e5e7eb;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Character groups: class icon and colour from the CLASS THEMES block in global.css */
+.home-todo-head[data-class]::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-image: var(--class-icon, none);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.home-todo-head[data-class] .home-todo-name {
+  color: var(--class-color, #e5e7eb);
+}
+
+.home-todo-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.home-todo-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.home-todo-head .notice-badge {
+  margin-left: 0;
+}
+
+.home-todo-open {
+  margin-left: auto;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.home-todo-head:hover .home-todo-open {
+  color: #a0c4ff;
+}
+
+.home-todo-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 6px 0 0;
+  padding-left: 28px;
+  list-style: disc;
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ── Reset timers ── */
+/* Daily, Weekly, Server weekly: three equal tiles */
+.home-resets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 760px) {
+  .home-resets {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-reset {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+}
+
+.home-reset--missing {
+  opacity: 0.55;
+}
+
+/* 16px art saved at 8x (IdleOn Resources/home-icons): 32px is an exact 2x, so pixels stay even */
+.home-reset-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.home-reset-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.home-reset-label {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.home-reset-time {
+  color: #f3f4f6;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.home-reset--missing .home-reset-time {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.home-reset-tip-date {
+  display: block;
+  font-weight: 600;
+}
+
+.home-reset-tip-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2px;
+  color: #9ca3af;
+}
+
+/* ── Weekly votes ── */
+/* Two equal cards in the Resets tile style: header row (vote, multi, countdown), a divider, then this
+   week's winning bonus as the focus. Next week's options are on the Weekly Votes page. */
+.home-votes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 760px) {
+  .home-votes {
+    grid-template-columns: 1fr;
+  }
+}
+
+.home-vote {
+  --vote-color: #fbbf24;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+}
+
+/* Bonus Ballot is World 2, Meritocracy World 7 */
+.home-vote[data-vote="ballot"] {
+  --vote-color: #fbbf24;
+}
+
+.home-vote[data-vote="meritocracy"] {
+  --vote-color: #22d3ee;
+}
+
+.home-vote-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* In-game sprites: Bonus Ballot box at 2x, Meritocracy box cut from a game screenshot at 4x */
+.home-vote-icon {
+  width: 30px;
+  height: 32px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.home-vote-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Same type as the reset tiles: grey label, accent value */
+.home-vote-name {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.home-vote-multi {
+  position: relative;
+  align-self: flex-start;
+  color: var(--vote-color);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.home-vote-timer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.home-vote-timer-label {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.home-vote-timer-time {
+  color: #f3f4f6;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+/* This week's winning bonus: the focus of the card */
+.home-vote-current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  padding-top: 12px;
+}
+
+.home-vote-bonus-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.home-vote-text {
+  min-width: 0;
+  color: #f3f4f6;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.home-vote-empty {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.home-vote-warning {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #fbbf24;
+}
+
+/* ── Settings popup (modal frame from ImportModal.css) ── */
+.home-settings {
+  width: 600px;
+  text-align: left;
+}
+
+.home-settings-tabs {
+  --tab-color: #a0c4ff;
+}
+
+.home-settings-notices,
+.home-settings-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-settings-inputs {
+  gap: 14px;
+}
+
+.home-settings-section {
+  border: 1px solid #374151;
+  border-radius: 8px;
+  background: #111827;
+}
+
+.home-settings-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  list-style: none;
+  user-select: none;
+}
+
+.home-settings-section-head::-webkit-details-marker {
+  display: none;
+}
+
+.home-settings-section-head--open {
+  cursor: pointer;
+}
+
+.home-settings-section-head--open::before {
+  content: '▸';
+  width: 10px;
+  color: #a0c4ff;
+  font-size: 12px;
+  transition: transform 0.15s;
+}
+
+.home-settings-section[open] > .home-settings-section-head--open::before {
+  transform: rotate(90deg);
+}
+
+.home-settings-section-head--open:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Single-kind rows line up with the arrow of the openable ones */
+.home-settings-section--single .home-settings-section-head {
+  padding-left: 32px;
+}
+
+.home-settings-section-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.home-settings-section-name {
+  flex: 1;
+  color: #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.home-settings-section-count {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.home-settings-section-desc {
+  margin: -4px 0 0;
+  padding: 0 12px 9px 62px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.home-settings-types {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 12px 10px 62px;
+  list-style: none;
+}
+
+/* Section switched off: its picks are kept but greyed out */
+.home-settings-types--off {
+  opacity: 0.4;
+}
+
+.home-settings-type {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+}
+
+.home-settings-type-label {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.home-settings-reset {
+  align-self: flex-start;
+  margin-top: 4px;
+  background: none;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #9ca3af;
+  font-size: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.home-settings-reset:hover {
+  color: #a0c4ff;
+  border-color: #a0c4ff;
+}
+
+.home-settings-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 8px;
+}
+
+.home-settings-block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.home-settings-block-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #d1d5db;
+}
+
+.home-settings-block-sub {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.home-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.home-settings-input {
+  width: 110px;
+  padding: 6px 10px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  color: #e5e7eb;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.home-settings-input:focus {
+  border-color: #4b5563;
+}
+
+.home-settings-hint {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.home-settings-uses {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.home-settings-use-page {
+  display: inline-block;
+  min-width: 78px;
+  margin-right: 8px;
+  font-weight: 600;
+  color: #d1d5db;
+}
+
+.home-settings-warning {
+  align-self: stretch;
+  font-size: 12px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+}

@@ -1,6 +1,7 @@
 import { buildOutpostSummary } from '../data'
 import { getOutpostNotices } from './outpostNotices'
 import { planOvernightSetup, isWorldComplete } from './resourcePlanner'
+import { isNoticeOn } from './noticeSettings'
 
 // Every masterclass notification, keyed by masterclass id, then section id: { 'royal-guardian': { outposts: 2 } }.
 // The sidebar badge and the masterclass/section nav badges all read from here, so they always agree.
@@ -13,7 +14,7 @@ export function getMasterclassNotices(snapshot) {
     // Priests, Trader/Surveyor swaps (utils/outpostNotices.js, same counts as the world headers)
     const outposts = getOutpostNotices(rg, summary.outposts).count
     // Resources: +1 for every fully unlocked world with a Resource Depot to reconnect
-    const resources = rg.resourceStorage
+    const resources = rg.resourceStorage && isNoticeOn('MasterClasses', 'resources')
       ? planOvernightSetup(rg, summary.outposts).worlds
         .filter(w => w.changes > 0 && isWorldComplete(summary, w.world))
         .length

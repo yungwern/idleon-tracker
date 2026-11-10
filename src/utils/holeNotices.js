@@ -1,4 +1,5 @@
 import { getBellRingOrPing, getHarpSetupCheck } from './holeCavernUtils'
+import { isNoticeOn } from './noticeSettings'
 
 const BELL_CAVERN = 4
 const HARP_CAVERN = 5
@@ -10,9 +11,9 @@ const HARP_CAVERN = 5
 export function getHoleNotices(snapshot) {
   const byCavern = {}
   if (!snapshot?.caverns) return { byCavern, count: 0 }
-  const bell = getBellRingOrPing(snapshot)
+  const bell = isNoticeOn('The Hole', 'bell') ? getBellRingOrPing(snapshot) : {}
   if (bell.swapTo) byCavern[BELL_CAVERN] = [`Swap the bell to ${bell.swapTo}: it's faster than what's charging now`]
-  const harp = getHarpSetupCheck(snapshot)
+  const harp = isNoticeOn('The Hole', 'harp') ? getHarpSetupCheck(snapshot) : null
   if (harp && !harp.matches) {
     byCavern[HARP_CAVERN] = [
       `Rearrange the harp strings: they get ${(Math.floor(harp.closest.share * 1000) / 10)}% of the ${harp.closest.label} best setup`,

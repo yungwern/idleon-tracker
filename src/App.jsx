@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react'
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import { toClassSlug } from './utils/appUtils.js'
 import { getCharacterNotices } from './utils/characterNotices.js'
 import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
@@ -6,6 +6,7 @@ import { getMinibossNoticeCount } from './utils/minibossNotices.js'
 import { getObolNoticeCount } from './utils/obolNotices.js'
 import { getIslandNoticeCount } from './utils/islandNotices.js'
 import { getHoleNoticeCount } from './utils/holeNotices.js'
+import { getLegendTalentNoticeCount } from './utils/legendTalentNotices.js'
 import { getMainframeNotices } from './utils/mainframeUtils.js'
 import { getClassRoles } from './utils/characterUtils.js'
 import { sections, sectionIcons } from './data'
@@ -15,9 +16,12 @@ import { useObolCheckMode } from './hooks/useObolCheckMode.js'
 import { useCollapsedGroups } from './hooks/useCollapsedGroups.js'
 import { useCloudSave } from './hooks/useCloudSave.js'
 import { useTooltipPlacement } from './hooks/useTooltipPlacement.js'
+import { useNoticeSettings } from './hooks/useNoticeSettings.js'
 import { PROVIDER_LABELS } from './lib/idleonCloud.js'
 import ImportModal from './components/ImportModal/ImportModal.jsx'
 import CharacterCard from './components/CharacterCard/CharacterCard.jsx'
+// Home is the landing page, so it loads with the main bundle instead of lazily
+import Home from './components/Home/Home.jsx'
 // Page CSS loads up front, in this order, before App.css and global.css, even though page code is lazy.
 // Some page rules tie with global.css rules and global has to keep winning, so don't move or reorder these.
 import './components/TierList/TierList.css'
@@ -46,7 +50,10 @@ import './components/Farming/Farming.css'
 import './components/Hole/Hole.css'
 import './components/Sneaking/Sneaking.css'
 import './components/Summoning/Summoning.css'
+import './components/WeeklyVotes/WeeklyVotes.css'
 import './components/Spelunking/Spelunking.css'
+import './components/LegendTalents/LegendTalents.css'
+import './components/Home/Home.css'
 import './App.css'
 import './styles/global.css'
 
@@ -74,13 +81,27 @@ const Farming = lazy(() => import('./components/Farming/Farming.jsx'))
 const Hole = lazy(() => import('./components/Hole/Hole.jsx'))
 const Sneaking = lazy(() => import('./components/Sneaking/Sneaking.jsx'))
 const Summoning = lazy(() => import('./components/Summoning/Summoning.jsx'))
+const WeeklyVotes = lazy(() => import('./components/WeeklyVotes/WeeklyVotes.jsx'))
 const Spelunking = lazy(() => import('./components/Spelunking/Spelunking.jsx'))
+const LegendTalents = lazy(() => import('./components/LegendTalents/LegendTalents.jsx'))
+
+// The page you were on is remembered per browser; a first visit (or a page that's gone) lands on Home
+const HOME = 'Home'
+const LAST_PAGE_KEY = 'idleon_last_page'
+
+function loadLastPage() {
+  try {
+    return localStorage.getItem(LAST_PAGE_KEY) || HOME
+  } catch {
+    return HOME
+  }
+}
 
 // ============================================================
 // APP
 // ============================================================
 export default function App() {
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState(loadLastPage)
   // Opening a character from another page (e.g. Obols > Personal Boards) remounts its card on a tab.
   // Sidebar clicks keep the same visit, so the card keeps its current tab like before.
   const [characterVisit, setCharacterVisit] = useState({ id: 0, tab: 'overview' })
@@ -89,6 +110,7 @@ export default function App() {
   const { tomePoints, setTomePoints } = useTomePoints()
   const { obolCheckMode, setObolCheckMode } = useObolCheckMode()
   const { isCollapsed, toggleGroup } = useCollapsedGroups()
+  const { noticeSettings, setSectionOn, setTypeOn, resetAll } = useNoticeSettings()
   // Keeps every tooltip inside the content area (see hooks/useTooltipPlacement.js)
   useTooltipPlacement()
   // Logged-in cloud save: auto-syncs only while the loaded save came from the cloud (or there is none),
@@ -114,12 +136,25 @@ export default function App() {
     }
   })
 
-  // Default to the first character once a save is loaded
-  const current = selected ?? mergedCharacters[0]?.name ?? null
+  // A remembered page that no longer exists (character from another save, removed section) falls back to Home
+  const sectionItems = Object.values(sections).flat()
+  const isKnownPage = page => page === HOME
+    || sectionItems.includes(page)
+    || mergedCharacters.some(c => c.name === page)
+  const current = isKnownPage(selected) ? selected : HOME
   const charIndex = mergedCharacters.findIndex(c => c.name === current)
   const character = charIndex >= 0 ? mergedCharacters[charIndex] : null
-  const sectionItems = Object.values(sections).flat()
-  // Notification badges for section buttons (same style as the character badges)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LAST_PAGE_KEY, current)
+    } catch {
+      // Storage unavailable: the next visit just starts on Home
+    }
+  }, [current])
+  // Notification badges for section buttons (same style as the character badges).
+  // noticeSettings: the notice utils read Home > Settings themselves (utils/noticeSettings.js); it's a
+  // dependency so badges recount the moment a toggle changes.
   const sectionNotices = useMemo(() => ({
     MasterClasses: getMasterclassNoticeCount(snapshot),
     Minibosses: getMinibossNoticeCount(snapshot),
@@ -127,15 +162,19 @@ export default function App() {
     Islands: getIslandNoticeCount(snapshot),
     'The Hole': getHoleNoticeCount(snapshot),
     Lab: getMainframeNotices(snapshot).count,
-  }), [snapshot, obolCheckMode])
+    'Legend Talents': getLegendTalentNoticeCount(snapshot),
+  }), [snapshot, obolCheckMode, noticeSettings]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleClearSave() {
     cloud.signOut()
     clearSnapshot()
-    setSelected(null)
+    setSelected(HOME)
   }
 
   const characterNoticeTotal = mergedCharacters.reduce((sum, c) => sum + c.noticeCount, 0)
+  // Home's badge: every badge on the site added up (the same numbers Home's To do shows)
+  const homeNoticeTotal = characterNoticeTotal
+    + Object.values(sectionNotices).reduce((sum, count) => sum + (count ?? 0), 0)
 
   function renderNoticeBadge(count, where = '') {
     if (!(count > 0)) return null
@@ -171,6 +210,33 @@ export default function App() {
   }
 
   function renderContent() {
+    if (current === HOME) {
+      return (
+        <Home
+          snapshot={snapshot}
+          sectionNotices={sectionNotices}
+          onOpenPage={setSelected}
+          importProps={{
+            onImport: importFromText,
+            onImportJson: importFromJson,
+            cloud,
+            importedAt,
+            cloudSavedAt,
+            isCloudSave,
+          }}
+          settingsProps={{
+            noticeSettings,
+            onSectionChange: setSectionOn,
+            onTypeChange: setTypeOn,
+            onResetNotices: resetAll,
+            obolCheckMode,
+            onObolCheckModeChange: setObolCheckMode,
+            tomePoints,
+            onTomePointsChange: setTomePoints,
+          }}
+        />
+      )
+    }
     if (character) {
       return (
         <CharacterCard
@@ -216,15 +282,17 @@ export default function App() {
     if (current === 'The Hole') return <Hole snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'Sneaking') return <Sneaking snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'Summoning') return <Summoning snapshot={snapshot} />
-    if (current === 'Spelunking') return <Spelunking snapshot={snapshot} tomePoints={tomePoints} />
-    if (!sectionItems.includes(current)) {
+    if (current === 'Weekly Votes') {
       return (
-        <div className="page">
-          <h2 className="page-title">Welcome to the IdleOn Hub</h2>
-          <p className="page-empty">Import your save with the 📂 Import Save button to see your characters.</p>
-        </div>
+        <WeeklyVotes
+          snapshot={snapshot}
+          importedAt={importedAt}
+          cloudSavedAt={cloudSavedAt}
+        />
       )
     }
+    if (current === 'Spelunking') return <Spelunking snapshot={snapshot} tomePoints={tomePoints} />
+    if (current === 'Legend Talents') return <LegendTalents snapshot={snapshot} />
     return (
       <div className="page">
         <h2 className="page-title">{current}</h2>
@@ -241,21 +309,23 @@ export default function App() {
         <ImportModal
           onImport={importFromText}
           onImportJson={importFromJson}
-          hasSave={!!snapshot}
           cloud={cloud}
           importedAt={importedAt}
           cloudSavedAt={cloudSavedAt}
           isCloudSave={isCloudSave}
-          tomePoints={tomePoints}
-          onTomePointsChange={setTomePoints}
           onClose={() => setShowModal(false)}
         />
       )}
 
       {/* ── Sidebar ── */}
       <div className="sidebar">
-        {/* Brand */}
-        <div className="sidebar-brand">
+        {/* Brand (click to go Home) */}
+        <button
+          type="button"
+          className="sidebar-brand"
+          onClick={() => setSelected(HOME)}
+          title="Home"
+        >
           <img
             className="sidebar-brand-logo"
             src="images/brand/logo.png"
@@ -265,7 +335,7 @@ export default function App() {
             <span className="sidebar-brand-owner">YungWern's</span>
             <span className="sidebar-brand-title">IdleOn Hub</span>
           </div>
-        </div>
+        </button>
 
         {/* Save Import: one compact row of actions, status underneath */}
         <div className="save-import">
@@ -320,6 +390,20 @@ export default function App() {
             {cloud.error && <span className="import-error">{cloud.error}</span>}
           </div>
         </div>
+
+        {/* Home: on its own above the groups, never folded */}
+        <button
+          className={`sidebar-nav-btn sidebar-home-btn${current === HOME ? ' active' : ''}`}
+          onClick={() => setSelected(HOME)}
+        >
+          <img
+            className="sidebar-nav-icon"
+            src="images/brand/logo.png"
+            alt=""
+          />
+          <span className="sidebar-nav-label">{HOME}</span>
+          {renderNoticeBadge(homeNoticeTotal, ' across the site (see To do)')}
+        </button>
 
         {/* Character List */}
         <div className="sidebar-group">

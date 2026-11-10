@@ -9,6 +9,7 @@ import {
   getCrystalMobs,
   getShimmerShop,
 } from './islandUtils'
+import { isNoticeOn } from './noticeSettings'
 
 // Islands notifications, one source for the sidebar badge and the tab badges.
 // Returns { byIsland: { islandId: [message] }, count }.
@@ -23,32 +24,32 @@ export function getIslandNotices(snapshot) {
   if (!islands) return { byIsland, count: 0 }
 
   const nextUnlock = getBottlePlan(snapshot)[0]
-  if (nextUnlock?.affordable) {
+  if (nextUnlock?.affordable && isNoticeOn('Islands', 'bottles')) {
     byIsland[nextUnlock.island.id].push(`You have the ${nextUnlock.cost} bottles to unlock ${nextUnlock.island.name}`)
   }
 
-  if (isIslandUnlocked(islands, 'trash')) {
+  if (isIslandUnlocked(islands, 'trash') && isNoticeOn('Islands', 'trash')) {
     const next = getTrashBuyOrder(snapshot, 1).order[0]
     if (next?.affordable) {
       byIsland.trash.push(`Garbage can buy ${next.item.name} (${formatBigNumber(next.cost)} garbage)`)
     }
   }
 
-  if (isIslandUnlocked(islands, 'rando') && getUnlockedIslandCount(islands) === islandMap.length) {
+  if (isIslandUnlocked(islands, 'rando') && getUnlockedIslandCount(islands) === islandMap.length && isNoticeOn('Islands', 'rando')) {
     const cheapest = getCheapestRandoCost(snapshot)
     if (islands.bottles >= cheapest) byIsland.rando.push(`Bottles can buy a Rando upgrade (${cheapest} bottles)`)
   }
 
-  if (isIslandUnlocked(islands, 'crystal') && islands.crystalDays >= CRYSTAL_WARN_DAYS) {
+  if (isIslandUnlocked(islands, 'crystal') && islands.crystalDays >= CRYSTAL_WARN_DAYS && isNoticeOn('Islands', 'crystal')) {
     byIsland.crystal.push(islands.crystalDays >= CRYSTAL_MAX_DAYS
       ? `Crystal Island is capped: only ${getCrystalMobs(islands.crystalDays)} mobs wait. Visit to restart the count`
       : `Visit Crystal Island today: ${getCrystalMobs(islands.crystalDays)} mobs now, only ${getCrystalMobs(CRYSTAL_MAX_DAYS)} after the next reset`)
   }
 
   if (isIslandUnlocked(islands, 'shimmer')) {
-    if (!islands.shimmerDoneThisWeek) byIsland.shimmer.push('This week\'s Shimmer Trial isn\'t done yet')
+    if (!islands.shimmerDoneThisWeek && isNoticeOn('Islands', 'shimmerTrial')) byIsland.shimmer.push('This week\'s Shimmer Trial isn\'t done yet')
     const cheapest = Math.min(...getShimmerShop(snapshot).map(item => item.cost))
-    if (islands.shimmer >= cheapest) byIsland.shimmer.push(`Shimmer can buy an upgrade (${cheapest} shimmer)`)
+    if (islands.shimmer >= cheapest && isNoticeOn('Islands', 'shimmerShop')) byIsland.shimmer.push(`Shimmer can buy an upgrade (${cheapest} shimmer)`)
   }
 
   const count = Object.values(byIsland).reduce((sum, messages) => sum + messages.length, 0)
