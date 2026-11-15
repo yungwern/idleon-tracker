@@ -37,6 +37,13 @@ export const NOTICE_SECTIONS = [
     ],
   },
   {
+    id: 'Poppy',
+    types: [
+      { id: 'greatestCatch', label: 'Greatest Catch (next Megafish) affordable' },
+      { id: 'fisherooReset', label: 'Fisheroo Reset affordable' },
+    ],
+  },
+  {
     id: 'Obols',
     types: [
       { id: 'familyBonus', label: 'Family board obols missing their bonus' },
@@ -51,6 +58,12 @@ export const NOTICE_SECTIONS = [
       { id: 'crystal', label: 'Crystal Island near its cap' },
       { id: 'shimmerTrial', label: 'Weekly Shimmer Trial not done' },
       { id: 'shimmerShop', label: 'Shimmer upgrade affordable' },
+    ],
+  },
+  {
+    id: 'Breeding',
+    types: [
+      { id: 'shinySwap', label: 'Shiny Planner swap ready' },
     ],
   },
   {

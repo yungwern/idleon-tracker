@@ -1540,6 +1540,7 @@ function parsePoppy(optLacc) {
     fishCaught: num(280),
     shinyCaught: Array.from({ length: 6 }, (_, i) => num(281 + i)),
     fishBank: num(288),
+    unspentResetPoints: num(290),
     resetPoints: Array.from({ length: 5 }, (_, i) => num(291 + i)),
     tarFish: num(296),
     tarLevels: Array.from({ length: 8 }, (_, i) => num(297 + i)),

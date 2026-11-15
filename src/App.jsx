@@ -3,11 +3,13 @@ import { toClassSlug } from './utils/appUtils.js'
 import { getCharacterNotices } from './utils/characterNotices.js'
 import { getMasterclassNoticeCount } from './utils/masterclassNotices.js'
 import { getMinibossNoticeCount } from './utils/minibossNotices.js'
+import { getPoppyNoticeCount } from './utils/poppyNotices.js'
 import { getObolNoticeCount } from './utils/obolNotices.js'
 import { getIslandNoticeCount } from './utils/islandNotices.js'
 import { getHoleNoticeCount } from './utils/holeNotices.js'
 import { getLegendTalentNoticeCount } from './utils/legendTalentNotices.js'
 import { getMainframeNotices } from './utils/mainframeUtils.js'
+import { getBreedingNoticeCount } from './utils/breedingNotices.js'
 import { getClassRoles } from './utils/characterUtils.js'
 import { sections, sectionIcons } from './data'
 import { useSaveImport } from './hooks/useSaveImport.js'
@@ -158,8 +160,10 @@ export default function App() {
   const sectionNotices = useMemo(() => ({
     MasterClasses: getMasterclassNoticeCount(snapshot),
     Minibosses: getMinibossNoticeCount(snapshot),
+    Poppy: getPoppyNoticeCount(snapshot),
     Obols: getObolNoticeCount(snapshot, obolCheckMode),
     Islands: getIslandNoticeCount(snapshot),
+    Breeding: getBreedingNoticeCount(snapshot),
     'The Hole': getHoleNoticeCount(snapshot),
     Lab: getMainframeNotices(snapshot).count,
     'Legend Talents': getLegendTalentNoticeCount(snapshot),

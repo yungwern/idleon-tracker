@@ -7,6 +7,7 @@ import SpiceOptimizer from './SpiceOptimizer'
 import ShinyPlanner from './ShinyPlanner'
 import { getShinyThreshold, getShinyLevel, parseWorldCoords, formatShinyDays } from '../../utils/breedingUtils'
 import { getShinyRate, getShinyOverLevels } from '../../utils/shinyPlanner'
+import { getBreedingNoticeCount } from '../../utils/breedingNotices'
 
 import './Breeding.css'
 
@@ -335,6 +336,7 @@ export default function Breeding({ snapshot }) {
   const maxShinyLevel = getMaxShinyLevel(breedingBuffs)
   const overLevels = useMemo(() => getShinyOverLevels(snapshot?.breeding), [snapshot?.breeding])
   const shinyRate = useMemo(() => getShinyRate(snapshot), [snapshot])
+  const plannerNotices = useMemo(() => getBreedingNoticeCount(snapshot), [snapshot])
   const fenceShiny = snapshot?.breeding?.fenceShiny
 
   const geneItemMap = useMemo(() =>
@@ -431,6 +433,7 @@ export default function Breeding({ snapshot }) {
           onClick={() => setActiveTab('planner')}
         >
           Shiny Planner
+          {plannerNotices > 0 && <span className="notice-badge">{plannerNotices}</span>}
         </button>
         <button
           className={`breeding-nav-btn${activeTab === 'spice' ? ' breeding-nav-btn--active' : ''}`}

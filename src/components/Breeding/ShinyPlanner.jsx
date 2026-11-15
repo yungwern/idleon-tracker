@@ -75,9 +75,6 @@ export default function ShinyPlanner({ snapshot, rate }) {
   if (plan.missingFence) {
     return <p className="page-empty">Re-import your save to use the Shiny Planner.</p>
   }
-  if (plan.slots === 0) {
-    return <p className="page-empty">No shiny pets in your fence yard right now.</p>
-  }
 
   const keep = plan.fence.filter(p => p.keep > 0)
   const remove = plan.fence.filter(p => p.remove > 0)
@@ -119,27 +116,36 @@ export default function ShinyPlanner({ snapshot, rate }) {
         Species at the same level go in the bonus order of the Shiny Levels tab.
       </p>
 
+      {plan.emptyFence && (
+        <p className="shiny-plan-done">
+          No shiny pets in your fence yard right now. It has {plan.slots} {plan.slots === 1 ? 'slot' : 'slots'}, so
+          these are the species to level next.
+        </p>
+      )}
+
       {plan.swapCount === 0 ? (
         <p className="shiny-plan-done">Your fence already matches the plan.</p>
       ) : (
         <div className="shiny-plan-columns">
-          <div className="shiny-plan-column">
-            <h3 className="shiny-plan-heading shiny-plan-heading--out">
-              Take out · {removeCount}
-            </h3>
-            {remove.map(entry => (
-              <PlanPet
-                key={entry.key}
-                entry={entry}
-                variant="out"
-                note={entry.maxed
-                  ? `Maxed, take out all ${entry.copies}`
-                  : entry.keep
-                    ? `Keep ${entry.keep} of ${entry.copies}, take out ${entry.remove}`
-                    : `Take out ${entry.remove} · Lv ${entry.level + 1} would take ${formatShinyDays(entry.days)}`}
-              />
-            ))}
-          </div>
+          {remove.length > 0 && (
+            <div className="shiny-plan-column">
+              <h3 className="shiny-plan-heading shiny-plan-heading--out">
+                Take out · {removeCount}
+              </h3>
+              {remove.map(entry => (
+                <PlanPet
+                  key={entry.key}
+                  entry={entry}
+                  variant="out"
+                  note={entry.maxed
+                    ? `Maxed, take out all ${entry.copies}`
+                    : entry.keep
+                      ? `Keep ${entry.keep} of ${entry.copies}, take out ${entry.remove}`
+                      : `Take out ${entry.remove} · Lv ${entry.level + 1} would take ${formatShinyDays(entry.days)}`}
+                />
+              ))}
+            </div>
+          )}
           <div className="shiny-plan-column">
             <h3 className="shiny-plan-heading shiny-plan-heading--in">
               Put in · {addCount}

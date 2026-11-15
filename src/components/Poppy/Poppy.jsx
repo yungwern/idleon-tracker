@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { getPoppy } from '../../utils/poppyUtils'
+import { getPoppyNoticeCount } from '../../utils/poppyNotices'
 import { formatClickerNumber, formatClickerBonus } from '../../utils/clickerUtils'
 import InfoPanel from '../InfoPanel/InfoPanel'
 import ClickerStats from '../Clicker/ClickerStats'
 import ClickerMegas from '../Clicker/ClickerMegas'
 import ClickerBonuses from '../Clicker/ClickerBonuses'
 import ClickerUpgrades from '../Clicker/ClickerUpgrades'
+import PoppyResetPlanner from './PoppyResetPlanner'
+import PoppyShinyMulti from './PoppyShinyMulti'
 
 // Poppy the Kangaroo Mouse (Clickers): fish, Megafish, the bonuses Poppy gives the rest of the game, upgrades and
 // Tar Pit upgrades. Math = utils/poppyUtils.js (Toolbox kangaroo.ts).
@@ -12,8 +16,15 @@ import ClickerUpgrades from '../Clicker/ClickerUpgrades'
 const FISH_ICON = 'images/poppy/KFish.png'
 const TAR_ICON = 'images/poppy/KTar.png'
 
+const TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'planner', label: 'Reset Planner' },
+]
+
 export default function Poppy({ snapshot }) {
+  const [activeTab, setActiveTab] = useState('overview')
   const poppy = getPoppy(snapshot)
+  const plannerNotices = getPoppyNoticeCount(snapshot)
 
   if (!poppy) {
     return (
@@ -57,52 +68,75 @@ export default function Poppy({ snapshot }) {
           'Bonuses from Poppy: every 7 levels of the Bonuses from Poppy upgrade adds one step to each bonus, in order. The total is boosted by Megafish, the Furry Friends Forever legend talent and the Santas Little Helper companion.',
           'Fish and tar fish include what Poppy caught since you last opened her menu (the game adds it when you do).',
           'Upgrade costs turn green when your fish (or tar fish) cover them. Hover a Megafish to read what it does.',
+          'Reset Planner: how to split your Fisheroo Reset points for the most fish. Red boosts the other four, so it takes about half. Shiny speed only raises the log of your shiny counts, so orange needs far fewer points than blue or green.',
         ]}
       />
 
-      <div className="clicker-hero">
-        <img
-          src="images/poppy/Poppy.png"
-          alt="Poppy"
-          className="clicker-hero-img"
-        />
-        <ClickerStats stats={stats} />
+      <div className="page-tabs clicker-tabs">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`page-tab-btn${activeTab === tab.id ? ' page-tab-btn--active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+            {tab.id === 'planner' && plannerNotices > 0 && <span className="notice-badge">{plannerNotices}</span>}
+          </button>
+        ))}
       </div>
 
-      <ClickerMegas
-        title="Megafish"
-        name="Megafish"
-        megas={poppy.megas}
-        iconFor={i => `images/poppy/RooMG${i}.png`}
-      />
+      {activeTab === 'overview' && (
+        <>
+          <div className="clicker-hero">
+            <img
+              src="images/poppy/Poppy.png"
+              alt="Poppy"
+              className="clicker-hero-img"
+            />
+            <ClickerStats stats={stats} />
+          </div>
 
-      <ClickerBonuses
-        title="Bonuses from Poppy"
-        note={`Bonuses from Poppy LV ${poppy.upgrades[3].level} · ${formatClickerBonus(poppy.bonusMulti)}x total multi`}
-        bonuses={poppy.bonuses}
-      />
+          <ClickerMegas
+            title="Megafish"
+            name="Megafish"
+            megas={poppy.megas}
+            iconFor={i => `images/poppy/RooMG${i}.png`}
+          />
 
-      <ClickerUpgrades
-        title="Upgrades"
-        currencyIcon={FISH_ICON}
-        currencyName="Fish"
-        have={poppy.fish}
-        upgrades={poppy.upgrades.map(upgrade => ({
-          ...upgrade,
-          lockedText: `Unlocks at ${formatClickerNumber(upgrade.unlockAt)} fish caught`,
-        }))}
-      />
+          <ClickerBonuses
+            title="Bonuses from Poppy"
+            note={`Bonuses from Poppy LV ${poppy.upgrades[3].level} · ${formatClickerBonus(poppy.bonusMulti)}x total multi`}
+            bonuses={poppy.bonuses}
+          />
 
-      <ClickerUpgrades
-        title="Tar Pit"
-        currencyIcon={TAR_ICON}
-        currencyName="Tar fish"
-        have={poppy.tarFish}
-        upgrades={poppy.tarUpgrades.map(upgrade => ({
-          ...upgrade,
-          lockedText: `Unlocks with ${upgrade.unlockText}`,
-        }))}
-      />
+          <PoppyShinyMulti snapshot={snapshot} />
+
+          <ClickerUpgrades
+            title="Upgrades"
+            currencyIcon={FISH_ICON}
+            currencyName="Fish"
+            have={poppy.fish}
+            upgrades={poppy.upgrades.map(upgrade => ({
+              ...upgrade,
+              lockedText: `Unlocks at ${formatClickerNumber(upgrade.unlockAt)} fish caught`,
+            }))}
+          />
+
+          <ClickerUpgrades
+            title="Tar Pit"
+            currencyIcon={TAR_ICON}
+            currencyName="Tar fish"
+            have={poppy.tarFish}
+            upgrades={poppy.tarUpgrades.map(upgrade => ({
+              ...upgrade,
+              lockedText: `Unlocks with ${upgrade.unlockText}`,
+            }))}
+          />
+        </>
+      )}
+
+      {activeTab === 'planner' && <PoppyResetPlanner snapshot={snapshot} />}
     </div>
   )
 }

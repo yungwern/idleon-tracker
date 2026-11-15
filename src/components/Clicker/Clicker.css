@@ -330,3 +330,246 @@
 .clicker-upgrade-lock {
   color: #6b7280;
 }
+
+/* ── Page tabs (Poppy) ── */
+.clicker-tabs {
+  --tab-color: var(--clicker-color);
+  margin-top: 16px;
+}
+
+/* ── Poppy reset split cards (Poppy/PoppySplitCards.jsx) ── */
+.poppy-split-card--blue {
+  --split-color: #3b9cf5;
+}
+
+.poppy-split-card--orange {
+  --split-color: #f5b80b;
+}
+
+.poppy-split-card--green {
+  --split-color: #4ade80;
+}
+
+.poppy-split-card--red {
+  --split-color: #f8806a;
+}
+
+.poppy-split-card--black {
+  --split-color: #c9bcc3;
+}
+
+.poppy-split {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.poppy-split-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 3px solid var(--split-color);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}
+
+.poppy-split-card--zero {
+  opacity: 0.4;
+}
+
+.poppy-split-icon {
+  height: 40px;
+  margin-bottom: 4px;
+}
+
+.poppy-split-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--split-color);
+}
+
+.poppy-split-text {
+  min-height: 30px;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #6b7280;
+}
+
+.poppy-split-points {
+  margin-top: 4px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #f3f4f6;
+  font-variant-numeric: tabular-nums;
+}
+
+.poppy-split-compare {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.poppy-split-multi {
+  margin-top: 6px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--split-color);
+}
+
+.poppy-split-up {
+  color: #4ade80;
+}
+
+.poppy-split-down {
+  color: #f87171;
+}
+
+.poppy-split-summary {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* ── Poppy shiny multi (Poppy/PoppyShinyMulti.jsx) ── */
+.poppy-shinies {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.poppy-shiny {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.poppy-shiny-icon {
+  height: 40px;
+}
+
+.poppy-shiny-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.poppy-shiny-caught {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.poppy-shiny-base {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.poppy-shiny-multi {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--clicker-color);
+}
+
+/* ── Poppy big purchase table (Poppy/PoppyResetPlanner.jsx) ── */
+.poppy-buy-table {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  align-items: stretch;
+  margin-top: 14px;
+}
+
+.poppy-buy-row {
+  display: contents;
+}
+
+.poppy-buy-th {
+  padding: 4px 8px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.poppy-buy-th--name {
+  text-align: left;
+}
+
+.poppy-buy-row > span {
+  padding: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.poppy-buy-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.poppy-buy-icon {
+  max-width: 56px;
+  max-height: 32px;
+}
+
+.poppy-buy-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+}
+
+.poppy-buy-cell--wide {
+  grid-column: span 2;
+  align-items: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.poppy-buy-row--locked .poppy-buy-name {
+  opacity: 0.5;
+}
+
+.poppy-buy-cost {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f3f4f6;
+}
+
+.poppy-buy-status {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.poppy-buy-status--ok {
+  color: #4ade80;
+}
+
+.poppy-buy-ready {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  border-radius: 8px;
+  background: rgba(74, 222, 128, 0.08);
+  font-size: 13px;
+  font-weight: 600;
+  color: #86efac;
+  text-align: center;
+}

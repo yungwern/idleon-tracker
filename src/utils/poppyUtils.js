@@ -25,14 +25,17 @@ const UPG = {
   bonuses: 3,
   fishyDiscount: 4,
   juicyWorm: 5,
+  fisherooReset: 6,
   fishingBuddy: 7,
   multihook: 10,
+  greatestCatch: 11,
 }
 const TAR = {
   superYummyBait: 0,
   bluefinFrenzy: 2,
   fishyReductions: 3,
   superTarbait: 4,
+  tarrificResets: 5,
   kingWorm: 7,
 }
 const LAST_MEGA = 11
@@ -200,6 +203,201 @@ export function getPoppy(snapshot) {
       cost: getPoppyTarUpgradeCost(poppy, i),
       unlocked: i < tarUnlocked,
       unlockText: i < 3 ? 'Megafish 1' : i < 6 ? 'Megafish 5' : 'Megafish 8',
+    })),
+  }
+}
+
+// ── Reset bonus optimizer (Fisheroo Reset points) ──
+// Bonus i = (1 + perPoint × pts) × (1 + 0.04 × red pts); red (3) only boosts the others. Points refund for free,
+// so the planner always splits the whole pool. Score = Σ weight × ln(bonus): every point goes to the biggest gain
+// (greedy is optimal here: each term is concave and red's ln is shared by all four).
+// Goal = most fish (Megafish via Greatest Catch). Weights = how much 1% more of each bonus raises fish gain (in %):
+// blue and green 1 (fish caught, upgrade costs), orange = shiny elasticity (the shiny multi grows with ln(caught), so
+// diminishing returns), black = what tar adds to fish through the Tar Pit upgrades (× the Super Tarbait loop). Red's
+// weight = all four.
+const RED = 3
+const SHINY_LN_FLOOR = 20 // early in a run counts are tiny; plan for counts the run will reach (~5e8+)
+
+export const POPPY_RESET_BONUSES = [
+  { name: 'Bluefin', color: 'blue', text: 'Bluefin fish caught' },
+  { name: 'Shiny', color: 'orange', text: 'Shiny fishing speed and luck' },
+  { name: 'Cheaper', color: 'green', text: 'Fish upgrades cheaper' },
+  { name: 'Boost', color: 'red', text: 'Other reset bonuses higher' },
+  { name: 'Tartar', color: 'black', text: 'Tartar fish caught' },
+].map((bonus, i) => ({
+  ...bonus,
+  icon: `images/poppy/RooReset${i}.png`,
+  perPoint: RESET_PER_POINT[i],
+}))
+
+// Reset bonus multi for a points split (same as the game's, without the save)
+export function getResetBonusFor(points, i) {
+  const base = 1 + RESET_PER_POINT[i] * (points[i] ?? 0)
+  const boost = i !== RED && (points[i] ?? 0) > 0 ? 1 + 0.04 * (points[RED] ?? 0) : 1
+  return base * boost
+}
+
+// How much 1% more shiny speed raises the total shiny multi (in %): Σ (base / 100) / (1 + base × ln n / 100)
+export function getShinyElasticity(shinyCaught) {
+  return SHINY_BASES.reduce((sum, base, i) => {
+    const ln = Math.max(SHINY_LN_FLOOR, Math.log(Math.max(1, shinyCaught?.[i] ?? 0)))
+    return sum + (base / 100) / (1 + base * ln / 100)
+  }, 0)
+}
+
+// How much 1% more tar raises fish gain (in %), through the Tar Pit upgrades that boost fish. Doubling tar buys
+// ln 2 / ln x2 more LVs of each, so each upgrade adds (ln gain per LV) / ln x2.
+function getTarFishElasticity(poppy) {
+  const unlocked = getTarUnlocked(poppy)
+  const lv = i => (i < unlocked ? tarLevel(poppy, i) : null)
+  const growth = i => Math.log(poppyTarUpgrades[i].x2)
+  const catchTotal = 10 * level(poppy, UPG.tastyFishbait)
+    + 100 * tarLevel(poppy, TAR.superYummyBait)
+    + 1e3 * tarLevel(poppy, TAR.kingWorm)
+    + 50 * level(poppy, UPG.juicyWorm)
+    + 200 * level(poppy, UPG.multihook)
+  let sum = 0
+  if (lv(TAR.superYummyBait) !== null && catchTotal > 0) sum += (100 / catchTotal) / growth(TAR.superYummyBait)
+  if (lv(TAR.bluefinFrenzy) !== null) sum += (0.08 / (1 + 0.08 * lv(TAR.bluefinFrenzy))) / growth(TAR.bluefinFrenzy)
+  if (lv(TAR.fishyReductions) !== null) sum += (0.15 / (1 + 0.15 * lv(TAR.fishyReductions))) / growth(TAR.fishyReductions)
+  if (lv(TAR.kingWorm) !== null) {
+    const discount = 0.05 * mega(poppy, 10)
+    const perLv = (catchTotal > 0 ? 1e3 / catchTotal : 0) + discount / (1 + discount * lv(TAR.kingWorm))
+    sum += perLv / growth(TAR.kingWorm)
+  }
+  return sum
+}
+
+// Super Tarbait makes tar faster, so more tar also buys more tar: 1% more tar gain ends up as 1 / (1 - s)% more tar,
+// s = (ln gain per Super Tarbait LV) / ln x2
+function getTarSelfAmplifier(poppy) {
+  if (getTarUnlocked(poppy) <= TAR.superTarbait) return 1
+  const lv = tarLevel(poppy, TAR.superTarbait)
+  const self = (0.05 / (1 + 0.05 * lv)) / Math.log(poppyTarUpgrades[TAR.superTarbait].x2)
+  return 1 / (1 - Math.min(0.5, self))
+}
+
+export function getResetWeights(poppy) {
+  const shiny = getShinyElasticity(poppy?.shinyCaught)
+  const tar = getTarUnlocked(poppy) > 0 ? getTarFishElasticity(poppy) * getTarSelfAmplifier(poppy) : 0
+  return [1, shiny, 1, 0, tar]
+}
+
+// Best split of `total` points for weights [blue, orange, green, -, black]
+export function optimizeResetPoints(total, weights) {
+  const redWeight = weights.reduce((sum, w) => sum + w, 0)
+  const all = [...weights]
+  all[RED] = redWeight
+  const points = [0, 0, 0, 0, 0]
+  const gain = i => all[i] * Math.log1p(RESET_PER_POINT[i] / (1 + RESET_PER_POINT[i] * points[i]))
+  for (let n = 0; n < total; n++) {
+    let best = -1
+    let bestGain = 0
+    for (let i = 0; i < points.length; i++) {
+      const g = gain(i)
+      if (g > bestGain) {
+        best = i
+        bestGain = g
+      }
+    }
+    if (best < 0) break
+    points[best]++
+  }
+  return points
+}
+
+// Fish gain multi of a split: bluefin × cheaper × shiny speed ^ its elasticity × tar ^ its elasticity
+function fishPower(points, weights) {
+  return points.reduce((product, _, i) => (i === RED ? product : product * getResetBonusFor(points, i) ** weights[i]), 1)
+}
+
+// Poppy Reset Planner tab: current split, best split and the all-in shiny split
+export function getPoppyResetPlan(snapshot) {
+  const poppy = snapshot?.poppy
+  if (!poppy) return null
+  const current = POPPY_RESET_BONUSES.map((_, i) => poppy.resetPoints?.[i] ?? 0)
+  const unspent = poppy.unspentResetPoints ?? 0
+  const total = current.reduce((sum, pts) => sum + pts, unspent)
+  const weights = getResetWeights(poppy)
+  const best = optimizeResetPoints(total, weights)
+  const shinyOnly = optimizeResetPoints(total, [0, 1, 0, 0, 0])
+  const buyOnly = optimizeResetPoints(total, [0, 0, 1, 0, 0])
+  const rows = POPPY_RESET_BONUSES.map((bonus, i) => ({
+    ...bonus,
+    current: current[i],
+    best: best[i],
+    shiny: shinyOnly[i],
+    buy: buyOnly[i],
+    currentMulti: getResetBonusFor(current, i),
+    bestMulti: getResetBonusFor(best, i),
+    shinyMulti: getResetBonusFor(shinyOnly, i),
+    buyMulti: getResetBonusFor(buyOnly, i),
+  }))
+  return {
+    total,
+    unspent,
+    rows,
+    fishGain: fishPower(best, weights) / fishPower(current, weights),
+    shinySpeedUp: getResetBonusFor(shinyOnly, 1) / getResetBonusFor(best, 1),
+    buyDiscount: getResetBonusFor(buyOnly, 2) / getResetBonusFor(best, 2),
+    purchases: getBigPurchases(snapshot, best, buyOnly),
+  }
+}
+
+// Notices (utils/poppyNotices.js): is Greatest Catch / Fisheroo Reset affordable with the big purchase split?
+export function getAffordableBigPurchases(snapshot) {
+  const poppy = snapshot?.poppy
+  if (!poppy) return { greatestCatch: false, fisherooReset: false }
+  const total = (poppy.resetPoints ?? []).reduce((sum, pts) => sum + pts, poppy.unspentResetPoints ?? 0)
+  const buySnapshot = {
+    ...snapshot,
+    poppy: { ...poppy, resetPoints: optimizeResetPoints(total, [0, 0, 1, 0, 0]), unspentResetPoints: 0 },
+  }
+  const now = getPoppy(snapshot)
+  const affordable = i => now.upgrades[i].unlocked && now.fish >= getPoppyUpgradeCost(buySnapshot, i)
+  return {
+    greatestCatch: affordable(UPG.greatestCatch),
+    fisherooReset: affordable(UPG.fisherooReset),
+  }
+}
+
+// Greatest Catch (next Megafish) and Fisheroo Reset: cost with the best split and with the all-in green (buy) split,
+// fish on hand, and minutes until affordable at the best split's fish rate (no upgrades bought meanwhile)
+function getBigPurchases(snapshot, best, buy) {
+  const withPoints = points => ({ ...snapshot, poppy: { ...snapshot.poppy, resetPoints: points, unspentResetPoints: 0 } })
+  const bestSnapshot = withPoints(best)
+  const buySnapshot = withPoints(buy)
+  const now = getPoppy(snapshot)
+  const fishPerMinute = getPoppy(bestSnapshot).fishPerMinute
+  return [UPG.greatestCatch, UPG.fisherooReset].map(i => {
+    const upgrade = now.upgrades[i]
+    const bestCost = getPoppyUpgradeCost(bestSnapshot, i)
+    const buyCost = getPoppyUpgradeCost(buySnapshot, i)
+    const minutes = cost => (now.fish >= cost ? 0 : (cost - now.fish) / fishPerMinute)
+    return {
+      name: upgrade.name,
+      icon: upgrade.icon,
+      unlocked: upgrade.unlocked,
+      fish: now.fish,
+      bestCost,
+      buyCost,
+      bestMinutes: minutes(bestCost),
+      buyMinutes: minutes(buyCost),
+    }
+  })
+}
+
+// Shiny multi breakdown (Overview tab). Icons images/poppy/RooFishS<i>.png
+export function getPoppyShinies(snapshot) {
+  const poppy = snapshot?.poppy
+  if (!poppy) return null
+  return {
+    total: getShinyMulti(poppy, -1),
+    kinds: SHINY_BASES.map((base, i) => ({
+      base,
+      icon: `images/poppy/RooFishS${i}.png`,
+      caught: poppy.shinyCaught?.[i] ?? 0,
+      multi: getShinyMulti(poppy, i),
     })),
   }
 }

@@ -22,6 +22,20 @@ const OVER_LEVEL_BONUS = 10 // % shiny rate per OverLV
 const RE_IMPORT = 'Re-import your save'
 export const SHINY_COPIES_PER_SPECIES = 3
 
+// Fence yard size (Toolbox breeding.ts): 5 + pet upgrade 4 (Breeding[2][4]) + 2 per gem shop item 125.
+// The save only has 27 fence spots (Pets[0-26]).
+const FENCE_BASE_SLOTS = 5
+const FENCE_UPGRADE = 4
+const FENCE_GEM_ITEM = 125
+const FENCE_GEM_SLOTS = 2
+const FENCE_MAX_SLOTS = 27
+
+export function getFenceSlots(snapshot) {
+  const upgrade = snapshot?.breeding?.petUpgradeLevels?.[FENCE_UPGRADE] ?? 0
+  const gem = Number(snapshot?.gemShop?.purchases?.[FENCE_GEM_ITEM]) || 0
+  return Math.min(FENCE_MAX_SLOTS, Math.round(FENCE_BASE_SLOTS + upgrade + FENCE_GEM_SLOTS * gem))
+}
+
 function getPetLevels(breeding) {
   const maxLevel = getMaxShinyLevelFor(breeding)
   return Object.entries(breedingMap).map(([key, pet]) => {
@@ -137,9 +151,10 @@ function simulate(pets, rate, overLevels, days, policy) {
   }
 }
 
-// The plan: which species to fence (SHINY_COPIES_PER_SPECIES copies each, lowest level, then bonus order),
-// what to swap, and how the current fence compares over 30 days.
-export function getShinyPlan(snapshot, rate) {
+// The fence part of the plan: which species to fence (SHINY_COPIES_PER_SPECIES copies each, lowest level,
+// then bonus order) and what to swap. No outlook, so the Breeding notice can call it cheaply.
+// Sized by the shinies already in the fence; with none, by the fence yard's slots (emptyFence).
+export function getShinyFencePlan(snapshot, rate) {
   const breeding = snapshot?.breeding
   const maxLevel = getMaxShinyLevelFor(breeding)
   const shinyCounts = breeding?.fenceShiny
@@ -150,7 +165,9 @@ export function getShinyPlan(snapshot, rate) {
   }))
 
   const fenced = pets.filter(p => p.copies > 0)
-  const slots = fenced.reduce((sum, p) => sum + p.copies, 0)
+  const shinySlots = fenced.reduce((sum, p) => sum + p.copies, 0)
+  const emptyFence = shinySlots === 0
+  const slots = emptyFence ? getFenceSlots(snapshot) : shinySlots
   const candidates = pets.filter(p => !p.maxed).sort(byPriority)
   const speciesCount = Math.max(1, Math.round(slots / SHINY_COPIES_PER_SPECIES))
   const best = candidates.slice(0, speciesCount)
@@ -180,27 +197,40 @@ export function getShinyPlan(snapshot, rate) {
   const batchOver = best.reduce((sum, p) => sum + (p.level >= BASE_MAX_SHINY_LEVEL ? 1 : 0), 0)
   const overLevels = getShinyOverLevels(breeding)
 
-  const OUTLOOK_DAYS = 30
-  const currentFence = Object.fromEntries(fenced.map(p => [p.key, p.copies]))
-  const current = simulate(pets, rate, overLevels, OUTLOOK_DAYS, () => currentFence)
-  const planned = simulate(pets, rate, overLevels, OUTLOOK_DAYS, state => Object.fromEntries(
-    state.filter(p => !p.maxed).sort(byPriority).slice(0, speciesCount)
-      .map(p => [p.key, SHINY_COPIES_PER_SPECIES])
-  ))
-
   return {
+    pets,
+    fenced,
     slots,
+    emptyFence,
     speciesCount,
     fence,
     swapIn,
+    // Fenced species the plan takes out (levelled past the plan or maxed) = the Breeding notice
+    takeOut: fence.filter(p => p.remove > 0).length,
     swapCount: fence.reduce((sum, p) => sum + p.remove, 0) + swapIn.reduce((sum, p) => sum + p.add, 0),
     batchDays,
     overLevels,
     batchOverLevels: overLevels + batchOver,
+    missingFence: !shinyCounts,
+  }
+}
+
+// The full plan: the fence plan plus how the current fence and the plan compare over 30 days
+export function getShinyPlan(snapshot, rate) {
+  const { pets, fenced, ...plan } = getShinyFencePlan(snapshot, rate)
+  const OUTLOOK_DAYS = 30
+  const currentFence = Object.fromEntries(fenced.map(p => [p.key, p.copies]))
+  const current = simulate(pets, rate, plan.overLevels, OUTLOOK_DAYS, () => currentFence)
+  const planned = simulate(pets, rate, plan.overLevels, OUTLOOK_DAYS, state => Object.fromEntries(
+    state.filter(p => !p.maxed).sort(byPriority).slice(0, plan.speciesCount)
+      .map(p => [p.key, SHINY_COPIES_PER_SPECIES])
+  ))
+
+  return {
+    ...plan,
     outlookDays: OUTLOOK_DAYS,
     current,
     planned,
-    missingFence: !shinyCounts,
   }
 }
 

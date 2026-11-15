@@ -6,8 +6,10 @@ import { MASTERCLASSES, islandMap, holeCaverns } from '../data'
 import { getCharacterNotices } from './characterNotices.js'
 import { getMasterclassNotices } from './masterclassNotices.js'
 import { getMinibossNotices } from './minibossNotices.js'
+import { getPoppyNotices } from './poppyNotices.js'
 import { getFamilyObolNotices } from './obolNotices.js'
 import { getIslandNotices } from './islandNotices.js'
+import { getBreedingNotices } from './breedingNotices.js'
 import { getMainframeNotices } from './mainframeUtils.js'
 import { getHoleNotices } from './holeNotices.js'
 import { getLegendTalentNoticeCount } from './legendTalentNotices.js'
@@ -45,6 +47,13 @@ const SECTION_LINES = {
     if (deathNoteClaims > 0) lines.push(`Death Note mission: ${plural(deathNoteClaims, 'claim')} waiting`)
     return lines
   },
+  Poppy: snapshot => {
+    const { greatestCatch, fisherooReset } = getPoppyNotices(snapshot)
+    const lines = []
+    if (greatestCatch) lines.push('Greatest Catch (next Megafish) is affordable with the big purchase split')
+    if (fisherooReset) lines.push('Fisheroo Reset is affordable with the big purchase split')
+    return lines
+  },
   Obols: (snapshot, obolCheckMode) => {
     const { noBonusTotal } = getFamilyObolNotices(snapshot, obolCheckMode)
     return noBonusTotal > 0 ? [`Family board: ${plural(noBonusTotal, 'obol')} missing their bonus`] : []
@@ -52,6 +61,12 @@ const SECTION_LINES = {
   Islands: snapshot => {
     const { byIsland } = getIslandNotices(snapshot)
     return islandMap.flatMap(island => (byIsland[island.id] ?? []).map(message => `${island.name}: ${message}`))
+  },
+  Breeding: snapshot => {
+    const { shinySwap } = getBreedingNotices(snapshot)
+    return shinySwap > 0
+      ? [`Shiny Planner: ${plural(shinySwap, 'shiny species', 'shiny species')} ready to swap out`]
+      : []
   },
   Lab: snapshot => {
     const { greenTube, viaductOn, offBonuses } = getMainframeNotices(snapshot)
