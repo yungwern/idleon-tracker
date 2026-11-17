@@ -42,12 +42,12 @@ function OutpostStars({ glorified, purified }) {
 
 // One notice line, shared by world headers and outpost cards: icon column + text, coloured by kind.
 //   kind: 'action' (something to change), 'spend' (PTS to spend), 'save' (hold PTS), 'info' (all good / what's next)
-function Notice({ kind, icon, children, tip }) {
+function Notice({ kind, icon, children, tip, wideTip }) {
   return (
     <span className={`mc-outpost-notice mc-outpost-notice--${kind}${tip ? ' tooltip-anchor' : ''}`}>
       <span className="mc-outpost-notice-icon">{icon ?? <span className="mc-outpost-notice-dot" />}</span>
       <span className="mc-outpost-notice-text">{children}</span>
-      {tip && <span className="tooltip mc-outpost-tip">{tip}</span>}
+      {tip && <span className={`tooltip mc-outpost-tip${wideTip ? ' mc-outpost-tip--wide' : ''}`}>{tip}</span>}
     </span>
   )
 }
@@ -138,7 +138,8 @@ function ptsReason(plan, educationUnlocked) {
     return 'Barracks has every unit slot (7), so every PTS goes to Education. More Barracks levels only add Resource Collection Rate.'
   }
   return `Education raises every bar's EXP; a Barracks level adds a Trader slot for ${BARRACKS_COST} PTS. `
-    + `Here Education is the better buy until LV ${plan.educationUntil}, then Barracks.`
+    + `Here Education is the better buy until LV ${plan.educationUntil}, then Barracks `
+    + '(12 × Traders − 9, counting unit slots and free Traders from Command rank: +12 per Barracks level).'
 }
 
 // "Swap 5 Surveyors to Traders" / "Set 3 slots to Surveyors until Intel 40"
@@ -226,7 +227,7 @@ function OutpostNotices({ outpost, opt, optimizer }) {
 }
 
 function OutpostCard({ outpost, summary, optimizer }) {
-  const priestsHere = optimizer.priestAdvice.get(outpost.world)?.postedAt.get(outpost.mapIndex) ?? 0
+  const priestsHere = optimizer.priestsAt.get(outpost.mapIndex) ?? 0
   const isSupport = outpost.mode === SUPPORT_CAMP_MODE
   const opt = optimizer.byMap.get(outpost.mapIndex)
   // Purity only matters once the world has a Priest (or the outpost already has some)
@@ -263,7 +264,7 @@ function OutpostCard({ outpost, summary, optimizer }) {
           {priestsHere > 0 && (
             <span className="mc-outpost-meta-line mc-outpost-meta-line--priest">
               <SpriteIcon src={PRIEST_IMG} />
-              {plural(priestsHere, 'Priest')} purifying
+              {plural(priestsHere, 'Priest')} {!outpost.purified ? 'purifying' : outpost.farm ? 'stacking Purity (farm map)' : '(map purified)'}
             </span>
           )}
         </div>
@@ -282,8 +283,9 @@ function OutpostCard({ outpost, summary, optimizer }) {
   )
 }
 
-// Splits a world's unspent PTS into: outposts that spend it all on Education (one total) and outposts that
-// buy a Barracks level now or hold PTS for the next one (these need names)
+// Splits a world's unspent PTS into: Education (one total), outposts that buy a Barracks level now, and
+// outposts holding PTS for the next one (these need names). An outpost that tops Education up to its
+// Barracks switch point and then saves the rest is in both Education and saving, like its card says.
 function worldPtsNotices(outposts, optimizer) {
   const education = []
   const buy = []
@@ -293,18 +295,94 @@ function worldPtsNotices(outposts, optimizer) {
     const plan = opt?.ptsPlan
     if (!plan || (plan.spend === 0 && !plan.saveFor)) return
     const row = { outpost, opt, plan }
-    if (plan.now.some(step => step.upgrade === 'barracks')) buy.push(row)
-    else if (plan.saveFor) save.push(row)
-    else education.push(row)
+    if (plan.now.some(step => step.upgrade === 'barracks')) {
+      buy.push(row)
+      return
+    }
+    if (plan.spend > 0) education.push(row)
+    if (plan.saveFor) save.push(row)
   })
   // Closest to the next Barracks level first
   save.sort((a, b) => (b.opt.pts.left - b.plan.spend) - (a.opt.pts.left - a.plan.spend))
   return {
     educationPts: education.reduce((sum, r) => sum + r.plan.spend, 0),
     educationCount: education.length,
+    education,
     buy,
     save,
   }
+}
+
+// Outpost tables in the world-line tooltips: mob sprite, name, then the given cells per row
+function OutpostTable({ rows, columns, cells }) {
+  return (
+    <span className={`mc-outpost-tip-table mc-outpost-tip-table--cols-${columns}`}>
+      {rows.map(row => (
+        <span key={row.outpost.mapIndex} className="mc-outpost-tip-table-row">
+          <span className="mc-outpost-tip-table-mob"><MobIcon mobKey={row.outpost.mobKey} /></span>
+          <strong className="mc-outpost-tip-table-name">{row.outpost.name}</strong>
+          {cells(row)}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+// Spend PTS on Education tooltip: levels bought, then Education LV after / the LV where Barracks takes over
+// (planPts educationUntil). Gold = it reaches that point and saves the rest; closest to it first.
+function EducationTable({ rows }) {
+  const after = plan => plan.now[plan.now.length - 1].to
+  const gap = plan => (plan.educationUntil === null ? Infinity : plan.educationUntil - after(plan))
+  const sorted = [...rows].sort((a, b) => gap(a.plan) - gap(b.plan))
+  return (
+    <>
+      <span className="mc-outpost-tip-row">
+        Spend on <strong>Greater Education</strong> (LV after / Barracks switch point):
+      </span>
+      <OutpostTable
+        rows={sorted}
+        columns={2}
+        cells={({ plan }) => (
+          <>
+            <span className="mc-outpost-tip-table-edu">+{plan.spend}</span>
+            <span className="mc-outpost-tip-table-lv">
+              <span className={plan.saveFor ? 'mc-outpost-tip-table-reached' : ''}>{after(plan)}</span>
+              {' / '}{plan.educationUntil ?? '—'}
+            </span>
+          </>
+        )}
+      />
+      {sorted.some(row => row.plan.saveFor) && (
+        <span className="mc-outpost-tip-row mc-outpost-tip-note">
+          Gold: reaches its switch point, then saves the rest for Barracks.
+        </span>
+      )}
+    </>
+  )
+}
+
+// Saving for Barracks tooltip: PTS held toward the next Barracks level (after any Education top-up, which
+// the Education tooltip shows), closest first. The Barracks level goes in the title when they all match.
+function SaveTable({ rows }) {
+  const levels = new Set(rows.map(row => row.plan.saveFor))
+  const sameLevel = levels.size === 1
+  return (
+    <>
+      <span className="mc-outpost-tip-row">
+        Keep these PTS for <strong>{sameLevel ? `Barracks ${[...levels][0]}` : 'the next Barracks level'}</strong>:
+      </span>
+      <OutpostTable
+        rows={rows}
+        columns={sameLevel ? 1 : 2}
+        cells={({ opt, plan }) => (
+          <>
+            <span className="mc-outpost-tip-table-pts">{opt.pts.left - plan.spend} / {BARRACKS_COST}</span>
+            {!sameLevel && <span className="mc-outpost-tip-table-pts">B{plan.saveFor}</span>}
+          </>
+        )}
+      />
+    </>
+  )
 }
 
 // Names inline while they fit on a line; past that, a count with the names in the tooltip
@@ -352,9 +430,12 @@ function OutpostWorld({ group, summary, optimizer, notices }) {
         tip={(
           <>
             Now: {describePosts(notices.priest.postedAt)}.{' '}
-            {notices.priest.global
-              ? `Purifying ${summary.nameOf(target)} triples the ${target === 1 ? 'Intel' : 'Command'} bar on every outpost, so it comes first.`
-              : 'Priests on one outpost purify it sooner than spread out; this is the closest to Purity Rank 1.'}
+            {notices.priest.farm
+              ? 'Every outpost here is purified, so the Priests stack Purity on the farm map. Ranks past 1 do nothing yet; '
+                + 'it\'s a head start for future purified-map bonuses. With two farm maps, the lower Purity rank goes first.'
+              : notices.priest.global
+                ? `Purifying ${summary.nameOf(target)} triples the ${target === 1 ? 'Intel' : 'Command'} bar on every outpost, so it comes first.`
+                : 'Priests on one outpost purify it sooner than spread out; this is the closest to Purity Rank 1.'}
           </>
         )}
       >
@@ -362,31 +443,37 @@ function OutpostWorld({ group, summary, optimizer, notices }) {
       </Notice>,
     )
   }
-  if (notices?.camps.length > 0) {
-    const target = optimizer.priestAdvice.get(group.world).target
+  if (notices?.camps) {
+    const { reason, farm, target, camps } = notices.camps
+    const forPriests = reason === 'priests'
     lines.push(
       <Notice
         key="camps"
         kind="action"
-        icon={<SpriteIcon src={PRIEST_IMG} />}
+        icon={<SpriteIcon src={forPriests ? PRIEST_IMG : COMMANDER_IMG} />}
         tip={(
           <>
-            {notices.camps.map(camp => (
+            {camps.map(({ camp, replaces, gain }) => (
               <span key={camp.mapIndex} className="mc-outpost-tip-row">
                 <strong>{camp.name}</strong>
-                {camp.supportTargets.length > 0
-                  ? ` (now boosts ${camp.supportTargets.map(summary.nameOf).join(', ')})`
-                  : ' (not linked)'}
+                {replaces !== null ? ` (now boosts ${summary.nameOf(replaces)})` : ' (not linked)'}
+                {gain !== null && `: +${gain.toFixed(1)} Trade ranks`}
               </span>
             ))}
             <span className="mc-outpost-tip-row mc-outpost-tip-note">
-              The Priests are purifying {summary.nameOf(target)}. Support Camps speed up Purity like any other rank, and
-              every Purified Map adds Collection Rate to all outposts, so it's worth what the old link was helping.
+              {forPriests && farm
+                ? `The Priests are stacking Purity on the farm map, ${summary.nameOf(target)}. Support Camps speed that up
+                  like any other rank.`
+                : forPriests
+                ? `The Priests are purifying ${summary.nameOf(target)}. Support Camps speed up Purity like any other rank, and
+                  every Purified Map adds Collection Rate to all outposts, so it's worth what the old link was helping.`
+                : `The Commanders work on ${summary.nameOf(target)}, so a camp there also speeds up its free Traders.
+                  Trade ranks are over ${HORIZON_DAYS} days, after what the old link loses; Collection Rate isn't counted.`}
             </span>
           </>
         )}
       >
-        Link {plural(notices.camps.length, 'Support Camp')} to <MobIcon mobKey={summary.mobOf(target)} />
+        Link {plural(camps.length, 'Support Camp')} to <MobIcon mobKey={summary.mobOf(target)} />
         <strong>{summary.nameOf(target)}</strong>
       </Notice>,
     )
@@ -442,7 +529,8 @@ function OutpostWorld({ group, summary, optimizer, notices }) {
       <Notice
         key="edu"
         kind="spend"
-        tip={`Spend every unspent PTS on Greater Education (${plural(pts.educationCount, 'outpost')}).${pts.save.length + pts.buy.length > 0 ? ' The Barracks outposts are the exception.' : ''}`}
+        wideTip
+        tip={<EducationTable rows={pts.education} />}
       >
         Spend {pts.educationPts} PTS on Education <span className="mc-outpost-notice-sub">{plural(pts.educationCount, 'outpost')}</span>
       </Notice>,
@@ -453,16 +541,8 @@ function OutpostWorld({ group, summary, optimizer, notices }) {
       <Notice
         key="save"
         kind="save"
-        tip={(
-          <>
-            <span className="mc-outpost-tip-row">Don't spend PTS here yet:</span>
-            {pts.save.map(({ outpost, opt, plan }) => (
-              <span key={outpost.mapIndex} className="mc-outpost-tip-row">
-                <strong>{outpost.name}</strong>: {opt.pts.left - plan.spend} / {BARRACKS_COST} PTS for Barracks {plan.saveFor}
-              </span>
-            ))}
-          </>
-        )}
+        wideTip
+        tip={<SaveTable rows={pts.save} />}
       >
         Saving for Barracks: <NameRun names={pts.save.map(nameOf)} />
       </Notice>,
@@ -471,6 +551,7 @@ function OutpostWorld({ group, summary, optimizer, notices }) {
 
   const showGlorified = summary.glorifyUnlocked
   const showPurified = summary.purityUnlocked
+  const purifiedBonuses = summary.purifiedBonuses
   return (
     <details className={`mc-outpost-world mc-outpost-world--w${group.world}`}>
       <summary className="mc-outpost-world-head">
@@ -491,7 +572,18 @@ function OutpostWorld({ group, summary, optimizer, notices }) {
                 <span className="mc-outpost-world-star-count tooltip-anchor">
                   <span className="mc-outpost-star mc-outpost-star--purified">★</span>
                   {group.purified}/{group.outposts.length}
-                  <span className="tooltip">Purified</span>
+                  <span className="tooltip tooltip--wrap">
+                    <span className="mc-outpost-tip-row"><strong>Purified</strong> (Purity Rank 1; higher ranks add nothing)</span>
+                    <span className="mc-outpost-tip-row">
+                      Each purified map: {purifiedBonuses.collectionMulti.toFixed(2)}x Collection Rate, and +{purifiedBonuses.regalMobs} mobs
+                      from Regal Intervention while you farm it
+                    </span>
+                    {purifiedBonuses.decreePerMap > 0 && (
+                      <span className="mc-outpost-tip-row">
+                        Global Decree - PM: +{purifiedBonuses.decreePerMap}% Collection Rate to every outpost per purified map
+                      </span>
+                    )}
+                  </span>
                 </span>
               )}
             </span>

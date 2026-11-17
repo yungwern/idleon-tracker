@@ -5,7 +5,7 @@ import { isNoticeOn } from './noticeSettings'
 // sidebar badge all read from here, so they always agree.
 // Returns { byWorld: Map(world → { commander, priest, camps, swaps, count }), count }
 //   commander / priest: that world's advice when the units need moving, else null
-//   camps: Support Camps to link to the Priests' target ([] when none)
+//   camps: that world's Support Camp advice (optimizer campAdvice: Priests' or Commanders' target), else null
 //   swaps: outposts whose Trader/Surveyor split should change ([{ outpost, swap }])
 //   count: +1 for each kind of notice the world has (so 5 swaps still count once)
 // Turned off in Home > Settings (utils/noticeSettings.js): the advice lines stay, only the counts go to 0
@@ -25,11 +25,11 @@ export function getOutpostNotices(rg, outposts) {
     const notices = {
       commander: commander?.needsMove ? commander : null,
       priest: priest?.needsMove ? priest : null,
-      camps: priest?.campsToLink ?? [],
+      camps: optimizer.campAdvice.get(world) ?? null,
       swaps,
     }
     notices.count = counted
-      ? [notices.commander, notices.priest, notices.camps.length > 0, swaps.length > 0].filter(Boolean).length
+      ? [notices.commander, notices.priest, notices.camps, swaps.length > 0].filter(Boolean).length
       : 0
     count += notices.count
     byWorld.set(world, notices)

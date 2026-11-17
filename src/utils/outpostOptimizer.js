@@ -5,13 +5,14 @@
 //   1. How should the unit slots be split between Traders and Surveyors?
 //   2. How should the unspent PTS be split between Barracks and Education? (closed form, see planPts)
 //   3. Which outpost in each world should its Commanders work on?
+//   4. Where should each world's Support Camps link? (getCampAdvice)
 // "Best" means the most Trade ranks (= PTS) at the end of the horizon, counted with the
 // fraction of the current bar so close calls aren't decided by rounding.
 // Only Trader, Surveyor and empty slots are reassigned: Workers feed collection and Guards
 // keep resource nodes in range, so the optimizer never touches them.
 // ============================================================
 
-import { outpostRankThreshold, MAPS_PER_WORLD, SUPPORT_CAMP_MODE, OUTPOST_MAX_UNIT_SLOTS } from '../data/royalOutposts'
+import { outpostRankThreshold, MAPS_PER_WORLD, SUPPORT_CAMP_MODE, OUTPOST_MAX_UNIT_SLOTS, OUTPOST_POSITIONS, FARM_MAPS } from '../data/royalOutposts'
 
 export const HORIZON_DAYS = 30
 // A Trader/Surveyor swap is only suggested when it's worth at least this many Trade ranks over HORIZON_DAYS,
@@ -54,13 +55,18 @@ const ARMORY = {
   surveyors: 22, // +15% Intel EXP per level
   commanders: 24, // +5% Command EXP per level
   knights: 25, // +5% Military EXP per level
+  greatGuards: 21, // +5px connection range per Guard, per level
   superSupport: 43, // +1% Support Camp boost per level
   greaterEducation: 57,
   tradingRank: 71,
   intelRank: 72, // +10% EXP per Intel rank, per level
+  militaryRank: 74, // +2px connection range per Military rank, per level
   outpostPtsWorld1: 9, // 9-16: +1 PTS per level for every outpost in that world
 }
 const STRONK_RANK_ORBLET = 6 // +5% rank EXP per level
+const LONG_RANGE_ORBLET = 8 // +1px connection range per level
+// game: a Support Camp's link reaches when floor(range) + 8 >= distance between the two maps
+const SUPPORT_REACH_SLACK = 8
 
 // Jelly Operator bonuses that touch outposts, keyed by bonus index (active once that many obstructions are beaten)
 const JELLY_VALUES = { 1: 35, 3: 5, 15: 4, 32: 3, 41: 5, 43: 3, 48: 3, 52: 3, 61: 3 }
@@ -84,6 +90,31 @@ function fractionalRank(exp, rank, type) {
 // Free units an outpost gets from its Command rank (game: PassiveUnitsz)
 function passiveUnits(commandRank, unitType) {
   return Math.ceil(Math.max(0, commandRank - unitType) / 4)
+}
+
+// game: "OutpostRange" (Toolbox royalGuardian.ts). Guards count from every unit digit plus the free
+// ones from Command rank; Logistics adds 250 on a soft L / (L + 100) curve.
+function outpostRange(rg, o) {
+  const armory = id => rg?.armory?.[id] ?? 0
+  const [, logistics] = o.upgrades
+  const ranks = o.rankExp.map((e, type) => rankOf(e, type))
+  const guards = [...String(o.units ?? '')].filter(d => Number(d) - UNIT_DIGIT_OFFSET === UNIT_GUARD).length
+    + passiveUnits(ranks[COMMAND], UNIT_GUARD)
+  const range = 80
+    + (rg?.orbletLevels?.[LONG_RANGE_ORBLET] ?? 0)
+    + 250 * (logistics / (logistics + 100))
+    + (25 + 5 * armory(ARMORY.greatGuards)) * guards
+    + ranks[MILITARY] * 2 * armory(ARMORY.militaryRank)
+  return Math.floor(Math.min(999, range))
+}
+
+// Can this Support Camp (raw outpost) link to the outpost on targetMap?
+function campReaches(rg, camp, targetMap) {
+  const from = OUTPOST_POSITIONS[camp.mapIndex]
+  const to = OUTPOST_POSITIONS[targetMap]
+  if (!from || !to) return true
+  const distance = Math.hypot(from[0] - to[0], from[1] - to[1])
+  return outpostRange(rg, camp) + SUPPORT_REACH_SLACK >= distance
 }
 
 function accountContext(rg) {
@@ -218,15 +249,13 @@ function outpostPts(ctx, state) {
   return { total, spent, left: Math.max(0, Math.round(total - spent)) }
 }
 
-// Trader-equivalents feeding the Trade bar under the recommended unit plan: every flexible slot,
-// the free Traders from Command rank, and idle Militia when Trade is the bar they feed.
-function effectiveTraders(ctx, state) {
-  const ranks = state.ranks
-  const highest = ranks.reduce((best, r, t) => (r > ranks[best] ? t : best), 0)
-  const militia = ctx.peacetimeMilitia && highest === TRADE
-    ? (state.militia * ctx.baseRate[MILITARY]) / (2 * ctx.baseRate[TRADE])
-    : 0
-  return state.flexSlots + passiveUnits(ranks[COMMAND], UNIT_TRADER) + militia
+// Traders the PTS plan counts: every flexible slot plus the free Traders from Command rank.
+// Idle Militia (Peacetime Militia) are left out on purpose (Eli): they're worth under one Trader, and they
+// only count while Trade is the outpost's highest bar, which made the Barracks switch point jump around.
+// Support Camps aren't in it either. So the switch point only moves with Barracks level (+12 per level,
+// as every slot holds a Trader or Surveyor) and when Command rank grants a free Trader (+12).
+function effectiveTraders(state) {
+  return state.flexSlots + passiveUnits(state.ranks[COMMAND], UNIT_TRADER)
 }
 
 // How to spend PTS. Trade EXP grows with Traders × (10 + Education), so with n Traders one Barracks
@@ -243,7 +272,7 @@ function planPts(ctx, state, left) {
   const st = {
     education: state.education,
     barracks: state.barracks,
-    traders: effectiveTraders(ctx, state),
+    traders: effectiveTraders(state),
   }
   const canBarracks = () => st.barracks < BARRACKS_SLOT_CAP
   // First Education level where a Barracks level is the better buy
@@ -334,12 +363,14 @@ function nextCommandUnit(ctx, state) {
   }
 }
 
-// Where each world's movable units are posted: Commanders per map and per world, idle Militia per map
+// Where each world's movable units are posted: Commanders per map and per world, idle Militia and Priests per map
 function readDeployments(rg, built) {
   const commanders = new Map()
   const militia = new Map()
+  const priests = new Map()
   const commandersByWorld = new Map()
   ;(rg?.deployments ?? []).forEach(d => {
+    if (d.job === JOB_PURITY && d.mapIndex >= 0) priests.set(d.mapIndex, (priests.get(d.mapIndex) ?? 0) + 1)
     if (d.job === JOB_COMMAND) {
       commandersByWorld.set(d.world, (commandersByWorld.get(d.world) ?? 0) + 1)
       if (d.mapIndex >= 0) commanders.set(d.mapIndex, (commanders.get(d.mapIndex) ?? 0) + 1)
@@ -348,7 +379,7 @@ function readDeployments(rg, built) {
       militia.set(d.mapIndex, (militia.get(d.mapIndex) ?? 0) + 1)
     }
   })
-  return { commanders, militia, commandersByWorld }
+  return { commanders, militia, priests, commandersByWorld }
 }
 
 // For each world with Commanders: the outpost that reaches its next free Trader/Surveyor fastest,
@@ -417,9 +448,13 @@ function globalPurifyGain(rg, outposts, barType) {
 // sooner than spread out, so they're all aimed at one target:
 //   World 1: Froggy Fields / Spore Meadows while either is unpurified (GLOBAL_PURIFY_MAPS)
 //   otherwise: the unpurified outpost closest to Purity Rank 1, unless they already share one.
-// Only worlds with Priests posted get advice, and only while an outpost there is unpurified.
-// Returns Map(world → { target, priests, postedAt: Map(mapIndex → count), needsMove, global,
-//   campsToLink: Support Camp outposts in that world not linked to the target })
+//   Every built outpost purified: the world's farm map (FARM_MAPS, Eli), where they stay. Purity past
+//     Rank 1 does nothing today (every game check is min(Purity Rank, 1)), but it's a head start for
+//     future purified-map bonuses. With two farm maps (W1, W2) they go to the lower Purity rank and stay
+//     put on a tie. Unbuilt outposts don't count: a newly unlocked outpost pulls them back to Rank 1 first.
+//     No farm map built yet: no advice (Priests can't change job or world).
+// Only worlds with Priests posted get advice.
+// Returns Map(world → { target, priests, postedAt: Map(mapIndex → count), needsMove, global, farm })
 export function getPriestAdvice(rg, outposts) {
   const postedByWorld = new Map()
   ;(rg?.deployments ?? []).filter(d => d.job === JOB_PURITY).forEach(d => {
@@ -431,9 +466,28 @@ export function getPriestAdvice(rg, outposts) {
   const advice = new Map()
   postedByWorld.forEach((postedAt, world) => {
     const open = outposts.filter(o => o.world === world && !o.purified)
-    if (open.length === 0) return
-    const openMaps = new Set(open.map(o => o.mapIndex))
     const posted = [...postedAt.keys()]
+    const priests = posted.reduce((sum, m) => sum + postedAt.get(m), 0)
+    if (open.length === 0) {
+      const farms = outposts.filter(o => o.world === world && o.farm)
+      if (farms.length === 0) return
+      const rank = o => o.ranks[PURITY].rank
+      const lowest = Math.min(...farms.map(rank))
+      const tied = farms.filter(o => rank(o) === lowest)
+      const settled = posted.length === 1 ? tied.find(o => o.mapIndex === posted[0]) : null
+      const progress = o => o.ranks[PURITY].progress
+      const target = (settled ?? tied.reduce((best, o) => (progress(o) > progress(best) ? o : best))).mapIndex
+      advice.set(world, {
+        target,
+        priests,
+        postedAt,
+        needsMove: posted.some(m => m !== target),
+        global: false,
+        farm: true,
+      })
+      return
+    }
+    const openMaps = new Set(open.map(o => o.mapIndex))
     const settledOn = posted.length === 1 && openMaps.has(posted[0]) ? posted[0] : null
 
     const globals = GLOBAL_PURIFY_MAPS.filter(m => openMaps.has(m))
@@ -451,27 +505,104 @@ export function getPriestAdvice(rg, outposts) {
       target = settledOn ?? candidates.reduce((best, o) => (progress(o) > progress(best) ? o : best)).mapIndex
     }
 
-    // Purifying comes first (Eli): every Purified Map adds Collection Rate to all outposts (Global Decree - PM),
-    // so the world's Support Camps should boost the Priests' target, even at the cost of what they boost now.
-    const campsToLink = outposts.filter(o => o.world === world
-      && o.mode === SUPPORT_CAMP_MODE
-      && o.mapIndex !== target
-      && !o.supportTargets.includes(target))
-
     advice.set(world, {
       target,
-      priests: posted.reduce((sum, m) => sum + postedAt.get(m), 0),
+      priests,
       postedAt,
       needsMove: posted.some(m => m !== target),
       global: globals.length > 0,
-      campsToLink,
+      farm: false,
     })
   })
   return advice
 }
 
+// Where each world's Support Camps should link. Each camp is treated as one link (every camp in Eli's save
+// uses only its first connection slot), so linking it somewhere new replaces its current link.
+//   Priests have a target (purifying, or stacking Purity on the farm map): every camp that reaches it
+//     links there (Eli). Every Purified Map adds Collection Rate to all outposts, and farm-map Purity is
+//     the long-term bet; the Trade a camp could earn elsewhere (~2 ranks / 30 days) is small next to armory PTS.
+//   Otherwise (no Priests, or no farm map built yet): camps go to the Commanders' target only when the simulation
+//     says the world gains at least SWAP_MIN_GAIN Trade ranks over HORIZON_DAYS, counting the Trade the old
+//     link loses. Commanders are assumed to be on their target. Collection Rate isn't counted.
+// Camps that can't reach the target (range + 8, see campReaches) are left out.
+// Returns Map(world → { reason: 'priests' | 'commanders', farm, target, camps: [{ camp, replaces, gain }] })
+//   farm: the Priests' target is the farm map (every built outpost purified)
+//   camp: summary outpost, replaces: map it boosts now (or null), gain: Trade ranks (null for Priests)
+function getCampAdvice(rg, outposts, commanderAdvice, priestAdvice) {
+  const ctx = accountContext(rg)
+  const built = new Set(outposts.map(o => o.mapIndex))
+  const { militia } = readDeployments(rg, built)
+  const rawByMap = new Map((rg?.outposts ?? []).map(o => [o.mapIndex, o]))
+  const worlds = new Set(outposts.map(o => o.world))
+  const advice = new Map()
+
+  worlds.forEach(world => {
+    const priest = priestAdvice.get(world)
+    const commander = commanderAdvice.get(world)
+    const target = priest?.target ?? commander?.best.mapIndex
+    if (target === undefined) return
+    const candidates = outposts.filter(o => o.world === world
+      && o.mode === SUPPORT_CAMP_MODE
+      && o.mapIndex !== target
+      && !o.supportTargets.includes(target)
+      && rawByMap.has(o.mapIndex)
+      && campReaches(rg, rawByMap.get(o.mapIndex), target))
+    if (candidates.length === 0) return
+
+    if (priest) {
+      advice.set(world, {
+        reason: 'priests',
+        farm: priest.farm,
+        target,
+        camps: candidates.map(camp => ({ camp, replaces: camp.supportTargets[0] ?? null, gain: null })),
+      })
+      return
+    }
+
+    // Trade ranks at the end of the horizon for one outpost with a given number of camps on it
+    const supports = new Map(outposts.map(o => [o.mapIndex, o.supportedBy.length]))
+    const cache = new Map()
+    const tradeAt = (mapIndex, supportCount) => {
+      const raw = rawByMap.get(mapIndex)
+      if (!raw?.units) return 0
+      const key = `${mapIndex}:${supportCount}`
+      if (!cache.has(key)) {
+        const commanders = mapIndex === target ? commander.commanders : 0
+        const state = outpostState(raw, ctx, supportCount, commanders, militia.get(mapIndex) ?? 0)
+        cache.set(key, bestUnitPlan(ctx, state, state.flexSlots, state.education).trade)
+      }
+      return cache.get(key)
+    }
+    const gainOf = camp => {
+      const old = camp.supportTargets[0]
+      const atTarget = tradeAt(target, supports.get(target) + 1) - tradeAt(target, supports.get(target))
+      const lost = old === undefined || !rawByMap.has(old)
+        ? 0
+        : tradeAt(old, supports.get(old)) - tradeAt(old, supports.get(old) - 1)
+      return atTarget - lost
+    }
+
+    // Best camp first, then re-check the rest with that one moved
+    const camps = []
+    let left = [...candidates]
+    while (left.length > 0) {
+      const scored = left.map(camp => ({ camp, gain: gainOf(camp) })).sort((a, b) => b.gain - a.gain)
+      const best = scored[0]
+      if (best.gain < SWAP_MIN_GAIN) break
+      const replaces = best.camp.supportTargets[0] ?? null
+      camps.push({ camp: best.camp, replaces, gain: best.gain })
+      supports.set(target, supports.get(target) + 1)
+      if (replaces !== null) supports.set(replaces, (supports.get(replaces) ?? 1) - 1)
+      left = left.filter(camp => camp !== best.camp)
+    }
+    if (camps.length > 0) advice.set(world, { reason: 'commanders', farm: false, target, camps })
+  })
+  return advice
+}
+
 // Returns { byMap: Map(mapIndex → result), commandersByWorld, bestCommandTarget: Map(world → mapIndex), commanderAdvice,
-//   priestAdvice, educationUnlocked }
+//   priestAdvice, campAdvice, priestsAt: Map(mapIndex → Priests posted there), educationUnlocked }
 // Cached per parsed save: the page, the world headers and the sidebar badge all ask for it
 const optimizeCache = new WeakMap()
 
@@ -486,9 +617,10 @@ function runOptimizer(rg, outposts) {
   const ctx = accountContext(rg)
   const built = new Set(outposts.map(o => o.mapIndex))
 
-  const { commanders, militia, commandersByWorld } = readDeployments(rg, built)
+  const { commanders, militia, priests, commandersByWorld } = readDeployments(rg, built)
   const commanderAdvice = getCommanderAdvice(rg, outposts)
   const priestAdvice = getPriestAdvice(rg, outposts)
+  const campAdvice = getCampAdvice(rg, outposts, commanderAdvice, priestAdvice)
   const bestCommandTarget = new Map([...commanderAdvice].map(([world, a]) => [world, a.best.mapIndex]))
 
   const rawByMap = new Map((rg?.outposts ?? []).map(o => [o.mapIndex, o]))
@@ -553,6 +685,8 @@ function runOptimizer(rg, outposts) {
     bestCommandTarget,
     commanderAdvice,
     priestAdvice,
+    campAdvice,
+    priestsAt: priests,
     educationUnlocked: ctx.educationUnlocked,
   }
 }

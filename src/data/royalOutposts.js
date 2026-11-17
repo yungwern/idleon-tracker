@@ -144,6 +144,139 @@ export const OUTPOST_MAPS = {
   326: "Dreadnaught Chamber",
 }
 
+// Farm maps (Eli): the map in each world you actively farm with Royal Guardian. Once every built outpost in
+// a world is purified, its Priests sit here stacking Purity past Rank 1. That does nothing today, but
+// purified-map bonuses (like +10 Regal Intervention mobs) are expected to grow, so it's a head start.
+// W1 and W2 have two: the first is better for statues, the second for orblets.
+export const FARM_MAPS = {
+  1: [2, 14], // Froggy Fields (Frogs), Valley Of The Beans (Beans)
+  2: [58, 62], // Shifty Sandbox (Sandcastles), The Ring (Tysons)
+  3: [116], // Wam Wonderland (Dedotated Rams)
+  4: [162], // Flamboyant Bayou (Flombeige)
+}
+
+// Where each outpost map sits on the Kingdom screen (Toolbox shared-data mapDetails[map][2], x/y).
+// A Support Camp can only link to an outpost within its connection range + 8 (outpostOptimizer.js campReaches).
+export const OUTPOST_POSITIONS = {
+  1: [603, 190],
+  2: [519, 211],
+  6: [393, 154],
+  7: [293, 165],
+  10: [345, 180],
+  11: [356, 208],
+  12: [254, 223],
+  13: [754, 204],
+  14: [637, 220],
+  15: [501, 136],
+  16: [707, 236],
+  17: [672, 170],
+  18: [765, 169],
+  19: [755, 256],
+  24: [670, 269],
+  26: [627, 299],
+  27: [545, 333],
+  28: [530, 379],
+  30: [793, 227],
+  31: [793, 130],
+  32: [318, 231],
+  42: [662, 135],
+  51: [388, 188],
+  52: [429, 263],
+  53: [505, 277],
+  54: [230, 157],
+  55: [197, 185],
+  57: [608, 273],
+  58: [552, 233],
+  59: [510, 192],
+  60: [490, 125],
+  61: [227, 215],
+  62: [566, 130],
+  63: [661, 129],
+  64: [740, 181],
+  65: [732, 259],
+  67: [479, 327],
+  73: [442, 208],
+  101: [283, 275],
+  102: [199, 265],
+  103: [294, 227],
+  104: [363, 191],
+  105: [426, 224],
+  106: [484, 239],
+  107: [567, 259],
+  108: [683, 285],
+  109: [684, 245],
+  110: [698, 208],
+  111: [661, 167],
+  112: [611, 136],
+  113: [670, 121],
+  116: [353, 135],
+  117: [287, 114],
+  151: [717, 243],
+  152: [651, 292],
+  153: [587, 344],
+  154: [514, 272],
+  155: [394, 298],
+  156: [287, 321],
+  157: [281, 234],
+  158: [216, 158],
+  159: [314, 151],
+  160: [446, 149],
+  161: [545, 142],
+  162: [582, 70],
+  163: [686, 107],
+  166: [818, 50],
+  201: [691, 177],
+  202: [631, 210],
+  203: [647, 263],
+  204: [610, 297],
+  205: [541, 292],
+  206: [473, 268],
+  207: [418, 280],
+  208: [400, 243],
+  209: [341, 264],
+  210: [290, 249],
+  211: [221, 265],
+  212: [321, 357],
+  213: [429, 377],
+  251: [634, 354],
+  252: [571, 357],
+  253: [540, 382],
+  254: [476, 385],
+  255: [401, 383],
+  256: [245, 360],
+  257: [329, 293],
+  258: [549, 217],
+  259: [656, 130],
+  260: [457, 153],
+  261: [323, 179],
+  262: [218, 189],
+  263: [165, 124],
+  264: [200, 103],
+  301: [293, 86],
+  302: [215, 96],
+  303: [270, 142],
+  304: [202, 141],
+  305: [226, 203],
+  307: [397, 148],
+  308: [364, 118],
+  309: [357, 77],
+  310: [470, 105],
+  311: [435, 75],
+  312: [401, 51],
+  315: [352, 261],
+  316: [456, 241],
+  317: [560, 214],
+  318: [619, 179],
+  319: [677, 156],
+  320: [720, 128],
+  321: [792, 132],
+  322: [776, 166],
+  323: [744, 192],
+  324: [729, 213],
+  325: [523, 201],
+  326: [591, 238],
+}
+
 export const MAPS_PER_WORLD = 50
 
 export const OUTPOST_RANK_NAMES = ['Trade', 'Intel', 'Command', 'Military', 'Purity']
@@ -171,6 +304,8 @@ export const RANK_BAR_UNLOCK_ARMORY = [27, 29, 73, 74, 75]
 // Armory "Kingdom Expansion 2-8": each one opens the next world's maps
 export const KINGDOM_EXPANSION_ARMORY = [2, 3, 4, 5, 6, 7, 8]
 export const COMPOUNDING_OUTPOSTING_ARMORY = 79
+export const PERFECT_PURIFICATION_ARMORY = 1
+export const GLOBAL_DECREE_PM_ARMORY = 51
 // Armory "Kingdom Sovereignty": each level recruits the next Movable Unit in RECRUIT_ORDER
 export const KINGDOM_SOVEREIGNTY_ARMORY = 68
 
@@ -267,6 +402,7 @@ export function buildOutpostSummary(rg) {
       mode: o.mode,
       glorified: o.glorified,
       purified: ranks[PURITY_RANK].rank >= 1,
+      farm: FARM_MAPS[outpostWorld(o.mapIndex)]?.includes(o.mapIndex) ?? false,
       supportTargets: o.mode === SUPPORT_CAMP_MODE
         ? o.links.filter(v => v >= SUPPORT_LINK_BASE).map(v => v - SUPPORT_LINK_BASE)
         : [],
@@ -324,6 +460,15 @@ export function buildOutpostSummary(rg) {
     toClear: worlds.reduce((sum, w) => sum + w.toClear, 0),
     glorifyUnlocked: rg?.glorifyUnlocked ?? false,
     purityUnlocked: barsUnlocked[PURITY_RANK],
+    // What being purified gives (Toolbox royalGuardian.ts). Purity is on/off: every check is min(Purity Rank, 1).
+    purifiedBonuses: {
+      // Perfect Purification (armory 1): 3x Collection Rate + 1% per level on each purified map
+      collectionMulti: 1 + (200 + Number(rg?.armory?.[PERFECT_PURIFICATION_ARMORY] ?? 0)) / 100,
+      // Global Decree - PM (armory 51): +25% Collection Rate to every outpost per purified map
+      decreePerMap: 25 * Number(rg?.armory?.[GLOBAL_DECREE_PM_ARMORY] ?? 0),
+      // Regal Intervention (talent 229) adds this many mobs to a Divine Intervention respawn on a purified map
+      regalMobs: 10,
+    },
     // Purity only matters in worlds that have a Priest to raise it
     priestWorlds: priestWorlds(rg?.recruitLevel ?? 0),
     compounding,

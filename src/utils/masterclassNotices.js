@@ -10,8 +10,8 @@ export function getMasterclassNotices(snapshot) {
   const rg = snapshot?.royalGuardian
   if (rg?.deployments) {
     const summary = buildOutpostSummary(rg)
-    // Outposts: +1 per world for each of: Commanders to move, Priests to move, Support Camps to relink to the
-    // Priests, Trader/Surveyor swaps (utils/outpostNotices.js, same counts as the world headers)
+    // Outposts: +1 per world for each of: Commanders to move, Priests to move, Support Camps to relink,
+    // Trader/Surveyor swaps (utils/outpostNotices.js, same counts as the world headers)
     const outposts = getOutpostNotices(rg, summary.outposts).count
     // Resources: +1 for every fully unlocked world with a Resource Depot to reconnect
     const resources = rg.resourceStorage && isNoticeOn('MasterClasses', 'resources')
