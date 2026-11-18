@@ -89,7 +89,7 @@ export { premiumCapes, CAPE_VINE_SHARE, GOLDEN_VINE_SHARE, LOVELY_BALLOON, GOLDE
 
 // ── World 5 ───────────────────────────────────────────────────────────────────
 export { artifactMap } from './artifactMap'
-export { paletteMap } from './gamingMap'
+export { paletteMap, gamingImportMap, fertilizerMap, superbitMap, mutationMap, shellRankTotals, plantSpecies } from './gamingMap'
 export { godMap } from './divinityMap'
 export { lampBonuses, monumentBases, holeMajikBonuses, fountainBonusPerLevel, glunkoUpgradeValues } from './cavernsMap'
 export { holeVillagers, holeBiomes, holeCaverns, holeMajiks, lampWishes, holeSchematics, holeSchematicOrder, holeMeasurements, holeStudies, harpStringTypes, harpNoteNames, bellRingBonuses, denAmplifiers, monumentBonusText, jarCollectibles, denAmpMax, denRecommendedSetup, wellSedimentNames, wellSedimentCapBonus, monumentHourReqs, monumentHourRewards, bellMethods, gambitBonuses, jarTypes, gambitTrials, templeTorchBonuses, fountainUpgrades, lairUpgrades, lairShapeNames } from './holeMap'

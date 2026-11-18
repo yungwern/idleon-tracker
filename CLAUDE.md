@@ -27,6 +27,7 @@ Each page/system has its own notes file in `notes/` (save layout, formulas, what
 | `notes/construction.md` | Cog board |
 | `notes/death-note.md` | Death Note kill ranks and points |
 | `notes/farming.md` | Market, land rank optimizer, crop evolution + push outlook |
+| `notes/gaming.md` | Gaming page: tiles, bit multi sources, bits spent elsewhere, imports, snail odds, superbits, palette |
 | `notes/hat-rack-cape-vine.md` | Hat Rack and The Cape Vine (PremiumCollection) |
 | `notes/hole.md` | The Hole: villagers, opal planner, every cavern panel |
 | `notes/home.md` | Home page: last-page memory, reset timers, weekly votes, Settings (notification toggles, inputs) |
@@ -50,7 +51,7 @@ Each page/system has its own notes file in `notes/` (save layout, formulas, what
 ```
 src/
 ├── components/         # One folder per feature (see casing note below)
-│   ├── Section pages:  Home (landing page, eager not lazy), WeeklyVotes, Breeding, Bubba, Orion, Poppy, Construction, Cooking, Farming, GearOptimizer, CapeVine, HatRack,
+│   ├── Section pages:  Home (landing page, eager not lazy), WeeklyVotes, Breeding, Bubba, Orion, Poppy, Construction, Cooking, Farming, Gaming, GearOptimizer, CapeVine, HatRack,
 │   │                   Lab, LegendTalents, Hole, Islands (one tab file per island), MasterClasses, Minibosses, Obols, Printer, Refinery,
 │   │                   Shrines, Sneaking, Spelunking, Statues, Summoning, Worship (sub-tab files: see each notes file)
 │   └── Shared/sub:     AnvilProduction (Overview tab), BuffsPanel, Clicker, PremiumCollection (Hat Rack + Cape Vine body),
@@ -71,7 +72,7 @@ src/
 │                       #   ninja items, knowledge, emporium, gems, mastery, charms, door HP, floor difficulty; sneakingSetups.js is hand-written), mealMap (every meal: baseStat/stat),
 │                       #   companionMap, tesseractMap, arcadeMap, jellyMap, meritMap, emperorMap, artifactMap, summoningMap, cavernsMap, zenithMap,
 │                       #   starSignMap, researchMap (grid squares, observations, stickers), buttonMap,
-│                       #   divinityMap (godMap by slot), gamingMap (paletteMap), spelunkingMap (shop upgrades with
+│                       #   divinityMap (godMap by slot, blessing costs), gamingMap (gen_gaming.py: palette, imports, fertilizer, superbits, mutations), spelunkingMap (shop upgrades with
 │                       #   readable keys for Toolbox x1-x8, lore chapters, tunnel rocks/lore bosses, amber tiers),
 │                       #   mineheadMap (opponent bonuses), cavernsMap glunkoUpgradeValues (Crystal Glunko Cove).
 │                       # classes.js also has CLASS_TALENT_TABS (class lines) and CLASS_FAMILY_BONUSES.
@@ -103,7 +104,7 @@ src/
                         #   researchUtils (grid, stickers), buttonUtils, labUtils (jewels + mainframe bonuses, on/off from mainframeUtils connections),
                         #   divinityUtils (minor link bonuses), familyUtils (family bonus walk), coralReefUtils,
                         #   prayerUtils (bonus/curse at PrayOwned level = snapshot.worship.prayerLevels; cards sort prayers by id, utility prayers 3 and 5 last),
-                        #   gamingUtils (superbits, palette), spelunkingUtils (notes/spelunking.md), mineheadUtils,
+                        #   gamingUtils (superbits, palette; Gaming page math that reads other systems → gamingBonusUtils), spelunkingUtils (notes/spelunking.md), mineheadUtils,
                         #   cavernUtils getGlunkoBonus, crystalMobUtils (daily guaranteed crystal mobs).
                         #   New bonus sources go in their system's util, never in the page that uses them.
 
@@ -154,6 +155,8 @@ match the real filename exactly. Three components are lowercase on disk:
   flipped below when there's no room above, and shown outside scroll boxes. So don't add per-page tooltip positioning
   (left/right/transform tweaks, edge variants, JS placement) or custom tooltip elements; if one still gets cut off, fix the hook.
 - `global.css` `.dropdown-panel` = shared click-to-open `<details>` section.
+- **Info icon**: `<span className="info-icon" />` after a label with a tooltip (SVG mask, public/images/brand/info.svg). Never the ⓘ
+  character: it renders pixelated.
 
 **CSS formatting**: multi-line format — each property on its own line
 

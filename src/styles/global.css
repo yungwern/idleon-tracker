@@ -788,6 +788,26 @@ h2 {
 }
 
 /* ============================================================
+   INFO ICON: <span className="info-icon" /> after a label whose hover shows a tooltip.
+   An SVG mask (public/images/brand/info.svg), so it stays sharp at any size or display scaling
+   (the ⓘ text character looked pixelated) and takes the text colour; grey unless a page sets color.
+   ============================================================ */
+.info-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  flex-shrink: 0;
+  vertical-align: -1px;
+  color: #6b7280;
+  background-color: currentColor;
+  mask-image: url("/images/brand/info.svg");
+  mask-size: contain;
+  mask-position: center;
+  mask-repeat: no-repeat;
+}
+
+/* ============================================================
    LOGIN PROVIDER ICONS
    <span className="provider-icon" data-provider="steam|google|email" />
    Drawn as a mask so the icon takes the surrounding text color.

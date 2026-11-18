@@ -447,6 +447,7 @@ export const talentMap = Object.fromEntries(
 export const talentGrowthMap = {
   56: { func: 'decay', x1: 200, x2: 200 }, // Voodoo Statufication: +% higher statue bonuses
   99: { func: 'decay', x1: 55, x2: 80 }, // Haungry for Gold: +% Golden Food bonuses
+  177: { func: 'decay', x1: 20, x2: 100 }, // Bitty Litty: +% bits per Gaming LV
   178: { func: 'decay', x1: 5, x2: 150 }, // King of the Remembered: +% printer output per POW 10 orb kills
   205: { func: 'decayMulti', x1: 50, x2: 300 }, // Mass Irrigation: }x Crop Evo chance
   207: { func: 'decayMulti', x1: 2, x2: 200 }, // Dank Ranks: }x Land Rank Database bonuses

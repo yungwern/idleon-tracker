@@ -1364,14 +1364,58 @@ function parseMenagerie(json) {
 }
 
 // ── Gaming (W5) ───────────────────────────────────────────────────────────────
-// Gaming[12] = unlocked superbits as a string of save letters (see utils/saveCodeUtils.js).
-// Palette colours live in Spelunk: [9] = level per colour, [49] = Menagerie black stars (0-2).
-function parseGaming(json) {
+// Gaming: [0] bits, [1..3] fertilizer levels (value, speed, capacity), [4] mutations unlocked, [5] DNA,
+// [7] evolution level (mutation cost), [8] best nugget, [10] POiNG highscore, [11] Log Book: one save letter per
+// row = plants found in that row, [12] unlocked superbits (save letters, utils/saveCodeUtils.js), [13] envelopes,
+// [14] King Rat tokens.
+// GamingSprout: [25 + i][0] = import i level; [25][1] Little Sprinkler drops timer; [26][1] s since the last shovel dig; [27] = [squirrel LV,
+// s since the last acorn visit, acorn shop LV 1, acorn shop LV 2]; [28] = [.., plants evolved, shell rank];
+// [29] = Kitsune Roxie [active bonus %, on]; [30][1] Bog Log timer (s); [32] = [.., snail LV, encouragement];
+// [33] = [King Rat base %, King Rat shop LVs x3].
+// OptLacc: [192] nuggets since the Metal Detector upgrade, [411] 100x bits toggle, [415] acorn shop LV 3,
+// [497] best Log Game round (saved once Pro Log Flipper is owned). serverVars come from the export (outside data).
+// Palette colours live in Spelunk: [9] = level per colour, [10] = selected colour per slot (-1 empty),
+// [49] = Menagerie black stars (0-2). Research[11] = King Rat crowns found ("<row><save letter>", Log Book plants).
+// Math → utils/gamingUtils.js
+function parseGaming(json, optLacc, serverVars) {
   const gaming = parseRaw(json['Gaming']) ?? []
+  const sprout = parseRaw(json['GamingSprout']) ?? []
   const spelunk = parseRaw(json['Spelunk']) ?? []
+  const research = parseRaw(json['Research']) ?? []
+  const num = value => Number(value) || 0
   return {
+    unlocked: Boolean(json['Gaming']),
+    bits: num(gaming[0]),
+    fertilizerLevels: [num(gaming[1]), num(gaming[2]), num(gaming[3])],
+    mutationsUnlocked: num(gaming[4]),
+    dna: num(gaming[5]),
+    evolutionLevel: num(gaming[7]),
+    bestNugget: num(gaming[8]),
+    poingHighscore: num(gaming[10]),
+    logBook: String(gaming[11] ?? ''),
     superbits: String(gaming[12] ?? ''),
+    envelopes: num(gaming[13]),
+    ratTokens: num(gaming[14]),
+    importLevels: Array.from({ length: 9 }, (_, i) => num(sprout[25 + i]?.[0])),
+    sprinklerTimer: num(sprout[25]?.[1]),
+    shovelSeconds: num(sprout[26]?.[1]),
+    squirrel: [0, 1, 2, 3].map(i => num(sprout[27]?.[i])),
+    plantsEvolved: num(sprout[28]?.[1]),
+    shellRank: num(sprout[28]?.[2]),
+    kitsune: [num(sprout[29]?.[0]), num(sprout[29]?.[1])],
+    bogLogTimer: num(sprout[30]?.[1]),
+    snailLevel: num(sprout[32]?.[1]),
+    snailEncouragement: num(sprout[32]?.[2]),
+    ratShop: [0, 1, 2, 3].map(i => num(sprout[33]?.[i])),
+    nuggetsSinceUpgrade: num(optLacc?.[192]),
+    bitToggle: num(optLacc?.[411]),
+    acornShopPalette: num(optLacc?.[415]),
+    // serverVars.GamingFertCostExpA: this week's Sprout Value cost growth (null when the save has no serverVars)
+    fertilizerCostExp: Number.isFinite(Number(serverVars?.GamingFertCostExpA)) ? Number(serverVars.GamingFertCostExpA) : null,
+    logGameBestRound: num(optLacc?.[497]),
+    crowns: (Array.isArray(research[11]) ? research[11] : []).map(String),
     paletteLevels: (spelunk[9] ?? []).map(level => Number(level) || 0),
+    paletteSlots: (spelunk[10] ?? []).map(Number).filter(index => index >= 0),
     paletteBlackStars: (spelunk[49] ?? []).map(stars => Number(stars) || 0),
   }
 }
@@ -1497,6 +1541,8 @@ function parseDivinity(json, charCount, optLacc) {
   return {
     linkedGods: Array.from({ length: charCount }, (_, i) => Number(divinity[12 + i] ?? -1)),
     unlockedGods: Number(divinity[25]) || 0,
+    // Divinity[28 + slot] = blessing LV of the god in that slot
+    blessingLevels: Array.from({ length: 10 }, (_, slot) => Number(divinity[28 + slot]) || 0),
     w7ChosenGod: (Number(optLacc[425]) || 0) - 1,
   }
 }
@@ -1706,7 +1752,7 @@ export function extractSnapshot(rawJson) {
     // OptLacc[464] = Clam Work worker class, [628] = best Pet Arena Crucible wave
     clamWorkerClass: Number(optLacc[464]) || 0,
     crucibleBestWave: Number(optLacc[628]) || 0,
-    gaming: parseGaming(json),
+    gaming: parseGaming(json, optLacc, rawJson?.serverVars),
     spelunking: parseSpelunking(json, optLacc),
     eventShop: parseEventShop(optLacc),
     button: parseButton(optLacc),

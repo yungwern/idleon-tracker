@@ -42,7 +42,7 @@ function BossCard({ boss }) {
           </span>
           <span className="summoning-boss-stat tooltip-anchor">
             HP: <strong>{formatStoneHp(boss.hp)}</strong>
-            <span className="summoning-boss-info">ⓘ</span>
+            <span className="info-icon summoning-boss-info" />
             <span className="tooltip tooltip--right buff-tooltip">
               <span className="buff-tooltip-name">Next fights</span>
               {boss.upcoming.map(fight => (

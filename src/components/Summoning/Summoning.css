@@ -134,9 +134,8 @@
   color: #e5e7eb;
 }
 
-.summoning-boss-info {
+.info-icon.summoning-boss-info {
   margin-left: 6px;
-  color: #6b7280;
   cursor: help;
 }
 

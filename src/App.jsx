@@ -50,6 +50,7 @@ import './components/Cooking/Cooking.css'
 import './components/Breeding/Breeding.css'
 import './components/Farming/Farming.css'
 import './components/Hole/Hole.css'
+import './components/Gaming/Gaming.css'
 import './components/Sneaking/Sneaking.css'
 import './components/Summoning/Summoning.css'
 import './components/WeeklyVotes/WeeklyVotes.css'
@@ -81,6 +82,7 @@ const Cooking = lazy(() => import('./components/Cooking/Cooking.jsx'))
 const Breeding = lazy(() => import('./components/Breeding/Breeding.jsx'))
 const Farming = lazy(() => import('./components/Farming/Farming.jsx'))
 const Hole = lazy(() => import('./components/Hole/Hole.jsx'))
+const Gaming = lazy(() => import('./components/Gaming/Gaming.jsx'))
 const Sneaking = lazy(() => import('./components/Sneaking/Sneaking.jsx'))
 const Summoning = lazy(() => import('./components/Summoning/Summoning.jsx'))
 const WeeklyVotes = lazy(() => import('./components/WeeklyVotes/WeeklyVotes.jsx'))
@@ -284,6 +286,7 @@ export default function App() {
     if (current === 'Lab') return <Lab snapshot={snapshot} />
     if (current === 'Farming') return <Farming snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'The Hole') return <Hole snapshot={snapshot} tomePoints={tomePoints} />
+    if (current === 'Gaming') return <Gaming snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'Sneaking') return <Sneaking snapshot={snapshot} tomePoints={tomePoints} />
     if (current === 'Summoning') return <Summoning snapshot={snapshot} />
     if (current === 'Weekly Votes') {

@@ -4,12 +4,14 @@ import { shrineMap } from '../data'
 // snapshot.coralReef.kidUpgradeLevels[index] = upgrade level.
 
 export const CORAL_KID_UPGRADES = {
+  blessingMaxLevel: 1, // +2 max Divinity blessing LV per level
   divinityLinks: 3, // +1% minor divinity link bonuses per level
 }
 
 export function getCoralKidUpgradeBonus(coralReef, index) {
   const level = coralReef?.kidUpgradeLevels?.[index] ?? 0
   if (index === CORAL_KID_UPGRADES.divinityLinks) return Math.round(level)
+  if (index === CORAL_KID_UPGRADES.blessingMaxLevel) return Math.round(2 * level)
   return 0
 }
 

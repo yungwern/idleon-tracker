@@ -1318,13 +1318,14 @@ export function multiNeededWithin(outlook, seconds) {
 
 // ── Crop Depot bonuses ────────────────────────────────────────────────────────
 // Crop Depot (Crop Scientist) bonuses unlocked by Jade Emporium pens (Toolbox getCropDepotBonuses).
-// Only the ones other pages read so far. Returns { value, missing } as a %.
+// Only the ones other pages read so far. Returns { value, missing }: a %, or a multiplier for gamingEvo.
 const DEPOT_GRIMOIRE = 22
 const DEPOT_EXOTIC = 40
 const DEPOT_VAULT = 79
 
 export const CROP_DEPOT_BONUSES = {
   shiny: { jade: 28, value: crops => 7 * Math.round(crops) }, // Science Crayon: Shiny Mob LV Up Rate + Breeding Rate
+  gamingEvo: { jade: 24, value: crops => Math.pow(1.02, Math.round(crops)) }, // Science Pen: x Gaming sprout growth
   spelunky: { jade: 40, value: crops => 5 * Math.round(Math.max(0, crops - 200)) }, // Science Fancy Pen: Spelunking POW + Amber
 }
 

@@ -29,7 +29,7 @@ export default function Summoning({ snapshot }) {
       <InfoPanel
         intro="Your World 6 Summoning: the stone bosses and where to put your summoning doublers."
         items={[
-          'Bosses: each essence colour has a stone boss on a regular map. Every kill multiplies most of that colour\'s summoning upgrades by 1 + kills, but makes the next fight 4,000x tougher. Hover the bonus for what the next kill brings, the ⓘ next to HP for the fights after that, and the mob next to the map name to see which mob lives there.',
+          'Bosses: each essence colour has a stone boss on a regular map. Every kill multiplies most of that colour\'s summoning upgrades by 1 + kills, but makes the next fight 4,000x tougher. Hover the bonus for what the next kill brings, the info icon next to HP for the fights after that, and the mob next to the map name to see which mob lives there.',
           'Doublers: where to put your Gambit summoning doublers for a Damage push or for Essence Gain, and what to move from your current placement. Re-import after moving them.',
         ]}
       />

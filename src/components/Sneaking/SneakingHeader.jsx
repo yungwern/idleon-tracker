@@ -58,7 +58,7 @@ export default function SneakingHeader({ snapshot }) {
             >
               <span className="sneaking-stat-label">
                 {stat.label}
-                {stat.tip && <span className="sneaking-stat-info">ⓘ</span>}
+                {stat.tip && <span className="info-icon sneaking-stat-info" />}
               </span>
               <span className="sneaking-stat-value">{stat.value}</span>
               {stat.tip && <span className="tooltip tooltip--wrap">{stat.tip}</span>}

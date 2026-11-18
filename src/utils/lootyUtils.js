@@ -16,7 +16,8 @@ export const SLAB_BONUSES = {
   spelunkingPow: 6,
 }
 
-function getSlabMulti(snapshot) {
+// Slab multiplier on every slab-scaled bonus (also Gummy Orb's looted-items bonus)
+export function getSlabMulti(snapshot) {
   const sovereignty = getLabBonus(snapshot, LAB_BONUSES.slabSovereignty)
   const legend = getLegendTalentBonus(SLAB_LEGEND_TALENT, getLegendTalentLevel(snapshot?.legendTalents, SLAB_LEGEND_TALENT))
   return {

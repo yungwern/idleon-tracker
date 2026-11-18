@@ -78,7 +78,7 @@ export default function Hole({ snapshot, tomePoints }) {
             alt=""
           />
           <span className="hole-stat-value">{formatHoleNumber(opals.invested)}</span>
-          <span className="hole-stat-label">Opals invested ⓘ</span>
+          <span className="hole-stat-label">Opals invested<span className="info-icon" /></span>
           <div className="tooltip tooltip--wrap hole-tooltip">
             <div className="hole-tooltip-title">{opals.total.toLocaleString()} opals earned</div>
             <div className="hole-tooltip-line">
